@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -11,6 +11,7 @@ import wx
 from wx.lib.agw import floatspin
 
 from DisplayCAL import colormath as cm
+import importlib
 
 app = wx.GetApp() or wx.App(0)
 f = wx.Frame(None, -1, u'BT.2390 Test', style=wx.DEFAULT_FRAME_STYLE & ~wx.RESIZE_BORDER & ~wx.MAXIMIZE_BOX)
@@ -18,7 +19,7 @@ p = wx.Panel(f)
 s = wx.FlexGridSizer(0, 2, 10, 10)
 p.Sizer = s
 rb = wx.Button(p, -1, u'Reload colormath module')
-rb.Bind(wx.EVT_BUTTON, lambda e: reload(cm))
+rb.Bind(wx.EVT_BUTTON, lambda e: importlib.reload(cm))
 ml = floatspin.FloatSpin(p, -1, min_val=0.,   max_val=10000., value=0.,     increment=.0001, digits=4, agwStyle=floatspin.FS_RIGHT)
 oo = wx.Slider(p, -1, 0, 0, 100, size=(100, -1), style=wx.SL_HORIZONTAL | wx.SL_VALUE_LABEL)
 xl = floatspin.FloatSpin(p, -1, min_val=100., max_val=10000., value=10000., increment=.1, digits=1, agwStyle=floatspin.FS_RIGHT)
@@ -43,7 +44,7 @@ def bt2390_test(event):
                 wx.TheClipboard.Close()
         else:
             wx.MessageDialog(f, u'Could not open clipboard!', u'Clipboard error', style=wx.OK).ShowModal()
-    except Exception, exception:
+    except Exception as exception:
         wx.MessageDialog(f, unicode(traceback.format_exc()), u'Exception', style=wx.OK).ShowModal()
 
 cb.Bind(wx.EVT_BUTTON, bt2390_test)

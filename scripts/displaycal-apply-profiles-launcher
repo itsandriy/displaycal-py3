@@ -1,12 +1,12 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import sys
 import time
 
 if sys.platform != "win32":
-	print "This stub is only used on Windows."
-	sys.exit(1)
+    print("This stub is only used on Windows.")
+    sys.exit(1)
 
 import os
 import subprocess as sp
@@ -14,20 +14,20 @@ import subprocess as sp
 appname = "DisplayCAL"
 
 if getattr(sys, "frozen", False):
-	args = [os.path.join(os.path.dirname(sys.executable),
-			appname + "-apply-profiles.exe")]
+    args = [os.path.join(os.path.dirname(sys.executable),
+            appname + "-apply-profiles.exe")]
 else:
-	args = [sys.executable]
-	dirname = os.path.dirname(__file__)
-	pyw = os.path.join(dirname, "..", appname + "-apply-profiles.pyw")
-	if os.path.isfile(pyw):
-		args.append(os.path.normpath(pyw))
-	else:
-		args.append(os.path.join(dirname, appname.lower() + "-apply-profiles"))
+    args = [sys.executable]
+    dirname = os.path.dirname(__file__)
+    pyw = os.path.join(dirname, "..", appname + "-apply-profiles.pyw")
+    if os.path.isfile(pyw):
+        args.append(os.path.normpath(pyw))
+    else:
+        args.append(os.path.join(dirname, appname.lower() + "-apply-profiles"))
 
 args.append("--task")
 if "--oneshot" in sys.argv[1:]:
-	args.append("--oneshot")
+    args.append("--oneshot")
 
 sp.Popen(args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
 

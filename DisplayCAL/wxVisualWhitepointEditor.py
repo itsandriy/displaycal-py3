@@ -17,7 +17,7 @@ import sys
 import threading
 from math import pi, sin, cos, sqrt, atan2
 if sys.platform == "darwin":
-	from platform import mac_ver
+    from platform import mac_ver
 from time import sleep
 
 from wxfixes import wx

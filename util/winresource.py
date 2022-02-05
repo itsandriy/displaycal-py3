@@ -156,7 +156,7 @@ def _GetResources(hsrc, types=None, names=None, languages=None):
                     if not name in res[type_]:
                         res[type_][name] = {}
                     res[type_][name][language] = data
-    except pywintypes.error, exception:
+    except pywintypes.error as exception:
         if exception.args[0] in (ERROR_RESOURCE_DATA_NOT_FOUND,
                                  ERROR_RESOURCE_TYPE_NOT_FOUND,
                                  ERROR_RESOURCE_NAME_NOT_FOUND,
@@ -214,8 +214,7 @@ def UpdateResources(dstpath, data, type_, names=None, languages=None):
         for name in res[type_]:
             for language in res[type_][name]:
                 if not silent:
-                    print "I: Updating resource type", type_, "name", name, \
-                          "language", language
+                    print("I: Updating resource type", type_, "name", name, "language", language)
                 win32api.UpdateResource(hdst, type_, name, data, language)
     win32api.EndUpdateResource(hdst, 0)
 

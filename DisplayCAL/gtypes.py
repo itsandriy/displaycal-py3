@@ -4,26 +4,26 @@ from ctypes import Structure, c_char_p, c_int, c_uint
 
 
 class gchar_p(c_char_p):
-	# represents "[const] gchar*"
-	pass
+    # represents "[const] gchar*"
+    pass
 
 
 class gint(c_int):
-	pass
+    pass
 
 
 class guint(c_uint):
-	pass
+    pass
 
 class guint32(c_uint):
-	pass
+    pass
 
 
 class GQuark(guint32):
-	pass
+    pass
 
 
-class GError(Structure): 
-	_fields_ = [("domain", GQuark),
-				("code", gint),
-				("message", gchar_p)]
+class GError(Structure):
+    _fields_ = [("domain", GQuark),
+                ("code", gint),
+                ("message", gchar_p)]

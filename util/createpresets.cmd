@@ -2,7 +2,7 @@
 setlocal
 
 if not "%~1"=="" (
-	if not "%~2"=="" goto single
+    if not "%~2"=="" goto single
 )
 
 call :createpreset "Default"      "default"

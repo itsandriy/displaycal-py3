@@ -1,7 +1,7 @@
 @echo off
 
 for /F usebackq %%a in (`python -c "from DisplayCAL import meta;print meta.version"`) do (
-	set version=%%a
+    set version=%%a
 )
 
 REM Source tarball

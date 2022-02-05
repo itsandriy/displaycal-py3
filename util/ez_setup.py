@@ -103,7 +103,7 @@ def use_setuptools(
         return do_download()       
     try:
         pkg_resources.require("setuptools>="+version); return
-    except pkg_resources.VersionConflict, e:
+    except pkg_resources.VersionConflict as e:
         if was_imported:
             print >>sys.stderr, (
             "The required version of setuptools (>=%s) is not available, and\n"
@@ -129,7 +129,8 @@ def download_setuptools(
     with a '/'). `to_dir` is the directory where the egg will be downloaded.
     `delay` is the number of seconds to pause before an actual download attempt.
     """
-    import urllib2, shutil
+    from urllib import request
+    import shutil
     egg_name = "setuptools-%s-py%s.egg" % (version,sys.version[:3])
     url = download_base + egg_name
     saveto = os.path.join(to_dir, egg_name)
@@ -155,7 +156,7 @@ and place it in this directory before rerunning this script.)
                     version, download_base, delay, url
                 ); from time import sleep; sleep(delay)
             log.warn("Downloading %s", url)
-            src = urllib2.urlopen(url)
+            src = request.urlopen(url)
             # Read/write all in one block, so we don't create a corrupt file
             # if the download is interrupted.
             data = _validate_md5(egg_name, src.read())

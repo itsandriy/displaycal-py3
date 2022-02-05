@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #
 # Copyright (C) 2009, Florian Hoech
 #
@@ -94,13 +94,12 @@ Updates or adds manifest <xmlpath> as resource in Win32 PE file <dstpath>.
 
 try:
     import hashlib
-except ImportError, detail:
+except ImportError as detail:
     hashlib = None
     import md5
     import sha
 import os
 from glob import glob
-import re
 import sys
 import xml
 from xml.dom import Node, minidom
@@ -108,12 +107,12 @@ from xml.dom.minidom import Document, Element
 
 try:
     import winresource
-except ImportError, detail:
+except ImportError as detail:
     winresource = None
-    print "W:", detail
-    print "W: Cannot check for assembly dependencies - resource access "
-    print "W: unavailable. To enable resource access, please install "
-    print "W: http://sourceforge.net/projects/pywin32/"
+    print("W:", detail)
+    print("W: Cannot check for assembly dependencies - resource access ")
+    print("W: unavailable. To enable resource access, please install ")
+    print("W: http://sourceforge.net/projects/pywin32/")
 
 silent = False  # True suppresses all messages
 
@@ -221,15 +220,15 @@ class File(_File):
 
     def find(self, searchpath):
         if not silent:
-            print "I: Searching for file", self.name
+            print("I: Searching for file", self.name)
         fn = os.path.join(searchpath, self.name)
         if os.path.isfile(fn):
             if not silent:
-                print "I: Found file", fn
+                print("I: Found file", fn)
             return fn
         else:
             if not silent:
-                print "W: No such file", fn
+                print("W: No such file", fn)
             return None
 
 
@@ -366,16 +365,16 @@ class Manifest(object):
         
         winsxs = os.path.join(os.getenv("SystemRoot"), "WinSxS")
         if not os.path.isdir(winsxs) and not silent:
-            print "W: No such dir", winsxs
+            print("W: No such dir", winsxs)
         manifests = os.path.join(winsxs, "Manifests")
         if not os.path.isdir(manifests) and not silent:
-            print "W: No such dir", manifests
+            print("W: No such dir", manifests)
         if not ignore_policies and self.version:
             if sys.getwindowsversion() < (6, ):
                 # Windows XP
                 pcfiles = os.path.join(winsxs, "Policies")
                 if not os.path.isdir(pcfiles) and not silent:
-                    print "W: No such dir", pcfiles
+                    print("W: No such dir", pcfiles)
             else:
                 # Vista or later
                 pcfiles = manifests
@@ -419,15 +418,15 @@ class Manifest(object):
                     for manifestpth in glob(policies):
                         if not os.path.isfile(manifestpth):
                             if not silent:
-                                print "W: Not a file", manifestpth
+                                print("W: Not a file", manifestpth)
                             continue
                         if not silent:
-                            print "I: Found", manifestpth
+                            print("I: Found", manifestpth)
                         try:
                             policy = ManifestFromXMLFile(manifestpth)
-                        except Exception, exc:
-                            print "E: Could not parse file", manifestpth
-                            print "E:", str(exc)
+                        except Exception as exc:
+                            print("E: Could not parse file", manifestpth)
+                            print("E:", str(exc))
                         else:
                             if not silent:
                                 print ("I: Checking publisher policy for "
@@ -447,21 +446,18 @@ class Manifest(object):
                                         new = ".".join([str(i) 
                                                         for i in
                                                         redirect[1]])
-                                        print "I: Found redirect for " \
-                                              "version(s)", old, "->", new
+                                        print("I: Found redirect for version(s)", old, "->", new)
                                     if version >= redirect[0][0] and \
                                        version <= redirect[0][-1] and \
                                        version != redirect[1]:
                                         if not silent:
-                                            print "I: Applying redirect", \
-                                                  ".".join([str(i) 
-                                                            for i in
-                                                            version]), \
-                                                  "->", new
+                                            print("I: Applying redirect",
+                                                  ".".join([str(i) for i in version]),
+                                                  "->", new)
                                         version = redirect[1]
                                         redirected = True
                     if not redirected and not silent:
-                        print "I: Publisher configuration not used"
+                        print("I: Publisher configuration not used")
             
             # Search for assemblies according to assembly searching sequence
             paths = []
@@ -489,36 +485,35 @@ class Manifest(object):
                                                        self.name, 
                                                        self.name + ext)))
             if not silent:
-                print ("I: Searching for assembly %s..." % 
-                       self.getid(language=language, 
-                                  version=version))
+                print("I: Searching for assembly %s..." %
+                      self.getid(language=language, version=version))
             for manifestpth in paths:
                 if not os.path.isfile(manifestpth):
                     if not silent:
-                        print "W: Not a file", manifestpth
+                        print("W: Not a file", manifestpth)
                     continue
                 assemblynm = os.path.basename(
                     os.path.splitext(manifestpth)[0])
                 if not silent:
                     if manifestpth.endswith(".dll"):
-                        print "I: Found manifest in", manifestpth
+                        print("I: Found manifest in", manifestpth)
                     else:
-                        print "I: Found manifest", manifestpth
+                        print("I: Found manifest", manifestpth)
                 try:
                     if manifestpth.endswith(".dll"):
                         manifest = ManifestFromResFile(manifestpth, [1])
                     else:
                         manifest = ManifestFromXMLFile(manifestpth)
-                except Exception, exc:
-                    print "E: Could not parse manifest", manifestpth
-                    print "E:", exc
+                except Exception as exc:
+                    print("E: Could not parse manifest", manifestpth)
+                    print("E:", exc)
                 else:
                     if manifestpth.startswith(winsxs):
                         assemblydir = os.path.join(winsxs, assemblynm)
                         if not os.path.isdir(assemblydir):
                             if not silent:
-                                print "W: No such dir", assemblydir
-                                print "W: Assembly incomplete"
+                                print("W: No such dir", assemblydir)
+                                print("W: Assembly incomplete")
                             return []
                     else:
                         assemblydir = os.path.dirname(manifestpth)
@@ -531,11 +526,11 @@ class Manifest(object):
                             # If any of our files does not exist,
                             # the assembly is incomplete
                             if not silent:
-                                print "W: Assembly incomplete"
+                                print("W: Assembly incomplete")
                             return []
                 return files
 
-        print "W: Assembly not found"
+        print("W: Assembly not found")
         return []
 
     def getid(self, language=None, version=None):
@@ -553,7 +548,7 @@ class Manifest(object):
         """
         if not self.name:
             if not silent:
-                print "W: Assembly metadata incomplete"
+                print("W: Assembly metadata incomplete")
             return ""
         id = []
         if self.processorArchitecture:
@@ -602,7 +597,7 @@ class Manifest(object):
         """
         if not self.name:
             if not silent:
-                print "W: Assembly metadata incomplete"
+                print("W: Assembly metadata incomplete")
             return ""
         id = []
         if self.processorArchitecture:
@@ -648,16 +643,16 @@ class Manifest(object):
         elif domtree.nodeType == Node.ELEMENT_NODE:
             rootElement = domtree
         else:
-            raise InvalidManifestError("Invalid root element node type " + 
-                                       str(rootElement.nodeType) + 
-                                       " - has to be one of (DOCUMENT_NODE, "
-                                       "ELEMENT_NODE)")
-        allowed_names = ("assembly", "assemblyBinding", "configuration", 
-                         "dependentAssembly")
+            raise InvalidManifestError(
+                "Invalid root element node type %s - has to be one of "
+                "(DOCUMENT_NODE, ELEMENT_NODE)" % domtree
+            )
+        allowed_names = ("assembly", "assemblyBinding", "configuration", "dependentAssembly")
         if rootElement.tagName not in allowed_names:
             raise InvalidManifestError(
-                "Invalid root element <%s> - has to be one of <%s>" % 
-                (rootElement.tagName, ">, <".join(allowed_names)))
+                "Invalid root element <%s> - has to be one of <%s>" %
+                (rootElement.tagName, ">, <".join(allowed_names))
+            )
         # print "I: loading manifest metadata from element <%s>" % \
               # rootElement.tagName
         if rootElement.tagName == "configuration":
@@ -736,15 +731,15 @@ class Manifest(object):
     
     def parse(self, filename_or_file, initialize=True):
         """ Load manifest from file or file object """
-        if isinstance(filename_or_file, (str, unicode)):
+        if isinstance(filename_or_file, str):
             filename = filename_or_file
         else:
             filename = filename_or_file.name
         try:
             domtree = minidom.parse(filename_or_file)
-        except xml.parsers.expat.ExpatError, e:
+        except xml.parsers.expat.ExpatError as e:
             args = [e.args[0]]
-            if isinstance(filename, unicode):
+            if isinstance(filename, str):
                 filename = filename.encode(sys.getdefaultencoding(), "replace")
             args.insert(0, '\n  File "%s"\n   ' % filename)
             raise ManifestXMLParseError(" ".join([str(arg) for arg in args]))
@@ -757,7 +752,7 @@ class Manifest(object):
         """ Load manifest from XML string """
         try:
             domtree = minidom.parseString(xmlstr)
-        except xml.parsers.expat.ExpatError, e:
+        except xml.parsers.expat.ExpatError as e:
             raise ManifestXMLParseError(e)
         self.load_dom(domtree, initialize)
     
@@ -926,7 +921,7 @@ class Manifest(object):
         """ Write the manifest as XML to a file or file object """
         if not filename_or_file:
             filename_or_file = self.filename
-        if isinstance(filename_or_file, (str, unicode)):
+        if isinstance(filename_or_file, str):
             filename_or_file = open(filename_or_file, "wb")
         xmlstr = self.toprettyxml(indent, newl, encoding)
         filename_or_file.write(xmlstr)
@@ -937,7 +932,7 @@ class Manifest(object):
         """ Write the manifest as XML to a file or file object """
         if not filename_or_file:
             filename_or_file = self.filename
-        if isinstance(filename_or_file, (str, unicode)):
+        if isinstance(filename_or_file, str):
             filename_or_file = open(filename_or_file, "wb")
         xmlstr = self.toxml(indent, newl, encoding)
         filename_or_file.write(xmlstr)
@@ -992,7 +987,7 @@ def UpdateManifestResourcesFromXML(dstpath, xmlstr, names=None,
                                    languages=None):
     """ Update or add manifest XML as resource in dstpath """
     if not silent:
-        print "I: Updating manifest in", dstpath
+        print("I: Updating manifest in", dstpath)
     if dstpath.lower().endswith(".exe"):
         name = 1 
     else:
@@ -1005,7 +1000,7 @@ def UpdateManifestResourcesFromXMLFile(dstpath, srcpath, names=None,
                                        languages=None):
     """ Update or add manifest XML from srcpath as resource in dstpath """
     if not silent:
-        print "I: Updating manifest from", srcpath, "in", dstpath
+        print("I: Updating manifest from", srcpath, "in", dstpath)
     if dstpath.lower().endswith(".exe"):
         name = 1 
     else:

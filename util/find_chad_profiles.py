@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -11,15 +11,14 @@ from DisplayCAL.defaultpaths import iccprofiles, iccprofiles_home
 from DisplayCAL.safe_print import safe_print
 
 for p in set(iccprofiles_home + iccprofiles):
-	if os.path.isdir(p):
-		for f in os.listdir(p):
-			try:
-				profile = iccp.ICCProfile(os.path.join(p, f))
-			except:
-				pass
-			else:
-				if "chad" in profile.tags:
-					safe_print(f)
-					safe_print(profile.tags.chad)
-					safe_print("")
-
+    if os.path.isdir(p):
+        for f in os.listdir(p):
+            try:
+                profile = iccp.ICCProfile(os.path.join(p, f))
+            except:
+                pass
+            else:
+                if "chad" in profile.tags:
+                    safe_print(f)
+                    safe_print(profile.tags.chad)
+                    safe_print("")

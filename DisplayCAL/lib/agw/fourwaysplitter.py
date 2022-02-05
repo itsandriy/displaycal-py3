@@ -100,7 +100,7 @@ __docformat__ = "epytext"
 
 import wx
 
-_RENDER_VER = (2,6,1,1)
+_RENDER_VER = (2, 6, 1, 1)
 
 # Tolerance for mouse shape and sizing
 _TOLERANCE = 5

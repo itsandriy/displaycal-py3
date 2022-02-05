@@ -1718,7 +1718,7 @@ Entrez l’adresse IP dans la fenêtre qui s’ouvre (le numéro de port devrait
 			
 			<p>${APPNAME} prend en charge l’écriture de scripts (« scripting ») soit localement, soit par le réseau (ce dernier devant être  explicitement activé en définissant <code>app.allow_network_clients = 1</code> dans ${APPNAME}.ini) via des sockets. ${APPNAME} doit être prêt et en cours de fonctionnement sur la machine-cible pour que ceci fonctionne. Vous trouverez ci-dessous un exemple de connexion à une instance en cours de fonctionnement sur le port par défaut <code>15411</code> et le lancement des mesures d’étalonnage (le port peut être configuré dans ${APPNAME}.ini sous <code>app.port</code>, cependant, si le port choisi n’est pas disponible, un port inutilisé sera automatiquement choisi. Vous pouvez lire le port actuellement utilisé dans le fichier ${APPNAME}.lock qui se trouve dans le dossier du fichier	 de <a href="#configuration">configuration</a> de ${APPNAME} pendant qu’il tourne). L’exemple est écrit en <a href="https://www.python.org/">Python</a> et s’occupe aussi de quelques affaires complexes de sockets.</p>
 			
-			<pre class="language-python"><code>#!/usr/bin/env python2
+			<pre class="language-python"><code>#!/usr/bin/env python3
 
 import socket
 

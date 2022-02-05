@@ -1828,7 +1828,7 @@ On Microsoft Windows or Mac OS X, if the vendors software has been installed on 
 			
 			<p>${APPNAME} supports scripting locally and over the network (the latter must be explicitly enabled by setting <code>app.allow_network_clients = 1</code> in ${APPNAME}.ini) via sockets. ${APPNAME} must be already running on the target machine for this to work. Below is an example connecting to a running instance on the default port <code>15411</code> and starting calibration measurements (the port is configurable in ${APPNAME}.ini as <code>app.port</code>, although if the desired port is not available an unused one will be chosen automatically. You can read the actual used port from the file ${APPNAME}.lock in the <a href="#configuration">configuration</a> file folder of ${APPNAME} while it is running). The example is written in <a href="https://www.python.org/">Python</a> and deals with some of the intricacies of sockets as well.</p>
 			
-			<pre class="language-python"><code>#!/usr/bin/env python2
+			<pre class="language-python"><code>#!/usr/bin/env python3
 
 import socket
 

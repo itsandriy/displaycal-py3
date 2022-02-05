@@ -52,7 +52,6 @@ class DCSaver(object):
         self._pen = pdc.GetPen()
         self._brush = pdc.GetBrush()
 
-
     def __del__(self):
         """ While destructing, restores the dc pen and brush. """
 
@@ -70,9 +69,7 @@ class RendererBase(object):
     
     def __init__(self):
         """ Default class constructor. Intentionally empty. """
-        
         pass
-
 
     def DrawButtonBorders(self, dc, rect, penColour, brushColour):
         """
@@ -89,7 +86,6 @@ class RendererBase(object):
         dc.SetPen(wx.Pen(penColour))
         dc.SetBrush(wx.Brush(brushColour))
         dc.DrawRectangleRect(rect)
-
 
     def DrawBitmapArea(self, dc, xpm_name, rect, baseColour, flipSide):
         """
@@ -116,7 +112,6 @@ class RendererBase(object):
         arrowDown.SetMask(wx.Mask(arrowDown, wx.WHITE))
         dc.DrawBitmap(arrowDown, rect.x + 1 , rect.y + 1, True)
 
-
     def DrawBitmapBorders(self, dc, rect, penColour, bitmapBorderUpperLeftPen):
         """
         Draws borders for a bitmap.
@@ -141,28 +136,20 @@ class RendererBase(object):
         dc.DrawLine(rect.x, rect.y, rect.x + rect.width, rect.y)
         dc.DrawLine(rect.x, rect.y, rect.x, rect.y + rect.height)
 
-
     def GetMenuFaceColour(self):
         """ Returns the foreground colour for the menu. """
-        
         return ArtManager.Get().LightColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE), 80)
-
 
     def GetTextColourEnable(self):
         """ Returns the colour used for text colour when enabled. """
-
         return wx.BLACK
-
 
     def GetTextColourDisable(self):
         """ Returns the colour used for text colour when disabled. """
-
         return ArtManager.Get().LightColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT), 30)
-
 
     def GetFont(self):
         """ Returns the font used for text. """
-
         return wx.SystemSettings_GetFont(wx.SYS_DEFAULT_GUI_FONT)
 
                 
@@ -175,9 +162,7 @@ class RendererXP(RendererBase):
     
     def __init__(self):
         """ Default class constructor. """
-
         RendererBase.__init__(self)
-
 
     def DrawButton(self, dc, rect, state, input=None):
         """
@@ -188,21 +173,19 @@ class RendererXP(RendererBase):
         :param `state`: the button state;
         :param `input`: a flag used to call the right method.
         """
-
         if input is None or type(input) == type(False):
             self.DrawButtonTheme(dc, rect, state, input)
         else:
             self.DrawButtonColour(dc, rect, state, input)
 
-            
     def DrawButtonTheme(self, dc, rect, state, useLightColours=None):
         """
         Draws a button using the XP theme.
 
-        :param `dc`: an instance of `wx.DC`;
-        :param `rect`: the button's client rectangle;
-        :param `state`: the button state;
-        :param `useLightColours`: ``True`` to use light colours, ``False`` otherwise.
+        :param dc: an instance of `wx.DC`;
+        :param rect: the button's client rectangle;
+        :param state: the button state;
+        :param useLightColours: ``True`` to use light colours, ``False`` otherwise.
         """
 
         # switch according to the status
@@ -219,19 +202,16 @@ class RendererXP(RendererBase):
         # Draw the button borders
         self.DrawButtonBorders(dc, rect, penColour, brushColour)
 
-
     def DrawButtonColour(self, dc, rect, state, colour):
-        """
-        Draws a button using the XP theme.
+        """Draws a button using the XP theme.
 
         :param `dc`: an instance of `wx.DC`;
         :param `rect`: the button's client rectangle;
         :param `state`: the button state;
         :param `colour`: a valid `wx.Colour` instance.
         """
-
-        # switch according to the status        
-        if statet == ControlFocus:
+        # switch according to the status
+        if state == ControlFocus:
             penColour = colour
             brushColour = ArtManager.Get().LightColour(colour, 75)
         elif state == ControlPressed:
@@ -244,7 +224,6 @@ class RendererXP(RendererBase):
         # Draw the button borders
         self.DrawButtonBorders(dc, rect, penColour, brushColour)
 
-
     def DrawMenuBarBg(self, dc, rect):
         """
         Draws the menu bar background according to the active theme.
@@ -252,7 +231,6 @@ class RendererXP(RendererBase):
         :param `dc`: an instance of `wx.DC`;
         :param `rect`: the menu bar's client rectangle.
         """
-
         # For office style, we simple draw a rectangle with a gradient colouring
         artMgr = ArtManager.Get()
         vertical = artMgr.GetMBVerticalGradient()
@@ -274,15 +252,12 @@ class RendererXP(RendererBase):
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.DrawRectangleRect(rect)
 
-
     def DrawToolBarBg(self, dc, rect):
-        """
-        Draws the toolbar background according to the active theme.
+        """Draws the toolbar background according to the active theme.
 
         :param `dc`: an instance of `wx.DC`;
         :param `rect`: the toolbar's client rectangle.
         """
-
         artMgr = ArtManager.Get()
         
         if not artMgr.GetRaiseToolbar():
@@ -304,25 +279,20 @@ class RendererXP(RendererBase):
         artMgr.PaintStraightGradientBox(dc, rect, startColour, endColour, vertical)
         artMgr.DrawBitmapShadow(dc, rect)
 
-
     def GetTextColourEnable(self):
         """ Returns the colour used for text colour when enabled. """
-
         return wx.BLACK
 
     
 # ---------------------------------------------------------------------------- #
 # Class RendererMSOffice2007
 # ---------------------------------------------------------------------------- #
-
 class RendererMSOffice2007(RendererBase):
     """ Windows MS Office 2007 style. """
     
     def __init__(self):
         """ Default class constructor. """
-
         RendererBase.__init__(self)
-
 
     def GetColoursAccordingToState(self, state):
         """
@@ -338,10 +308,8 @@ class RendererMSOffice2007(RendererBase):
          ``ControlDisabled``        2 The item is disabled
          ``ControlNormal``          3 Normal state
          ==================== ======= ==========================
-        
         """
-
-        # switch according to the status        
+        # switch according to the status
         if state == ControlFocus:
             upperBoxTopPercent = 95
             upperBoxBottomPercent = 50
@@ -377,30 +345,24 @@ class RendererMSOffice2007(RendererBase):
         return upperBoxTopPercent, upperBoxBottomPercent, lowerBoxTopPercent, lowerBoxBottomPercent, \
                concaveUpperBox, concaveLowerBox
 
-        
     def DrawButton(self, dc, rect, state, useLightColours):
-        """
-        Draws a button using the MS Office 2007 theme.
+        """Draws a button using the MS Office 2007 theme.
 
         :param `dc`: an instance of `wx.DC`;
         :param `rect`: the button's client rectangle;
         :param `state`: the button state;
         :param `useLightColours`: ``True`` to use light colours, ``False`` otherwise.
         """
-
         self.DrawButtonColour(dc, rect, state, ArtManager.Get().GetThemeBaseColour(useLightColours))
 
-
     def DrawButtonColour(self, dc, rect, state, colour):
-        """
-        Draws a button using the MS Office 2007 theme.
+        """Draws a button using the MS Office 2007 theme.
 
         :param `dc`: an instance of `wx.DC`;
         :param `rect`: the button's client rectangle;
         :param `state`: the button state;
         :param `colour`: a valid `wx.Colour` instance.
         """
-
         artMgr = ArtManager.Get()
         
         # Keep old pen and brush
@@ -441,15 +403,12 @@ class RendererMSOffice2007(RendererBase):
         rr.Deflate(1, 1)
         dc.DrawRectangleRect(rr)
 
-
     def DrawMenuBarBg(self, dc, rect):
-        """
-        Draws the menu bar background according to the active theme.
+        """Draws the menu bar background according to the active theme.
 
         :param `dc`: an instance of `wx.DC`;
         :param `rect`: the menu bar's client rectangle.
         """
-
         # Keep old pen and brush
         dcsaver = DCSaver(dc)
         artMgr = ArtManager.Get()
@@ -510,7 +469,6 @@ class RendererMSOffice2007(RendererBase):
         artMgr.PaintGradientRegion(dc, topRegion, topStartColour, topEndColour)
         artMgr.PaintStraightGradientBox(dc, bottom, bottomStartColour, bottomEndColour)
         artMgr.PaintStraightGradientBox(dc, middle, topEndColour, bottomStartColour)
-     
 
     def DrawToolBarBg(self, dc, rect):
         """
@@ -1096,8 +1054,7 @@ class ArtManager(wx.EvtHandler):
         return wx.Colour(firstColour.Red() + redOffset, firstColour.Green() + greenOffset,
                         firstColour.Blue() + blueOffset)
 
-
-    def RandomColour(): 
+    def RandomColour():
         """ Creates a random colour. """
         
         r = random.randint(0, 255) # Random value betweem 0-255

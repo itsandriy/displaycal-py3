@@ -1,22 +1,22 @@
 all:
-	./setup.py build --use-distutils
+    ./setup.py build --use-distutils
 
 clean:
-	-rm -rf build
+    -rm -rf build
 
 dist:
-	util/sdist.sh
+    util/sdist.sh
 
 distclean: clean
-	-rm -f INSTALLED_FILES
-	-rm -f setuptools-*.egg
-	-rm -f use-distutils
+    -rm -f INSTALLED_FILES
+    -rm -f setuptools-*.egg
+    -rm -f use-distutils
 
 html:
-	./setup.py readme
+    ./setup.py readme
 
 install:
-	./setup.py install --use-distutils
+    ./setup.py install --use-distutils
 
 uninstall:
-	./setup.py uninstall --use-distutils
+    ./setup.py uninstall --use-distutils
