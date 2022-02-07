@@ -30,7 +30,7 @@ elif sys.platform == "darwin":
 
 import config
 from config import enc
-from log import log, safe_print
+from log import log
 from util_str import make_ascii_printable, safe_str, strtr
 if sys.platform == "win32":
     import util_win
@@ -38,7 +38,7 @@ elif sys.platform != "darwin":
     try:
         import RealDisplaySizeMM as RDSMM
     except ImportError as exception:
-        warnings.warn(safe_str(exception, enc), Warning)
+        warnings.warn(str(exception), Warning)
         RDSMM = None
 
 HEADER = (0, 8)
@@ -142,7 +142,7 @@ def get_edid(display_no=0, display_name=None, device=None):
                 key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey)
             except WindowsError:
                 # Registry error
-                safe_print("Windows registry error: Key",
+                print("Windows registry error: Key",
                            "\\".join(["HKEY_LOCAL_MACHINE", subkey]),
                            "does not exist.")
                 return {}
@@ -164,7 +164,7 @@ def get_edid(display_no=0, display_name=None, device=None):
                                                              "Device Parameters"]))
                     except WindowsError:
                         # No Device Parameters (registry error?)
-                        safe_print("Windows registry error: Key",
+                        print("Windows registry error: Key",
                                    "\\".join(["HKEY_LOCAL_MACHINE", subkey,
                                               hkname, "Device Parameters"]),
                                    "does not exist.")

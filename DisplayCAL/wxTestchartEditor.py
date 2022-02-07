@@ -24,13 +24,11 @@ from config import (defaults, getbitmap, getcfg, geticon, get_current_profile,
                     get_display_name, get_data_path, get_total_patches,
                     get_verified_path, hascfg, profile_ext, setcfg, writecfg)
 from debughelpers import handle_error
-from log import safe_print
 from meta import name as appname
 from options import debug, tc_use_alternate_preview, test, verbose
 from ordereddict import OrderedDict
 from util_io import StringIOu as StringIO
 from util_os import expanduseru, is_superuser, launch_file, waccess
-from util_str import safe_str, safe_unicode
 from worker import (Error, Worker, check_file_isfile, check_set_argyll_bin,
                     get_argyll_util, get_current_profile_path,
                     show_result_dialog)
@@ -876,7 +874,8 @@ END_DATA""")
             self.preview.ForceRefresh()
 
     def tc_grid_range_select_handler(self, event):
-        if debug: safe_print("[D] tc_grid_range_select_handler")
+        if debug:
+            print("[D] tc_grid_range_select_handler")
         if not self.grid.GetBatchCount():
             wx.CallAfter(self.tc_set_default_status)
         event.Skip()
@@ -931,13 +930,16 @@ END_DATA""")
         # UnicodeKey
         # X
         # Y
-        if debug: safe_print("[D] event.KeyCode", event.GetKeyCode(), "event.RawKeyCode", event.GetRawKeyCode(), "event.UniChar", event.GetUniChar(), "event.UnicodeKey", event.GetUnicodeKey(), "CTRL/CMD:", event.ControlDown() or event.CmdDown(), "ALT:", event.AltDown(), "SHIFT:", event.ShiftDown())
-        if (event.ControlDown() or event.CmdDown()): # CTRL (Linux/Mac/Windows) / CMD (Mac)
+        if debug:
+            print("[D] event.KeyCode", event.GetKeyCode(), "event.RawKeyCode", event.GetRawKeyCode(), "event.UniChar",
+                  event.GetUniChar(), "event.UnicodeKey", event.GetUnicodeKey(), "CTRL/CMD:",
+                  event.ControlDown() or event.CmdDown(), "ALT:", event.AltDown(), "SHIFT:", event.ShiftDown())
+        if (event.ControlDown() or event.CmdDown()):  # CTRL (Linux/Mac/Windows) / CMD (Mac)
             key = event.GetKeyCode()
             focus = self.FindFocus()
             if focus and self.grid in (focus, focus.GetParent(),
                                        focus.GetGrandParent()):
-                if key in (8, 127): # BACKSPACE / DEL
+                if key in (8, 127):  # BACKSPACE / DEL
                     rows = self.grid.GetSelectionRows()
                     if rows and len(rows) and min(rows) >= 0 and max(rows) + 1 <= self.grid.GetNumberRows():
                         if len(rows) == self.grid.GetNumberRows():
@@ -1969,8 +1971,8 @@ END_DATA""")
         if not check_set_argyll_bin():
             return
 
-        safe_print("-" * 80)
-        safe_print(lang.getstr("testchart.create"))
+        print("-" * 80)
+        print(lang.getstr("testchart.create"))
         self.worker.interactive = False
         self.worker.start(self.tc_preview, self.tc_create, cargs=(path, ),
                           wargs=(), wkwargs=wkwargs,
@@ -2036,9 +2038,9 @@ END_DATA""")
                 del self.ti1
             self.tc_update_controls()
             self.tc_check()
-            # UGLY HACK: This 'safe_print' call fixes a GTK assertion and
+            # UGLY HACK: This 'print' call fixes a GTK assertion and
             # segfault under Arch Linux when setting the window title
-            safe_print("")
+            print("")
             self.SetTitle(lang.getstr("testchart.edit"))
 
     def tc_export_handler(self, event):
@@ -2230,7 +2232,7 @@ END_DATA""")
                                        time.strftime("%H:%M:%S:00",
                                                      time.gmtime(secs)).split(":")]})
             secs += 1
-            ##safe_print("RGB", R, G, B, "L* %.2f" % L, "repeat", repeat)
+            ##print("RGB", R, G, B, "L* %.2f" % L, "repeat", repeat)
             if repeat > 1:
                 if allow_gaps:
                     count += repeat - 1
@@ -2316,13 +2318,12 @@ END_DATA""")
                 self.ti1.filename = path
                 self.ti1.root.setmodified(False)
                 if not self.IsBeingDeleted():
-                    # UGLY HACK: This 'safe_print' call fixes a GTK assertion and
+                    # UGLY HACK: This 'print' call fixes a GTK assertion and
                     # segfault under Arch Linux when setting the window title
-                    safe_print("")
+                    print("")
                     self.SetTitle(lang.getstr("testchart.edit").rstrip(".") + ": " + os.path.basename(path))
             except Exception as exception:
-                handle_error(Error("Error - testchart could not be saved: " +
-                                   safe_unicode(exception)), parent=self)
+                handle_error(Error("Error - testchart could not be saved: %s" % str(exception)), parent=self)
             else:
                 if self.Parent:
                     if path != getcfg(self.cfg) and self.parent_set_chart_methodname:
@@ -2451,7 +2452,7 @@ END_DATA""")
                 except Exception as exception:
                     handle_error(UserWarning("Warning - 3D file could not be "
                                              "saved: " +
-                                             safe_unicode(exception)),
+                                             str(exception)),
                                  parent=self)
                 else:
                     paths.append(path)
@@ -2502,7 +2503,7 @@ END_DATA""")
 
     def tc_close_handler(self, event = None):
         if (getattr(self.worker, "thread", None) and
-                self.worker.thread.isAlive()):
+                self.worker.thread.is_alive()):
             self.worker.abort_subprocess(True)
             return
         if (not event or self.IsShownOnScreen()) and self.tc_check_save_ti1(False):
@@ -2553,7 +2554,7 @@ END_DATA""")
         if not self.tc_check_save_ti1():
             return
 
-        safe_print(lang.getstr("testchart.read"))
+        print(lang.getstr("testchart.read"))
         self.worker.interactive = False
         self.worker.start(self.tc_load_cfg_from_ti1_finish,
                           self.tc_load_cfg_from_ti1_worker,
@@ -2565,7 +2566,7 @@ END_DATA""")
                           fancy=False)
 
     def tc_load_cfg_from_ti1_worker(self, path):
-        path = safe_unicode(path)
+        path = str(path)
         try:
             filename, ext = os.path.splitext(path)
             if ext.lower() not in (".icc", ".icm"):
@@ -2584,13 +2585,15 @@ END_DATA""")
             try:
                 ti1_1 = verify_cgats(ti1, ("RGB_R", "RGB_B", "RGB_G"))
             except CGATS.CGATSError as exception:
-                msg = {CGATS.CGATSKeyError: lang.getstr("error.testchart.missing_fields",
-                                                        (path,
-                                                         "RGB_R, RGB_G, RGB_B"))}.get(exception.__class__,
-                                                                                      lang.getstr("error.testchart.invalid",
-                                                                                                  path) +
-                                                                                      "\n" +
-                                                                                      lang.getstr(safe_unicode(exception)))
+                msg = {
+                    CGATS.CGATSKeyError: lang.getstr(
+                        "error.testchart.missing_fields",
+                        (path, "RGB_R, RGB_G, RGB_B")
+                    )
+                }.get(
+                    exception.__class__,
+                    lang.getstr("error.testchart.invalid", path) + "\n" + lang.getstr(str(exception))
+                )
                 return Error(msg)
             else:
                 try:
@@ -2610,8 +2613,7 @@ END_DATA""")
                 ti1.root.setmodified(False)
                 self.ti1 = ti1
         except Exception as exception:
-            return Error(lang.getstr("error.testchart.read", path) + "\n\n" +
-                         safe_unicode(exception))
+            return Error("%s\n\n%s" % (lang.getstr("error.testchart.read", path), str(exception)))
 
         white_patches = self.ti1.queryv1("WHITE_COLOR_PATCHES") or None
         black_patches = self.ti1.queryv1("BLACK_COLOR_PATCHES") or None
@@ -2671,7 +2673,8 @@ END_DATA""")
                             gray_channel.append(patch[0])
                     elif multi_steps == 0:
                         multi_steps = None
-                    if debug >= 9: safe_print("[D]", strpatch)
+                    if debug >= 9:
+                        print("[D]", strpatch)
                     if strpatch not in uniqueRGB:
                         uniqueRGB.append(strpatch)
                         if patch[0] not in multi["R"]:
@@ -2694,21 +2697,21 @@ END_DATA""")
                     G_inc = self.tc_get_increments(G, vmaxlen)
                     B_inc = self.tc_get_increments(B, vmaxlen)
                     if debug:
-                        safe_print("[D] R_inc:")
+                        print("[D] R_inc:")
                         for i in R_inc:
                             if self.worker.thread_abort:
                                 return False
-                            safe_print("[D] %s: x%s" % (i, R_inc[i]))
-                        safe_print("[D] G_inc:")
+                            print("[D] %s: x%s" % (i, R_inc[i]))
+                        print("[D] G_inc:")
                         for i in G_inc:
                             if self.worker.thread_abort:
                                 return False
-                            safe_print("[D] %s: x%s" % (i, G_inc[i]))
-                        safe_print("[D] B_inc:")
+                            print("[D] %s: x%s" % (i, G_inc[i]))
+                        print("[D] B_inc:")
                         for i in B_inc:
                             if self.worker.thread_abort:
                                 return False
-                            safe_print("[D] %s: x%s" % (i, B_inc[i]))
+                            print("[D] %s: x%s" % (i, B_inc[i]))
                     RGB_inc = {"0": 0}
                     for inc in R_inc:
                         if self.worker.thread_abort:
@@ -2742,23 +2745,23 @@ END_DATA""")
                                 finc = 255.0 / n
                                 n += 1
                                 if debug >= 9:
-                                    safe_print("[D] inc:", inc)
-                                    safe_print("[D] n:", n)
+                                    print("[D] inc:", inc)
+                                    print("[D] n:", n)
                                 for i in range(n):
                                     if self.worker.thread_abort:
                                         return False
                                     v = str(int(round(float(str(i * finc)))))
-                                    if debug >= 9: safe_print("[D] Searching for", v)
+                                    if debug >= 9: print("[D] Searching for", v)
                                     if [v, "0", "0"] in uniqueRGB and ["0", v, "0"] in uniqueRGB and ["0", "0", v] in uniqueRGB:
                                         if not inc in single_inc:
                                             single_inc[inc] = 0
                                         single_inc[inc] += 1
                                     else:
-                                        if debug >= 9: safe_print("[D] Not found!")
+                                        if debug >= 9: print("[D] Not found!")
                                         break
                         single_channel_patches = max(single_inc.values())
                     if debug:
-                        safe_print("[D] single_channel_patches:", single_channel_patches)
+                        print("[D] single_channel_patches:", single_channel_patches)
                     if 0 in R + G + B:
                         fullspread_patches += 3 # black in single channel patches
                 elif single_channel_patches >= 2:
@@ -2768,11 +2771,11 @@ END_DATA""")
                     # NEVER (old code, needs work for demphasis/gamma, remove?)
                     RGB_inc = self.tc_get_increments(gray_channel, vmaxlen)
                     if debug:
-                        safe_print("[D] RGB_inc:")
+                        print("[D] RGB_inc:")
                         for i in RGB_inc:
                             if self.worker.thread_abort:
                                 return False
-                            safe_print("[D] %s: x%s" % (i, RGB_inc[i]))
+                            print("[D] %s: x%s" % (i, RGB_inc[i]))
                     if False:
                         RGB_inc_max = max(RGB_inc.values())
                         if RGB_inc_max > 0:
@@ -2790,23 +2793,23 @@ END_DATA""")
                                 finc = 255.0 / n
                                 n += 1
                                 if debug >= 9:
-                                    safe_print("[D] inc:", inc)
-                                    safe_print("[D] n:", n)
+                                    print("[D] inc:", inc)
+                                    print("[D] n:", n)
                                 for i in range(n):
                                     if self.worker.thread_abort:
                                         return False
                                     v = str(int(round(float(str(i * finc)))))
-                                    if debug >= 9: safe_print("[D] Searching for", v)
+                                    if debug >= 9: print("[D] Searching for", v)
                                     if [v, v, v] in uniqueRGB:
                                         if not inc in gray_inc:
                                             gray_inc[inc] = 0
                                         gray_inc[inc] += 1
                                     else:
-                                        if debug >= 9: safe_print("[D] Not found!")
+                                        if debug >= 9: print("[D] Not found!")
                                         break
                         gray_patches = max(gray_inc.values())
                     if debug:
-                        safe_print("[D] gray_patches:", gray_patches)
+                        print("[D] gray_patches:", gray_patches)
                     if 0 in gray_channel:
                         fullspread_patches += 1 # black in gray patches
                     if 255 in gray_channel:
@@ -2836,11 +2839,11 @@ END_DATA""")
                         if inc in R_inc and inc in G_inc and R_inc[inc] == G_inc[inc] == B_inc[inc]:
                             RGB_inc[inc] = B_inc[inc]
                     if debug:
-                        safe_print("[D] RGB_inc:")
+                        print("[D] RGB_inc:")
                         for i in RGB_inc:
                             if self.worker.thread_abort:
                                 return False
-                            safe_print("[D] %s: x%s" % (i, RGB_inc[i]))
+                            print("[D] %s: x%s" % (i, RGB_inc[i]))
                     multi_inc = {"0": 0}
                     for inc in RGB_inc:
                         if self.worker.thread_abort:
@@ -2851,8 +2854,8 @@ END_DATA""")
                             finc = 255.0 / n
                             n += 1
                             if debug >= 9:
-                                safe_print("[D] inc:", inc)
-                                safe_print("[D] n:", n)
+                                print("[D] inc:", inc)
+                                print("[D] n:", n)
                             for i in range(n):
                                 if self.worker.thread_abort:
                                     return False
@@ -2866,25 +2869,25 @@ END_DATA""")
                                             return False
                                         b = str(int(round(float(str(k * finc)))))
                                         if debug >= 9:
-                                            safe_print("[D] Searching for", i, j, k, [r, g, b])
+                                            print("[D] Searching for", i, j, k, [r, g, b])
                                         if [r, g, b] in uniqueRGB:
                                             if not inc in multi_inc:
                                                 multi_inc[inc] = 0
                                             multi_inc[inc] += 1
                                         else:
-                                            if debug >= 9: safe_print("[D] Not found! (b loop)")
+                                            if debug >= 9: print("[D] Not found! (b loop)")
                                             break
                                     if [r, g, b] not in uniqueRGB:
-                                        if debug >= 9: safe_print("[D] Not found! (g loop)")
+                                        if debug >= 9: print("[D] Not found! (g loop)")
                                         break
                                 if [r, g, b] not in uniqueRGB:
-                                    if debug >= 9: safe_print("[D] Not found! (r loop)")
+                                    if debug >= 9: print("[D] Not found! (r loop)")
                                     break
                     multi_patches = max(multi_inc.values())
                     multi_steps = int(float(str(math.pow(multi_patches, 1 / 3.0))))
                     if debug:
-                        safe_print("[D] multi_patches:", multi_patches)
-                        safe_print("[D] multi_steps:", multi_steps)
+                        print("[D] multi_patches:", multi_patches)
+                        print("[D] multi_steps:", multi_steps)
                 elif multi_steps >= 2:
                     fullspread_patches += 2 # black and white always in MULTI_DIM_STEPS
             else:
@@ -2910,13 +2913,13 @@ END_DATA""")
     def tc_load_cfg_from_ti1_finish(self, result):
         self.worker.wrapup(False)
         if isinstance(result, tuple):
-            # UGLY HACK: This 'safe_print' call fixes a GTK assertion and
+            # UGLY HACK: This 'print' call fixes a GTK assertion and
             # segfault under Arch Linux when setting the window title
-            safe_print("")
+            print("")
             self.SetTitle(lang.getstr("testchart.edit").rstrip(".") + ": " +
                           os.path.basename(self.ti1.filename))
 
-            safe_print(lang.getstr("success"))
+            print(lang.getstr("success"))
             (white_patches, black_patches, single_channel_patches, gray_patches,
              multi_steps, multi_bcc_steps, fullspread_patches, gamma,
              dark_emphasis) = result
@@ -2961,7 +2964,7 @@ END_DATA""")
             self.tc_preview(True)
             return True
         else:
-            safe_print(lang.getstr("aborted"))
+            print(lang.getstr("aborted"))
             if self.Parent and hasattr(self.Parent, "start_timers"):
                 self.Parent.start_timers()
             if isinstance(result, Exception):
@@ -3099,9 +3102,9 @@ END_DATA""")
                 if not isinstance(result, Exception) and result:
                     try:
                         result = CGATS.CGATS(path)
-                        safe_print(lang.getstr("success"))
+                        print(lang.getstr("success"))
                     except Exception as exception:
-                        result = Error("Error - testchart file could not be read: " + safe_unicode(exception))
+                        result = Error("Error - testchart file could not be read: %s " % str(exception))
                     else:
                         result.filename = None
         self.worker.wrapup(False)
@@ -3127,7 +3130,7 @@ END_DATA""")
             else:
                 self.separator.Show()
             self.sizer.Layout()
-            if verbose >= 1: safe_print(lang.getstr("tc.preview.create"))
+            if verbose >= 1: print(lang.getstr("tc.preview.create"))
             data = self.ti1.queryv1("DATA")
             vmaxlen = 6
 
@@ -3181,7 +3184,8 @@ END_DATA""")
                 self.preview.EndBatch()
 
             self.tc_set_default_status()
-            if verbose >= 1: safe_print(lang.getstr("success"))
+            if verbose >= 1:
+                print(lang.getstr("success"))
             self.resize_grid()
             grid.EndBatch()
             if path:

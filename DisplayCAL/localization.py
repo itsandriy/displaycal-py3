@@ -9,10 +9,8 @@ import sys
 from config import data_dirs, defaults, getcfg, storage
 from debughelpers import handle_error
 from lazydict import LazyDict_YAML_UltraLite
-from log import safe_print
 from options import debug_localization as debug
 from util_os import expanduseru
-from util_str import safe_unicode
 
 
 def init(set_wx_locale=False):
@@ -30,8 +28,7 @@ def init(set_wx_locale=False):
             try:
                 langfiles = os.listdir(langdir)
             except Exception as exception:
-                safe_print("Warning - directory '%s' listing failed: %s" %
-                           tuple(safe_unicode(s) for s in (langdir, exception)))
+                print("Warning - directory '%s' listing failed: %s" % (langdir, exception))
             else:
                 for filename in langfiles:
                     name, ext = os.path.splitext(filename)
@@ -101,7 +98,7 @@ def getstr(id_str, strvars=None, lcode=None, default=None):
                     strvars = list(strvars)
                 for i, s in enumerate(strvars):
                     if fmt[i].endswith("s"):
-                        s = safe_unicode(s)
+                        s = str(s)
                     elif not fmt[i].endswith("r"):
                         try:
                             if fmt[i][-1] in "dioxX":

@@ -16,7 +16,7 @@ from wxaddons import wx
 
 from config import (getbitmap, getcfg, geticon, get_data_path, get_icon_bundle,
                     setcfg)
-from log import get_file_logger, safe_print
+from log import get_file_logger
 from meta import name as appname
 from options import debug, test, verbose
 from wxwindows import (BaseApp, BaseFrame, BitmapBackgroundPanel, CustomCheckBox,
@@ -239,7 +239,7 @@ class UntetheredFrame(BaseFrame):
                     try:
                         wx.Window.UnreserveControlId(id)
                     except wx.wxAssertionError as exception:
-                        safe_print(exception)
+                        print(exception)
 
     def OnMove(self, event):
         if self.IsShownOnScreen() and not self.IsIconized() and \
@@ -501,11 +501,11 @@ class UntetheredFrame(BaseFrame):
             Lab2 = colormath.XYZ2Lab(*XYZ)
             delta = colormath.delta(*Lab1 + Lab2)
             if debug or test or verbose > 1:
-                safe_print("Last recorded Lab: %.4f %.4f %.4f" % Lab1)
-                safe_print("Current Lab: %.4f %.4f %.4f" % Lab2)
-                safe_print("Delta E to last recorded Lab: %.4f" % delta["E"])
-                safe_print("Abs. delta L to last recorded Lab: %.4f" % abs(delta["L"]))
-                safe_print("Abs. delta C to last recorded Lab: %.4f" % abs(delta["C"]))
+                print("Last recorded Lab: %.4f %.4f %.4f" % Lab1)
+                print("Current Lab: %.4f %.4f %.4f" % Lab2)
+                print("Delta E to last recorded Lab: %.4f" % delta["E"])
+                print("Abs. delta L to last recorded Lab: %.4f" % abs(delta["L"]))
+                print("Abs. delta C to last recorded Lab: %.4f" % abs(delta["C"]))
             if (delta["E"] > getcfg("untethered.min_delta") or
                     (abs(delta["L"]) > getcfg("untethered.min_delta.lightness") and
                      abs(delta["C"]) < getcfg("untethered.max_delta.chroma"))):

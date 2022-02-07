@@ -25,21 +25,17 @@ from colormath import (VidRGB_to_eeColor, VidRGB_to_cLUT65, cLUT65_to_VidRGB,
 from config import exe_ext, fs_enc, get_data_path, getcfg, profile_ext
 from debughelpers import (Error, Info, UnloggedError, UnloggedInfo,
                           UnloggedWarning, Warn)
-from log import LogFile, safe_print
+from log import LogFile
 from meta import name as appname
 from multiprocess import mp, pool_slice
 from options import debug, verbose
 from util_os import getenvu, quote_args, which
-from util_str import make_filename_safe, safe_basestring, safe_str, safe_unicode
+from util_str import make_filename_safe, safe_basestring, safe_str
 import CGATS
 import colormath
 import config
 import ICCProfile as ICCP
 import localization as lang
-
-
-def Property(func):
-    return property(**func())
 
 
 def _mp_xicclu(chunk, thread_abort_event, progress_queue, profile_filename,
@@ -64,7 +60,7 @@ def _mp_xicclu(chunk, thread_abort_event, progress_queue, profile_filename,
         if (thread_abort_event is not None and getattr(sys, "_sigbreak", False) and
                 not thread_abort_event.is_set()):
             thread_abort_event.set()
-            safe_print("Got SIGBREAK, aborting thread...")
+            print("Got SIGBREAK, aborting thread...")
         if thread_abort_event is not None and thread_abort_event.is_set():
             xicclu.exit(raise_exception=False)
             return Info(abortmessage)
@@ -91,10 +87,10 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
 
     """
     if debug:
-        safe_print("comtypes?", "comtypes" in str(list(sys.modules.keys())))
-        safe_print("numpy?", "numpy" in str(list(sys.modules.keys())))
-        safe_print("wx?", "wx" in str(list(sys.modules.keys())))
-        safe_print("x3dom?", "x3dom" in str(list(sys.modules.keys())))
+        print("comtypes?", "comtypes" in str(list(sys.modules.keys())))
+        print("numpy?", "numpy" in str(list(sys.modules.keys())))
+        print("wx?", "wx" in str(list(sys.modules.keys())))
+        print("x3dom?", "x3dom" in str(list(sys.modules.keys())))
     if not config.cfg.items(config.ConfigParser.DEFAULTSECT):
         config.initcfg()
     idata = []
@@ -193,20 +189,20 @@ def check_argyll_bin(paths=None):
         if prev_dir:
             if cur_dir != prev_dir:
                 if name in argyll_optional:
-                    if verbose: safe_print("Warning: Optional Argyll "
-                                           "executable %s is not in the same "
-                                           "directory as the main executables "
-                                           "(%s)." % (exe, prev_dir))
+                    if verbose:
+                        print("Warning: Optional Argyll executable %s is not in the same "
+                              "directory as the main executables (%s)." % (exe, prev_dir))
                 else:
-                    if verbose: safe_print("Error: Main Argyll "
-                                           "executable %s is not in the same "
-                                           "directory as the other executables "
-                                           "(%s)." % (exe, prev_dir))
+                    if verbose:
+                        print("Error: Main Argyll executable %s is not in the same "
+                              "directory as the other executables (%s)." % (exe, prev_dir))
                     return False
         else:
             prev_dir = cur_dir
-    if verbose >= 3: safe_print("Argyll binary directory:", cur_dir)
-    if debug: safe_print("[D] check_argyll_bin OK")
+    if verbose >= 3:
+        print("Argyll binary directory:", cur_dir)
+    if debug:
+        print("[D] check_argyll_bin OK")
     if debug >= 2:
         if not paths:
             paths = getenvu("PATH", os.defpath).split(os.pathsep)
@@ -215,7 +211,7 @@ def check_argyll_bin(paths=None):
                 if argyll_dir in paths:
                     paths.remove(argyll_dir)
                 paths = [argyll_dir] + paths
-        safe_print("[D] Searchpath:\n  ", "\n  ".join(paths))
+        print("[D] Searchpath:\n  ", "\n  ".join(paths))
     # Fedora doesn't ship Rec709.icm
     config.defaults["3dlut.input.profile"] = get_data_path(os.path.join("ref",
                                                                         "Rec709.icm")) or \
@@ -243,7 +239,7 @@ def get_argyll_util(name, paths=None):
     if exe:
         return exe
     elif verbose >= 4:
-        safe_print("Info: Searching for", name, "in", os.pathsep.join(paths))
+        print("Info: Searching for", name, "in", os.pathsep.join(paths))
     for path in paths:
         for altname in argyll_altnames.get(name, []):
             exe = which(altname + exe_ext, [path])
@@ -253,10 +249,9 @@ def get_argyll_util(name, paths=None):
             break
     if verbose >= 4:
         if exe:
-            safe_print("Info:", name, "=", exe)
+            print("Info:", name, "=", exe)
         else:
-            safe_print("Info:", "|".join(argyll_altnames[name]),
-                       "not found in", os.pathsep.join(paths))
+            print("Info:", "|".join(argyll_altnames[name]), "not found in", os.pathsep.join(paths))
     if exe:
         if not cache_key in argyll_utils:
             argyll_utils[cache_key] = {}
@@ -295,7 +290,7 @@ def get_argyll_version_string(name, paths=None):
                      stdout=sp.PIPE, stderr=sp.STDOUT,
                      startupinfo=startupinfo)
     except Exception as exception:
-        safe_print(exception)
+        print(exception)
         return argyll_version_string
     for i, line in enumerate((p.communicate()[0] or "").splitlines()):
         if isinstance(line, str):
@@ -316,9 +311,8 @@ def parse_argyll_version_string(argyll_version_string):
     return argyll_version
 
 
-def printcmdline(cmd, args=None, fn=safe_print, cwd=None):
-    """
-    Pretty-print a command line.
+def printcmdline(cmd, args=None, fn=print, cwd=None):
+    """Pretty-print a command line.
     """
     if args is None:
         args = []
@@ -384,8 +378,7 @@ class WorkerBase(object):
                     msg = "there is none"
                 else:
                     msg = "the previous (%s) no longer exists" % self.tempdir
-                safe_print(appname + ": Creating a new temporary directory "
-                                     "because", msg)
+                print(appname + ": Creating a new temporary directory because", msg)
             try:
                 self.tempdir = tempfile.mkdtemp(prefix=appname + "-")
             except Exception as exception:
@@ -407,23 +400,21 @@ class WorkerBase(object):
     def log(self, *args, **kwargs):
         """ Log to global logfile and session logfile (if any) """
         msg = " ".join(safe_basestring(arg) for arg in args)
-        fn = kwargs.get("fn", safe_print)
+        fn = kwargs.get("fn", print)
         fn(msg)
         if self.sessionlogfile:
             self.sessionlogfile.write(msg + "\n")
 
-    @Property
-    def thread_abort():
-        def fget(self):
-            return self._thread_abort
+    @property
+    def thread_abort(self):
+        return self._thread_abort
 
-        def fset(self, abort):
-            if abort:
-                self._thread_abort.event.set()
-            else:
-                self._thread_abort.event.clear()
-
-        return locals()
+    @thread_abort.setter
+    def thread_abort(self, abort):
+        if abort:
+            self._thread_abort.event.set()
+        else:
+            self._thread_abort.event.clear()
 
     def xicclu(self, profile, idata, intent="r", direction="f", order="n",
                pcs=None, scale=1, cwd=None, startupinfo=None, raw=False,
@@ -497,7 +488,7 @@ class Xicclu(WorkerBase):
             self.temp = True
         elif not cwd:
             cwd = os.path.dirname(profile.fileName)
-        profile_basename = safe_unicode(os.path.basename(profile.fileName))
+        profile_basename = os.path.basename(profile.fileName)
         profile_path = profile.fileName
         if sys.platform == "win32":
             profile_path = win32api.GetShortPathName(profile_path)
@@ -623,7 +614,7 @@ class Xicclu(WorkerBase):
             # large
             if getattr(sys, "_sigbreak", False) and not self.subprocess_abort:
                 self.subprocess_abort = True
-                safe_print("Got SIGBREAK, aborting subprocess...")
+                print("Got SIGBREAK, aborting subprocess...")
             if self.subprocess_abort or self.thread_abort:
                 if p.poll() is None:
                     p.stdin.write("\n")
@@ -689,10 +680,7 @@ class Xicclu(WorkerBase):
                 try:
                     shutil.rmtree(self.tempdir, True)
                 except Exception as exception:
-                    safe_print("Warning - temporary directory '%s' could "
-                               "not be removed: %s" %
-                               tuple(safe_unicode(s) for s in
-                                     (self.tempdir, exception)))
+                    print("Warning - temporary directory '%s' could not be removed: %s" % (self.tempdir, exception))
 
     def get(self, raw=False, get_clip=False, output_format=None, reverse=False):
         if raw:
@@ -754,29 +742,25 @@ class Xicclu(WorkerBase):
             self.sessionlogfile.close()
         return parsed
 
-    @Property
-    def subprocess_abort():
-        def fget(self):
-            if self.worker:
-                return self.worker.subprocess_abort
-            return False
+    @property
+    def subprocess_abort(self):
+        if self.worker:
+            return self.worker.subprocess_abort
+        return False
 
-        def fset(self, v):
-            pass
+    @subprocess_abort.setter
+    def subprocess_abort(self, v):
+        pass
 
-        return locals()
+    @property
+    def thread_abort(self):
+        if self.worker:
+            return self.worker.thread_abort
+        return None
 
-    @Property
-    def thread_abort():
-        def fget(self):
-            if self.worker:
-                return self.worker.thread_abort
-            return None
-
-        def fset(self, v):
-            pass
-
-        return locals()
+    @thread_abort.setter
+    def thread_abort(self, v):
+        pass
 
 
 class MP_Xicclu(Xicclu):
@@ -817,17 +801,16 @@ class MP_Xicclu(Xicclu):
     def __call__(self, idata):
         self._in.append(idata)
 
-    def close(self):
+    def close(self, raise_exception=True):
         pass
 
-    def exit(self):
+    def exit(self, raise_exception=True):
         pass
 
     def spawn(self):
         pass
 
-    def get(self):
-
+    def get(self, raw=False, get_clip=False, output_format=None, reverse=False):
         for slices in pool_slice(_mp_xicclu, self._in, self._args, {},
                                  self.num_workers, self.thread_abort,
                                  self.logfile, num_batches=self.num_batches):

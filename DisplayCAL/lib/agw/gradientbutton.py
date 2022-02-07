@@ -384,7 +384,6 @@ class GradientButton(wx.PyControl):
         gradientRect.Offset((0, gradientRect.GetHeight()))
 
         if capture != self:
-
             if self._mouseAction == HOVER:
                 bottomStart, bottomEnd = self.LightColour(self._bottomStartColour, 10), self.LightColour(self._bottomEndColour, 10)
             else:
@@ -401,11 +400,10 @@ class GradientButton(wx.PyControl):
             path4.CloseSubpath()
             gc.SetBrush(br3)
             gc.FillPath(path4)
-            
+
             shadowOffset = 0
         else:
-        
-            rc2 = wx.Rect(x+1, gradientRect.height/2, gradientRect.width, gradientRect.height)
+            rc2 = wx.Rect(x + 1, gradientRect.height / 2, gradientRect.width, gradientRect.height)
             path2 = self.GetPath(gc, rc2, 8)
             gc.SetPen(wx.Pen(self._pressedBottomColour))
             gc.SetBrush(wx.Brush(self._pressedBottomColour))
@@ -415,10 +413,10 @@ class GradientButton(wx.PyControl):
         font = gc.CreateFont(self.GetFont(), self.GetForegroundColour())
         gc.SetFont(font)
         label = self.GetLabel()
-		# Note: Using self.GetTextExtent instead of gc.GetTextExtent seems
-		# to fix sporadic segfaults with wxPython Phoenix up to 4.0.0a2
-		# under Windows (fixed in 4.0.0a3), but self.GetTextExtent is NOT
-		# an equivalent replacement for gc.GetTextExtent.
+        # Note: Using self.GetTextExtent instead of gc.GetTextExtent seems
+        # to fix sporadic segfaults with wxPython Phoenix up to 4.0.0a2
+        # under Windows (fixed in 4.0.0a3), but self.GetTextExtent is NOT
+        # an equivalent replacement for gc.GetTextExtent.
         tw, th = gc.GetTextExtent(label)
 
         if self._bitmap:
@@ -426,15 +424,14 @@ class GradientButton(wx.PyControl):
         else:
             bw = bh = 0
             
-        pos_x = (width-bw-tw)/2+shadowOffset      # adjust for bitmap and text to centre        
+        pos_x = (width - bw - tw) / 2 + shadowOffset      # adjust for bitmap and text to centre
         if self._bitmap:
-            pos_y =  (height-bh)/2+shadowOffset
+            pos_y = (height - bh) / 2 + shadowOffset
             gc.DrawBitmap(self._bitmap, pos_x, pos_y, bw, bh) # draw bitmap if available
             pos_x = pos_x + 2   # extra spacing from bitmap
 
         gc.DrawText(label, pos_x + bw + shadowOffset, (height-th)/2+shadowOffset) 
 
-        
     def GetPath(self, gc, rc, r):
         """
         Returns a rounded `wx.GraphicsPath` rectangle.
@@ -450,7 +447,6 @@ class GradientButton(wx.PyControl):
         path.CloseSubpath()
         return path
 
-    
     def SetInitialSize(self, size=None):
         """
         Given the current font and bezel width settings, calculate

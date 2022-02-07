@@ -9,8 +9,6 @@ import sys
 
 from config import get_data_path, initcfg
 from meta import version_short
-from safe_print import safe_print
-from util_str import safe_unicode
 import jspacker
 import localization as lang
 
@@ -67,7 +65,7 @@ def create(report_path, placeholders2data, pack=True, templatename="report"):
         report_html_file = codecs.open(report_path, "w", "UTF-8")
     except (IOError, OSError) as exception:
         raise exception.__class__(lang.getstr("error.file.create", report_path) +
-                                  "\n\n" + safe_unicode(exception))
+                                  "\n\n" + str(exception))
     report_html_file.write(report_html)
     report_html_file.close()
 
@@ -174,12 +172,12 @@ if __name__ == "__main__":
     initcfg()
     lang.init()
     if not sys.argv[1:]:
-        safe_print("Update existing report(s) with current template files.")
-        safe_print("Usage: %s report1.html [report2.html...]" %
+        print("Update existing report(s) with current template files.")
+        print("Usage: %s report1.html [report2.html...]" %
                    os.path.basename(sys.argv[0]))
     else:
         for arg in sys.argv[1:]:
             try:
                 update(arg)
             except (IOError, OSError) as exception:
-                safe_print(exception)
+                print(exception)

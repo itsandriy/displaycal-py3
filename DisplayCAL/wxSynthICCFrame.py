@@ -9,7 +9,7 @@ from argyll_cgats import extract_device_gray_primaries
 from config import (enc, get_data_path, get_verified_path, getcfg, hascfg,
                     profile_ext, setcfg)
 from debughelpers import Error
-from log import log, safe_print
+from log import log
 from meta import name as appname
 from options import debug
 from ordereddict import OrderedDict
@@ -896,7 +896,7 @@ class SynthICCFrame(BaseFrame):
                     rgb_space = colormath.get_rgb_space(rgb_space)
                     linebuffered_logfiles = []
                     if sys.stdout.isatty():
-                        linebuffered_logfiles.append(safe_print)
+                        linebuffered_logfiles.append(print)
                     else:
                         linebuffered_logfiles.append(log)
                     logfiles = Files([LineBufferedStream(

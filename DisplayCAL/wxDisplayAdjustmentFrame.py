@@ -22,12 +22,12 @@ from lib.agw.pygauge import PyGauge
 from config import (get_data_path, get_default_dpi, get_icon_bundle, getbitmap,
                     getcfg, geticon, setcfg)
 from config import enc
-from log import get_file_logger, safe_print
+from log import get_file_logger
 from meta import name as appname
 from options import debug
 from ordereddict import OrderedDict
 from util_list import intlist
-from util_str import safe_unicode, wrap
+from util_str import wrap
 from wxwindows import (BaseApp, BaseFrame, FlatShadedButton, numpad_keycodes,
                        nav_keycodes, processing_keycodes, wx_Panel)
 import audio
@@ -343,7 +343,7 @@ class DisplayAdjustmentImageContainer(labelbook.ImageContainer):
             pos += rectWidth
 
         # Update all buttons that can not fit into the screen as non-visible
-        #for ii in xrange(count, len(self._pagesInfoVec)):
+        #for ii in range(count, len(self._pagesInfoVec)):
         #self._pagesInfoVec[ii].SetPosition(wx.Point(-1, -1))
 
         # Draw the pin button
@@ -820,7 +820,7 @@ class DisplayAdjustmentFrame(windowcls):
                     try:
                         wx.Window.UnreserveControlId(id)
                     except wx.wxAssertionError as exception:
-                        safe_print(exception)
+                        print(exception)
 
     def OnMove(self, event):
         if self.IsShownOnScreen() and not self.IsIconized() and \
@@ -841,7 +841,7 @@ class DisplayAdjustmentFrame(windowcls):
 
     def Pulse(self, msg=""):
         if msg:
-            msg = safe_unicode(msg, enc)
+            msg = str(msg)
             if ((msg in (lang.getstr("instrument.initializing"),
                          lang.getstr("instrument.calibrating"),
                          lang.getstr("please_wait"),

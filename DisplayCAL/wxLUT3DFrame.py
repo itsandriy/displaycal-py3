@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-import exceptions
 import os
 import re
 import shutil
@@ -14,12 +13,11 @@ from argyll_cgats import cal_to_fake_profile
 from argyll_names import video_encodings
 from config import (defaults, get_data_path, get_verified_path, getcfg,
                     geticon, hascfg, profile_ext, setcfg)
-from log import safe_print
 from meta import name as appname, version
 from options import debug
 from util_decimal import stripzeros
 from util_os import islink, readlink, safe_glob, waccess
-from util_str import safe_unicode, strtr
+from util_str import strtr
 from worker import (Error, Info, UnloggedInfo, get_current_profile_path,
                     show_result_dialog)
 import ICCProfile as ICCP
@@ -214,7 +212,7 @@ class LUT3DFrame(BaseFrame):
 
     def OnClose(self, event=None):
         if (getattr(self.worker, "thread", None) and
-                self.worker.thread.isAlive()):
+                self.worker.thread.is_alive()):
             self.worker.abort_subprocess(True)
             return
         if sys.platform == "darwin" or debug: self.focus_handler(event)
@@ -918,8 +916,8 @@ class LUT3DFrame(BaseFrame):
                                      hdr_display=self.getcfg("3dlut.hdr_display"),
                                      XYZwp=XYZwp)
         except Exception as exception:
-            if exception.__class__.__name__ in dir(exceptions):
-                raise
+            # if exception.__class__.__name__ in dir(exceptions):
+            #     raise
             return exception
         return True
 

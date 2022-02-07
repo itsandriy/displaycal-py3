@@ -28,6 +28,7 @@ class OrderedDict(dict):
     missing = object()
 
     def __init__(self, *args, **kwargs):
+        super(OrderedDict, self).__init__(*args, **kwargs)
         self._keys = []
         if args or kwargs:
             self.update(*args, **kwargs)
@@ -268,7 +269,7 @@ class OrderedDict(dict):
         if len(args) > 1:
             raise TypeError("update expected at most 1 arguments, got %i" % len(args))
         for iterable in args:
-            if hasattr(iterable, "iteritems"):
+            if hasattr(iterable, "items"):
                 self.update(iter(iterable.items()))
             elif hasattr(iterable, "keys"):
                 for key in list(iterable.keys()):
@@ -289,8 +290,6 @@ class OrderedDict(dict):
     clear.__doc__ = dict.clear.__doc__
     copy.__doc__ = dict.copy.__doc__
     items.__doc__ = dict.items.__doc__
-    iteritems.__doc__ = dict.iteritems.__doc__
-    itervalues.__doc__ = dict.itervalues.__doc__
     keys.__doc__ = dict.keys.__doc__
     pop.__doc__ = dict.pop.__doc__
     setdefault.__doc__ = dict.setdefault.__doc__

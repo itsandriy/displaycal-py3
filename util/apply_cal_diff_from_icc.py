@@ -164,7 +164,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
     # the linear portion
     applycal = False
 
-    applycal_inverse = not filter(lambda tagname: tagname.startswith("A2B") or tagname.startswith("B2A"), profile.tags)
+    applycal_inverse = not list(filter(lambda tagname: tagname.startswith("A2B") or tagname.startswith("B2A"), profile.tags))
     print("Use applycal to apply cal?", applycal)
     print("Use applycal to apply inverse cal?", applycal_inverse)
     print("Ensuring 256 entry TRC tags")
@@ -379,7 +379,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
             cgats_cal_interp = []
             for i in range(3):
                 cgats_cal_interp.append(cm.Interp([v / cal_entry_max for v in range(num_cal_entries)], []))
-            for i, row in existing_cgats[0].DATA.iteritems():
+            for i, row in existing_cgats[0].DATA.items():
                 for j, channel in enumerate("RGB"):
                     cgats_cal_interp[j].fp.append(row["RGB_" + channel])
 

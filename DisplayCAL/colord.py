@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 from binascii import hexlify
 import os
 import re
@@ -22,12 +20,12 @@ except ImportError:
     Colord = None
     Gio = None
 else:
-    cancellable = Gio.Cancellable.new();
+    cancellable = Gio.Cancellable.new()
 
 from util_dbus import DBusObject, DBusException, BUSTYPE_SYSTEM
 
 from util_os import which
-from util_str import safe_str, safe_unicode
+from util_str import safe_str
 import localization as lang
 
 if sys.platform not in ("darwin", "win32"):
@@ -312,7 +310,7 @@ def install_profile(device_id, profile,
 
         from worker import printcmdline
 
-        cmd = safe_str(colormgr)
+        cmd = str(colormgr)
 
         if not cdprofile:
             # Import profile

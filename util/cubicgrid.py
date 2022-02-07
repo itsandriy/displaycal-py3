@@ -3,8 +3,8 @@
 
 import sys
 
-def create_cubic_grid(res=4, skip_grayscale=False, hires_outergamut=False,
-                      hires_inneraxis=False):
+
+def create_cubic_grid(res=4, skip_grayscale=False, hires_outergamut=False, hires_inneraxis=False):
     grid = []
     step = 100.0 / res
     for i in range(0, res + 1):
@@ -48,23 +48,23 @@ def create_cubic_grid(res=4, skip_grayscale=False, hires_outergamut=False,
             for j in range(0, 3):
                 v = [i * step] * 3
                 v[j] += step * 2
-                if not v in grid:
+                if v not in grid:
                     grid.append(v)
                 v = [i * step + step * 2] * 3
                 v[j] -= step * 2
-                if not v in grid:
+                if v not in grid:
                     grid.append(v)
     grid.sort()
     return grid
 
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        skip_grayscale = sys.argv[2] == "1" if len(sys.argv) > 2 else False
-        hires_outergamut = sys.argv[3] == "1" if len(sys.argv) > 3 else False
-        hires_inneraxis = sys.argv[4] == "1" if len(sys.argv) > 4 else False
-        grid = create_cubic_grid(int(sys.argv[1]), skip_grayscale, hires_outergamut,
-                                 hires_inneraxis)
+        skip_grayscale_ = sys.argv[2] == "1" if len(sys.argv) > 2 else False
+        hires_outergamut_ = sys.argv[3] == "1" if len(sys.argv) > 3 else False
+        hires_inneraxis_ = sys.argv[4] == "1" if len(sys.argv) > 4 else False
+        grid = create_cubic_grid(int(sys.argv[1]), skip_grayscale_, hires_outergamut_, hires_inneraxis_)
         for v in grid:
-            print " ".join(str(n) for n in v)
+            print(" ".join(str(n) for n in v))
     else:
-        print "Usage: cubicgrid.py <res> [skip grayscale 0|1 [hires_outergamut 0|1 [hires_inneraxis 0|1]]]"
+        print("Usage: cubicgrid.py <res> [skip grayscale 0|1 [hires_outergamut 0|1 [hires_inneraxis 0|1]]]")

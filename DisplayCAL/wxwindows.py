@@ -32,14 +32,14 @@ from config import (defaults, getbitmap, getcfg, geticon, get_data_path,
 from debughelpers import (Error, DownloadError, Info, UnloggedError,
                           UnloggedInfo, UnloggedWarning, Warn, getevtobjname,
                           getevttype, handle_error)
-from log import log as log_, safe_print
+from log import log as log_
 from meta import name as appname
 from options import debug
 from ordereddict import OrderedDict
 from network import ScriptingClientSocket, get_network_addr
 from util_io import StringIOu as StringIO
 from util_os import get_program_file, launch_file, waccess
-from util_str import box, safe_str, safe_unicode, wrap
+from util_str import box, safe_str, wrap
 from util_xml import dict2xml
 from wxaddons import (CustomEvent, FileDrop as _FileDrop, gamma_encode,
                       get_parent_frame, get_platform_window_decoration_size, wx,
@@ -76,7 +76,7 @@ if sys.platform == "win32" and sys.getwindowsversion() >= (6, 1):
     try:
         import taskbar
     except Exception as exception:
-        safe_print(exception)
+        print(exception)
 
 
 numpad_keycodes = [wx.WXK_NUMPAD0,
@@ -120,10 +120,6 @@ processing_keycodes = [wx.WXK_ESCAPE, wx.WXK_RETURN, wx.WXK_INSERT,
                        wx.WXK_DELETE, wx.WXK_BACK]
 
 modifier_keycodes = [wx.WXK_SHIFT, wx.WXK_CONTROL, wx.WXK_ALT, wx.WXK_COMMAND]
-
-
-def Property(func):
-    return property(**func())
 
 
 class AboutDialog(wx.Dialog):
@@ -668,7 +664,7 @@ class BaseApp(wx.App):
         # bundled by Py2App can't be run from a path containing Unicode
         # characters under Mac OS X otherwise.
         prefix = sys.prefix
-        sys.prefix = safe_unicode(sys.prefix)
+        sys.prefix = str(sys.prefix)
 
         wx.App.__init__(self, *args, **kwargs)
 
@@ -677,9 +673,9 @@ class BaseApp(wx.App):
 
         if (not kwargs.get("clearSigInt", True) or
                 len(args) == 4 and not args[3]):
-            # Install our own SIGINT handler so we can do cleanup on receiving
+            # Install our own SIGINT handler, so we can do cleanup on receiving
             # SIGINT
-            safe_print("Installing SIGINT handler")
+            print("Installing SIGINT handler")
             signal.signal(signal.SIGINT, self.signal_handler)
             # This timer allows processing of SIGINT / CTRL+C, because normally
             # with clearSigInt=False, SIGINT / CTRL+C are only processed during
@@ -690,8 +686,8 @@ class BaseApp(wx.App):
 
     def signal_handler(self, signum, frame):
         if signum == signal.SIGINT:
-            safe_print("Received SIGINT")
-            safe_print("Sending query to end session...")
+            print("Received SIGINT")
+            print("Sending query to end session...")
             self.ProcessEvent(wx.CloseEvent(wx.EVT_QUERY_END_SESSION.evtType[0]))
 
     def OnInit(self):
@@ -750,7 +746,7 @@ class BaseApp(wx.App):
         paths = []
         for arg in sys.argv[1:]:
             if os.path.isfile(arg):
-                paths.append(safe_unicode(arg))
+                paths.append(str(arg))
                 if len(paths) == count:
                     break
         if paths:
@@ -758,10 +754,10 @@ class BaseApp(wx.App):
             return paths
 
     def OnExit(self):
-        safe_print("Executing BaseApp.OnExit()")
+        print("Executing BaseApp.OnExit()")
         with self._lock:
             if BaseApp._exithandlers:
-                safe_print("Running application exit handlers")
+                print("Running application exit handlers")
                 BaseApp._run_exitfuncs()
         if hasattr(wx.App, "OnExit"):
             return wx.App.OnExit(self)
@@ -790,8 +786,8 @@ class BaseApp(wx.App):
                 exc_info = sys.exc_info()
             except:
                 import traceback
-                safe_print("Error in BaseApp._run_exitfuncs:")
-                safe_print(traceback.format_exc())
+                print("Error in BaseApp._run_exitfuncs:")
+                print(traceback.format_exc())
 
         if exc_info is not None:
             raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
@@ -801,27 +797,27 @@ class BaseApp(wx.App):
         BaseApp._exithandlers.append((func, args, kwargs))
 
     def query_end_session(self, event):
-        safe_print("Received query to end session")
+        print("Received query to end session")
         if event.CanVeto():
-            safe_print("Can veto")
+            print("Can veto")
         else:
-            safe_print("Cannot veto")
+            print("Cannot veto")
         if self.TopWindow and self.TopWindow is not self._query_end_session:
             if not isinstance(self.TopWindow, wx.Dialog):
-                safe_print("Trying to close main top-level application window...")
+                print("Trying to close main top-level application window...")
                 if self.TopWindow.Close(force=not event.CanVeto()):
                     self.TopWindow.listening = False
                     self._query_end_session = self.TopWindow
-                    safe_print("Main top-level application window processed close event")
+                    print("Main top-level application window processed close event")
                     return
                 else:
-                    safe_print("Failed to close main top-level application window")
+                    print("Failed to close main top-level application window")
             if event.CanVeto():
                 event.Veto()
-                safe_print("Vetoed query to end session")
+                print("Vetoed query to end session")
 
     def end_session(self, event):
-        safe_print("Ending session")
+        print("Ending session")
         self.ExitMainLoop()
         # We may need to call OnExit() explicitly because there is not
         # guaranteed to be a next iteration of the main event loop
@@ -835,7 +831,7 @@ class BaseApp(wx.App):
             pass
         # Calling sys.exit makes sure that exit handlers registered by atexit
         # will run
-        safe_print("Calling sys.exit(0)")
+        print("Calling sys.exit(0)")
         sys.exit(0)
 
 
@@ -871,13 +867,13 @@ class BaseFrame(wx.Frame):
                 win.__class__ is wx.Dialog) and win.IsShown():
                 if win.IsModal():
                     wx.CallAfter(win.EndModal, wx.ID_CANCEL)
-                    safe_print("Closed modal dialog", win)
+                    print("Closed modal dialog", win)
                 else:
                     wx.CallAfter(win.Close)
-                    safe_print("Closed dialog", win)
+                    print("Closed dialog", win)
             elif isinstance(win, wx.Frame):
                 wx.CallAfter(win.Close)
-                safe_print("Closed", win)
+                print("Closed", win)
 
     def init(self):
         self.Bind(wx.EVT_ACTIVATE, self.activate_handler)
@@ -904,7 +900,7 @@ class BaseFrame(wx.Frame):
                     addr = get_network_addr()
                 except socket.error:
                     pass
-            safe_print(lang.getstr("app.listening", (addr, port)))
+            print(lang.getstr("app.listening", (addr, port)))
             self.listening = True
             self.listener = threading.Thread(target=self.connection_handler,
                                              name="ScriptingHost.ConnectionHandler")
@@ -940,17 +936,17 @@ class BaseFrame(wx.Frame):
                     not getcfg("app.allow_network_clients")):
                 # Network client disallowed
                 conn.close()
-                safe_print(lang.getstr("app.client.network.disallowed", addrport))
+                print(lang.getstr("app.client.network.disallowed", addrport))
                 sleep(.2)
                 continue
             try:
                 conn.settimeout(.2)
             except socket.error as exception:
                 conn.close()
-                safe_print(lang.getstr("app.client.ignored", exception))
+                print(lang.getstr("app.client.ignored", exception))
                 sleep(.2)
                 continue
-            safe_print(lang.getstr("app.client.connect", addrport))
+            print(lang.getstr("app.client.connect", addrport))
             self._msghandlercount += 1
             threading.Thread(target=self.message_handler,
                              name="ScriptingHost.MessageHandler-%d" %
@@ -959,7 +955,8 @@ class BaseFrame(wx.Frame):
         sys._appsocket.close()
 
     def message_handler(self, conn, addrport):
-        """ Handle messages sent via socket """
+        """Handle messages sent via socket
+        """
         responseformats[conn] = "plain"
         buffer = ""
         while self and getattr(self, "listening", False):
@@ -983,12 +980,12 @@ class BaseFrame(wx.Frame):
                     buffer = buffer[end + 1:]
                     if line:
                         command_timestamp = datetime.now().strftime("%Y-%m-%dTH:%M:%S.%f")
-                        line = safe_unicode(line, "UTF-8")
-                        safe_print(lang.getstr("app.incoming_message",
-                                               addrport + (line, )))
+                        line = str(line)
+                        print(lang.getstr("app.incoming_message", addrport + (line, )))
                         data = split_command_line(line)
                         response = None
                         # Non-UI commands
+                        print("Code is here F1")
                         if data[0] == "getappname" and len(data) == 1:
                             response = pyname
                         elif data[0] == "getcfg" and len(data) < 3:
@@ -1079,8 +1076,8 @@ class BaseFrame(wx.Frame):
             conn.shutdown(socket.SHUT_RDWR)
         except socket.error as exception:
             if exception.errno != errno.ENOTCONN:
-                safe_print("Warning - could not shutdown connection:", exception)
-        safe_print(lang.getstr("app.client.disconnect", addrport))
+                print("Warning - could not shutdown connection:", exception)
+        print(lang.getstr("app.client.disconnect", addrport))
         conn.close()
         responseformats.pop(conn)
 
@@ -1177,7 +1174,7 @@ class BaseFrame(wx.Frame):
                                     ports.append(port)
                 except EnvironmentError as exception:
                     # This shouldn't happen
-                    safe_print("Warning - could not read lockfile %s:" %
+                    print("Warning - could not read lockfile %s:" %
                                lockfilename, exception)
                 else:
                     for port in ports:
@@ -1344,7 +1341,7 @@ class BaseFrame(wx.Frame):
         elif (data[0] == "echo" and
               "echo <string>" in self.get_common_commands() and len(data) > 1):
             txt = " ".join(data[1:])
-            safe_print(txt)
+            print(txt)
         elif data[0] == "invokemenu" and len(data) == 3:
             if self.get_app_state("plain") == "idle":
                 menubar = self.GetMenuBar()
@@ -1666,12 +1663,12 @@ class BaseFrame(wx.Frame):
             try:
                 response = self.process_data(data)
             except Exception as exception:
-                safe_print(exception)
+                print(exception)
                 if responseformats[conn] != "plain":
                     response = {"class": exception.__class__.__name__,
-                                "error": safe_unicode(exception)}
+                                "error": str(exception)}
                 else:
-                    response = "error " + demjson.encode(safe_unicode(exception))
+                    response = "error " + demjson.encode(str(exception))
             else:
                 # Some commands can be overriden, check response
                 if response == "invalid":
@@ -1726,7 +1723,7 @@ class BaseFrame(wx.Frame):
             # Client connection has broken down in the meantime
             return
         if response == "invalid":
-            safe_print(lang.getstr("app.incoming_message.invalid"))
+            print(lang.getstr("app.incoming_message.invalid"))
         if responseformats[conn] != "plain":
             if not isinstance(response, (str, list)):
                 response = [response]
@@ -1755,7 +1752,7 @@ class BaseFrame(wx.Frame):
         try:
             conn.sendall("%s\4" % safe_str(response, "UTF-8"))
         except socket.error as exception:
-            safe_print(exception)
+            print(exception)
 
     def send_command(self, scripting_host_name_suffix, command):
         lock_name = appbasename
@@ -1780,17 +1777,17 @@ class BaseFrame(wx.Frame):
                     if response == scripting_host:
                         conn.send_command(command)
                         response = conn.get_single_response()
-                        safe_print("%s %s returned" % (scripting_host, command),
+                        print("%s %s returned" % (scripting_host, command),
                                    response)
                     else:
-                        safe_print("Warning - %s not running "
+                        print("Warning - %s not running "
                                    "under expected port" % scripting_host, port)
                     del conn
                     return response
             else:
-                safe_print("Warning - %s not running?" % scripting_host)
+                print("Warning - %s not running?" % scripting_host)
         except Exception as exception:
-            safe_print("Warning - couldn't talk to %s:" % scripting_host,
+            print("Warning - couldn't talk to %s:" % scripting_host,
                        exception)
             return exception
 
@@ -1805,24 +1802,24 @@ class BaseFrame(wx.Frame):
             event = CustomEvent(wx.EVT_SET_FOCUS.evtType[0], self)
         if debug:
             if hasattr(event.GetEventObject(), "GetId"):
-                safe_print("[D] focus_handler called for ID %s %s %s, event type "
+                print("[D] focus_handler called for ID %s %s %s, event type "
                            "%s %s" % (event.GetEventObject().GetId(),
                                       getevtobjname(event, self),
                                       event.GetEventObject().__class__,
                                       event.GetEventType(), getevttype(event)))
             else:
-                safe_print("[D] focus_handler called for %s %s, event type "
+                print("[D] focus_handler called for %s %s, event type "
                            "%s %s" % (getevtobjname(event, self),
                                       event.GetEventObject().__class__,
                                       event.GetEventType(), getevttype(event)))
             if (hasattr(event, "GetWindow") and event.GetWindow() and
                     event.GetEventObject() != event.GetWindow()):
-                safe_print("[D] Focus moving from control ID %s %s %s" %
+                print("[D] Focus moving from control ID %s %s %s" %
                            (event.GetWindow().GetId(),
                             event.GetWindow().GetName(),
                             event.GetWindow().__class__))
             if getattr(self, "last_focused_ctrl", None):
-                safe_print("[D] Last focused control: ID %s %s %s" %
+                print("[D] Last focused control: ID %s %s %s" %
                            (self.last_focused_ctrl.GetId(),
                             self.last_focused_ctrl.GetName(),
                             self.last_focused_ctrl.__class__))
@@ -1836,7 +1833,7 @@ class BaseFrame(wx.Frame):
             catchup_event = wx.FocusEvent(wx.EVT_KILL_FOCUS.evtType[0],
                                           self.last_focused_ctrl.GetId())
             if debug:
-                safe_print("[D] Last focused control ID %s %s %s processing "
+                print("[D] Last focused control ID %s %s %s processing "
                            "catchup event type %s %s" %
                            (self.last_focused_ctrl.GetId(),
                             self.last_focused_ctrl.GetName(),
@@ -1845,7 +1842,7 @@ class BaseFrame(wx.Frame):
                             getevttype(catchup_event)))
             if self.last_focused_ctrl.ProcessEvent(catchup_event):
                 if debug:
-                    safe_print("[D] Last focused control processed catchup "
+                    print("[D] Last focused control processed catchup "
                                "event")
                 self.last_focused_ctrl = None
         if (hasattr(event.GetEventObject(), "GetId") and
@@ -1855,7 +1852,7 @@ class BaseFrame(wx.Frame):
                 hasattr(event.GetEventObject(), "IsShownOnScreen") and
                 event.GetEventObject().IsShownOnScreen()):
             if debug:
-                safe_print("[D] Setting last focused control to ID %s %s %s"
+                print("[D] Setting last focused control to ID %s %s %s"
                            % (event.GetEventObject().GetId(),
                               getevtobjname(event, self),
                               event.GetEventObject().__class__))
@@ -2045,7 +2042,7 @@ class BaseFrame(wx.Frame):
         scale = getcfg("app.dpi") / get_default_dpi()
         for child in parent.GetAllChildren():
             if debug:
-                safe_print(child.__class__, child.Name)
+                print(child.__class__, child.Name)
             if isinstance(child, (wx.StaticText, wx.Control,
                                   filebrowse.FileBrowseButton,
                                   floatspin.FloatSpin)):
@@ -2116,7 +2113,7 @@ class BaseFrame(wx.Frame):
                     if isinstance(child, wx.ComboBox):
                         if child.IsEditable():
                             if debug:
-                                safe_print("[D]", child.Name,
+                                print("[D]", child.Name,
                                            "binds EVT_TEXT to focus_handler")
                             child.Bind(wx.EVT_TEXT, self.focus_handler)
                     else:
@@ -2285,7 +2282,7 @@ class BaseInteractiveDialog(wx.Dialog):
         if not getattr(event, "IsShown", getattr(event, "GetShow", bool))():
             return
         if self._log:
-            safe_print(box(self._msg))
+            print(box(self._msg))
         app = wx.GetApp()
         # Make sure taskbar button flashes under Windows
         topwindow = app.GetTopWindow()
@@ -2315,7 +2312,7 @@ class BaseInteractiveDialog(wx.Dialog):
                 # wxPython 3
                 ctrl = self.FindWindowById(id)
             if ctrl:
-                safe_print("->", ctrl.Label)
+                print("->", ctrl.Label)
         self.EndModal(id)
 
     def EndModal(self, id):
@@ -2459,7 +2456,7 @@ class HtmlWindow(wx.html.HtmlWindow):
 
     def SetPage(self, source):
         """ Set displayed page with system default colors """
-        html = safe_unicode(source, "UTF-8")
+        html = str(source)
         bgcolor, text, linkcolor, vlinkcolor = get_html_colors()
         if not "<body" in html:
             html = "<body>%s</body>" % html
@@ -2643,15 +2640,13 @@ class BitmapBackgroundPanelText(BitmapBackgroundPanel):
     def GetLabel(self):
         return self._label
 
-    @Property
-    def Label():
-        def fget(self):
-            return self.GetLabel()
+    @property
+    def Label(self):
+        return self.GetLabel()
 
-        def fset(self, label):
-            self.SetLabel(label)
-
-        return locals()
+    @Label.setter
+    def Label(self, label):
+        self.SetLabel(label)
 
     def SetLabel(self, label):
         self._label = label
@@ -2835,7 +2830,7 @@ class FileBrowseBitmapButtonWithChoiceHistory(filebrowse.FileBrowseButtonWithHis
             # for GNOME top bar (assume item height for the latter).
             if line_height * len(value) + 2 > max_height:
                 max_entries = int(max_height / line_height) - 2
-                safe_print("Discarding entries to work around wxGTK Wayland "
+                print("Discarding entries to work around wxGTK Wayland "
                            "dropdown popup menu bug:",
                            ", ".join(value[max_entries:]))
                 value = value[:max_entries]
@@ -3200,17 +3195,15 @@ class FlatShadedButton(GradientButton):
         GradientButton.Enable(self, enable)
         self._enabled = enable
 
-    @Property
-    def _bitmap():
-        def fget(self):
-            return self.__bitmap
+    @property
+    def _bitmap(self):
+        return self.__bitmap
 
-        def fset(self, bitmap):
-            if bitmap is not self.__bitmap:
-                self.__bitmap = bitmap
-                self._set_bitmap_labels(bitmap)
-
-        return locals()
+    @_bitmap.setter
+    def _bitmap(self, bitmap):
+        if bitmap is not self.__bitmap:
+            self.__bitmap = bitmap
+            self._set_bitmap_labels(bitmap)
 
     def SetBitmap(self, bitmap):
         self._bitmap = bitmap
@@ -3788,7 +3781,7 @@ class CustomGrid(wx.grid.Grid):
                                  wx.WXK_NUMPAD_SEPARATOR):
                     ch = "."
                 elif keycode < 256 and keycode >= 32:
-                    ch = safe_unicode(chr(keycode))
+                    ch = str(chr(keycode))
                 if ch is not None or keycode in (wx.WXK_BACK, wx.WXK_DELETE):
                     changed = 0
                     batch = False
@@ -4051,15 +4044,13 @@ class CustomCheckBox(wx.Panel):
                                             blend * color.Blue())))
             self._label.ForegroundColour = color
 
-    @Property
-    def Enabled():
-        def fget(self):
-            return self.IsEnabled()
+    @property
+    def Enabled(self):
+        return self.IsEnabled()
 
-        def fset(self, enable=True):
-            self.Enable(enable)
-
-        return locals()
+    @Enabled.setter
+    def Enabled(self, enable=True):
+        self.Enable(enable)
 
     def IsEnabled(self):
         return self._enabled
@@ -4132,35 +4123,29 @@ class CustomCheckBox(wx.Panel):
         wx.Panel.SetForegroundColour(self, color)
         self._label.ForegroundColour = color
 
-    @Property
-    def Label():
-        def fget(self):
-            return self.GetLabel()
+    @property
+    def Label(self):
+        return self.GetLabel()
 
-        def fset(self, label):
-            self.SetLabel(label)
+    @Label.setter
+    def Label(self, label):
+        self.SetLabel(label)
 
-        return locals()
+    @property
+    def Value(self):
+        return self.GetValue()
 
-    @Property
-    def Value():
-        def fget(self):
-            return self.GetValue()
+    @Value.setter
+    def Value(self, state):
+        self.SetValue(state)
 
-        def fset(self, state):
-            self.SetValue(state)
+    @property
+    def ForegroundColour(self):
+        return self.GetForegroundColour()
 
-        return locals()
-
-    @Property
-    def ForegroundColour():
-        def fget(self):
-            return self.GetForegroundColour()
-
-        def fset(self, color):
-            self.SetForegroundColour(color)
-
-        return locals()
+    @ForegroundColour.setter
+    def ForegroundColour(self, color):
+        self.SetForegroundColour(color)
 
 
 class CustomCellEditor(wx.grid.PyGridCellEditor):
@@ -4174,7 +4159,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         """
         Called to create the control, which must derive from wx.Control.
         """
-        safe_print("CustomCellEditor.Create(%r, %r, %r) was called. This "
+        print("CustomCellEditor.Create(%r, %r, %r) was called. This "
                    "should not happen, but is unlikely an issue." %
                    (parent, id, evtHandler))
         self.SetControl(wx.StaticText(parent, -1, ""))
@@ -4185,7 +4170,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         If you don't fill the cell (the rect) then be sure to override
         PaintBackground and do something meaningful there.
         """
-        safe_print("CustomCellEditor.SetSize(%r) was called. This should not "
+        print("CustomCellEditor.SetSize(%r) was called. This should not "
                    "happen, but is unlikely an issue." % rect)
         self.Control.SetDimensions(rect.x, rect.y, rect.width, rect.height,
                                    wx.SIZE_ALLOW_MINUS_ONE)
@@ -4195,7 +4180,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         Show or hide the edit control.  You can use the attr (if not None)
         to set colours or fonts for the control.
         """
-        safe_print("CustomCellEditor.Show(%r, %r) was called. This should "
+        print("CustomCellEditor.Show(%r, %r) was called. This should "
                    "not happen, but is unlikely an issue." % (show, attr))
         super(self.__class__, self).Show(show, attr)
 
@@ -4215,7 +4200,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         Fetch the value from the table and prepare the edit control
         to begin editing.  Set the focus to the edit control.
         """
-        safe_print("CustomCellEditor.BeginEdit(%r, %r, %r) was called. This "
+        print("CustomCellEditor.BeginEdit(%r, %r, %r) was called. This "
                    "should not happen, but is unlikely an issue." %
                    (row, col, grid))
 
@@ -4224,7 +4209,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         Complete the editing of the current cell. Returns True if the value
         has changed.  If necessary, the control may be destroyed.
         """
-        safe_print("CustomCellEditor.EndEdit(%r, %r, %r, %r) was called. This "
+        print("CustomCellEditor.EndEdit(%r, %r, %r, %r) was called. This "
                    "should not happen, but is unlikely an issue." %
                    (row, col, grid, value))
         if wx.VERSION >= (2, 9):
@@ -4237,7 +4222,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         """
         Reset the value in the control back to its starting value.
         """
-        safe_print("CustomCellEditor.Reset() was called. This should "
+        print("CustomCellEditor.Reset() was called. This should "
                    "not happen, but is unlikely an issue.")
 
     def IsAcceptedKey(self, evt):
@@ -4253,7 +4238,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         If the editor is enabled by pressing keys on the grid, this will be
         called to let the editor do something about that first key if desired.
         """
-        safe_print("CustomCellEditor.StartingKey(%r) was called. This should "
+        print("CustomCellEditor.StartingKey(%r) was called. This should "
                    "not happen, but is unlikely an issue." % evt)
         evt.Skip()
 
@@ -4876,15 +4861,13 @@ class BetterStaticFancyTextBase(object):
     def GetLabel(self):
         return self._rawlabel
 
-    @Property
-    def Label():
-        def fget(self):
-            return self._rawlabel
+    @property
+    def Label(self):
+        return self._rawlabel
 
-        def fset(self, label):
-            self.SetLabel(label)
-
-        return locals()
+    @Label.setter
+    def Label(self, label):
+        self.SetLabel(label)
 
     def SetLabel(self, label):
         self._rawlabel = label
@@ -5212,7 +5195,7 @@ class LogWindow(InvincibleFrame):
         lines = []
         start = self.log_txt.GetLastPosition()
         ts = None
-        for line in safe_unicode(txt).split("\n"):
+        for line in str(txt).split("\n"):
             if sys.platform == "win32":
                 # Formatting of boxes
                 line = line.replace("\u2500", "-")
@@ -5330,7 +5313,7 @@ class LogWindow(InvincibleFrame):
                 file_.write(self.log_txt.GetValue().encode("UTF-8", "replace"))
                 file_.close()
             except Exception as exception:
-                InfoDialog(self, msg=safe_unicode(exception),
+                InfoDialog(self, msg=str(exception),
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
 
@@ -5395,7 +5378,7 @@ class LogWindow(InvincibleFrame):
                         for filename in os.listdir(logdir):
                             zip.write(os.path.join(logdir, filename), filename)
                 except Exception as exception:
-                    InfoDialog(self, msg=safe_unicode(exception),
+                    InfoDialog(self, msg=str(exception),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
 
@@ -5454,7 +5437,7 @@ class ProgressDialog(wx.Dialog):
             try:
                 audio.init()
             except Exception as exception:
-                safe_print(exception)
+                print(exception)
             self.processor_sound = audio.Sound(get_data_path("theme/engine_hum_loop.wav"),
                                                True)
             self.generator_sound = audio.Sound(get_data_path("theme/pulsing_loop.wav"),
@@ -5656,7 +5639,7 @@ class ProgressDialog(wx.Dialog):
                     try:
                         wx.Window.UnreserveControlId(id)
                     except wx.wxAssertionError as exception:
-                        safe_print(exception)
+                        print(exception)
 
     def OnMove(self, event):
         if self.IsShownOnScreen() and not self.IsIconized() and \
@@ -7077,7 +7060,7 @@ def get_html_colors(allow_alpha=False):
 def get_widget(win, id_name_label):
     # hasattr, getattr, setattr silently convert attribute names to byte strings,
     # we have to make sure there's no UnicodeEncodeError
-    if (id_name_label == safe_str(safe_unicode(id_name_label), "ascii") and
+    if (id_name_label == safe_str(str(id_name_label), "ascii") and
             hasattr(win, id_name_label)):
         # Attribute name
         try:
@@ -7237,7 +7220,7 @@ def show_result_dialog(result, parent=None, pos=None, confirm=False, wrap=70):
         # Special case - aborted
         msg = lang.getstr("aborted")
     else:
-        msg = safe_unicode(result)
+        msg = str(result)
     if not pos:
         pos=(-1, -1)
     if isinstance(result, Info):

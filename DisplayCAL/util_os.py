@@ -649,7 +649,7 @@ def readlink(path):
         raise OSError(22, 'Invalid argument', path)
 
     # Open the file correctly depending on the string type.
-    if type(path) is str:
+    if isinstance(path, str):
         createfilefn = CreateFileW
     else:
         createfilefn = CreateFile
@@ -856,8 +856,9 @@ def waccess(path, mode):
     return True
 
 
-def which(executable, paths = None):
-    """ Return the full path of executable """
+def which(executable, paths=None):
+    """Return the full path of executable
+    """
     if not paths:
         paths = getenvu("PATH", os.defpath).split(os.pathsep)
     for cur_dir in paths:

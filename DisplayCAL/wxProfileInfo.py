@@ -12,14 +12,13 @@ from config import (defaults, fs_enc,
                     get_argyll_display_number, get_data_path,
                     get_display_profile, get_display_rects, getbitmap, getcfg,
                     geticon, get_verified_path, profile_ext, setcfg, writecfg)
-from log import safe_print
 from meta import name as appname
 from options import debug
 from ordereddict import OrderedDict
 from util_io import GzipFileProper
 from util_list import intlist
 from util_os import launch_file, make_win32_compatible_long_path, waccess
-from util_str import safe_unicode, strtr, universal_newlines, wrap
+from util_str import strtr, universal_newlines, wrap
 from worker import (Error, UnloggedError, UnloggedInfo, check_set_argyll_bin,
                     get_argyll_util, make_argyll_compatible_path,
                     show_result_dialog)
@@ -480,9 +479,9 @@ class GamutCanvas(LUTCanvas):
                     device_values.append([0.0] * channels)
 
                 if debug:
-                    safe_print("In:")
+                    print("In:")
                     for v in device_values:
-                        safe_print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
+                        print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
 
                 # Lookup device -> XYZ values through profile using xicclu
                 if direction == "ib" and intent not in "ar":
@@ -501,14 +500,14 @@ class GamutCanvas(LUTCanvas):
                         odata = self.worker.xicclu(profile, odata, fwd_intent,
                                                    "f", order)
                 except Exception as exception:
-                    self.errors.append(Error(safe_unicode(exception)))
+                    self.errors.append(Error(str(exception)))
                     continue
 
                 if debug:
-                    safe_print("Out:")
+                    print("Out:")
                 for pcs_triplet in odata:
                     if debug:
-                        safe_print(" ".join(("%3.4f", ) * len(pcs_triplet)) % tuple(pcs_triplet))
+                        print(" ".join(("%3.4f", ) * len(pcs_triplet)) % tuple(pcs_triplet))
                     pcs_triplets.append(pcs_triplet)
                     if profile.connectionColorSpace == "Lab":
                         pcs_triplets[-1] = list(colormath.Lab2XYZ(*pcs_triplets[-1]))
@@ -667,7 +666,7 @@ class GamutViewOptions(wx_Panel):
         except EnvironmentError:
             pass
         except Exception as exception:
-            safe_print(exception)
+            print(exception)
         if srgb:
             self.comparison_profiles[srgb.getDescription()] = srgb
         for profile in config.get_standard_profiles():
@@ -785,7 +784,7 @@ class GamutViewOptions(wx_Panel):
 
     def comparison_profiles_sort(self):
         comparison_profiles = self.comparison_profiles[2:]
-        comparison_profiles.sort(cmp, key=lambda s: s.lower())
+        comparison_profiles.sort(key=lambda s: s.lower())
         self.comparison_profiles = self.comparison_profiles[:2]
         self.comparison_profiles.update(comparison_profiles)
         self.comparison_profile_select.SetItems(list(self.comparison_profiles.keys()))
@@ -1273,7 +1272,7 @@ class ProfileInfoFrame(LUTFrame):
             if value is None:
                 value = ""
             elif not isinstance(value, str):
-                value = safe_unicode(value, "ascii")
+                value = str(value, "ascii")
             value = wrap(universal_newlines(value.strip()).replace("\t", "\n"),
                          52).replace("\0", "").split("\n")
             linecount = len(value)
@@ -1363,7 +1362,7 @@ class ProfileInfoFrame(LUTFrame):
 
     def OnClose(self, event):
         if (getattr(self.worker, "thread", None) and
-                self.worker.thread.isAlive()):
+                self.worker.thread.is_alive()):
             self.worker.abort_subprocess(True)
             return
         self.worker.wrapup(False)
@@ -1853,7 +1852,7 @@ def _main(app):
     display_no = get_argyll_display_number(app.TopWindow.get_display()[1])
     for arg in sys.argv[1:]:
         if os.path.isfile(arg):
-            app.TopWindow.drop_handler(safe_unicode(os.path.abspath(arg)))
+            app.TopWindow.drop_handler(str(os.path.abspath(arg)))
             break
     else:
         app.TopWindow.LoadProfile(get_display_profile(display_no))

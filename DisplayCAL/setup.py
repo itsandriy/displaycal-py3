@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 DisplayCAL setup.py script
 
@@ -22,8 +21,6 @@ uninstall (setup.py uninstall --record=INSTALLED_FILES), otherwise use
 the wrapper script in the root directory of the source tar.gz/zip
 
 """
-
-
 from configparser import ConfigParser
 from distutils.command.install import install
 from distutils.util import change_root, get_platform
@@ -38,7 +35,6 @@ import shutil
 import subprocess as sp
 import sys
 from time import strftime
-from types import StringType
 
 
 # Borrowed from setuptools
@@ -327,17 +323,20 @@ def get_scripts(excludes=None):
             return -1
         else:
             return 0
-    scripts.sort(sortbyname)
+
+    import functools
+    scripts = sorted(scripts, key=functools.cmp_to_key(sortbyname))
     for script in scripts:
         script = os.path.basename(script)
         if script == appname.lower() + "-apply-profiles-launcher":
             continue
         desktopfile = os.path.join(pydir, "..", "misc", script + ".desktop")
         if os.path.isfile(desktopfile):
+            print("desktopfile: %s" % desktopfile)
             cfg = ConfigParser()
             cfg.read(desktopfile)
             script = cfg.get("Desktop Entry", "Exec").split()[0]
-            desc = cfg.get("Desktop Entry", "Name").decode("UTF-8")
+            desc = cfg.get("Desktop Entry", "Name")
         else:
             desc = ""
         if not [exclude for exclude in excludes or [] if fnmatch(script, exclude)]:
@@ -1061,11 +1060,10 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r,
                 data_basedir = relpath(data_basedir, cmd.install_data)
             print("*** changing basedir for data_files:", data_basedir)
             for i, f in enumerate(attrs["data_files"]):
-                if type(f) is StringType:
+                if isinstance(f, str):
                     attrs["data_files"][i] = change_root(data_basedir, f)
                 else:
-                    attrs["data_files"][i] = (change_root(data_basedir, f[0]),
-                                              f[1])
+                    attrs["data_files"][i] = (change_root(data_basedir, f[0]), f[1])
 
     if do_uninstall and not help:
 

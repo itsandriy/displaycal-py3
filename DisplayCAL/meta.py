@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-
 """
-	Meta information
-
+Meta information
 """
 
 import re
 import sys
+
 
 try:
     from __version__ import BUILD_DATE as build, LASTMOD as lastmod, VERSION, VERSION_BASE, VERSION_STRING

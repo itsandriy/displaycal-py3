@@ -13,8 +13,8 @@ from DisplayCAL import ICCProfile as ICCP
 
 
 def prettyprint(iterable, level=1):
-    for key, value in iterable.iteritems():
-        if hasattr(value, "iteritems"):
+    for key, value in iterable.items():
+        if hasattr(value, "items"):
             print(" " * 4 * level, "%s:" % key.capitalize())
             prettyprint(value, level + 1)
         else:

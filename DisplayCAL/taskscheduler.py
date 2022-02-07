@@ -48,12 +48,11 @@ import tempfile
 import pywintypes
 import winerror
 
-from log import safe_print
 from meta import name as appname
 from ordereddict import OrderedDict
 from safe_print import enc
 from util_os import getenvu
-from util_str import indent, safe_str, safe_unicode, universal_newlines
+from util_str import indent, universal_newlines
 from util_win import run_as_admin
 
 
@@ -407,12 +406,12 @@ class TaskScheduler(object):
             startupinfo = sp.STARTUPINFO()
             startupinfo.dwFlags |= sp.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = sp.SW_HIDE
-            p = sp.Popen([safe_str(arg) for arg in args], stdin=sp.PIPE,
+            p = sp.Popen([str(arg) for arg in args], stdin=sp.PIPE,
                          stdout=sp.PIPE, stderr=sp.STDOUT,
                          startupinfo=startupinfo)
             self.stdout, stderr = p.communicate()
             if echo:
-                safe_print(safe_unicode(self.stdout, enc))
+                print(str(self.stdout))
             self.lastreturncode = p.returncode
         return self.lastreturncode == 0
 

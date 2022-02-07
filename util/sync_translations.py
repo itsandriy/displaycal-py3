@@ -39,7 +39,7 @@ def langmerge(infilename1, infilename2, outfilename):
 
     added = []
     same = []
-    for key, value in dictin2.iteritems():
+    for key, value in dictin2.items():
         if not key in dictin1:
             dictin1[key] = value
             added.append(key.encode("UTF-8"))
@@ -116,7 +116,7 @@ def langmerge(infilename1, infilename2, outfilename):
             safe_print("Orphan: '%s' '%s'" % (key, dictin1[key]))
 
     outstream = StringIO.StringIO()
-    for key, value in merged.iteritems():
+    for key, value in merged.items():
         if not USE_INLINE or "\n" in value:
             outstream.write('"%s": |-\n' % key.encode("UTF-8"))
             for line in value.split("\n"):

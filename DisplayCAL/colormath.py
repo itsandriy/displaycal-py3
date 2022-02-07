@@ -3516,8 +3516,6 @@ optimalcolors_Lab = [(52.40, 95.40, 10.58),
 
 
 def debug_caches():
-    from log import safe_print
-
     for cache in ("XYZ2RGB.interp",
                   "wp_adaption_matrix.cache",
                   "get_rgb_space.cache",
@@ -3533,10 +3531,10 @@ def debug_caches():
                 if k != kk and v == vv and not kk in seen:
                     count += 1
                     seen[kk] = True
-        safe_print(cache, len(c), "entries", max(count - 1, 0), "duplicates")
+        print(cache, len(c), "entries", max(count - 1, 0), "duplicates")
         if count > 1:
             for k, v in c.items():
-                safe_print(k, v)
+                print(k, v)
 
 
 if "--debug-caches" in sys.argv[1:]:

@@ -7,7 +7,7 @@ import wx
 import io
 import random
 
-from fmresources import *
+from .fmresources import *
 
 # ---------------------------------------------------------------------------- #
 # Class DCSaver
@@ -434,9 +434,8 @@ class RendererMSOffice2007(RendererBase):
         regPts[8] = regPts[0]
 
         # Define the middle points
-
         factor = artMgr.GetMenuBgFactor()
-        
+
         leftPt1 = wx.Point(rect.x, rect.y + (rect.height / factor))
         leftPt2 = wx.Point(rect.x, rect.y + (rect.height / factor)*(factor-1))
 
@@ -682,32 +681,26 @@ class ArtManager(wx.EvtHandler):
 
         return wx.NullBitmap
 
-
-    def Get(self):
-        """ Accessor to the unique art manager object. """
-
-        if not hasattr(self, "_instance"):
-        
-            self._instance = ArtManager()
-            self._instance.Initialize()
+    @classmethod
+    def Get(cls):
+        """Accessor to the unique art manager object.
+        """
+        if not hasattr(cls, "_instance"):
+            cls._instance = ArtManager()
+            cls._instance.Initialize()
 
             # Initialize the renderers map
-            self._renderers[StyleXP] = RendererXP()
-            self._renderers[Style2007] = RendererMSOffice2007()
+            cls._renderers[StyleXP] = RendererXP()
+            cls._renderers[Style2007] = RendererMSOffice2007()
 
-        return self._instance
+        return cls._instance
 
-    Get = classmethod(Get)
-    
-    def Free(self):
-        """ Destructor for the unique art manager object. """
-
-        if hasattr(self, "_instance"):
-        
-            del self._instance
-
-    Free = classmethod(Free)
-
+    @classmethod
+    def Free(cls):
+        """Destructor for the unique art manager object.
+        """
+        if hasattr(cls, "_instance"):
+            del cls._instance
 
     def OnSysColourChange(self, event):
         """
@@ -719,17 +712,14 @@ class ArtManager(wx.EvtHandler):
         # reinitialise the colour map
         self.InitColours()
 
-
     def LightColour(self, colour, percent):
-        """
-        Return light contrast of `colour`. The colour returned is from the scale of
+        """Return light contrast of `colour`. The colour returned is from the scale of
         `colour` ==> white.
 
         :param `colour`: the input colour to be brightened;
         :param `percent`: determines how light the colour will be. `percent` = 100
          returns white, `percent` = 0 returns `colour`.
         """
-
         end_colour = wx.WHITE
         rd = end_colour.Red() - colour.Red()
         gd = end_colour.Green() - colour.Green()
@@ -743,7 +733,6 @@ class ArtManager(wx.EvtHandler):
         b = colour.Blue() + ((i*bd*100)/high)/100
 
         return wx.Colour(r, g, b)
-
 
     def DarkColour(self, colour, percent):
         """

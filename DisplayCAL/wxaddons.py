@@ -494,7 +494,7 @@ class ThreadedTimer(object):
             self._owner.ProcessEvent(BetterTimerEvent(self._id, self._ms))
 
     def Start(self, milliseconds=-1, oneShot=False):
-        if self._thread and self._thread.isAlive():
+        if self._thread and self._thread.is_alive():
             self._keep_running = False
             self._thread.join()
         if milliseconds > -1:

@@ -241,22 +241,22 @@ def run (command, timeout=-1, withexitstatus=False, events=None, extra_args=None
     event_count = 0
     while 1:
         try:
-            index = child.expect (patterns)
-            if type(child.after) in (str,):
+            index = child.expect(patterns)
+            if isinstance(child.after, str):
                 child_result_list.append(child.before + child.after)
             else: # child.after may have been a TIMEOUT or EOF, so don't cat those.
                 child_result_list.append(child.before)
-            if type(responses[index]) in (str,):
+            if isinstance(responses[index], str):
                 child.send(responses[index])
-            elif type(responses[index]) is types.FunctionType:
+            elif callable(responses[index]):
                 callback_result = responses[index](locals())
                 sys.stdout.flush()
-                if type(callback_result) in (str,):
+                if isinstance(callback_result, str):
                     child.send(callback_result)
                 elif callback_result:
                     break
             else:
-                raise TypeError ('The callback must be a string or function type.')
+                raise TypeError('The callback must be a string or function type.')
             event_count = event_count + 1
         except TIMEOUT as e:
             child_result_list.append(child.before)
@@ -267,7 +267,7 @@ def run (command, timeout=-1, withexitstatus=False, events=None, extra_args=None
     child_result = ''.join(child_result_list)
     if withexitstatus:
         child.close()
-        return (child_result, child.exitstatus)
+        return child_result, child.exitstatus
     else:
         return child_result
 
@@ -530,13 +530,16 @@ class spawn_unix (object):
         # that performs some task; creates no stdout output; and then dies.
 
         # If command is an int type then it may represent a file descriptor.
-        if type(command) == type(0):
-            raise ExceptionPexpect ('Command is an int type. If this is a file descriptor then maybe you want to use fdpexpect.fdspawn which takes an existing file descriptor instead of a command string.')
+        if isinstance(command, int):
+            raise ExceptionPexpect(
+                "Command is an int type. If this is a file descriptor then maybe you want to use fdpexpect.fdspawn "
+                "which takes an existing file descriptor instead of a command string."
+            )
 
-        if type (args) != type([]):
-            raise TypeError ('The argument, args, must be a list.')
+        if not isinstance(args, list):
+            raise TypeError('The argument, args, must be a list.')
 
-        if args == []:
+        if not args:
             self.args = split_command_line(command)
             self.command = self.args[0]
         else:
@@ -1247,7 +1250,7 @@ class spawn_unix (object):
 
         if patterns is None:
             return []
-        if type(patterns) is not list:
+        if not isinstance(patterns, list):
             patterns = [patterns]
 
         compile_flags = re.DOTALL # Allow dot to match \n
@@ -1255,21 +1258,21 @@ class spawn_unix (object):
             compile_flags = compile_flags | re.IGNORECASE
         compiled_pattern_list = []
         for p in patterns:
-            if type(p) in (str,):
+            if isinstance(p, str):
                 compiled_pattern_list.append(re.compile(p, compile_flags))
             elif p is EOF:
                 compiled_pattern_list.append(EOF)
             elif p is TIMEOUT:
                 compiled_pattern_list.append(TIMEOUT)
-            elif type(p) is type(re.compile('')):
+            elif isinstance(p, re.Pattern):
                 compiled_pattern_list.append(p)
             else:
-                raise TypeError ('Argument must be one of StringTypes, EOF, TIMEOUT, SRE_Pattern, or a list of those type. %s' % str(type(p)))
+                raise TypeError("Argument must be one of StringTypes, EOF, TIMEOUT, SRE_Pattern, or a list of those "
+                                "type. %s" % str(type(p)))
 
         return compiled_pattern_list
 
-    def expect(self, pattern, timeout = -1, searchwindowsize=None):
-
+    def expect(self, pattern, timeout=-1, searchwindowsize=None):
         """This seeks through the stream until a pattern is matched. The
         pattern is overloaded and may take several types. The pattern can be a
         StringType, EOF, a compiled re, or a list of any of those types.
@@ -1376,7 +1379,7 @@ class spawn_unix (object):
         This method is also useful when you don't want to have to worry about
         escaping regular expression characters that you want to match."""
 
-        if type(pattern_list) in (str,) or pattern_list in (TIMEOUT, EOF):
+        if isinstance(pattern_list, str) or pattern_list in (TIMEOUT, EOF):
             pattern_list = [pattern_list]
         return self.expect_loop(searcher_string(pattern_list), timeout, searchwindowsize)
 
@@ -1700,15 +1703,18 @@ class spawn_windows (spawn_unix, object):
         # that performs some task; creates no stdout output; and then dies.
 
         # If command is an int type then it may represent a file descriptor.
-        if type(command) == type(0):
-            raise ExceptionPexpect ('Command is an int type. If this is a file descriptor then maybe you want to use fdpexpect.fdspawn which takes an existing file descriptor instead of a command string.')
+        if isinstance(command, int):
+            raise ExceptionPexpect(
+                "Command is an int type. If this is a file descriptor then maybe you want to use fdpexpect.fdspawn "
+                "which takes an existing file descriptor instead of a command string."
+            )
 
-        if type (args) != type([]):
-            raise TypeError ('The argument, args, must be a list.')
+        if not isintance(args, list):
+            raise TypeError("The argument, args, must be a list.")
    
-        if args == []:
-            #Momentairly broken - path '\' characters being misinterpreted
-            #self.args = split_command_line(command)
+        if not args:
+            # Momentairly broken - path '\' characters being misinterpreted
+            # self.args = split_command_line(command)
             self.args = [command]
             self.command = self.args[0]
         else:
@@ -2045,8 +2051,7 @@ class Wtty:
         log(commandLine)
         self.__oproc, _, self.conpid, self.__otid = CreateProcess(None, commandLine, None, None, False, 
                                                                   CREATE_NEW_CONSOLE, env, self.cwd, si)
-            
-   
+
     def switchTo(self, attached=True):
         """Releases from the current console and attatches
         to the childs."""
@@ -2060,7 +2065,7 @@ class Wtty:
         AttachConsole(self.conpid)
         self.__consin = GetStdHandle(STD_INPUT_HANDLE)
         self.__consout = self.getConsoleOut()
-        
+
     def switchBack(self):
         """Releases from the current console and attaches 
         to the parents."""
@@ -2856,7 +2861,7 @@ def log(e, suffix='', logdir=None):
             fout.close()   
 
 def excepthook(etype, value, tb):
-	log(''.join(traceback.format_exception(etype, value, tb)))
+    log(''.join(traceback.format_exception(etype, value, tb)))
 
 #sys.excepthook = excepthook
         
@@ -2893,7 +2898,7 @@ def join_args(args):
     commandline = []
     for arg in args:
         if re.search('[\^!$%&()[\]{}=;\'+,`~\s]', arg):
-			arg = '"%s"' % arg
+            arg = '"%s"' % arg
         commandline.append(arg)
     return ' '.join(commandline)
 

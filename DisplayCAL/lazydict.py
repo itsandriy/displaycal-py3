@@ -7,7 +7,7 @@ import os
 
 from config import get_data_path
 from debughelpers import handle_error
-from util_str import safe_str, safe_unicode
+from util_str import safe_str
 
 
 def unquote(string, raise_exception=True):
@@ -154,15 +154,15 @@ class LazyDict(dict):
 
     def iteritems(self):
         self.load()
-        return dict.iteritems(self)
+        return dict.items(self)
 
     def iterkeys(self):
         self.load()
-        return dict.iterkeys(self)
+        return dict.keys(self)
 
     def itervalues(self):
         self.load()
-        return dict.itervalues(self)
+        return dict.values(self)
 
     def keys(self):
         self.load()
@@ -182,8 +182,7 @@ class LazyDict(dict):
                 if errors:
                     self.errors = errors
             else:
-                handle_error(UserWarning("Warning - file not found:\n\n%s" %
-                                         safe_unicode(path)), tb=False)
+                handle_error(UserWarning("Warning - file not found:\n\n%s" % path), tb=False)
                 return
             try:
                 with codecs.open(path, "rU", self.encoding, self.errors) as f:
@@ -195,9 +194,7 @@ class LazyDict(dict):
             except Exception as exception:
                 if raise_exceptions:
                     raise
-                handle_error(UserWarning("Error parsing file:\n\n%s\n\n%s" %
-                                         tuple(safe_unicode(s) for s in
-                                               (path, exception))), tb=False)
+                handle_error(UserWarning("Error parsing file:\n\n%s\n\n%s" % (path, exception)), tb=False)
 
     def parse(self, iterable):
         # Override this in subclass

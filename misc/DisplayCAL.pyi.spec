@@ -6,7 +6,7 @@ from py_compile import compile
 from zipfile import ZipFile, ZIP_DEFLATED
 
 sys.path.insert(0, '')
-from DisplayCAL.meta import name as appname, version, script2pywname
+from meta import name as appname, version, script2pywname
 from DisplayCAL.setup import (config, create_app_symlinks, get_data,
                               get_scripts, plist_dict)
 
@@ -78,9 +78,9 @@ else:
     # Also remove win32comgenpy runtime hook as we don't use genpy
     global scripts  # Use global otherwise the below filter will result in a
                     # NameError: global name 'scripts' is not defined -- but WHY???
-    a.scripts = filter(lambda (name, script, dtype):
+    a.scripts = list(filter(lambda (name, script, dtype):
                        name not in ['pyi_rth_win32comgenpy'] +
-                                   [script for script, desc in scripts], a.scripts)
+                                   [script for script, desc in scripts], a.scripts))
 
 # Bootstrap code which inserts library into sys.path
 lib_bootstrap = os.path.join(build_dir, 'lib_bootstrap')
@@ -155,7 +155,7 @@ if sys.platform == 'darwin':
     iconpth = os.path.join(appname, 'theme', 'icons', appname + '.icns')
     app = BUNDLE(coll,
                  icon=iconpth,
-                 info_plist=dict((k, v.encode('UTF-8')) for k, v in plist_dict.iteritems()),
+                 info_plist=dict((k, v.encode('UTF-8')) for k, v in plist_dict.items()),
                  name=appname + '.app')
 
 # Collect data

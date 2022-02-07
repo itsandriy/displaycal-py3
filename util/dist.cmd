@@ -11,7 +11,7 @@ for /F usebackq %%a in (`python -c "from DisplayCAL import meta;print meta.versi
     set version=%%a
 )
 
-for /F usebackq %%a in (`python -c "from DisplayCAL.meta import version_tuple;print '.'.join(str(n) for n in version_tuple[:2] + (str(version_tuple[2]) + str(version_tuple[3]), ))"`) do (
+for /F usebackq %%a in (`python -c "from meta import version_tuple;print '.'.join(str(n) for n in version_tuple[:2] + (str(version_tuple[2]) + str(version_tuple[3]), ))"`) do (
     set msi_version=%%a
 )
 

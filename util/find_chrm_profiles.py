@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from DisplayCAL import ICCProfile as iccp
 from DisplayCAL.defaultpaths import iccprofiles, iccprofiles_home
-from DisplayCAL.safe_print import safe_print
+
 
 for p in set(iccprofiles_home + iccprofiles):
     if os.path.isdir(p):
@@ -19,8 +19,8 @@ for p in set(iccprofiles_home + iccprofiles):
                 pass
             else:
                 if "chrm" in profile.tags:
-                    safe_print(f)
-                    safe_print(profile.connectionColorSpace)
+                    print(f)
+                    print(profile.connectionColorSpace)
                     for name in profile.tags.chrm:
-                        safe_print(name, profile.tags.chrm[name])
-                    safe_print("")
+                        print(name, profile.tags.chrm[name])
+                    print("")

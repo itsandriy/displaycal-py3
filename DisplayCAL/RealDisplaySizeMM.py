@@ -19,15 +19,27 @@ if sys.platform == "darwin":
 else:
     # Linux and Windows have separate files
     if platform.architecture()[0].startswith('64'):
-        if sys.version_info[:2] == (2, 6):
+        if sys.version_info[:2] == (3, 6):
             from lib64.python36.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (2, 7):
+        elif sys.version_info[:2] == (3, 7):
             from lib64.python37.RealDisplaySizeMM import *
+        elif sys.version_info[:2] == (3, 8):
+            from lib64.python38.RealDisplaySizeMM import *
+        elif sys.version_info[:2] == (3, 9):
+            from lib64.python39.RealDisplaySizeMM import *
+        elif sys.version_info[:2] == (3, 10):
+            from lib64.python310.RealDisplaySizeMM import *
     else:
-        if sys.version_info[:2] == (2, 6):
+        if sys.version_info[:2] == (3, 6):
             from lib32.python36.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (2, 7):
+        elif sys.version_info[:2] == (3, 7):
             from lib32.python37.RealDisplaySizeMM import *
+        elif sys.version_info[:2] == (3, 8):
+            from lib32.python38.RealDisplaySizeMM import *
+        elif sys.version_info[:2] == (3, 9):
+            from lib32.python39.RealDisplaySizeMM import *
+        elif sys.version_info[:2] == (3, 10):
+            from lib32.python310.RealDisplaySizeMM import *
 
 _displays = None
 
@@ -47,7 +59,7 @@ def RealDisplaySizeMM(display_no=0):
     display = get_display(display_no)
     if display:
         return display.get("size_mm", (0, 0))
-    return (0, 0)
+    return 0, 0
 
 
 def enumerate_displays():

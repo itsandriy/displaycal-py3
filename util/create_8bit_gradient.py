@@ -11,8 +11,8 @@ def main():
     buf = img.GetDataBuffer()
     x = y = 0
     levels = []
-    for i in xrange(256):
-        for j in xrange(5):
+    for i in range(256):
+        for j in range(5):
             levels.append(i)
     offset = 0
     for i, byte in enumerate(buf):

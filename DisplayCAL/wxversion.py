@@ -128,7 +128,7 @@ def select(versions, optionsRequired=False):
              as close as possible match to a hard, exact match.
         
     """
-    if type(versions) == str:
+    if isinstance(versions, str):
         versions = [versions]
 
     global _selected
@@ -249,7 +249,7 @@ def checkInstalled(versions, optionsRequired=False):
         :param optionsRequired: Same as in `select`.
     """
     
-    if type(versions) == str:
+    if isinstance(versions, str):
         versions = [versions]
     installed = _find_installed()
     bestMatch = _get_best_match(installed, versions, optionsRequired)

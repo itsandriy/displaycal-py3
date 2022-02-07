@@ -29,11 +29,9 @@ import cubeiterator as ci
 import localization as lang
 import worker_base
 from imfile import tiff_get_header
-from log import safe_print as log_safe_print
 from meta import name as appname, version
 from network import get_network_addr, get_valid_host
 from ordereddict import OrderedDict
-from util_str import safe_str, safe_unicode
 
 
 CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.POINTER(None),
@@ -85,9 +83,10 @@ _autonet_methodnames = ("AddConnectionCallback", "Listen", "Announce")
 
 _lock = threading.RLock()
 
+
 def safe_print(*args):
     with _lock:
-        log_safe_print(*args)
+        print(*args)
 
 
 def icc_device_link_to_madvr(icc_device_link_filename, unity=False,
@@ -254,7 +253,6 @@ def inet_pton(ip_string):
 def trunc(value, length):
     """ For string types, return value truncated to length """
     if isinstance(value, str):
-        value = safe_str(value)
         if len(repr(value)) > length:
             value = value[:length - 3 - len(str(length)) - len(repr(value)) + len(value)]
             return "%r[:%i]" % (value, length)
@@ -298,7 +296,7 @@ class H3DLUT(object):
         for line in data[self.parametersFileOffset:
         self.parametersFileOffset +
         parametersSize].rstrip(b"\0").splitlines():
-            item = safe_unicode(line).split(None, 1)
+            item = str(line).split(None, 1)
             if len(item) == 2:
                 key, values = item
                 values = values.split()
@@ -337,7 +335,7 @@ class H3DLUT(object):
                     else:
                         values[i] = "%s" % value
                 value = " ".join(values)
-            parametersData.append(safe_str("%s %s" % (key, value)))
+            parametersData.append("%s %s" % (key, value))
         parametersData = b"\r\n".join(parametersData) + b"\0"
         parametersSize = len(parametersData)
         return "".join((self.signature,
@@ -1021,7 +1019,7 @@ class MadTPG_Net(MadTPGBase):
         self.listening = False
         while self._threads:
             thread = self._threads.pop()
-            if thread.isAlive():
+            if thread.is_alive():
                 thread.join()
 
     def __getattr__(self, name):
@@ -1248,8 +1246,8 @@ class MadTPG_Net(MadTPGBase):
 
     def _assemble_hello_params(self):
         """ Assemble 'hello' packet parameters """
-        info = [("computerName", safe_unicode(socket.gethostname().upper())),
-                ("userName", safe_unicode(getpass.getuser())),
+        info = [("computerName", str(socket.gethostname().upper())),
+                ("userName", str(getpass.getuser())),
                 ("os", "%s %s" % (platform.system(), platform.release())),
                 ("exeFile", os.path.basename(sys.executable)), ("exeVersion",
                                                                 version),

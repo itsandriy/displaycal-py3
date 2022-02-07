@@ -7,13 +7,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from DisplayCAL.meta import domain
-from DisplayCAL.util_str import safe_unicode
+from meta import domain
 
-tplpth = os.path.join(os.path.dirname(__file__), "..", "misc",
-                      "README.template.html")
+tplpth = os.path.join(os.path.dirname(__file__), "..", "misc", "README.template.html")
 with open(tplpth, "r") as tpl:
-    readme = safe_unicode(tpl.read(), "utf-8")
+    readme = str(tpl.read(), "utf-8")
 
 chglog = re.search('<div id="(?:changelog|history)">'
                    '.+?<h2>.+?</h2>'

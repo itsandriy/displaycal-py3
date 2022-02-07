@@ -6,8 +6,7 @@ import socket
 import urllib.request, urllib.error, urllib.parse
 
 import localization as lang
-from log import safe_print
-from util_str import safe_str, safe_unicode
+from util_str import safe_str
 
 
 def get_network_addr():
@@ -80,8 +79,8 @@ class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
 
         if not hasattr(req, "redirect_dict"):
             # First redirect in this chain. Log original URL
-            safe_print(req.get_full_url(), end=" ")
-        safe_print("\u2192", newurl)
+            print(req.get_full_url(), end=" ")
+        print("\u2192", newurl)
 
         return urllib.request.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)
 
@@ -134,13 +133,13 @@ class ScriptingClientSocket(socket.socket):
             self.shutdown(socket.SHUT_RDWR)
         except socket.error as exception:
             if exception.errno != errno.ENOTCONN:
-                safe_print(exception)
+                print(exception)
         self.close()
 
     def get_single_response(self):
         # Buffer received data until EOT (response end marker) and return
         # single response (additional data will still be in the buffer)
-        while not "\4" in self.recv_buffer:
+        while "\4" not in self.recv_buffer:
             incoming = self.recv(4096)
             if incoming == "":
                 raise socket.error(lang.getstr("connection.broken"))
@@ -148,7 +147,7 @@ class ScriptingClientSocket(socket.socket):
         end = self.recv_buffer.find("\4")
         single_response = self.recv_buffer[:end]
         self.recv_buffer = self.recv_buffer[end + 1:]
-        return safe_unicode(single_response, "UTF-8")
+        return str(single_response)
 
     def send_command(self, command):
         # Automatically append newline (command end marker)

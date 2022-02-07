@@ -14,7 +14,6 @@ from DisplayCAL import colormath as cm
 from DisplayCAL import config
 from DisplayCAL import localization as lang
 from DisplayCAL import worker
-from DisplayCAL.log import safe_print
 from DisplayCAL.wxwindows import BaseApp, wx
 
 # Environment sets defaults
@@ -68,14 +67,14 @@ def main(*args, **kwargs):
                 raise Invalid("Invalid chromaticity %s" % xystr)
             state = None
         elif os.path.isfile(arg) and i < len(args) - 1:
-            safe_print("Reading profile:", arg)
+            print("Reading profile:", arg)
             profile = ICCP.ICCProfile(arg)
         else:
             outfilename = os.path.abspath(arg)
     if not xy or not outfilename:
         raise Invalid("Usage: %s [-t temp | -T temp | -w x,y] [--cal-only] [inprofile] outfilename" % os.path.basename(__file__))
     if not profile:
-        safe_print("Reading display profile")
+        print("Reading display profile")
         profile = ICCP.get_display_profile()
     # Setup
     config.initcfg()
@@ -101,5 +100,5 @@ class Invalid(ValueError):
 if __name__ == "__main__":
     try:
         main(*sys.argv[1:])
-    except Invalid, exception:
-        print exception
+    except Invalid as exception:
+        print(exception)

@@ -5,15 +5,16 @@ Simple CGATS file parser class
 
 Copyright (C) 2008 Florian Hoech
 """
-
-
-import math, os, re, sys
+import functools
+import io
+import math
+import re
+import os
+import sys
 
 import colormath
-from log import safe_print
 from options import debug, verbose
 from util_io import GzipFileProper, StringIOu as StringIO
-from util_str import safe_unicode
 
 
 def get_device_value_labels(color_rep=None):
@@ -261,7 +262,7 @@ class CGATS(dict):
                     else:
                         # assume text
                         cgats = StringIO(cgats)
-                elif isinstance(cgats, file):
+                elif isinstance(cgats, io.IOBase):
                     self.filename = cgats.name
                 elif not isinstance(cgats, StringIO):
                     raise CGATSInvalidError('Unsupported type: %s' % type(cgats))
@@ -379,9 +380,9 @@ class CGATS(dict):
                                             (self.__module__,
                                              self.__class__.__name__, id(self)))
                 if self[0].normalize_to_y_100():
-                    safe_print("Normalized to Y = 100:", reprstr)
+                    print("Normalized to Y = 100:", reprstr)
                 else:
-                    safe_print("Warning: Could not normalize to Y = 100:",
+                    print("Warning: Could not normalize to Y = 100:",
                                reprstr)
             self.setmodified(False)
 
@@ -390,8 +391,7 @@ class CGATS(dict):
         self.setmodified()
 
     def __delitem__(self, name):
-        if (self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and
-            name in self._keys):
+        if self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and name in self._keys:
             self._keys.remove(name)
         dict.__delitem__(self, name)
         self.setmodified()
@@ -409,11 +409,11 @@ class CGATS(dict):
             return getattr(self, name)
         elif name in self:
             if str(name).upper() in ('INDEX', 'SAMPLE_ID', 'SAMPLEID'):
-                if type(self.get(name)) not in (int, float):
+                if not isinstance(self.get(name), (int, float)):
                     return self.get(name)
                 if str(name).upper() == 'INDEX':
                     return self.key
-                if type(self.get(name)) == float:
+                if isinstance(self.get(name), float):
                     return 1.0 / (self.NUMBER_OF_SETS - 1) * self.key
                 return self.key + 1
             return self.get(name)
@@ -454,32 +454,31 @@ class CGATS(dict):
                 if desc:
                     display = self.queryv1("DISPLAY")
                     if display:
-                        desc += " & " + display
+                        desc += " & %s" % display
             else:
                 tech = self.queryv1("TECHNOLOGY")
                 if tech:
-                    if (desc and desc != "Not specified" and
-                        desc != "CCSS for " + tech):
+                    if desc and desc != "Not specified" and desc != "CCSS for %s" % tech:
                         display = desc
                     else:
                         display = self.queryv1("DISPLAY")
                     if localized:
                         import localization as lang
-                        tech = safe_unicode(tech, "UTF-8")
+                        tech = str(tech)
                         tech = lang.getstr("display.tech." + tech, default=tech)
                         if display:
                             # Localized tech will be unicode always, need to
                             # make sure display is as well
-                            display = safe_unicode(display, "UTF-8")
+                            display = str(display)
                     if display:
                         tech += " (%s)" % display
                 desc = tech
         if not desc and self.filename:
-            # Filesystem encoding can be different than UTF-8 (depending on
-            # platform), by default safe_unicode will use FS enc
-            desc = safe_unicode(os.path.splitext(os.path.basename(self.filename))[0])
+            # Filesystem encoding can be different from UTF-8 (depending on
+            # platform), by default str will use FS enc
+            desc = str(os.path.splitext(os.path.basename(self.filename))[0])
         else:
-            desc = safe_unicode(desc or "", "UTF-8")
+            desc = str(desc or "")
         return desc
 
     def __setattr__(self, name, value):
@@ -540,13 +539,12 @@ class CGATS(dict):
                 value = self[key]
                 if key == 'DATA':
                     data = value
-                elif type(value) in (float, int, str, str):
+                elif isinstance(value, (float, int, str)):
                     if key not in ('NUMBER_OF_FIELDS', 'NUMBER_OF_SETS'):
-                        if type(key) == int:
+                        if isinstance(key, int):
                             result.append(str(value))
                         else:
-                            if 'KEYWORDS' in self and \
-                                key in list(self['KEYWORDS'].values()):
+                            if 'KEYWORDS' in self and key in list(self['KEYWORDS'].values()):
                                 if self.emit_keywords:
                                     result.append('KEYWORD "%s"' % key)
                             if isinstance(value, str):
@@ -554,8 +552,7 @@ class CGATS(dict):
                                 value = value.replace('"', '""')
                             result.append('%s "%s"' % (key, value))
                 elif key not in ('DATA_FORMAT', 'KEYWORDS'):
-                    if (value.type == 'SECTION' and result[-1:] and
-                        result[-1:][0] != ''):
+                    if value.type == 'SECTION' and result[-1:] and result[-1:][0] != '':
                         result.append('')
                     result.append(str(value))
             if self.type == 'SECTION':
@@ -675,9 +672,9 @@ class CGATS(dict):
             return False
         numvalues = len(valueslist)
         if sort1:
-            valueslist.sort(sort1)
+            valueslist = sorted(valueslist, key=functools.cmp_to_key(sort1))
         if sort2:
-            valueslist.sort(sort2)
+            valueslist = sorted(valueslist, key=functools.cmp_to_key(sort2))
         gray = []
         if split_grays:
             # Split values into gray and color. First gray in a consecutive
@@ -689,60 +686,50 @@ class CGATS(dict):
             added = {prev_i: True}  # Keep track of entries we have added
             for i, values in enumerate(valueslist):
                 if debug:
-                    safe_print(i + 1, "IN", values[:3])
+                    print(i + 1, "IN", values[:3])
                 is_gray = values[:3] == [values[:3][0]] * 3
                 prev = color
                 cur = color
                 if is_gray:
                     if not prev_values:
                         if debug:
-                            safe_print("WARNING - skipping gray because no prev")
+                            print("WARNING - skipping gray because no prev")
                     elif values[:3] == prev_values[:3]:
                         # Same gray as prev value
                         prev = color
                         cur = gray
                         if prev_i not in added:
                             if debug:
-                                safe_print("INFO - appending prev %s to color "
-                                           "because prev was same gray but got "
-                                           "skipped" % prev_values[:3])
+                                print("INFO - appending prev %s to color because prev was same gray but got skipped" %
+                                      prev_values[:3])
                         if debug:
-                            safe_print("INFO - appending cur to gray because "
-                                       "prev %s was same gray" %
-                                       prev_values[:3])
+                            print("INFO - appending cur to gray because prev %s was same gray" % prev_values[:3])
                     elif prev_values[:3] == [prev_values[:3][0]] * 3:
                         # Prev value was different gray
                         prev = gray
                         cur = gray
                         if prev_i not in added:
                             if debug:
-                                safe_print("INFO - appending prev %s to gray "
-                                           "because prev was different gray "
-                                           "but got skipped" % prev_values[:3])
+                                print("INFO - appending prev %s to gray because prev was different gray "
+                                      "but got skipped" % prev_values[:3])
                         if debug:
-                            safe_print("INFO - appending cur to gray because "
-                                       "prev %s was different gray" %
-                                       prev_values[:3])
+                            print("INFO - appending cur to gray because prev %s was different gray" % prev_values[:3])
                     elif i < numvalues - 1:
                         if debug:
-                            safe_print("WARNING - skipping gray because "
-                                       "prev %s was not gray" %
-                                       prev_values[:3])
+                            print("WARNING - skipping gray because prev %s was not gray" % prev_values[:3])
                     else:
                         # Last
                         if debug:
-                            safe_print("INFO - appending cur to color "
-                                       "because prev %s was not gray but "
-                                       "cur is last" % prev_values[:3])
+                            print("INFO - appending cur to color because prev %s was not gray but cur is last" %
+                                  prev_values[:3])
                 if not is_gray or cur is gray or i == numvalues - 1:
                     if prev_i not in added:
                         if debug and prev is cur is color:
-                            safe_print("INFO - appending prev %s to color because "
-                                       "prev got skipped" % prev_values[:3])
+                            print("INFO - appending prev %s to color because prev got skipped" % prev_values[:3])
                         prev.append(prev_values)
                         added[prev_i] = True
                     if debug and not is_gray and cur is color:
-                        safe_print("INFO - appending cur to color")
+                        print("INFO - appending cur to color")
                     cur.append(values)
                     added[i] = True
                 prev_i = i
@@ -750,21 +737,18 @@ class CGATS(dict):
             if (len(color) == 2 and color[0][:3] == [0, 0, 0] and
                 color[1][:3] == [100, 100, 100]):
                 if debug:
-                    safe_print("INFO - appending color to gray because color "
-                               "is only black and white")
+                    print("INFO - appending color to gray because color is only black and white")
                 gray.extend(color)
                 color = []
                 if sort1:
-                    gray.sort(sort1)
+                    gray = sorted(gray, key=functools.cmp_to_key(sort1))
                 if sort2:
-                    gray.sort(sort2)
+                    gray = sorted(gray, key=functools.cmp_to_key(sort2))
             if debug:
                 for i, values in enumerate(gray):
-                    safe_print("%4i" % (i + 1), "GRAY", ("%8.4f " * 3) %
-                               tuple(values[:3]))
+                    print("%4i" % (i + 1), "GRAY", ("%8.4f " * 3) % tuple(values[:3]))
                 for i, values in enumerate(color):
-                    safe_print("%4i" % (i + 1), "COLOR", ("%8.4f " * 3) %
-                               tuple(values[:3]))
+                    print("%4i" % (i + 1), "COLOR", ("%8.4f " * 3) % tuple(values[:3]))
         else:
             color = valueslist
         checkerboard = []
@@ -803,16 +787,16 @@ class CGATS(dict):
                     if valueslist:
                         values = valueslist.pop(0)
                         checkerboard.append(values)
-        if (shift and
-            checkerboard[-1][:3] == [100, 100, 100]):
+        if (shift and checkerboard[-1][:3] == [100, 100, 100]):
             # Move white patch to front
             if debug:
-                safe_print("INFO - moving white to front")
+                print("INFO - moving white to front")
             checkerboard.insert(0, checkerboard.pop())
         if len(checkerboard) != numvalues:
             # This should never happen
-            safe_print("Number of patches incorrect after re-ordering (is %i, "
-                       "should be %i)" % (len(checkerboard), numvalues))
+            print(
+                "Number of patches incorrect after re-ordering (is %i, should be %i)" % (len(checkerboard), numvalues)
+            )
             return False
         return data.set_RGB_XYZ_values(checkerboard)
 
@@ -820,8 +804,7 @@ class CGATS(dict):
         return self.sort_data_RGB_XYZ(sort_RGB_gray_to_top)
 
     def sort_RGB_to_top(self, r=0, g=0, b=0):
-        """
-        Sort quantities of R, G or B (or combinations) to top.
+        """Sort quantities of R, G or B (or combinations) to top.
 
         Example: sort_RGB_to_top(True, 0, 0) - sort red values to top
         Example: sort_RGB_to_top(0, True, True) - sort cyan values to top
@@ -874,11 +857,12 @@ class CGATS(dict):
         return self.sort_data_RGB_XYZ(sort_by_rec709_luma)
 
     def sort_data_RGB_XYZ(self, cmp=None, key=None, reverse=False):
-        """ Sort RGB/XYZ data """
+        """Sort RGB/XYZ data
+        """
         data, valueslist = self.get_RGB_XYZ_values()
         if not valueslist:
             return False
-        valueslist.sort(cmp, key, reverse)
+        valueslist = sorted(valueslist, key=functools.cmp_to_key(cmp), reverse=reverse)
         return data.set_RGB_XYZ_values(valueslist)
 
     @property
@@ -888,8 +872,7 @@ class CGATS(dict):
         return self._modified
 
     def moveby1(self, start, inc=1):
-        """
-        Move items from start by icrementing or decrementing their key by inc.
+        """Move items from start by incrementing or decrementing their key by inc.
         """
         r = range(start, len(self) + 1)
         if inc > 0:
@@ -905,12 +888,10 @@ class CGATS(dict):
                         break
 
     def add_data(self, data, key=None):
-        """
-        Add data to the CGATS structure.
+        """Add data to the CGATS structure.
 
         data can be a CGATS instance, a dict, a list, a tuple, or a string or
         unicode instance.
-
         """
         context = self
         if self.type == 'DATA':
@@ -975,7 +956,7 @@ class CGATS(dict):
                              item.upper() == 'SAMPLENAME':
                             item = 'SAMPLE_NAME'
                         dataset[item] = value
-                    if type(key) == int:
+                    if isinstance(key, int):
                         # accept only integer keys.
                         # move existing items
                         self.moveby1(key)
@@ -987,16 +968,15 @@ class CGATS(dict):
                     dataset.type = 'SAMPLE'
                     self[key] = dataset
                 else:
-                    raise CGATSInvalidOperationError('Cannot add to DATA '
-                        'because of missing DATA_FORMAT')
+                    raise CGATSInvalidOperationError("Cannot add to DATA because of missing DATA_FORMAT")
             else:
-                raise CGATSTypeError('Invalid data type for %s (expected '
-                                     'CGATS, dict, list or tuple, got %s)' %
-                                     (self.type, type(data)))
+                raise CGATSTypeError(
+                    "Invalid data type for %s (expected CGATS, dict, list or tuple, got %s)" % (self.type, type(data))
+                )
         elif self.type == 'ROOT':
             if isinstance(data, str) and data.find('\n') < 0 and \
                data.find('\r') < 0:
-                if type(key) == int:
+                if isinstance(key, int):
                     # accept only integer keys.
                     # move existing items
                     self.moveby1(key)
@@ -1017,7 +997,7 @@ class CGATS(dict):
                                      % (self.type, type(data)))
         elif self.type == 'SECTION':
             if isinstance(data, str):
-                if type(key) == int:
+                if isinstance(key, int):
                     # accept only integer keys.
                     # move existing items
                     self.moveby1(key)
@@ -1055,7 +1035,7 @@ class CGATS(dict):
                             if value != 'KEYWORD':
                                 self.add_keyword(value)
                             else:
-                                safe_print('Warning: cannot add keyword '
+                                print('Warning: cannot add keyword '
                                             '"KEYWORD"')
                         else:
                             if (isinstance(value, str) and
@@ -1557,7 +1537,7 @@ Transform {
                       "fov": fov / 180.0 * math.pi,
                       "z": z}
         if format != "VRML":
-            safe_print("Generating", format)
+            print("Generating", format)
             x3d = x3dom.vrml2x3dom(out)
             if format == "HTML":
                 out = x3d.html(title=os.path.basename(filename))
@@ -1567,7 +1547,7 @@ Transform {
             writer = GzipFileProper
         else:
             writer = open
-        safe_print("Writing", filename)
+        print("Writing", filename)
         with writer(filename, "wb") as outfile:
             outfile.write(out)
 
@@ -1602,7 +1582,7 @@ Transform {
             result = None
 
         if not isinstance(query, dict):
-            if type(query) not in (list, tuple):
+            if not isinstance(query, (list, tuple)):
                 query = (query, )
 
         items = [self] + [self[key] for key in self]
@@ -1654,10 +1634,9 @@ Transform {
                             else:
                                 result[n] = result_n
 
-                if type(item) == CGATS and item != self:
-                    result_n = item.query(query, query_value, get_value,
-                                          get_first)
-                    if result_n != None:
+                if isintance(item, CGATS) and item != self:
+                    result_n = item.query(query, query_value, get_value, get_first)
+                    if result_n is not None:
                         if get_first:
                             result = result_n
                             break
@@ -1755,7 +1734,7 @@ Transform {
             for i, label in enumerate(Lab_data_format):
                 sample[label] = Lab[i]
 
-    def fix_zero_measurements(self, warn_only=False, logfile=safe_print):
+    def fix_zero_measurements(self, warn_only=False, logfile=print):
         """
         Fix (or warn about) <= zero measurements
 

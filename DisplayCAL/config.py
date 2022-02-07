@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-
-"""
-Runtime configuration and user settings parser
+"""Runtime configuration and user settings parser
 """
 
 import configparser
 configparser.DEFAULTSECT = "Default"
+
 from decimal import Decimal
 import locale
 import math
@@ -14,6 +13,7 @@ import re
 import string
 import sys
 from time import gmtime, strftime, timezone
+
 if sys.platform == "win32":
     import winreg
 
@@ -27,24 +27,22 @@ else:
     from defaultpaths import (xdg_config_dir_default, xdg_config_home,
                               xdg_data_home, xdg_data_home_default,
                               xdg_data_dirs)
-from defaultpaths import (autostart, autostart_home, home, iccprofiles,
-                          iccprofiles_home)
+from defaultpaths import (autostart, autostart_home, home, iccprofiles, iccprofiles_home)
 from meta import name as appname, build, lastmod, version
 from options import ascii, debug, verbose
 from safe_print import enc, fs_enc, original_codepage
 from util_io import StringIOu as StringIO
-from util_os import (expanduseru, expandvarsu, getenvu, is_superuser,
-                     listdir_re, which)
-from util_str import create_replace_function, safe_unicode, strtr
+from util_os import (expanduseru, expandvarsu, getenvu, is_superuser, listdir_re, which)
+from util_str import create_replace_function, strtr
 import colormath
 import encodedstdio
 
-# Runtime configuration
 
+# Runtime configuration
 if ascii:
     enc = "ASCII"
 
-exe = str(sys.executable, fs_enc)
+exe = sys.executable
 exedir = os.path.dirname(exe)
 exename = os.path.basename(exe)
 
@@ -53,9 +51,12 @@ isexe = sys.platform != "darwin" and getattr(sys, "frozen", False)
 if isexe and os.getenv("_MEIPASS2"):
     os.environ["_MEIPASS2"] = os.getenv("_MEIPASS2").replace("/", os.path.sep)
 
-pyfile = (exe if isexe else (os.path.isfile(sys.argv[0]) and sys.argv[0]) or
-                            os.path.join(os.path.dirname(__file__), "main.py"))
-pypath = exe if isexe else os.path.abspath(str(pyfile, fs_enc))
+pyfile = (
+    exe
+    if isexe
+    else (os.path.isfile(sys.argv[0]) and sys.argv[0]) or os.path.join(os.path.dirname(__file__), "main.py")
+)
+pypath = exe if isexe else os.path.abspath(pyfile)
 # Mac OS X: isapp should only be true for standalone, not 0install
 isapp = sys.platform == "darwin" and \
         exe.split(os.path.sep)[-3:-1] == ["Contents", "MacOS"] and \
@@ -66,7 +67,7 @@ if isapp:
 else:
     pyname, pyext = os.path.splitext(os.path.basename(pypath))
     pydir = os.path.dirname(exe if isexe
-                            else os.path.abspath(str(__file__, fs_enc)))
+                            else os.path.abspath(__file__))
 
 data_dirs = [pydir]
 extra_data_dirs = []
@@ -421,7 +422,7 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                     if not bmp.IsOk():
                         path = None
             if not path:
-                safe_print("Warning: Missing bitmap '%s'" % name)
+                print("Warning: Missing bitmap '%s'" % name)
                 img = wx.EmptyImage(w, h)
                 img.SetMaskColour(0, 0, 0)
                 img.InitAlpha()
@@ -495,8 +496,7 @@ def get_argyll_display_number(geometry):
     for i, display in enumerate(getcfg("displays")):
         if display.find("@ " + geometry) > -1:
             if debug:
-                safe_print("[D] Found display %s at index %i" %
-                           (geometry, i))
+                print("[D] Found display %s at index %i" % (geometry, i))
             return i
 
 
@@ -516,7 +516,7 @@ def get_display_number(display_no):
             geometry = "%i, %i, %ix%i" % tuple(wx.Display(i).Geometry)
             if display.endswith("@ " + geometry):
                 if debug:
-                    safe_print("[D] Found display %s at index %i" %
+                    print("[D] Found display %s at index %i" %
                                (geometry, i))
                 return i
     return 0
@@ -619,8 +619,7 @@ def get_data_path(relpath, rex=None):
                 try:
                     filelist = listdir_re(curpath, rex)
                 except Exception as exception:
-                    safe_print("Error - directory '%s' listing failed: %s" %
-                               tuple(safe_unicode(s) for s in (curpath, exception)))
+                    print("Error - directory '%s' listing failed: %s" % (curpath, exception))
                 else:
                     for filename in filelist:
                         if not filename in intersection:
@@ -648,27 +647,27 @@ def runtimeconfig(pyfile):
     attribute).
 
     """
-    global safe_print, safe_log
-    from log import setup_logging, safe_print, safe_log
+    global safe_log
+    # from log import setup_logging, print, safe_log
+    from log import setup_logging
     setup_logging(logdir, pyname, pyext, confighome=confighome)
     if debug:
-        safe_print("[D] pydir:", pydir)
+        print("[D] pydir:", pydir)
     if isapp:
         runtype = ".app"
     elif isexe:
         if debug:
-            safe_print("[D] _MEIPASS2 or pydir:", getenvu("_MEIPASS2", exedir))
+            print("[D] _MEIPASS2 or pydir:", getenvu("_MEIPASS2", exedir))
         if getenvu("_MEIPASS2", exedir) not in data_dirs:
             data_dirs.insert(1, getenvu("_MEIPASS2", exedir))
         runtype = exe_ext
     else:
         pydir_parent = os.path.dirname(pydir)
         if debug:
-            safe_print("[D] dirname(os.path.abspath(sys.argv[0])):",
+            print("[D] dirname(os.path.abspath(sys.argv[0])):",
                        os.path.dirname(os.path.abspath(sys.argv[0])))
-            safe_print("[D] pydir parent:", pydir_parent)
-        if (os.path.dirname(os.path.abspath(sys.argv[0])).decode(fs_enc) ==
-                pydir_parent and pydir_parent not in data_dirs):
+            print("[D] pydir parent:", pydir_parent)
+        if (os.path.dirname(os.path.abspath(sys.argv[0])) == pydir_parent and pydir_parent not in data_dirs):
             # Add the parent directory of the package directory to our list
             # of data directories if it is the directory containing the
             # currently run script (e.g. when running from source)
@@ -681,7 +680,7 @@ def runtimeconfig(pyfile):
         if dir_ not in data_dirs and os.path.isdir(dir_):
             data_dirs.append(dir_)
             if debug:
-                safe_print("[D] from sys.path:", dir_)
+                print("[D] from sys.path:", dir_)
     if sys.platform not in ("darwin", "win32"):
         data_dirs.extend([os.path.join(dir_, "doc", appname + "-" + version)
                           for dir_ in xdg_data_dirs + [xdg_data_home]])
@@ -694,16 +693,18 @@ def runtimeconfig(pyfile):
         data_dirs.extend([os.path.join(dir_, "icons", "hicolor")
                           for dir_ in xdg_data_dirs + [xdg_data_home]])
     if debug:
-        safe_print("[D] Data files search paths:\n[D]", "\n[D] ".join(data_dirs))
+        print("[D] Data files search paths:\n[D]", "\n[D] ".join(data_dirs))
     defaults["calibration.file"] = get_data_path("presets/default.icc") or ""
     defaults["measurement_report.chart"] = get_data_path(os.path.join("ref",
                                                                       "verify_extended.ti1")) or ""
     return runtype
 
-# User settings
 
+# User settings
 cfg = configparser.RawConfigParser()
+cfg['Default'] = {}
 cfg.optionxform = str
+
 
 valid_ranges = {
     "3dlut.hdr_peak_luminance": [100.0, 10000.0],
@@ -1274,9 +1275,10 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
     if hasdef:
         defval = defaults[name]
         deftype = type(defval)
+
     if cfg.has_option(configparser.DEFAULTSECT, name):
         try:
-            value = str(cfg.get(configparser.DEFAULTSECT, name), "UTF-8")
+            value = cfg.get(configparser.DEFAULTSECT, name)
         except UnicodeDecodeError:
             pass
         else:
@@ -1390,10 +1392,9 @@ def hascfg(name, fallback=True, cfg=cfg):
     """
     Check if an option name exists in the configuration.
 
-    Returns a boolean.
+    Returns a boolean value.
     If fallback evaluates to True and the name does not exist,
     check defaults also.
-
     """
     if cfg.has_option(configparser.DEFAULTSECT, name):
         return True
@@ -1431,9 +1432,8 @@ def get_display_profile(display_no=None):
     try:
         return ICCP.get_display_profile(display_no)
     except Exception as exception:
-        from log import _safe_print, log
-        _safe_print("ICCP.get_display_profile(%s):" % display_no,
-                    safe_unicode(exception), fn=log)
+        from log import _print, log
+        _print("ICCP.get_display_profile(%s):" % display_no, exception, fn=log)
 
 
 standard_profiles = []
@@ -1485,7 +1485,7 @@ def get_standard_profiles(paths_only=False):
             except EnvironmentError:
                 pass
             except Exception as exception:
-                safe_print(exception)
+                print(exception)
             else:
                 if (profile.version < 4 and
                         profile.profileClass != "nmcl" and
@@ -1612,8 +1612,7 @@ def makecfgdir(which="user", worker=None):
             try:
                 os.makedirs(confighome)
             except Exception as exception:
-                safe_print("Warning - could not create configuration directory "
-                           "'%s': %s" % (confighome, safe_unicode(exception)))
+                print("Warning - could not create configuration directory '%s': %s" % (confighome, exception))
                 return False
     elif not os.path.exists(config_sys):
         try:
@@ -1630,31 +1629,30 @@ def makecfgdir(which="user", worker=None):
                 if isinstance(result, Exception):
                     raise result
         except Exception as exception:
-            safe_print("Warning - could not create configuration directory "
-                       "'%s': %s" % (config_sys, safe_unicode(exception)))
+            print("Warning - could not create configuration directory '%s': %s" % (config_sys, exception))
             return False
     return True
 
 
 cfginited = {}
 
+
 def initcfg(module=None, cfg=cfg, force_load=False):
-    """
-    Initialize the configuration.
+    """Initialize the configuration.
 
     Read in settings if the configuration file exists, else create the
     settings directory if nonexistent.
-
     """
+    print('initcfg start!')
     if module:
         cfgbasename = "%s-%s" % (appbasename, module)
     else:
         cfgbasename = appbasename
     makecfgdir()
-    if os.path.exists(confighome) and \
-            not os.path.exists(os.path.join(confighome, cfgbasename + ".ini")):
+    if os.path.exists(confighome) and not os.path.exists(os.path.join(confighome, cfgbasename + ".ini")):
         # Set default preset
         setcfg("calibration.file", defaults["calibration.file"], cfg=cfg)
+
     # Read cfg
     cfgnames = [appbasename]
     if module:
@@ -1662,9 +1660,11 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     else:
         cfgnames.extend("%s-%s" % (appbasename, othermod) for othermod in
                         ("testchart-editor", ))
+
     cfgroots = [confighome]
     if module == "apply-profiles":
         cfgroots.append(config_sys)
+
     cfgfiles = []
     for cfgname in cfgnames:
         for cfgroot in cfgroots:
@@ -1673,9 +1673,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
                 try:
                     mtime = os.stat(cfgfile).st_mtime
                 except EnvironmentError as exception:
-                    safe_print("Warning - os.stat('%s') failed: %s" %
-                               tuple(safe_unicode(s) for s in (cfgfile,
-                                                               exception)))
+                    print("Warning - os.stat('%s') failed: %s" % (cfgfile, exception))
                 last_checked = cfginited.get(cfgfile)
                 if force_load or mtime != last_checked:
                     cfginited[cfgfile] = mtime
@@ -1689,6 +1687,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
                     safe_log(msg, cfgfile)
                 # Make user config take precedence
                 break
+    print('cfgfiles: %s' % cfgfiles)
     if not cfgfiles:
         return
     if not module:
@@ -1699,8 +1698,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     # This won't raise an exception if the file does not exist, only
     # if it can't be parsed
     except Exception as exception:
-        safe_print("Warning - could not parse configuration files:\n%s" %
-                   "\n".join(cfgfiles))
+        print("Warning - could not parse configuration files:\n%s" % "\n".join(cfgfiles))
         # Fix Python 2.7 ConfigParser option values being lists instead of
         # strings in case of a ParsingError. http://bugs.python.org/issue24142
         all_sections = [configparser.DEFAULTSECT]
@@ -1713,6 +1711,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
         if not module and not getcfg("calibration.ambient_viewcond_adjust"):
             # Reset to default
             setcfg("calibration.ambient_viewcond_adjust.lux", None, cfg=cfg)
+    print('initcfg end!')
 
 
 dpiset = False
@@ -1866,16 +1865,18 @@ def get_hidpi_scaling_factor():
 
 
 def setcfg(name, value, cfg=cfg):
-    """ Set an option value in the configuration. """
+    """Set an option value in the configuration.
+    """
+    print('setcfg start')
     if value is None:
         cfg.remove_option(configparser.DEFAULTSECT, name)
     else:
-        if name in ("displays", "instruments") and isinstance(value, (list,
-                                                                      tuple)):
-            value = os.pathsep.join(strtr(v, [("%", "%25"),
-                                              (os.pathsep,
-                                               "%" + hex(ord(os.pathsep))[2:].upper())]) for v in value)
-        cfg.set(configparser.DEFAULTSECT, name, str(value).encode("UTF-8"))
+        if name in ("displays", "instruments") and isinstance(value, (list, tuple)):
+            value = os.pathsep.join(
+                strtr(v, [("%", "%25"), (os.pathsep, "%" + hex(ord(os.pathsep))[2:].upper())]) for v in value
+            )
+        cfg.set(configparser.DEFAULTSECT, name, value)
+    print('setcfg end')
 
 
 def setcfg_cond(condition, name, value, set_if_backup_exists=False,
@@ -1921,7 +1922,7 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
     # Remove unknown options
     for name, val in cfg.items(configparser.DEFAULTSECT):
         if not name in defaults:
-            safe_print("Removing unknown option:", name)
+            print("Removing unknown option:", name)
             setcfg(name, None)
     if which == "user":
         # user config - stores everything and overrides system-wide config
@@ -1945,8 +1946,8 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             cfgfile.write(os.linesep.join(lines) + os.linesep)
             cfgfile.close()
         except Exception as exception:
-            safe_print("Warning - could not write user configuration file "
-                       "'%s': %s" % (cfgfilename, safe_unicode(exception)))
+            print("Warning - could not write user configuration file "
+                       "'%s': %s" % (cfgfilename, exception))
             return False
     else:
         # system-wide config - only stores essentials ie. Argyll directory
@@ -1959,10 +1960,12 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
         try:
             cfgfile = open(cfgfilename, "wb")
             if getcfg("argyll.dir"):
-                cfgfile.write(os.linesep.join(["[Default]",
-                                               "%s = %s" % ("argyll.dir",
-                                                            getcfg("argyll.dir"))]) +
-                              os.linesep)
+                cfgfile.write(
+                    "%s%s" % (
+                        os.linesep.join(["[Default]", "%s = %s" % ("argyll.dir", getcfg("argyll.dir"))]),
+                        os.linesep
+                    )
+                )
             cfgfile.close()
             if sys.platform != "win32":
                 # on Linux and OS X, we write the file to the users's config dir
@@ -1977,8 +1980,7 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
                 if isinstance(result, Exception):
                     raise result
         except Exception as exception:
-            safe_print("Warning - could not write system-wide configuration file "
-                       "'%s': %s" % (cfgfilename2, safe_unicode(exception)))
+            print("Warning - could not write system-wide configuration file '%s': %s" % (cfgfilename2, exception))
             return False
     return True
 

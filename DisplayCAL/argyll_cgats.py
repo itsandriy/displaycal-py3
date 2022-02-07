@@ -10,7 +10,6 @@ from debughelpers import Error
 from options import debug
 from ordereddict import OrderedDict
 from util_io import StringIOu as StringIO
-from util_str import safe_unicode
 import CGATS
 import ICCProfile as ICCP
 import colormath
@@ -77,9 +76,8 @@ def cal_to_fake_profile(cal):
     profile.fileName = cal.filename
     profile._data = "\0" * 128
     profile._tags.desc = ICCP.TextDescriptionType("", "desc")
-    profile._tags.desc.ASCII = safe_unicode(
-                os.path.basename(cal.filename)).encode("ascii", "asciize")
-    profile._tags.desc.Unicode = safe_unicode(os.path.basename(cal.filename))
+    profile._tags.desc.ASCII = str(os.path.basename(cal.filename)).encode("ascii", "asciize")
+    profile._tags.desc.Unicode = str(os.path.basename(cal.filename))
     profile._tags.vcgt = vcgt
     profile.size = len(profile.data)
     profile.is_loaded = True
@@ -282,8 +280,11 @@ def extract_cal_from_ti3(ti3):
             cal_lines.append(line)
             if line == 'END_DATA':
                 break
-    if isinstance(ti3, file):
+    try:
         ti3.close()
+    except AttributeError:
+        pass
+
     return "\n".join(cal_lines)
 
 

@@ -27,7 +27,7 @@ def convert_hwdb_to_pnp_ids(hwdb_filename):
         with codecs.open(os.path.join(os.path.dirname(__file__), "..",
                          "DisplayCAL", "pnp.ids"),
              "w", "UTF-8", "replace") as pnpids:
-            for item in sorted(pnpidcache.iteritems()):
+            for item in sorted(pnpidcache.items()):
                 pnpids.write("%s\t%s\n" % item)
 
 

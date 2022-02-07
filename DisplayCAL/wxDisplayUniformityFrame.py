@@ -17,7 +17,7 @@ from wxaddons import wx
 from config import (getbitmap, getcfg, get_icon_bundle,
                     get_display_number, get_display_rects, get_verified_path,
                     setcfg)
-from log import get_file_logger, safe_print
+from log import get_file_logger
 from meta import name as appname, version as appversion
 from util_os import launch_file, waccess
 from wxaddons import CustomEvent
@@ -155,7 +155,7 @@ class DisplayUniformityFrame(BaseFrame):
                     try:
                         wx.Window.UnreserveControlId(id)
                     except wx.wxAssertionError as exception:
-                        safe_print(exception)
+                        print(exception)
 
     def OnMove(self, event):
         pass
@@ -249,7 +249,7 @@ class DisplayUniformityFrame(BaseFrame):
     def measure(self, event=None):
         if event:
             self.index = event.GetEventObject().index
-            safe_print("%s: Uniformity grid index %i" % (appname, self.index))
+            print("%s: Uniformity grid index %i" % (appname, self.index))
             self.is_measuring = True
             self.results[self.index] = []
             self.labels[self.index].SetLabel("")
@@ -259,7 +259,7 @@ class DisplayUniformityFrame(BaseFrame):
         self.panels[self.index].SetBackgroundColour(self.colors[len(self.results[self.index])])
         self.panels[self.index].Refresh()
         self.panels[self.index].Update()
-        safe_print("%s: About to measure uniformity grid index %i @%i%%" %
+        print("%s: About to measure uniformity grid index %i @%i%%" %
                    (appname, self.index,
                     self.colors[len(self.results[self.index])].red / 2.55))
         # Use a delay to allow for TFT lag
@@ -289,13 +289,13 @@ class DisplayUniformityFrame(BaseFrame):
                                txt, re.I)
                 self.results[self.index][-1]["C%sT" % locus[0]] = int(CT.groups()[0])
         if "key to take a reading" in txt and not self.last_error:
-            safe_print("%s: Got 'key to take a reading'" % appname)
+            print("%s: Got 'key to take a reading'" % appname)
             if not self.is_measuring:
                 self.enable_buttons()
                 return
             if len(self.results[self.index]) < len(self.colors):
                 # Take readings at 5 different brightness levels per swatch
-                safe_print("%s: About to take next reading" % appname)
+                print("%s: About to take next reading" % appname)
                 self.measure()
             else:
                 self.is_measuring = False
@@ -315,7 +315,7 @@ class DisplayUniformityFrame(BaseFrame):
                     geometry = "%i, %i, %ix%i" % tuple(geometry)
                     for i, display in enumerate(getcfg("displays")):
                         if display.find("@ " + geometry) > -1:
-                            safe_print("Found display %s at index %i" %
+                            print("Found display %s at index %i" %
                                        (display, i))
                             break
                     display = display.replace(" [PRIMARY]", "")
@@ -390,7 +390,7 @@ class DisplayUniformityFrame(BaseFrame):
             if not self.worker.instrument_on_screen:
                 if not getattr(self, "wait_for_instrument_on_screen", False):
                     self.wait_for_instrument_on_screen = True
-                    safe_print("%s: Waiting for instrument to be placed on screen" %
+                    print("%s: Waiting for instrument to be placed on screen" %
                                appname)
                 wx.CallLater(200, self.safe_send, bytes)
             else:

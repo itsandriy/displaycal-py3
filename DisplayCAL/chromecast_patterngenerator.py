@@ -37,8 +37,6 @@ from pychromecast import get_chromecasts
 from pychromecast.controllers import BaseController
 
 import localization as lang
-from log import safe_print
-from util_str import safe_unicode
 
 
 class ChromeCastPatternGeneratorController(BaseController):
@@ -101,8 +99,7 @@ class ChromeCastPatternGenerator(object):
             # Find our ChromeCast
             try:
                 self._cc = next(cc for cc in get_chromecasts()
-                                if safe_unicode(cc.device.friendly_name,
-                                                "UTF-8") == self.name)
+                                if str(cc.device.friendly_name) == self.name)
             except StopIteration:
                 self.listening = False
                 raise
@@ -120,7 +117,7 @@ class ChromeCastPatternGenerator(object):
                    self._cc.app_id != self._controller.supporting_app_id):
                 sleep(0.05)
             self.conn = True
-            safe_print(lang.getstr("connection.established"))
+            print(lang.getstr("connection.established"))
 
 
 if __name__ == "__main__":

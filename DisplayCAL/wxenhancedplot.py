@@ -740,7 +740,7 @@ class PlotGraphics:
         xLabel - label shown on x-axis
         yLabel - label shown on y-axis
         """
-        if type(objects) not in [list,tuple]:
+        if not isinstance(objects, (list, tuple)):
             raise TypeError("objects argument should be list or tuple")
         self.objects = objects
         self.title= title
@@ -749,7 +749,7 @@ class PlotGraphics:
         self._pointSize = (1.0, 1.0)
 
     def setLogScale(self, logscale):
-        if type(logscale) != tuple:
+        if not isinstance(logscale, tuple):
             raise TypeError('logscale must be a tuple of bools, e.g. (False, False)')
         if len(self.objects) == 0:
             return
@@ -1141,7 +1141,7 @@ class PlotCanvas(wx.Panel):
         frame.Show(True)
 
     def setLogScale(self, logscale):
-        if type(logscale) != tuple:
+        if not isinstance(logscale, tuple):
             raise TypeError('logscale must be a tuple of bools, e.g. (False, False)')
         if self.last_draw is not None:
             graphics, xAxis, yAxis= self.last_draw
@@ -1549,18 +1549,19 @@ class PlotCanvas(wx.Panel):
         graphics.setLogScale(self.getLogScale())
         
         # check Axis is either tuple or none
-        if type(xAxis) not in [type(None),tuple]:
+        if xAxis is not None and not isinstance(xAxis, tuple):
             raise TypeError("xAxis should be None or (minX,maxX)"+str(type(xAxis)))
-        if type(yAxis) not in [type(None),tuple]:
+
+        if yAxis is not None and not isinstance(yAxis, tuple):
             raise TypeError("yAxis should be None or (minY,maxY)"+str(type(xAxis)))
              
         # check case for axis = (a,b) where a==b caused by improper zooms
-        if xAxis != None:
+        if xAxis is not None:
             if xAxis[0] == xAxis[1]:
                 return
             if self.getLogScale()[0]:
                 xAxis = _Numeric.log10(xAxis)
-        if yAxis != None:
+        if yAxis is not None:
             if yAxis[0] == yAxis[1]:
                 return
             if self.getLogScale()[1]:
@@ -2158,7 +2159,7 @@ class PlotCanvas(wx.Panel):
             if mod != 0:
                 upper = upper - mod + grid
             return lower, upper
-        elif type(spec) == type(()):
+        elif isinstance(spec, tuple):
             lower, upper = spec
             if lower <= upper:
                 return lower, upper

@@ -7,7 +7,7 @@ import re
 import shutil
 import sys
 
-from DisplayCAL.meta import name as appname, domain, script2pywname
+from meta import name as appname, domain, script2pywname
 
 
 def zeroinstall_desktop(datadir="/usr/share"):

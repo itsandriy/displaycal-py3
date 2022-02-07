@@ -93,7 +93,7 @@ from colormath import (CIEDCCT2xyY, planckianCT2xyY, xyY2CCT, XYZ2CCT, XYZ2Lab,
                        XYZ2xyY)
 from debughelpers import ResourceError, getevtobjname, getevttype, handle_error
 from edid import pnpidcache, get_manufacturer_name
-from log import log, logbuffer, safe_print
+from log import log, logbuffer
 from meta import (VERSION, VERSION_BASE, author, name as appname, domain,
                   version, version_short, get_latest_chglog_entry)
 from options import (debug, force_skip_initial_instrument_detection, test,
@@ -111,8 +111,7 @@ from util_list import index_fallback_ignorecase, intlist, natsort
 from util_os import (dlopen, expanduseru, get_program_file, getenvu,
                      is_superuser, launch_file, listdir_re, safe_glob, waccess,
                      which)
-from util_str import (ellipsis, make_filename_safe, safe_str, safe_unicode,
-                      strtr, universal_newlines, wrap)
+from util_str import ellipsis, make_filename_safe, safe_str, strtr, universal_newlines, wrap
 import util_x
 from worker import (Error, Info, UnloggedError, UnloggedInfo, UnloggedWarning,
                     Warn, Worker, check_create_dir, check_file_isfile,
@@ -183,7 +182,7 @@ from wx.lib.scrolledpanel import ScrolledPanel
 
 
 def show_ccxx_error_dialog(exception, path, parent):
-    msg = safe_unicode(exception)
+    msg = str(exception)
     if msg.startswith("Malformed"):
         fn, ext = os.path.splitext(path)
         msg = lang.getstr("error.malformed_cgats", (ext[1:].upper(), path))
@@ -216,7 +215,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
         chglog_file = "SNAPSHOT_CHANGES.html"
     else:
         # Stable
-        safe_print(lang.getstr("update_check"))
+        print(lang.getstr("update_check"))
         curversion_tuple = VERSION_BASE
         version_file = "VERSION"
         chglog_file = "CHANGES.html"
@@ -235,7 +234,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
     try:
         newversion_tuple = tuple(int(n) for n in data.split("."))
     except ValueError:
-        safe_print(lang.getstr("update_check.fail.version", domain))
+        print(lang.getstr("update_check.fail.version", domain))
         if not silent:
             wx.CallAfter(InfoDialog, parent,
                          msg=lang.getstr("update_check.fail.version",
@@ -252,7 +251,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
                             silent=True)
         chglog = None
         if resp:
-            readme = safe_unicode(resp.read(), "utf-8")
+            readme = str(resp.read())
             if argyll:
                 chglog = readme
             else:
@@ -279,7 +278,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
     elif not argyll and not snapshot and VERSION > VERSION_BASE:
         app_update_check(parent, silent, True)
     elif not argyll:
-        safe_print(lang.getstr("update_check.uptodate", appname))
+        print(lang.getstr("update_check.uptodate", appname))
         if check_argyll_bin():
             app_update_check(parent, silent, argyll=True)
         elif silent:
@@ -289,12 +288,12 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
         else:
             wx.CallAfter(parent.set_argyll_bin_handler, True)
     elif not silent:
-        safe_print(lang.getstr("update_check.uptodate", "ArgyllCMS"))
+        print(lang.getstr("update_check.uptodate", "ArgyllCMS"))
         wx.CallAfter(app_uptodate, parent,
                      "ArgyllCMS" if not globals().get("app_is_uptodate")
                      else appname)
     else:
-        safe_print(lang.getstr("update_check.uptodate", "ArgyllCMS"))
+        print(lang.getstr("update_check.uptodate", "ArgyllCMS"))
         # Check if we need to run instrument setup
         wx.CallAfter(parent.check_instrument_setup, check_donation,
                      (parent, snapshot))
@@ -619,7 +618,7 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
         try:
             ccxx = CGATS.CGATS(cgats[i])
         except CGATS.CGATSError as exception:
-            safe_print(exception)
+            print(exception)
             cgats[i] = ""
             ccxx = CGATS.CGATS()
         ccxx = ccxx.get(0, ccxx)
@@ -706,13 +705,11 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
                                     if ccxx_type == "CCMX"
                                     else lang.getstr("not_applicable"))
         dlg_list_ctrl.SetStringItem(index, int(col),
-                                    safe_unicode(ccxx.queryv1("FIT_AVG_DE00") or
-                                                 lang.getstr("unknown"), "UTF-8")
+                                    str(ccxx.queryv1("FIT_AVG_DE00") or lang.getstr("unknown"))
                                     if ccxx_type == "CCMX"
                                     else lang.getstr("not_applicable"))
         dlg_list_ctrl.SetStringItem(index, int(col),
-                                    safe_unicode(ccxx.queryv1("FIT_MAX_DE00") or
-                                                 lang.getstr("unknown"), "UTF-8")
+                                    str(ccxx.queryv1("FIT_MAX_DE00") or lang.getstr("unknown"))
                                     if ccxx_type == "CCMX"
                                     else lang.getstr("not_applicable"))
         dlg_list_ctrl.SetStringItem(index, int(col), created or
@@ -839,8 +836,7 @@ def get_cgats_path(cgats):
     descriptor = re.search('\nDESCRIPTOR\s+"(.+?)"\n', cgats)
     if descriptor:
         descriptor = descriptor.groups()[0]
-    description = safe_unicode(descriptor or
-                               lang.getstr("unnamed"), "UTF-8")
+    description = str(descriptor or lang.getstr("unnamed"))
     name = re.sub(r"[\\/:;*?\"<>|]+", "_",
                   make_argyll_compatible_path(description))[:255]
     return os.path.join(config.get_argyll_data_dir(),
@@ -1433,7 +1429,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if missing:
             wx.CallAfter(show_result_dialog,
                          lang.getstr("resources.notfound.warning") +
-                         "\n" + safe_unicode("\n".join(missing)), self)
+                         "\n" + str("\n".join(missing)), self)
 
         # Initialize GUI
         self.res = TempXmlResource(get_data_path(os.path.join("xrc",
@@ -1457,7 +1453,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.worker.owner = self
         result = self.worker.create_tempdir()
         if isinstance(result, Exception):
-            safe_print(result)
+            print(result)
         self.init_frame()
         self.init_defaults()
         self.set_child_ctrls_as_attrs(self)
@@ -1484,7 +1480,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.Center()
         self.Bind(wx.EVT_MOVE, self.OnMove, self)
         if verbose >= 1:
-            safe_print(lang.getstr("success"))
+            print(lang.getstr("success"))
 
         # Check for and load default calibration
         if len(self.worker.displays):
@@ -1499,7 +1495,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.init_timers()
 
         if verbose >= 1:
-            safe_print(lang.getstr("ready"))
+            print(lang.getstr("ready"))
 
     def log(self):
         """ Append log buffer contents to the log window. """
@@ -1626,9 +1622,9 @@ class MainFrame(ReportFrame, BaseFrame):
         Controls are initialized in a separate step (see init_controls).
 
         """
-        # UGLY HACK: This 'safe_print' call fixes a GTK assertion and
+        # UGLY HACK: This 'print' call fixes a GTK assertion and
         # segfault under Arch Linux when setting the window title
-        safe_print("")
+        print("")
         title = "%s %s" % (appname, version_short)
         if VERSION > VERSION_BASE:
             title += " Beta"
@@ -3068,19 +3064,18 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 conn = self.connect(ip, port)
                 if isinstance(conn, Exception):
-                    safe_print("Warning - couldn't connect to", ip_port,
-                               "(%s):" % name, conn)
+                    print("Warning - couldn't connect to", ip_port, "(%s):" % name, conn)
                     continue
                 conn.send_command("getappname")
                 remote_appname = conn.get_single_response()
                 if remote_appname == appname:
-                    safe_print("Warning - connected to self, skipping")
+                    print("Warning - connected to self, skipping")
                     del conn
                     continue
                 conn.send_command("setlanguage %s" % lang.getcode())
                 response = conn.get_single_response()
                 if response not in ("ok", "invalid"):
-                    safe_print("Warning - couldn't set language for", name,
+                    print("Warning - couldn't set language for", name,
                                "(%s):" % ip_port, response)
                 if remote_appname == appname + "-apply-profiles":
                     # Update notification text of profile loader
@@ -3089,11 +3084,11 @@ class MainFrame(ReportFrame, BaseFrame):
                                                   appname))
                     response = conn.get_single_response()
                     if response != "ok":
-                        safe_print("Warning - couldn't update profile loader "
+                        print("Warning - couldn't update profile loader "
                                    "notification text:", response)
                 del conn
             except Exception as exception:
-                safe_print("Warning - error while trying to set language for",
+                print("Warning - error while trying to set language for",
                            name, "(%s)" % ip_port, exception)
 
     def update_layout(self):
@@ -3263,7 +3258,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                    getcfg("measurement_mode.backup"))
                     default = None
                     if verbose >= 3:
-                        safe_print("Restoring %s to %s" % (name, defaults[name]))
+                        print("Restoring %s to %s" % (name, defaults[name]))
                     setcfg(name, default)
         for name in override:
             if (len(include) == 0 or False in [name.find(item) != 0 for item in
@@ -3291,7 +3286,7 @@ class MainFrame(ReportFrame, BaseFrame):
             # update_controls which is called from cal_changed might cause a
             # another cal_changed call, in which case we can skip it
             if debug:
-                safe_print("[D] cal_changed")
+                print("[D] cal_changed")
             if setchanged:
                 setcfg("settings.changed", 1)
             self.worker.options_dispcal = []
@@ -3318,7 +3313,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def update_displays(self, update_ccmx_items=False, set_height=False):
         """ Update the display selector controls. """
         if debug:
-            safe_print("[D] update_displays")
+            print("[D] update_displays")
         self.panel.Freeze()
         self.displays = []
         for item in self.worker.displays:
@@ -3643,9 +3638,9 @@ class MainFrame(ReportFrame, BaseFrame):
                     basename = os.path.basename(path)
                     if basename in imapping:
                         if basename in mapping:
-                            safe_print("Ignoring", path)
+                            print("Ignoring", path)
                         else:
-                            safe_print("Ignoring", path, "in favor of",
+                            print("Ignoring", path, "in favor of",
                                        imapping[basename])
                         discard_paths.append(path)
                 if discard_paths:
@@ -3671,7 +3666,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     cgats = CGATS.CGATS(path, strict=True)
                 except (IOError, CGATS.CGATSError) as exception:
-                    safe_print(exception)
+                    print(exception)
                     if isinstance(exception, CGATS.CGATSInvalidError):
                         malformed_ccxx.append(path)
                     continue
@@ -3740,7 +3735,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         ccxx = CGATS.CGATS(path)
                         ccxx[0].DATA.vmaxlen = 5  # Allow margin of error
                     except Exception as exception:
-                        safe_print(exception)
+                        print(exception)
                         break
                     try:
                         cgats = CGATS.CGATS(ccmx[1], strict=True)
@@ -3753,13 +3748,13 @@ class MainFrame(ReportFrame, BaseFrame):
                     else:
                         if str(cgats) == str(ccxx):
                             # Same, use existing entry
-                            safe_print(ccmx[1], "matches", path,
+                            print(ccmx[1], "matches", path,
                                        "- using the latter")
                             add_cfg_ccxx = False
                             ccmx[1] = path
                             index = i + 2
                         else:
-                            safe_print(ccmx[1], "does not match", path,
+                            print(ccmx[1], "does not match", path,
                                        "- using the former")
                         cgats[0].DATA.vmaxlen = vmaxlen
                     break
@@ -3841,7 +3836,7 @@ class MainFrame(ReportFrame, BaseFrame):
             if warn_on_mismatch:
                 show_result_dialog(Warn(msg), self)
             else:
-                safe_print(msg, ccmx[1])
+                print(msg, ccmx[1])
             ccmx = [""]
         elif ccmx[0] == "AUTO":
             index = 1
@@ -3928,8 +3923,7 @@ class MainFrame(ReportFrame, BaseFrame):
             except TrashcanUnavailableError as exception:
                 msg = lang.getstr("error.trashcan_unavailable", trashcan)
             except Exception as exception:
-                msg = (lang.getstr("error.deletion", trashcan) + "\n\n" +
-                       safe_unicode(exception))
+                msg = (lang.getstr("error.deletion", trashcan) + "\n\n" + str(exception))
             else:
                 orphans = [orphan for orphan in malformed_ccxx if os.path.exists(orphan)]
                 if orphans:
@@ -4588,7 +4582,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def calibration_update_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] calibration_update_ctrl_handler called for ID %s "
+            print("[D] calibration_update_ctrl_handler called for ID %s "
                        "%s event type %s %s" % (event.GetId(),
                                                 getevtobjname(event, self),
                                                 event.GetEventType(),
@@ -4969,7 +4963,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     profile = ICCP.ICCProfile(profile_filename)
                 except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                    safe_print("%s:" % profile_filename, exception)
+                    print("%s:" % profile_filename, exception)
                 else:
                     if profile_filename not in list(self.input_profiles.values()):
                         desc = profile.getDescription()
@@ -5096,7 +5090,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     profile = ICCP.ICCProfile(lut3d_input_profile)
                 except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                    safe_print("%s:" % lut3d_input_profile, exception)
+                    print("%s:" % lut3d_input_profile, exception)
                 else:
                     desc = profile.getDescription()
                     desc = re.sub(r"\s*(?:color profile|primaries with "
@@ -5121,7 +5115,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def profile_quality_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] profile_quality_ctrl_handler called for ID %s %s "
+            print("[D] profile_quality_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -5150,7 +5144,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def calibration_file_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] calibration_file_ctrl_handler called for ID %s %s "
+            print("[D] calibration_file_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -5225,7 +5219,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def calibration_quality_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] calibration_quality_ctrl_handler called for ID %s "
+            print("[D] calibration_quality_ctrl_handler called for ID %s "
                        "%s event type %s %s" % (event.GetId(),
                                                 getevtobjname(event, self),
                                                 event.GetEventType(),
@@ -5257,7 +5251,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def interactive_display_adjustment_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] interactive_display_adjustment_ctrl_handler called "
+            print("[D] interactive_display_adjustment_ctrl_handler called "
                        "for ID %s %s event type %s %s" % (event.GetId(),
                                                           getevtobjname(event,
                                                                         self),
@@ -5303,7 +5297,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def black_point_correction_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] black_point_correction_ctrl_handler called for ID "
+            print("[D] black_point_correction_ctrl_handler called for ID "
                        "%s %s event type %s %s" % (event.GetId(),
                                                    getevtobjname(event, self),
                                                    event.GetEventType(),
@@ -5328,7 +5322,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def black_point_rate_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] black_point_rate_ctrl_handler called for ID %s %s "
+            print("[D] black_point_rate_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -5347,7 +5341,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def black_output_offset_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] black_output_offset_ctrl_handler called for ID %s "
+            print("[D] black_output_offset_ctrl_handler called for ID %s "
                        "%s event type %s %s" % (event.GetId(),
                                                 getevtobjname(event, self),
                                                 event.GetEventType(),
@@ -5397,7 +5391,7 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 display = wx.Display(display_no)
             except Exception as exception:
-                safe_print("wx.Display(%s):" % display_no, exception)
+                print("wx.Display(%s):" % display_no, exception)
             else:
                 pos = display.ClientArea[:2]
                 profile = config.get_current_profile(True)
@@ -5422,7 +5416,7 @@ class MainFrame(ReportFrame, BaseFrame):
         try:
             self.worker.patterngenerator.disconnect_client()
         except Exception as exception:
-            safe_print(exception)
+            print(exception)
         event.Skip()
 
     def luminance_measure_handler(self, event):
@@ -5479,7 +5473,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if sys.platform == "win32" and sys.getwindowsversion() < (5, 1):
             show_result_dialog(Error(lang.getstr("windows.version.unsupported")))
             return
-        safe_print("-" * 80)
+        print("-" * 80)
         self.stop_timers()
         evtobjname = event.GetEventObject().Name
         lstr = "measure"
@@ -5494,7 +5488,7 @@ class MainFrame(ReportFrame, BaseFrame):
         else:
             interactive_frame = "ambient"
             lstr = "ambient.measure"
-        safe_print(lang.getstr(lstr))
+        print(lang.getstr(lstr))
         self.worker.interactive = interactive_frame not in ("ambient",
                                                             "luminance")
         self.worker.start(self.ambient_measure_consumer,
@@ -5552,7 +5546,7 @@ class MainFrame(ReportFrame, BaseFrame):
             return
         if K:
             K = float(K.groups()[0])
-        safe_print(lang.getstr("success"))
+        print(lang.getstr("success"))
         set_whitepoint = evtobjname in ("visual_whitepoint_editor_measure_btn",
                                         "whitepoint_measure_btn")
         set_ambient = evtobjname == "ambient_measure_btn"
@@ -5642,7 +5636,7 @@ class MainFrame(ReportFrame, BaseFrame):
             event.Skip()
             return
         if debug:
-            safe_print("[D] ambient_viewcond_adjust_ctrl_handler called for ID "
+            print("[D] ambient_viewcond_adjust_ctrl_handler called for ID "
                        "%s %s event type %s %s" % (event.GetId(),
                                                    getevtobjname(event, self),
                                                    event.GetEventType(),
@@ -5690,7 +5684,7 @@ class MainFrame(ReportFrame, BaseFrame):
             event.Skip()
             return
         if debug:
-            safe_print("[D] black_luminance_ctrl_handler called for ID %s %s "
+            print("[D] black_luminance_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -5734,7 +5728,7 @@ class MainFrame(ReportFrame, BaseFrame):
             event.Skip()
             return
         if debug:
-            safe_print("[D] luminance_ctrl_handler called for ID %s %s event "
+            print("[D] luminance_ctrl_handler called for ID %s %s event "
                        "type %s %s" % (event.GetId(),
                                        getevtobjname(event, self),
                                        event.GetEventType(),
@@ -5774,7 +5768,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def whitepoint_colortemp_locus_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] whitepoint_colortemp_locus_ctrl_handler called for "
+            print("[D] whitepoint_colortemp_locus_ctrl_handler called for "
                        "ID %s %s event type %s %s" % (event.GetId(),
                                                       getevtobjname(event,
                                                                     self),
@@ -5812,7 +5806,7 @@ class MainFrame(ReportFrame, BaseFrame):
             event.Skip()
             return
         if debug:
-            safe_print("[D] whitepoint_ctrl_handler called for ID %s %s event "
+            print("[D] whitepoint_ctrl_handler called for ID %s %s event "
                        "type %s %s" % (event.GetId(),
                                        getevtobjname(event, self),
                                        event.GetEventType(),
@@ -5959,7 +5953,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def trc_type_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] trc_type_ctrl_handler called for ID %s %s event "
+            print("[D] trc_type_ctrl_handler called for ID %s %s event "
                        "type %s %s" % (event.GetId(),
                                        getevtobjname(event, self),
                                        event.GetEventType(),
@@ -5980,7 +5974,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.show_trc_controls(True)
             return
         if debug:
-            safe_print("[D] trc_ctrl_handler called for ID %s %s event type %s "
+            print("[D] trc_ctrl_handler called for ID %s %s event type %s "
                        "%s" % (event.GetId(), getevtobjname(event, self),
                                event.GetEventType(), getevttype(event)))
         self.panel.Freeze()
@@ -6364,7 +6358,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     art.SetDefaultColours(aui.StepColour(dlg.BackgroundColour, 96))
                 display_settings_tabs.SetArtProvider(art)
             except Exception as exception:
-                safe_print(exception)
+                print(exception)
                 pass
         dlg.display_settings = display_settings_tabs
         # Column layout
@@ -6560,7 +6554,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def profile_share_consumer(self, result, parent=None):
         """ This function receives the response from the profile upload """
         if result is not False:
-            safe_print(safe_unicode(result.read().strip(), "UTF-8"))
+            print(str(result.read().strip()))
             parent = parent or getattr(self, "modaldlg", self)
             dlg = InfoDialog(parent,
                              msg=lang.getstr("profile.share.success"),
@@ -6686,8 +6680,8 @@ class MainFrame(ReportFrame, BaseFrame):
         dlg.Destroy()
         if result != wx.ID_OK:
             return
-        safe_print("-" * 80)
-        safe_print(lang.getstr(title))
+        print("-" * 80)
+        print(lang.getstr(title))
         self.worker.start(lambda result: show_result_dialog(result, self)
         if isinstance(result, Exception)
         else self.check_update_controls(True),
@@ -6782,13 +6776,13 @@ class MainFrame(ReportFrame, BaseFrame):
                 return
             setcfg("last_cal_or_icc_path", path)
             if verbose >= 1:
-                safe_print(lang.getstr("calibration.loading"))
-                safe_print(path)
+                print(lang.getstr("calibration.loading"))
+                print(path)
             if os.path.splitext(path)[1].lower() in (".icc", ".icm"):
                 try:
                     profile = ICCP.ICCProfile(path)
                 except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                    if verbose >= 1: safe_print(lang.getstr("failure"))
+                    if verbose >= 1: print(lang.getstr("failure"))
                     InfoDialog(self, msg=lang.getstr("profile.invalid") +
                                          "\n" + path,
                                ok=lang.getstr("ok"),
@@ -6801,9 +6795,9 @@ class MainFrame(ReportFrame, BaseFrame):
                                     silent=not getcfg("dry_run"),
                                     title=lang.getstr("calibration.load_from_profile")) is True:
                     self.lut_viewer_load_lut(profile=profile)
-                    if verbose >= 1: safe_print(lang.getstr("success"))
+                    if verbose >= 1: print(lang.getstr("success"))
                 elif not getcfg("dry_run"):
-                    if verbose >= 1: safe_print(lang.getstr("failure"))
+                    if verbose >= 1: print(lang.getstr("failure"))
                     InfoDialog(self, msg=lang.getstr("calibration.load_error") +
                                          "\n" + path,
                                ok=lang.getstr("ok"),
@@ -6814,9 +6808,9 @@ class MainFrame(ReportFrame, BaseFrame):
                                     skip_scripts=True, silent=not getcfg("dry_run"),
                                     title=lang.getstr("calibration.load_from_cal")) is True:
                     self.lut_viewer_load_lut(profile=cal_to_fake_profile(path))
-                    if verbose >= 1: safe_print(lang.getstr("success"))
+                    if verbose >= 1: print(lang.getstr("success"))
                 elif not getcfg("dry_run"):
-                    if verbose >= 1: safe_print(lang.getstr("failure"))
+                    if verbose >= 1: print(lang.getstr("failure"))
 
     def preview_handler(self, event=None, preview=False):
         """ Preview profile calibration (vcgt).
@@ -6850,18 +6844,18 @@ class MainFrame(ReportFrame, BaseFrame):
                 profile = cal_to_fake_profile(cal)
         if profile:
             if verbose >= 1:
-                safe_print(lang.getstr("calibration.loading"))
+                print(lang.getstr("calibration.loading"))
                 if profile.fileName:
-                    safe_print(profile.fileName)
+                    print(profile.fileName)
         else:
-            if verbose >= 1: safe_print(lang.getstr("calibration.resetting"))
+            if verbose >= 1: print(lang.getstr("calibration.resetting"))
         if self.install_cal(capture_output=True, cal=cal,
                             skip_scripts=True, silent=True,
                             title=lang.getstr("calibration.load_from_cal_or_profile")) is True:
             self.lut_viewer_load_lut(profile=profile)
-            if verbose >= 1: safe_print(lang.getstr("success"))
+            if verbose >= 1: print(lang.getstr("success"))
         else:
-            if verbose >= 1: safe_print(lang.getstr("failure"))
+            if verbose >= 1: print(lang.getstr("failure"))
 
     def profile_load_on_login_handler(self, event=None):
         setcfg("profile.load_on_login",
@@ -6927,8 +6921,7 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 util_win.enable_calibration_management(self.profile_load_by_os.GetValue())
             except Exception as exception:
-                safe_print("util_win.enable_calibration_management(True): %s" %
-                           safe_unicode(exception))
+                print("util_win.enable_calibration_management(True): %s" % str(exception))
             else:
                 label = get_profile_load_on_login_label(
                     self.profile_load_by_os.GetValue())
@@ -7011,9 +7004,9 @@ class MainFrame(ReportFrame, BaseFrame):
     def verify_calibration(self):
         if self.measure_auto(self.verify_calibration):
             return
-        safe_print("-" * 80)
+        print("-" * 80)
         self.report_title = lang.getstr("calibration.verify")
-        safe_print(self.report_title)
+        print(self.report_title)
         self.worker.interactive = False
         self.worker.start(self.result_consumer, self.worker.verify_calibration,
                           progress_msg=self.report_title, pauseable=True,
@@ -7144,7 +7137,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 if isinstance(exception, ICCP.ICCProfileInvalidError):
                     msg = lang.getstr("profile.invalid") + "\n" + profilepath
                 else:
-                    msg = safe_unicode(exception)
+                    msg = str(exception)
                 InfoDialog(getattr(self, "reportframe", self),
                            msg=msg,
                            ok=lang.getstr("ok"),
@@ -7183,7 +7176,7 @@ class MainFrame(ReportFrame, BaseFrame):
             for n, p in {"profile": profile, "devlink": devlink,
                          "sim_profile": sim_profile, "oprof": oprof}.items():
                 if p:
-                    safe_print(n, p.getDescription())
+                    print(n, p.getDescription())
 
         if use_sim:
             if sim_profile:
@@ -7390,7 +7383,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     show_result_dialog(Error(lang.getstr("argyll.util.not_found",
                                                          "applycal")), self)
                     return
-                safe_print(lang.getstr("apply_cal"))
+                print(lang.getstr("apply_cal"))
                 result = self.worker.exec_cmd(applycal, ["-v",
                                                          oprof_cal_path,
                                                          profile_path,
@@ -7433,8 +7426,8 @@ class MainFrame(ReportFrame, BaseFrame):
             ti3_file.write(str(ti3))
             ti3_file.close()
 
-            safe_print("-" * 80)
-            safe_print(lang.getstr("self_check_report"))
+            print("-" * 80)
+            print(lang.getstr("self_check_report"))
             self.measurement_report_consumer(True, ti3_path, profile,
                                              sim_profile, intent, sim_intent,
                                              devlink, ti3_ref, sim_ti3,
@@ -7453,9 +7446,9 @@ class MainFrame(ReportFrame, BaseFrame):
                            sim_intent, devlink, ti3_ref, sim_ti3, save_path,
                            chart, gray, apply_trc, colormanaged, use_sim,
                            use_sim_as_output):
-        safe_print("-" * 80)
+        print("-" * 80)
         progress_msg = lang.getstr("measurement_report")
-        safe_print(progress_msg)
+        print(progress_msg)
 
         # setup temp dir
         temp = self.worker.create_tempdir()
@@ -7536,7 +7529,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     CGATS.CGATSTypeError, CGATS.CGATSValueError) as exc:
                 result = exc
             else:
-                safe_print(lang.getstr("success"))
+                print(lang.getstr("success"))
                 result = self.measurement_file_check_confirm(ti3_measured)
 
         if isinstance(result, Exception) or not result:
@@ -7572,7 +7565,7 @@ class MainFrame(ReportFrame, BaseFrame):
             elif "-E" in args:
                 qbits = 8  # ArgyllCMS default for video encoding (see dispread doc)
         if qbits:
-            safe_print("Quantizing reference device values to %i bits" % qbits)
+            print("Quantizing reference device values to %i bits" % qbits)
             ti3_ref.quantize_device_values(qbits)
             if gray:
                 qmax = 2 ** qbits - 1.0
@@ -7630,10 +7623,10 @@ class MainFrame(ReportFrame, BaseFrame):
                 if sim_ti3:
                     sim_removed.insert(0, sim_ti3.DATA.pop(key))
             for item in ref_removed:
-                safe_print("Removed patch #%i from reference TI3: %s" %
+                print("Removed patch #%i from reference TI3: %s" %
                            (item.key, item))
             for item in sim_removed:
-                safe_print("Removed patch #%i from simulation TI3: %s" %
+                print("Removed patch #%i from simulation TI3: %s" %
                            (item.key, item))
             # Update offset
             white_ref = ti3_ref.queryi(white_rgb)
@@ -7815,7 +7808,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     cgats = CGATS.CGATS(ccmxpath)
                 except (IOError, CGATS.CGATSError) as exception:
-                    safe_print("%s:" % ccmxpath, exception)
+                    print("%s:" % ccmxpath, exception)
                 else:
                     filename, ext = os.path.splitext(ccmx)
                     desc = cgats.get_descriptor()
@@ -7922,8 +7915,8 @@ class MainFrame(ReportFrame, BaseFrame):
         if cal:
             if check_set_argyll_bin():
                 if verbose >= 1 and load_vcgt:
-                    safe_print(lang.getstr("calibration.loading"))
-                    safe_print(cal)
+                    print(lang.getstr("calibration.loading"))
+                    print(cal)
                 if not load_vcgt or \
                         self.install_cal(capture_output=True, cal=cal,
                                          skip_scripts=True, silent=silent,
@@ -7933,23 +7926,23 @@ class MainFrame(ReportFrame, BaseFrame):
                         try:
                             profile = ICCP.ICCProfile(cal)
                         except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                            safe_print(exception)
+                            print(exception)
                             profile = None
                     else:
                         profile = cal_to_fake_profile(cal)
                     self.lut_viewer_load_lut(profile=profile)
                     if verbose >= 1 and silent and load_vcgt:
-                        safe_print(lang.getstr("success"))
+                        print(lang.getstr("success"))
                     return True
                 if verbose >= 1 and load_vcgt:
-                    safe_print(lang.getstr("failure"))
+                    print(lang.getstr("failure"))
         return False
 
     def reset_cal(self, event=None):
         """ Reset video card gamma table to linear """
         if check_set_argyll_bin():
             if verbose >= 1:
-                safe_print(lang.getstr("calibration.resetting"))
+                print(lang.getstr("calibration.resetting"))
             if self.install_cal(capture_output=True, cal=False,
                                 skip_scripts=True, silent=not (getcfg("dry_run") and event),
                                 title=lang.getstr("calibration.reset")) is True:
@@ -7967,10 +7960,10 @@ class MainFrame(ReportFrame, BaseFrame):
                 profile.is_loaded = True
                 self.lut_viewer_load_lut(profile=profile)
                 if verbose >= 1:
-                    safe_print(lang.getstr("success"))
+                    print(lang.getstr("success"))
                 return True
             if verbose >= 1 and not getcfg("dry_run"):
-                safe_print(lang.getstr("failure"))
+                print(lang.getstr("failure"))
         return False
 
     def load_display_profile_cal(self, event=None, lut_viewer_load_lut=True):
@@ -7978,10 +7971,10 @@ class MainFrame(ReportFrame, BaseFrame):
         profile = get_display_profile()
         if check_set_argyll_bin():
             if verbose >= 1 and (getcfg("calibration.autoload") or event):
-                safe_print(
+                print(
                     lang.getstr("calibration.loading_from_display_profile"))
                 if profile and profile.fileName:
-                    safe_print(profile.fileName)
+                    print(profile.fileName)
             if (not getcfg("calibration.autoload") and not event) or \
                     self.install_cal(capture_output=True, cal=True,
                                      skip_scripts=True, silent=not (getcfg("dry_run") and event),
@@ -7989,11 +7982,11 @@ class MainFrame(ReportFrame, BaseFrame):
                 if lut_viewer_load_lut:
                     self.lut_viewer_load_lut(profile=profile)
                 if verbose >= 1 and (getcfg("calibration.autoload") or event):
-                    safe_print(lang.getstr("success"))
+                    print(lang.getstr("success"))
                 return True
             if (verbose >= 1 and not getcfg("dry_run") and
                     (getcfg("calibration.autoload") or event)):
-                safe_print(lang.getstr("failure"))
+                print(lang.getstr("failure"))
         return False
 
     def report_calibrated_handler(self, event):
@@ -8008,12 +8001,12 @@ class MainFrame(ReportFrame, BaseFrame):
         if check_set_argyll_bin():
             if self.measure_auto(self.report, report_calibrated):
                 return
-            safe_print("-" * 80)
+            print("-" * 80)
             if report_calibrated:
                 self.report_title = lang.getstr("report.calibrated")
             else:
                 self.report_title = lang.getstr("report.uncalibrated")
-            safe_print(self.report_title)
+            print(self.report_title)
             self.worker.interactive = False
             self.worker.start(self.result_consumer, self.worker.report,
                               wkwargs={"report_calibrated": report_calibrated},
@@ -8088,8 +8081,8 @@ class MainFrame(ReportFrame, BaseFrame):
         """ Just calibrate, optionally creating a fast matrix shaper profile """
         if self.measure_auto(self.just_calibrate):
             return
-        safe_print("-" * 80)
-        safe_print(lang.getstr("button.calibrate"))
+        print("-" * 80)
+        print(lang.getstr("button.calibrate"))
         setcfg("calibration.continue_next", 0)
         if getcfg("calibration.interactive_display_adjustment") and \
                 not getcfg("calibration.update"):
@@ -8251,7 +8244,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         dlg.errormsg.Label = lang.getstr("host.invalid.lookup_failed")
                     else:
                         width = dlg.errormsg.Size[0]
-                        dlg.errormsg.Label = safe_unicode(result)
+                        dlg.errormsg.Label = str(result)
                         dlg.errormsg.Wrap(width)
                     dlg.errormsg.ForegroundColour = wx.Colour(204, 0, 0)
                     dlg.ok.Enable()
@@ -8344,7 +8337,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                       args=(self, ))
             thread.start()
             sleep(.2)
-            if thread.isAlive():
+            if thread.is_alive():
                 dlg = ConfirmDialog(parent, title=title,
                                     msg=lang.getstr("please_wait"),
                                     cancel=lang.getstr("cancel"),
@@ -8444,7 +8437,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     import RealDisplaySizeMM as RDSMM
                 except ImportError as exception:
-                    InfoDialog(self, msg=safe_unicode(exception),
+                    InfoDialog(self, msg=str(exception),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-warning"))
                 else:
@@ -8482,7 +8475,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.restore_measurement_mode()
             self.restore_testchart()
             if returncode != 0 and stderr and stderr.strip():
-                InfoDialog(self, msg=safe_unicode(stderr.strip()),
+                InfoDialog(self, msg=str(stderr.strip()),
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
         else:
@@ -8492,7 +8485,7 @@ class MainFrame(ReportFrame, BaseFrame):
         """ Get the currently configured display number, and set the
         display device selection """
         if debug:
-            safe_print("[D] get_set_display")
+            print("[D] get_set_display")
         if self.worker.displays:
             self.display_ctrl.SetSelection(
                 min(max(0, len(self.worker.displays) - 1),
@@ -8603,7 +8596,7 @@ class MainFrame(ReportFrame, BaseFrame):
             else:
                 self.measureframe.Hide()
         if debug:
-            safe_print("[D] Calling pending function with args:",
+            print("[D] Calling pending function with args:",
                        self.pending_function_args)
         wx.CallLater(100, self.pending_function, *self.pending_function_args,
                      **self.pending_function_kwargs)
@@ -8622,8 +8615,8 @@ class MainFrame(ReportFrame, BaseFrame):
         """ Start calibration measurements """
         if self.measure_auto(self.calibrate_and_profile):
             return
-        safe_print("-" * 80)
-        safe_print(lang.getstr("button.calibrate_and_profile").replace("&&",
+        print("-" * 80)
+        print(lang.getstr("button.calibrate_and_profile").replace("&&",
                                                                        "&"))
         setcfg("calibration.continue_next", 1)
         self.worker.dispcal_create_fast_matrix_shaper = False
@@ -8898,7 +8891,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         path = os.path.join(config.get_argyll_data_dir(),
                                             calibration)
                         if not os.path.isfile(path):
-                            safe_print("Retrieving factory calibration for "
+                            print("Retrieving factory calibration for "
                                        "ColorHug", serial)
                             url = ("https://raw.githubusercontent.com/hughski"
                                    "/colorhug-calibration/master/data/" +
@@ -8911,29 +8904,29 @@ class MainFrame(ReportFrame, BaseFrame):
                             body = response.read()
                             response.close()
                             if body.strip().startswith("CTI3"):
-                                safe_print("Successfully retrieved", url)
+                                print("Successfully retrieved", url)
                                 try:
                                     with open(path, "wb") as calibrationfile:
                                         calibrationfile.write(body)
                                 except Exception as exception:
-                                    safe_print(exception)
+                                    print(exception)
                             else:
-                                safe_print("Got unexpected answer from %s:" %
+                                print("Got unexpected answer from %s:" %
                                            url)
-                                safe_print(body)
+                                print(body)
                         if os.path.isfile(path):
-                            safe_print("Using factory calibration", path)
+                            print("Using factory calibration", path)
                             try:
                                 cgats = CGATS.CGATS(path)
                             except (IOError, CGATS.CGATSError) as exception:
-                                safe_print(exception)
+                                print(exception)
                             else:
                                 white = cgats.queryi1({"RGB_R": 1,
                                                        "RGB_G": 1,
                                                        "RGB_B": 1})
                                 if white:
                                     luminance = white["XYZ_Y"]
-                                    safe_print("Using luminance %.2f from "
+                                    print("Using luminance %.2f from "
                                                "factory calibration" %
                                                luminance)
             if self.create_colorimeter_correction_handler(None, [profile_path,
@@ -9003,8 +8996,8 @@ class MainFrame(ReportFrame, BaseFrame):
     def just_measure(self, apply_calibration, consumer=None):
         if self.measure_auto(self.just_measure, apply_calibration):
             return
-        safe_print("-" * 80)
-        safe_print(lang.getstr("measure"))
+        print("-" * 80)
+        print(lang.getstr("measure"))
         self.worker.dispread_after_dispcal = False
         self.worker.interactive = config.get_display_name() == "Untethered"
         setcfg("calibration.file.previous", None)
@@ -9076,8 +9069,8 @@ class MainFrame(ReportFrame, BaseFrame):
         """ Start characterization measurements """
         if self.measure_auto(self.just_profile, apply_calibration):
             return
-        safe_print("-" * 80)
-        safe_print(lang.getstr("button.profile"))
+        print("-" * 80)
+        print(lang.getstr("button.profile"))
         self.worker.dispread_after_dispcal = False
         self.worker.interactive = config.get_display_name() == "Untethered"
         setcfg("calibration.file.previous", None)
@@ -9480,7 +9473,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     self.worker.madtpg_init()
                 except Exception as exception:
-                    safe_print("Could not initialize madTPG:", exception)
+                    print("Could not initialize madTPG:", exception)
         madtpg = getattr(self.worker, "madtpg", None)
         # Note: madVR HDR 3D LUT install API was added September 2017,
         # we don't require it so check availability
@@ -9546,8 +9539,8 @@ class MainFrame(ReportFrame, BaseFrame):
                            "skip_scripts": self.modaldlg.skip_scripts}
                 progress_msg = lang.getstr("profile.install")
             if producer:
-                safe_print("-" * 80)
-                safe_print(progress_msg)
+                print("-" * 80)
+                print(progress_msg)
                 self.worker.interactive = False
                 self.worker.start(self.profile_finish_consumer,
                                   producer, wargs=wargs, wkwargs=wkwargs,
@@ -9601,7 +9594,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             icon = "x"
                             if not result:
                                 result = lang.getstr("failure")
-                        result = wrap(safe_unicode(result))
+                        result = wrap(str(result))
                         sizer.Add(wx.StaticBitmap(dlg, -1, geticon(16, icon)),
                                   flag=wx.TOP, border=2)
                         sizer.Add(wx.StaticText(dlg, -1, ": ".join([name,
@@ -9874,7 +9867,7 @@ class MainFrame(ReportFrame, BaseFrame):
                          True)
         elif data[0] == "set-argyll-dir" and len(data) <= 2:
             if (getattr(self.worker, "thread", None) and
-                    self.worker.thread.isAlive()):
+                    self.worker.thread.is_alive()):
                 return "blocked"
             if len(data) == 2:
                 setcfg("argyll.dir", data[1])
@@ -9902,7 +9895,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def init_lut_viewer(self, event=None, profile=None, show=None):
         if debug:
-            safe_print("[D] init_lut_viewer",
+            print("[D] init_lut_viewer",
                        profile.getDescription() if profile else None,
                        "show:", show)
         if LUTFrame:
@@ -9927,7 +9920,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             if event or not lut_viewer:
                                 show_result_dialog(Error(msg), self)
                             else:
-                                safe_print(msg)
+                                print(msg)
                             profile = None
                     else:
                         profile = cal_to_fake_profile(path)
@@ -9936,14 +9929,14 @@ class MainFrame(ReportFrame, BaseFrame):
             if show is None:
                 show = not self.lut_viewer.IsShownOnScreen()
             if debug:
-                safe_print("[D] init_lut_viewer (2)",
+                print("[D] init_lut_viewer (2)",
                            profile.getDescription() if profile else None,
                            "show:", show)
             self.show_lut_handler(profile=profile, show=show)
 
     def lut_viewer_load_lut(self, event=None, profile=None, force_draw=False):
         if debug:
-            safe_print("[D] lut_viewer_load_lut",
+            print("[D] lut_viewer_load_lut",
                        profile.getDescription() if profile else None,
                        "force_draw:", force_draw)
         if LUTFrame:
@@ -9954,7 +9947,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def show_lut_handler(self, event=None, profile=None, show=None):
         if debug:
-            safe_print("[D] show_lut_handler",
+            print("[D] show_lut_handler",
                        profile.getDescription() if profile else None,
                        "show:", show)
         if show is None:
@@ -10387,15 +10380,15 @@ class MainFrame(ReportFrame, BaseFrame):
                         measurement_mode = None
                     observer_ctrl = dlg.observer_reference_ctrl
                 if debug or verbose >= 2:
-                    safe_print("check_last_ccxx_ti3", name)
-                    safe_print("instrument =", instrument)
-                    safe_print("measurement_mode =", measurement_mode)
+                    print("check_last_ccxx_ti3", name)
+                    print("instrument =", instrument)
+                    print("measurement_mode =", measurement_mode)
                 if event.GetId() == getattr(dlg, name + "_ti3").textControl.Id:
                     setcfg("last_%s_ti3_path" % name,
                            getattr(dlg, name + "_ti3").GetValue())
                 ti3 = getcfg("last_%s_ti3_path" % name, False)
                 if debug or verbose >= 2:
-                    safe_print("last_%s_ti3_path =" % name, ti3)
+                    print("last_%s_ti3_path =" % name, ti3)
                 if ti3:
                     if os.path.isfile(ti3):
                         try:
@@ -10408,7 +10401,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             cgats_instrument = get_canonical_instrument_name(
                                 cgats_instrument)
                         if debug or verbose >= 2:
-                            safe_print("cgats_instrument =", cgats_instrument)
+                            print("cgats_instrument =", cgats_instrument)
                         if name == "reference":
                             if getcfg(cfgname + ".projector"):
                                 cgats_measurement_mode = "p"
@@ -10426,7 +10419,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                     cgats.queryv1("SPECTRAL_BANDS") > 36):
                                 cgats_measurement_mode += "H"
                         if debug or verbose >= 2:
-                            safe_print("cgats_measurement_mode =", cgats_measurement_mode)
+                            print("cgats_measurement_mode =", cgats_measurement_mode)
                         cgats_observer = cgats.queryv1("OBSERVER")
                         if not cgats_observer:
                             cgats_observer = defaults["observer"]
@@ -10440,9 +10433,9 @@ class MainFrame(ReportFrame, BaseFrame):
                         else:
                             observer = defaults["observer"]
                         if debug or verbose >= 2:
-                            safe_print("observer =", observer)
+                            print("observer =", observer)
                         if debug or verbose >= 2:
-                            safe_print("cgats_observer =", cgats_observer)
+                            print("cgats_observer =", cgats_observer)
                         if (cgats_instrument != instrument or
                                 cgats_measurement_mode != measurement_mode or
                                 cgats_observer != observer):
@@ -10450,7 +10443,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     else:
                         ti3 = None
                 if debug or verbose >= 2:
-                    safe_print("last_%s_ti3_path =" % name, ti3)
+                    print("last_%s_ti3_path =" % name, ti3)
                 if ti3:
                     bmp = geticon(16, "checkmark")
                 else:
@@ -10863,7 +10856,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     if not cgats.queryv1("DATA"):
                         raise CGATS.CGATSError("Missing DATA")
                 except Exception as exception:
-                    safe_print(exception)
+                    print(exception)
                     InfoDialog(self,
                                title=lang.getstr("colorimeter_correction.create"),
                                msg=lang.getstr("error.measurement.file_invalid", path),
@@ -11001,7 +10994,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                      {"c": "YES",
                                       "l": "NO"}.get(getcfg(cfgname),
                                                      "NO"))
-                safe_print("Added DISPLAY_TYPE_REFRESH %r" %
+                print("Added DISPLAY_TYPE_REFRESH %r" %
                            cgats[0].DISPLAY_TYPE_REFRESH)
         options_dispcal, options_colprof = get_options_from_ti3(reference_ti3)
         display = None
@@ -11022,7 +11015,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if len(cgats_list) == 2:
             instrument = colorimeter_ti3.queryv1("TARGET_INSTRUMENT")
             if instrument:
-                instrument = safe_unicode(instrument, "UTF-8")
+                instrument = str(instrument)
                 instrument = get_canonical_instrument_name(instrument)
             observer = getcfg("colorimeter_correction.observer.reference")
             if observer == "1931_2":
@@ -11053,7 +11046,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                                             model_id))
         target_instrument = reference_ti3.queryv1("TARGET_INSTRUMENT")
         if target_instrument:
-            target_instrument = safe_unicode(target_instrument, "UTF-8")
+            target_instrument = str(target_instrument)
             target_instrument = get_canonical_instrument_name(target_instrument)
             description = "%s (%s)" % (description, target_instrument)
         args = []
@@ -11282,14 +11275,14 @@ class MainFrame(ReportFrame, BaseFrame):
                     else:
                         # This shouldn't happen
                         white = colormath.get_whitepoint("D65", scale=100)
-                        safe_print(appname + ": Warning - could not find white - "
+                        print(appname + ": Warning - could not find white - "
                                              "dE calculation will be inaccurate")
                     white_abs.append(white)
                 if debug or verbose > 1:
-                    safe_print("ref white %.6f %.6f %.6f" % tuple(white_abs[0]))
+                    print("ref white %.6f %.6f %.6f" % tuple(white_abs[0]))
                 white_ref = [v / white_abs[0][1] for v in white_abs[0]]
                 if getcfg("ccmx.use_four_color_matrix_method"):
-                    safe_print(appname + ": Creating matrix using four-color method")
+                    print(appname + ": Creating matrix using four-color method")
                     XYZ = []
                     for j, meas in enumerate((reference_ti3, colorimeter_ti3)):
                         for R, G, B in [(100, 0, 0), (0, 100, 0), (0, 0, 100),
@@ -11302,10 +11295,10 @@ class MainFrame(ReportFrame, BaseFrame):
                                        for v in (X, Y, Z))
                             XYZ.extend((X, Y, Z))
                     R = colormath.four_color_matrix(*XYZ)
-                    safe_print(appname + ": Correction matrix is:")
+                    print(appname + ": Correction matrix is:")
                     ccmx = CGATS.CGATS(source)
                     for i in range(3):
-                        safe_print("  %.6f %.6f %.6f" % tuple(R[i]))
+                        print("  %.6f %.6f %.6f" % tuple(R[i]))
                         for j, component in enumerate("XYZ"):
                             ccmx[0].DATA[i]["XYZ_" + component] = R[i][j]
                     ccmx.write()
@@ -11438,11 +11431,11 @@ class MainFrame(ReportFrame, BaseFrame):
                 tgt_data = colorimeter_ti3.queryv1("DATA")
                 deltaE_94 = []
                 deltaE_00 = []
-                safe_print("")
-                safe_print("      Reference xyY         |"
+                print("")
+                print("      Reference xyY         |"
                            "      Corrected xyY         |"
                            "   DE94   |   DE00   ")
-                safe_print("-" * 80)
+                print("-" * 80)
                 for i, ref in ref_data.items():
                     tgt = tgt_data[i]
                     grid.AppendRows(1)
@@ -11478,12 +11471,12 @@ class MainFrame(ReportFrame, BaseFrame):
                                colormath.XYZ2RGB(X, Y, Z, scale=255)]
                         grid.SetCellBackgroundColour(row, 3 + j, wx.Colour(*RGB))
                     if debug or verbose > 1:
-                        safe_print("ref %.6f %.6f %.6f, " % tuple(XYZabs[0]),
+                        print("ref %.6f %.6f %.6f, " % tuple(XYZabs[0]),
                                    "col %.6f %.6f %.6f" % tuple(XYZabs[1]))
                     Lab_ref = colormath.XYZ2Lab(*XYZabs[0] + [white_abs[0]])
                     Lab_tgt = colormath.XYZ2Lab(*XYZabs[1] + [white_abs[0]])
                     if debug or verbose > 1:
-                        safe_print("ref Lab %.6f %.6f %.6f, " % Lab_ref,
+                        print("ref Lab %.6f %.6f %.6f, " % Lab_ref,
                                    "col Lab %.6f %.6f %.6f" % Lab_tgt)
                     # For comparison to Argyll DE94 values
                     deltaE = colormath.delta(*Lab_ref +
@@ -11494,15 +11487,15 @@ class MainFrame(ReportFrame, BaseFrame):
                                               Lab_tgt +
                                               ("00", ))["E"]
                     deltaE_00.append(deltaE)
-                    safe_print(" %.6f %.6f %8.4f |"
+                    print(" %.6f %.6f %8.4f |"
                                " %.6f %.6f %8.4f | %.6f | %.6f " %
                                (tuple(xyYabs[0]) + tuple(xyYabs[1]) +
                                 (deltaE_94[-1], deltaE_00[-1])))
                     grid.SetCellValue(row, 8, "%.4f" % deltaE)
-                safe_print("")
-                safe_print(appname + ": Fit error is max %.6f, avg %.6f DE94" %
+                print("")
+                print(appname + ": Fit error is max %.6f, avg %.6f DE94" %
                            (max(deltaE_94), sum(deltaE_94) / len(deltaE_94)))
-                safe_print(appname + ": Fit error is max %.6f, avg %.6f DE00" %
+                print(appname + ": Fit error is max %.6f, avg %.6f DE00" %
                            (max(deltaE_00), sum(deltaE_00) / len(deltaE_00)))
                 grid.DefaultCellBackgroundColour = grid.LabelBackgroundColour
                 grid.EndBatch()
@@ -11626,8 +11619,7 @@ class MainFrame(ReportFrame, BaseFrame):
             params = {"cgats": cgats}
             # Also upload reference and target CGATS (if available)
             for label in ("REFERENCE", "TARGET"):
-                filename = safe_unicode(ccxx.queryv1(label + "_FILENAME") or
-                                        "", "UTF-8")
+                filename = str(ccxx.queryv1(label + "_FILENAME") or "")
                 algo_hash = (ccxx.queryv1(label + "_HASH") or "").split(":", 1)
                 if (filename and os.path.isfile(filename) and
                         algo_hash[0] in globals()):
@@ -11636,7 +11628,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     if globals()[algo_hash[0]](meas).hexdigest() == algo_hash[-1]:
                         params[label.lower() + "_cgats"] = meas
             if debug or test:
-                safe_print(list(params.keys()))
+                print(list(params.keys()))
             # Upload correction
             self.worker.interactive = False
             self.worker.start(lambda result: result,
@@ -11681,7 +11673,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def comport_ctrl_handler(self, event=None, force=False):
         if debug and event:
-            safe_print("[D] comport_ctrl_handler called for ID %s %s event "
+            print("[D] comport_ctrl_handler called for ID %s %s event "
                        "type %s %s" % (event.GetId(),
                                        getevtobjname(event, self),
                                        event.GetEventType(),
@@ -11835,16 +11827,16 @@ class MainFrame(ReportFrame, BaseFrame):
                                       spyd4en, icd, oeminst, path, asroot):
         """ Import colorimter correction(s) from path """
         if debug:
-            safe_print("import_colorimeter_correction <-")
-            safe_print("   result:", result)
-            safe_print("   i1d3:", i1d3)
-            safe_print("   i1d3ccss:", i1d3ccss)
-            safe_print("   spyd4:", spyd4)
-            safe_print("   spyd4en:", spyd4en)
-            safe_print("   icd:", icd)
-            safe_print("   oeminst:", oeminst)
-            safe_print("   path(s):", path)
-            safe_print("   asroot:", asroot)
+            print("import_colorimeter_correction <-")
+            print("   result:", result)
+            print("   i1d3:", i1d3)
+            print("   i1d3ccss:", i1d3ccss)
+            print("   spyd4:", spyd4)
+            print("   spyd4en:", spyd4en)
+            print("   icd:", icd)
+            print("   oeminst:", oeminst)
+            print("   path(s):", path)
+            print("   asroot:", asroot)
         kind = None
         if isinstance(path, list):
             kind = "xrite"
@@ -11926,15 +11918,14 @@ class MainFrame(ReportFrame, BaseFrame):
                         result = check_create_dir(ccmx_dir)
                         if isinstance(result, Exception):
                             return result, i1d3, spyd4, icd
-                    safe_print(lang.getstr("colorimeter_correction.import"))
-                    safe_print(path)
+                    print(lang.getstr("colorimeter_correction.import"))
+                    print(path)
                     try:
                         imported, skipped = ccmx.convert_devicecorrections_to_ccmx(path, ccmx_dir)
                         if imported == 0:
                             raise Info()
                     except (UnicodeDecodeError, ValueError) as exception:
-                        result = Error(lang.getstr("file.invalid") + "\n" +
-                                       safe_unicode(exception))
+                        result = Error(lang.getstr("file.invalid") + "\n" + str(exception))
                     except Info:
                         result = False
                     except Exception as exception:
@@ -11985,16 +11976,16 @@ class MainFrame(ReportFrame, BaseFrame):
                 result = Error(lang.getstr("error.file_type_unsupported") +
                                "\n" + path)
         if debug:
-            safe_print("import_colorimeter_correction ->")
-            safe_print("   result:", result)
-            safe_print("   i1d3:", i1d3)
-            safe_print("   i1d3ccss:", i1d3ccss)
-            safe_print("   spyd4:", spyd4)
-            safe_print("   spyd4en:", spyd4en)
-            safe_print("   icd:", icd)
-            safe_print("   oeminst:", oeminst)
-            safe_print("   path(s):", path)
-            safe_print("   asroot:", asroot)
+            print("import_colorimeter_correction ->")
+            print("   result:", result)
+            print("   i1d3:", i1d3)
+            print("   i1d3ccss:", i1d3ccss)
+            print("   spyd4:", spyd4)
+            print("   spyd4en:", spyd4en)
+            print("   icd:", icd)
+            print("   oeminst:", oeminst)
+            print("   path(s):", path)
+            print("   asroot:", asroot)
         return result, i1d3, spyd4, icd
 
     def import_colorimeter_corrections_producer(self, result, i1d3, i1d3ccss,
@@ -12245,13 +12236,13 @@ class MainFrame(ReportFrame, BaseFrame):
                         # in the file, 'name' will already be Unicode.
                         # Otherwise, it'll either be 7-bit ASCII or (legacy)
                         # cp437 encoding
-                        outname = safe_unicode(name, "cp437")
+                        outname = str(name)
                         with open(os.path.join(temp, os.path.basename(outname)),
                                   "wb") as outfile:
                             outfile.write(archive.read(name))
             except Exception as exception:
                 from traceback import format_exc
-                safe_print(traceback.format_exc())
+                print(traceback.format_exc())
                 return exception
         return os.path.join(getcfg("profile.save_path"), basename,
                             basename + ext)
@@ -12271,7 +12262,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def display_ctrl_handler(self, event, load_lut=True,
                              update_ccmx_items=True):
         if debug:
-            safe_print("[D] display_ctrl_handler called for ID %s %s event "
+            print("[D] display_ctrl_handler called for ID %s %s event "
                        "type %s %s" % (event.GetId(),
                                        getevtobjname(event, self),
                                        event.GetEventType(),
@@ -12291,11 +12282,11 @@ class MainFrame(ReportFrame, BaseFrame):
                 bool(int(getcfg("display_lut.link"))))
         if load_lut:
             if debug:
-                safe_print("[D] display_ctrl_handler -> lut_viewer_load_lut",
+                print("[D] display_ctrl_handler -> lut_viewer_load_lut",
                            profile.getDescription() if profile else None)
             self.lut_viewer_load_lut(profile=profile)
             if debug:
-                safe_print("[D] display_ctrl_handler -> lut_viewer_load_lut END")
+                print("[D] display_ctrl_handler -> lut_viewer_load_lut END")
         self.update_use_video_lut()
         # Special case: Resolve. Needs a minimum display update delay of
         # atleast 600 ms for repeatable measurements. This is a Resolve
@@ -12398,7 +12389,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def display_lut_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] display_lut_ctrl_handler called for ID %s %s event "
+            print("[D] display_lut_ctrl_handler called for ID %s %s event "
                        "type %s %s" % (event.GetId(),
                                        getevtobjname(event, self),
                                        event.GetEventType(),
@@ -12411,7 +12402,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def display_lut_link_ctrl_handler(self, event, link=None):
         if debug:
-            safe_print("[D] display_lut_link_ctrl_handler called for ID %s %s "
+            print("[D] display_lut_link_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -12512,7 +12503,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def measurement_mode_ctrl_handler(self, event=None):
         if debug:
-            safe_print("[D] measurement_mode_ctrl_handler called for ID %s %s "
+            print("[D] measurement_mode_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -12603,7 +12594,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def profile_type_ctrl_handler(self, event):
         if debug and event:
-            safe_print("[D] profile_type_ctrl_handler called for ID %s %s "
+            print("[D] profile_type_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -12832,7 +12823,7 @@ class MainFrame(ReportFrame, BaseFrame):
             for index in indexes:
                 removed.insert(0, data.pop(dlg.suspicious_items[index]))
             for item in removed:
-                safe_print("Removed patch #%i from TI3: %s" % (item.key, item))
+                print("Removed patch #%i from TI3: %s" % (item.key, item))
             for index, fields in dlg.mods.items():
                 if index not in indexes:
                     item = dlg.suspicious_items[index]
@@ -12840,7 +12831,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         old = item[field]
                         if old != value:
                             item[field] = value
-                            safe_print("Updated patch #%s in TI3: %s %.4f \u2192 %.4f" %
+                            print("Updated patch #%s in TI3: %s %.4f \u2192 %.4f" %
                                        (item.SAMPLE_ID, field, old, value))
         dlg.Destroy()
         if result == wx.ID_CANCEL:
@@ -12853,13 +12844,13 @@ class MainFrame(ReportFrame, BaseFrame):
                     except EnvironmentError as exception:
                         show_result_dialog(exception, self)
                         return False
-                    safe_print("Written updated TI3 to", ti3.filename)
+                    print("Written updated TI3 to", ti3.filename)
                 return removed, ti3
         return True
 
     def profile_name_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] profile_name_ctrl_handler called for ID %s %s "
+            print("[D] profile_name_ctrl_handler called for ID %s %s "
                        "event type %s %s" % (event.GetId(),
                                              getevtobjname(event, self),
                                              event.GetEventType(),
@@ -13388,12 +13379,12 @@ class MainFrame(ReportFrame, BaseFrame):
                         self.worker.options_targen = ["-d3"]
                 except Exception as exception:
                     handle_error(Error("Error - temporary .ti3 file could not "
-                                       "be created: " + safe_unicode(exception)),
+                                       "be created: " + str(exception)),
                                  parent=self)
                     self.worker.wrapup(False)
                     return
                 setcfg("calibration.file.previous", None)
-                safe_print("-" * 80)
+                print("-" * 80)
                 if (not skip_ti3_check and
                         not self.measurement_file_check_confirm(ti3)):
                     self.worker.wrapup(False)
@@ -13441,13 +13432,13 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 profile.write(profile_save_path)
             except Exception as exception:
-                InfoDialog(self, msg=safe_unicode(exception),
+                InfoDialog(self, msg=str(exception),
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
             else:
                 if getcfg("profile.create_gamut_views"):
-                    safe_print("-" * 80)
-                    safe_print(lang.getstr("gamut.view.create"))
+                    print("-" * 80)
+                    print(lang.getstr("gamut.view.create"))
                     self.worker.interactive = False
                     self.worker.start(self.create_profile_from_edid_finish,
                                       self.worker.calculate_gamut,
@@ -13474,7 +13465,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     prefixes.append("MAPPING_")
                     profile.tags.meta["prefix"] = ",".join(prefixes)
                 profile.calculateID()
-                safe_print("-" * 80)
+                print("-" * 80)
             try:
                 profile.write()
             except Exception as exception:
@@ -13492,9 +13483,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
         # Computername
         if "%nn" in profile_name:
-            profile_name = profile_name.replace("%nn",
-                                                safe_unicode(platform.node()) or
-                                                "\0")
+            profile_name = profile_name.replace("%nn", str(platform.node()) or "\0")
 
         # Windows display name (EnumDisplayDevices / DeviceString)
         if "%dnws" in profile_name:
@@ -14018,7 +14007,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def testchart_ctrl_handler(self, event):
         if debug:
-            safe_print("[D] testchart_ctrl_handler called for ID %s %s event "
+            print("[D] testchart_ctrl_handler called for ID %s %s event "
                        "type %s %s" % (event.GetId(),
                                        getevtobjname(event, self),
                                        event.GetEventType(),
@@ -14151,7 +14140,7 @@ class MainFrame(ReportFrame, BaseFrame):
             path = self.dist_testcharts[
                 self.dist_testchart_names.index(os.path.basename(path))]
             if debug:
-                safe_print("[D] set_default_testchart testchart.file:", path)
+                print("[D] set_default_testchart testchart.file:", path)
             setcfg("testchart.file", path)
         if force or (lang.getstr(os.path.basename(path)) in [""] +
                      self.default_testchart_names) or not os.path.isfile(path):
@@ -14171,7 +14160,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                    ok=lang.getstr("ok"),
                                    bitmap=geticon(32, "dialog-error"))
                     elif verbose >= 1:
-                        safe_print(lang.getstr("error.testchart.missing", ti1))
+                        print(lang.getstr("error.testchart.missing", ti1))
                     return False
             else:
                 path = ti1
@@ -14264,7 +14253,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                                                                        lang.getstr("error.testchart.invalid",
                                                                                                    path) +
                                                                                        "\n" +
-                                                                                       lang.getstr(safe_unicode(exception)))
+                                                                                       lang.getstr(str(exception)))
                 InfoDialog(self,
                            msg=msg,
                            ok=lang.getstr("ok"),
@@ -14274,7 +14263,7 @@ class MainFrame(ReportFrame, BaseFrame):
             if path != getcfg("calibration.file", False):
                 self.profile_settings_changed()
             if debug:
-                safe_print("[D] set_testchart testchart.file:", path)
+                print("[D] set_testchart testchart.file:", path)
             setcfg("testchart.file", path)
             if path not in self.testcharts:
                 self.set_testcharts(path)
@@ -14298,7 +14287,7 @@ class MainFrame(ReportFrame, BaseFrame):
             error = traceback.format_exc() if debug else exception
             InfoDialog(self,
                        msg=lang.getstr("error.testchart.read", path) +
-                           "\n\n" + safe_unicode(error),
+                           "\n\n" + str(error),
                        ok=lang.getstr("ok"),
                        bitmap=geticon(32, "dialog-error"))
             self.set_default_testchart(force=True)
@@ -14333,8 +14322,8 @@ class MainFrame(ReportFrame, BaseFrame):
                                         re.escape(os.path.splitext(os.path.basename(path))[0]) +
                                         r"\.(?:icc|icm|ti1|ti3)$")
             except Exception as exception:
-                safe_print("Error - directory '%s' listing failed: %s" %
-                           tuple(safe_unicode(s) for s in (testchart_dir,
+                print("Error - directory '%s' listing failed: %s" %
+                           tuple(str(s) for s in (testchart_dir,
                                                            exception)))
             else:
                 for testchart_name in testcharts:
@@ -14370,7 +14359,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                callafter_args=()):
         """ Set Argyll CMS binary executables directory """
         if ((getattr(self.worker, "thread", None) and
-             self.worker.thread.isAlive()) or
+             self.worker.thread.is_alive()) or
                 not self.Shown or not self.Enabled or get_dialogs()):
             wx.Bell()
             return
@@ -14510,10 +14499,10 @@ class MainFrame(ReportFrame, BaseFrame):
                     self.create_testchart_btn_handler(None)
         if displays != self.worker.displays:
             self.update_displays(update_ccmx_items=True)
-            if verbose >= 1: safe_print(lang.getstr("display_detected"))
+            if verbose >= 1: print(lang.getstr("display_detected"))
         if comports != self.worker.instruments:
             self.update_comports()
-            if verbose >= 1: safe_print(lang.getstr("comport_detected"))
+            if verbose >= 1: print(lang.getstr("comport_detected"))
             if event and not callafter:
                 # Check if we should import colorimeter corrections
                 # or other instrument setup
@@ -14704,11 +14693,11 @@ class MainFrame(ReportFrame, BaseFrame):
                             edid_md5_indexes.append(i)
                     if len(display_name_indexes) == 1:
                         display_index = display_name_indexes[0]
-                        safe_print("Found display device matching model "
+                        print("Found display device matching model "
                                    "description at index #%i" % display_index)
                     elif len(edid_md5_indexes) == 1:
                         display_index = edid_md5_indexes[0]
-                        safe_print("Found display device matching EDID MD5 "
+                        print("Found display device matching EDID MD5 "
                                    "at index #%i" % display_index)
                     else:
                         # We got several matches. As we can't be sure which
@@ -14764,9 +14753,9 @@ class MainFrame(ReportFrame, BaseFrame):
             black_point_correction = False
             if options_dispcal or options_colprof:
                 if debug:
-                    safe_print("[D] options_dispcal:", options_dispcal)
+                    print("[D] options_dispcal:", options_dispcal)
                 if debug:
-                    safe_print("[D] options_colprof:", options_colprof)
+                    print("[D] options_colprof:", options_colprof)
                 ccxxsetting = getcfg("colorimeter_correction_matrix_file").split(":", 1)[0]
                 ccmx = None
                 # Check if TRC was set
@@ -15008,7 +14997,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 setcfg("calibration.file", path)
                 if "CTI3" in ti3_lines:
                     if debug:
-                        safe_print("[D] load_cal_handler testchart.file:", path)
+                        print("[D] load_cal_handler testchart.file:", path)
                     setcfg("testchart.file", path)
                 if 'USE_BLACK_POINT_COMPENSATION "YES"' in ti3_lines:
                     setcfg("profile.black_point_compensation", 1)
@@ -15179,7 +15168,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 setcfg("3dlut.tab.enable", 1)
                                 setcfg("3dlut.tab.enable.backup", 1)
                         if cfgvalue is not None:
-                            cfgvalue = safe_unicode(cfgvalue, "UTF-7")
+                            cfgvalue = str(cfgvalue)
                             if (cfgname.endswith("profile") and
                                     (not os.path.isabs(cfgvalue) or
                                      not os.path.isfile(cfgvalue))):
@@ -15225,7 +15214,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             cfgvalue = cfgpart.queryv1(keyword)
                             if cfgvalue is None:
                                 continue
-                            cfgvalue = safe_unicode(cfgvalue, "UTF-7")
+                            cfgvalue = str(cfgvalue)
                             try:
                                 cfgvalue = round(float(cfgvalue), 4)
                             except ValueError:
@@ -15453,7 +15442,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.update_controls(update_profile_name=update_profile_name)
             if "CTI3" in ti3_lines:
                 if debug:
-                    safe_print("[D] load_cal_handler testchart.file:", path)
+                    print("[D] load_cal_handler testchart.file:", path)
                 setcfg("testchart.file", path)
             writecfg()
             if load_vcgt:
@@ -15479,7 +15468,7 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 dircontents = os.listdir(caldir)
             except Exception as exception:
-                InfoDialog(self, msg=safe_unicode(exception),
+                InfoDialog(self, msg=str(exception),
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
@@ -15575,7 +15564,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 except Exception as exception:
                     InfoDialog(self,
                                msg=lang.getstr("error.deletion", trashcan) +
-                                   "\n\n" + safe_unicode(exception),
+                                   "\n\n" + str(exception),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                 # The case-sensitive index could fail because of
@@ -15731,7 +15720,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def app_update_check_handler(self, event, silent=False, argyll=False):
         if not hasattr(self, "app_update_check") or \
-                not self.app_update_check.isAlive():
+                not self.app_update_check.is_alive():
             self.app_update_check = threading.Thread(target=app_update_check,
                                                      name="ApplicationUpdateCheck",
                                                      args=(self, silent,
@@ -15788,8 +15777,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 measureframe.Close()
         for window in wx.GetTopLevelWindows():
             if window and window is not self and window.IsShown():
-                safe_print("Closing", window,
-                           "'%s'" % getattr(window, "Title", window.Name))
+                print("Closing", window, "'%s'" % getattr(window, "Title", window.Name))
                 window.Close()
         self.Hide()
         self.enable_menus(False)
@@ -15824,7 +15812,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def OnClose(self, event=None):
         if (getattr(self.worker, "thread", None) and
-                self.worker.thread.isAlive()):
+                self.worker.thread.is_alive()):
             if isinstance(event, wx.CloseEvent) and event.CanVeto():
                 event.Veto()
             self.worker.abort_subprocess(True)
@@ -15846,10 +15834,10 @@ class MainFrame(ReportFrame, BaseFrame):
                     if isinstance(win, VisualWhitepointEditor):
                         win.Close(force=True)
             writecfg()
-            if getattr(self, "thread", None) and self.thread.isAlive():
+            if getattr(self, "thread", None) and self.thread.is_alive():
                 self.Disable()
                 if debug:
-                    safe_print("Waiting for child thread to exit...")
+                    print("Waiting for child thread to exit...")
                 self.thread.join()
             self.listening = False
             if isinstance(getattr(self.worker, "madtpg", None),
@@ -15996,7 +15984,7 @@ class StartupFrame(start_cls):
                     import PIL, PIL.Image, PIL.ImageCms
                 except ImportError as exception:
                     PIL = None
-                    safe_print("Info: Couldn't import PIL:", exception)
+                    print("Info: Couldn't import PIL:", exception)
                 else:
                     rec709_gamma18 = list(colormath.get_rgb_space("Rec. 709"))
                     rec709_gamma18[0] = 1.8
@@ -16007,7 +15995,7 @@ class StartupFrame(start_cls):
                         rec709_gamma18_cms = PIL.ImageCms.getOpenProfile(rec709_gamma18_io)
                     except Exception as exception:
                         rec709_gamma18_cms = None
-                        safe_print("Info:", exception)
+                        print("Info:", exception)
                 tif_path = os.path.join(self.worker.tempdir,
                                         "screencap.tif")
                 if PIL and rec709_gamma18_cms:
@@ -16015,7 +16003,7 @@ class StartupFrame(start_cls):
                     try:
                         pim = PIL.Image.open(bmp_path)
                     except Exception as exception:
-                        safe_print("Info: Couldn't open image:", exception)
+                        print("Info: Couldn't open image:", exception)
                     else:
                         if "icc_profile" in pim.info:
                             # Get embedded ICC profile from image
@@ -16035,7 +16023,7 @@ class StartupFrame(start_cls):
                                 ##pim.tobytes())
                                 pim.save(tif_path)
                             except Exception as exception:
-                                safe_print("Info:", exception)
+                                print("Info:", exception)
                             else:
                                 bmp_path = tif_path
                             # We are done with PIL image now
@@ -16091,7 +16079,7 @@ class StartupFrame(start_cls):
 
         audio.safe_init()
         if audio._lib:
-            safe_print(lang.getstr("audio.lib", "%s %s" % (audio._lib,
+            print(lang.getstr("audio.lib", "%s %s" % (audio._lib,
                                                            audio._lib_version)))
         # Startup sound
         # Needs to be stereo!
@@ -16171,10 +16159,10 @@ class StartupFrame(start_cls):
                 error = exception.originalTraceback
             else:
                 error = traceback.format_exc()
-            safe_print(error)
+            print(error)
             show_result_dialog(UnloggedError(exception))
         if verbose >= 1:
-            safe_print(lang.getstr("initializing_gui"))
+            print(lang.getstr("initializing_gui"))
         app = wx.GetApp()
         app.frame = MainFrame(self.worker)
         self.setup_frame_finish(app)
@@ -16670,12 +16658,12 @@ def main():
     lang.init()
     # Startup messages
     if verbose >= 1:
-        safe_print(lang.getstr("startup"))
+        print(lang.getstr("startup"))
     if sys.platform != "darwin":
         if not autostart:
-            safe_print(lang.getstr("warning.autostart_system"))
+            print(lang.getstr("warning.autostart_system"))
         if not autostart_home:
-            safe_print(lang.getstr("warning.autostart_user"))
+            print(lang.getstr("warning.autostart_user"))
     app = BaseApp(0)  # Don't redirect stdin/stdout
     app.TopWindow = StartupFrame()
     app.MainLoop()

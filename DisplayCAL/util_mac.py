@@ -6,7 +6,7 @@ import subprocess as sp
 from time import sleep
 
 from meta import name as appname
-from options import verbose
+from .options import verbose
 
 
 def get_osascript_args(applescript):

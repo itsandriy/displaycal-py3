@@ -5,12 +5,13 @@ import traceback
 
 import config
 from config import fs_enc
-from log import logbuffer, safe_print
+from log import logbuffer
 from meta import name as appname, wx_recversion
 from options import debug
-from util_str import box, safe_unicode
+from util_str import box
 
 wxEventTypes = {}
+
 
 def getevtobjname(event, window=None):
     """ Get and return the event object's name. """
@@ -54,15 +55,15 @@ def handle_error(error, parent=None, silent=False, tb=True):
              not getattr(error, "filename", None))):
         # Print a traceback if in debug mode, for non environment errors, and
         # for environment errors not related to files
-        errstr, tbstr = (safe_unicode(v) for v in (error, tbstr))
+        errstr, tbstr = (str(v) for v in (error, tbstr))
         msg = "\n\n".join((errstr, tbstr))
         if msg.startswith(errstr):
-            safe_print(box(tbstr))
+            print(box(tbstr))
         else:
-            safe_print(box(msg))
+            print(box(msg))
     else:
-        msg = safe_unicode(error)
-        safe_print(box(msg))
+        msg = str(error)
+        print(box(msg))
     if not silent:
         try:
             from wxaddons import wx
@@ -106,7 +107,7 @@ def handle_error(error, parent=None, silent=False, tb=True):
                 dlg.ShowModal()
                 dlg.Destroy()
         except Exception as exception:
-            safe_print("Warning: handle_error():", safe_unicode(exception))
+            print("Warning: handle_error():", str(exception))
 
 
 def print_callstack():
@@ -115,7 +116,7 @@ def print_callstack():
     stack = inspect.stack()
     indent = ""
     for frame, filename, linenum, funcname, line, exc in reversed(stack[1:]):
-        safe_print(indent, funcname, filename, linenum,
+        print(indent, funcname, filename, linenum,
                    repr("".join(line).strip()))
         indent += " "
 

@@ -179,9 +179,6 @@ or no range::
 
 """
 
-def Property(func):
-    return property(**func())
-
 
 #----------------------------------------------------------------------
 # Beginning Of FLOATSPIN wxPython Code
@@ -629,16 +626,13 @@ class FloatSpin(wx.PyControl):
         self._spinbutton.Enable(enable)
 
 
-    @Property
-    def Enabled():
-        def fget(self):
-            return self._enabled
+    @property
+    def Enabled(self):
+        return self._enabled
 
-        def fset(self, enable=True):
-            self.Enable(enable)
-
-        return locals()
-
+    @Enabled.setter
+    def Enabled(self, enable=True):
+        self.Enable(enable)
 
     def IsEnabled(self):
         return self._enabled

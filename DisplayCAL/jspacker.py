@@ -8,7 +8,7 @@
 ##  Web: http://creativecommons.org/licenses/LGPL/2.1/
 ##
 ##  Ported to Python by Florian Schulze
-
+import functools
 import os, re, sys
 
 # a multi-pattern parser
@@ -300,9 +300,9 @@ class JavaScriptPacker:
         # retreive all words in the script
         regexp = re.compile(regexp, re.M)
         all = regexp.findall(script)
-        sorted = [] # list of words sorted by frequency
-        encoded = {} # dictionary of word->encoding
-        protected = {} # instances of "protected" words
+        sorted_ = []  # list of words sorted by frequency
+        encoded = {}  # dictionary of word->encoding
+        protected = {}  # instances of "protected" words
         if all:
             unsorted = []
             _protected = {}
@@ -326,20 +326,21 @@ class JavaScriptPacker:
             # e.g. if "do" falls within our encoding range
             #      then we store keywords["do"] = "do";
             # this avoids problems when decoding
-            sorted = [None] * len(unsorted)
+            sorted_ = [None] * len(unsorted)
             for word in unsorted:
                 if word in _protected and isinstance(_protected[word], int):
-                    sorted[_protected[word]] = word[1:]
+                    sorted_[_protected[word]] = word[1:]
                     protected[_protected[word]] = True
                     count[word] = 0
-            unsorted.sort(lambda a,b: count[b]-count[a])
+            # unsorted.sort(lambda a, b: count[b]-count[a])
+            unsorted = sorted(unsorted, key=functools.cmp_to_key(lambda a, b: count[b] - count[a]))
             j = 0
-            for i in range(len(sorted)):
-                if sorted[i] is None:
-                    sorted[i]  = unsorted[j][1:]
+            for i in range(len(sorted_)):
+                if sorted_[i] is None:
+                    sorted_[i] = unsorted[j][1:]
                     j = j + 1
-                encoded[sorted[i]] = values[i]
-        return {'sorted': sorted, 'encoded': encoded, 'protected': protected}
+                encoded[sorted_[i]] = values[i]
+        return {'sorted': sorted_, 'encoded': encoded, 'protected': protected}
 
     def encodePrivate(self, charCode):
         return "_"+str(charCode)

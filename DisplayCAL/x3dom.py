@@ -12,9 +12,8 @@ from config import get_data_path
 from defaultpaths import cache as cachepath
 from meta import domain
 from options import verbose, debug
-from log import safe_print as _safe_print
 from util_io import GzipFileProper
-from util_str import StrList, create_replace_function, safe_unicode
+from util_str import StrList, create_replace_function
 import colormath
 import localization as lang
 
@@ -114,22 +113,22 @@ class Tag(object):
             cachedir = os.path.join(cachepath,
                                     os.path.join(*cache_uri.split("/")))
             if not os.path.isdir(cachedir):
-                _safe_print("Creating cache directory:", cachedir)
+                print("Creating cache directory:", cachedir)
                 os.makedirs(cachedir)
             cachefilename = os.path.join(cachedir, basename)
             body = ""
             if not force and os.path.isfile(cachefilename):
-                _safe_print("Using cached file:", cachefilename)
+                print("Using cached file:", cachefilename)
                 with open(cachefilename, "rb") as cachefile:
                     body = cachefile.read()
             if not body.strip():
                 for url in (url, url.replace("https://", "http://")):
-                    _safe_print("Requesting:", url)
+                    print("Requesting:", url)
                     try:
                         response = urllib.request.urlopen(url)
                     except (socket.error, urllib.error.URLError,
                             http.client.HTTPException) as exception:
-                        _safe_print(exception)
+                        print(exception)
                     else:
                         body = response.read()
                         response.close()
@@ -138,7 +137,7 @@ class Tag(object):
                 # Fallback to local copy
                 url = get_data_path("x3d-viewer/" + basename)
                 if not url:
-                    _safe_print("Error: Resource not found:", basename)
+                    print("Error: Resource not found:", basename)
                     return
                 with open(url, "rb") as resource_file:
                     body = resource_file.read()
@@ -154,11 +153,11 @@ class Tag(object):
                     else:
                         return body
                 else:
-                    return "file:///" + safe_unicode(cachefilename).encode("UTF-8").lstrip("/").replace(os.path.sep, "/")
+                    return "file:///" + str(cachefilename).lstrip("/").replace(os.path.sep, "/")
             else:
-                _safe_print("Error: Empty document:", url)
+                print("Error: Empty document:", url)
                 if os.path.isfile(cachefilename):
-                    _safe_print("Removing", cachefilename)
+                    print("Removing", cachefilename)
                     os.remove(cachefilename)
         # Get HTML template from cache or online
         html = get_resource("https://%s/x3d-viewer/release/x3d-viewer.html" %
@@ -187,7 +186,7 @@ class Tag(object):
                     html = html.replace(restag, updated_restag)
         # Update title
         html = re.sub("(<title>)[^<]*(</title>)",
-                      create_replace_function(r"\1%s\2", safe_unicode(title).encode("UTF-8")), html)
+                      create_replace_function(r"\1%s\2", str(title)), html)
         # Insert X3D
         html = html.replace("</x3d>", "\t" + x3d_html + "\n\t\t</x3d>")
         # Finish
@@ -207,6 +206,7 @@ class Tag(object):
                          '<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 3.0//EN" "http://www.web3d.org/specifications/x3d-3.0.dtd">',
                          self.markup(allow_empty_element_tag=True)])
         return x3d
+
 
 def _attrchk(attribute, token, tag, indent):
     if attribute:
@@ -334,7 +334,7 @@ def get_vrml_axes(xlabel="X", ylabel="Y", zlabel="Z", offsetx=0,
 
 def safe_print(*args, **kwargs):
     if debug:
-        _safe_print(*args, **kwargs)
+        print(*args, **kwargs)
 
 
 def update_vrml(vrml, colorspace):
@@ -545,7 +545,7 @@ def vrml2x3dom(vrml, worker=None):
                 end = None
             else:
                 end = "\n"
-            _safe_print.write("\r%i%%" % curprogress, end=end)
+            print.write("\r%i%%" % curprogress, end=end)
         if ord(c) < 32 and c not in "\n\r\t":
             raise VRMLParseError("Parse error: Got invalid character %r" % c)
         elif c == "{":
@@ -638,21 +638,21 @@ def vrmlfile2x3dfile(vrmlpath, x3dpath, html=True, embed=False, force=False,
     if worker:
         worker.recent.write("%s %s\n" % (lang.getstr("converting"),
                                          os.path.basename(vrmlpath)))
-    _safe_print(lang.getstr("converting"), vrmlpath)
+    print(lang.getstr("converting"), vrmlpath)
     filename, ext = os.path.splitext(x3dpath)
     try:
         x3d = vrml2x3dom(vrml, worker)
         if not x3d:
-            _safe_print(lang.getstr("aborted"))
+            print(lang.getstr("aborted"))
             return False
         if not html:
-            _safe_print("Writing", x3dpath)
+            print("Writing", x3dpath)
             with open(x3dpath, "wb") as x3dfile:
                 x3dfile.write(x3d.x3d())
         else:
             html = x3d.html(title=os.path.basename(filename),
                             embed=embed, force=force, cache=cache)
-            _safe_print("Writing", x3dpath + ".html")
+            print("Writing", x3dpath + ".html")
             with open(x3dpath + ".html", "wb") as htmlfile:
                 htmlfile.write(html)
     except KeyboardInterrupt:
@@ -663,6 +663,6 @@ def vrmlfile2x3dfile(vrmlpath, x3dpath, html=True, embed=False, force=False,
         return exception
     except Exception as exception:
         import traceback
-        _safe_print(traceback.format_exc())
+        print(traceback.format_exc())
         return exception
     return True

@@ -15,21 +15,22 @@ from time import localtime, strftime, time
 from meta import name as appname, script2pywname
 from multiprocess import mp
 from options import debug
-from safe_print import SafePrinter, safe_print as _safe_print
 from util_io import StringIOu as StringIO
 from util_os import safe_glob
-from util_str import safe_str, safe_unicode
+from util_str import safe_str
 
 logging.raiseExceptions = 0
-
 logging._warnings_showwarning = warnings.showwarning
+
 
 if debug:
     loglevel = logging.DEBUG
 else:
     loglevel = logging.INFO
 
+
 logger = None
+_logdir = None
 
 
 def showwarning(message, category, filename, lineno, file=None, line=""):
@@ -159,29 +160,27 @@ class LogFile():
             self._logger.info(line)
 
 
-class SafeLogger(SafePrinter):
-
-    """
-    Print and log safely, avoiding any UnicodeDe-/EncodingErrors on strings
-    and converting all other objects to safe string representations.
-
-    """
-
-    def __init__(self, log=True, print_=hasattr(sys.stdout, "isatty") and
-                                        sys.stdout.isatty()):
-        SafePrinter.__init__(self)
-        self.log = log
-        self.print_ = print_
-
-    def write(self, *args, **kwargs):
-        if kwargs.get("print_", self.print_):
-            _safe_print(*args, **kwargs)
-        if kwargs.get("log", self.log):
-            kwargs.update(fn=log, encoding=None)
-            _safe_print(*args, **kwargs)
-
-safe_log = SafeLogger(print_=False)
-safe_print = SafeLogger()
+# class SafeLogger(SafePrinter):
+#     """
+#     Print and log safely, avoiding any UnicodeDe-/EncodingErrors on strings
+#     and converting all other objects to safe string representations.
+#     """
+#
+#     def __init__(self, log=True, print_=hasattr(sys.stdout, "isatty") and
+#                                         sys.stdout.isatty()):
+#         SafePrinter.__init__(self)
+#         self.log = log
+#         self.print_ = print_
+#
+#     def write(self, *args, **kwargs):
+#         if kwargs.get("print_", self.print_):
+#             _safe_print(*args, **kwargs)
+#         if kwargs.get("log", self.log):
+#             kwargs.update(fn=log, encoding=None)
+#             _safe_print(*args, **kwargs)
+#
+# safe_log = SafeLogger(print_=False)
+# safe_print = SafeLogger()
 
 
 def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
@@ -235,9 +234,7 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
                             try:
                                 logstat = os.stat(logfile)
                             except Exception as exception:
-                                safe_print("Warning - os.stat('%s') failed: %s" %
-                                           tuple(safe_unicode(s) for s in (logfile,
-                                                                           exception)))
+                                print("Warning - os.stat('%s') failed: %s" % (logfile, exception))
                             else:
                                 mtimes[logstat.st_mtime] = filename
                         if mtimes:
@@ -281,14 +278,12 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
         try:
             os.makedirs(logdir)
         except Exception as exception:
-            safe_print("Warning - log directory '%s' could not be created: %s"
-                       % tuple(safe_unicode(s) for s in (logdir, exception)))
+            print("Warning - log directory '%s' could not be created: %s" % (logdir, exception))
     elif when != "never" and os.path.exists(logfile):
         try:
             logstat = os.stat(logfile)
         except Exception as exception:
-            safe_print("Warning - os.stat('%s') failed: %s" %
-                       tuple(safe_unicode(s) for s in (logfile, exception)))
+            print("Warning - os.stat('%s') failed: %s" % (logfile, exception))
         else:
             # rollover needed?
             t = logstat.st_mtime
@@ -320,18 +315,13 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
                     try:
                         os.remove(logbackup)
                     except Exception as exception:
-                        safe_print("Warning - logfile backup '%s' could not "
-                                   "be removed during rollover: %s" %
-                                   tuple(safe_unicode(s) for s in (logbackup,
-                                                                   exception)))
+                        print("Warning - logfile backup '%s' could not "
+                              "be removed during rollover: %s" % (logbackup, exception))
                 try:
                     os.rename(logfile, logbackup)
                 except Exception as exception:
-                    safe_print("Warning - logfile '%s' could not be renamed "
-                               "to '%s' during rollover: %s" %
-                               tuple(safe_unicode(s) for s in
-                                     (logfile, os.path.basename(logbackup),
-                                      exception)))
+                    print("Warning - logfile '%s' could not be renamed to '%s' during rollover: %s" %
+                          (logfile, os.path.basename(logbackup), exception))
                 # Adapted from Python 2.6's
                 # logging.handlers.TimedRotatingFileHandler.getFilesToDelete
                 extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -339,10 +329,7 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
                 try:
                     fileNames = os.listdir(logdir)
                 except Exception as exception:
-                    safe_print("Warning - log directory '%s' listing failed "
-                               "during rollover: %s" %
-                               tuple(safe_unicode(s) for s in (logdir,
-                                                               exception)))
+                    print("Warning - log directory '%s' listing failed during rollover: %s" % (logdir, exception))
                 else:
                     result = []
                     prefix = baseName + "."
@@ -358,11 +345,8 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
                             try:
                                 os.remove(logbackup)
                             except Exception as exception:
-                                safe_print("Warning - logfile backup '%s' "
-                                           "could not be removed during "
-                                           "rollover: %s" %
-                                           tuple(safe_unicode(s) for s in
-                                                 (logbackup, exception)))
+                                print("Warning - logfile backup '%s' could not be removed during rollover: %s" % (
+                                    logbackup, exception))
     if os.path.exists(logdir):
         try:
             if when != "never":
@@ -375,24 +359,18 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
             filehandler.setFormatter(fileformatter)
             logger.addHandler(filehandler)
         except Exception as exception:
-            safe_print("Warning - logging to file '%s' not possible: %s" %
-                       tuple(safe_unicode(s) for s in (logfile, exception)))
+            print("Warning - logging to file '%s' not possible: %s" % (logfile, exception))
     return logger
 
 
-def setup_logging(logdir, name=appname, ext=".py", backupCount=5,
-                  confighome=None):
-    """
-    Setup the logging facility.
+def setup_logging(logdir, name=appname, ext=".py", backupCount=5, confighome=None):
+    """Setup the logging facility.
     """
     global _logdir, logger
     _logdir = logdir
     name = script2pywname(name)
-    if (name.startswith(appname) or name.startswith("dispcalGUI") or
-            ext in (".app", ".exe", ".pyw")):
-        logger = get_file_logger(None, loglevel, "midnight",
-                                 backupCount, filename=name,
-                                 confighome=confighome)
+    if name.startswith(appname) or name.startswith("dispcalGUI") or ext in (".app", ".exe", ".pyw"):
+        logger = get_file_logger(None, loglevel, "midnight", backupCount, filename=name, confighome=confighome)
         if name == appname or name == "dispcalGUI":
             streamhandler = logging.StreamHandler(logbuffer)
             streamformatter = logging.Formatter("%(asctime)s %(message)s")

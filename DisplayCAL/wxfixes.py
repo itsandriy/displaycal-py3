@@ -444,10 +444,6 @@ else:
     wx_Panel = wx.Panel
 
 
-def Property(func):
-    return property(**func())
-
-
 wx.BitmapButton._SetBitmapLabel = wx.BitmapButton.SetBitmapLabel
 
 def SetBitmapLabel(self, bitmap):
@@ -477,14 +473,15 @@ def BitmapButtonEnable(self, enable = True):
         if self._bitmapdisabled.IsOk():
             self.SetBitmapLabel(self._bitmapdisabled)
 
+
 def BitmapButtonDisable(self):
-    """
-    Replacement for BitmapButton.Disable which circumvents repainting issues
+    """Replacement for BitmapButton.Disable which circumvents repainting issues
 
     (bitmap does not change on button state change)
 
     """
     self.Enable(False)
+
 
 if not "phoenix" in wx.PlatformInfo:
     wx.BitmapButton.Enable = BitmapButtonEnable
@@ -492,11 +489,13 @@ if not "phoenix" in wx.PlatformInfo:
 
 
 def FindMenuItem(self, label):
-    """ Replacement for wx.Menu.FindItem """
+    """Replacement for wx.Menu.FindItem
+    """
     label = GTKMenuItemGetFixedLabel(label)
     for menuitem in self.GetMenuItems():
         if GTKMenuItemGetFixedLabel(menuitem.Label) == label:
             return menuitem.GetId()
+
 
 wx.Menu.FindItem = FindMenuItem
 
@@ -576,18 +575,16 @@ if os.getenv("XDG_SESSION_TYPE") == "wayland":
 
 
 if sys.platform == "darwin":
-    # wxMac seems to loose foreground color of StaticText
+    # wxMac seem to lose the foreground color of StaticText
     # when enabled again
 
-    @Property
-    def StaticTextEnabled():
-        def fget(self):
-            return self.IsEnabled()
+    @property
+    def StaticTextEnabled(self):
+        return self.IsEnabled()
 
-        def fset(self, enable=True):
-            self.Enable(enable)
-
-        return locals()
+    @StaticTextEnabled.setter
+    def StaticTextEnabled(self, enable=True):
+        self.Enable(enable)
 
     wx.StaticText.Enabled = StaticTextEnabled
 
@@ -1150,55 +1147,45 @@ class GenBitmapButton(GenButton, _GenBitmapButton):
             self.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseEnter)
             self.Bind(wx.EVT_LEAVE_WINDOW, self.OnMouseLeave)
 
-    @Property
-    def BitmapFocus():
-        def fget(self):
-            return self.GetBitmapFocus()
+    @property
+    def BitmapFocus(self):
+        return self.GetBitmapFocus()
 
-        def fset(self, bitmap):
-            self.SetBitmapFocus(self, bitmap)
+    @BitmapFocus.setter
+    def BitmapFocus(self, bitmap):
+        self.SetBitmapFocus(self, bitmap)
 
-        return locals()
+    @property
+    def BitmapDisabled(self):
+        return self.GetBitmapDisabled()
 
-    @Property
-    def BitmapDisabled():
-        def fget(self):
-            return self.GetBitmapDisabled()
+    @BitmapDisabled.setter
+    def BitmapDisabled(self, bitmap):
+        self.SetBitmapDisabled(self, bitmap)
 
-        def fset(self, bitmap):
-            self.SetBitmapDisabled(self, bitmap)
+    @property
+    def BitmapHover(self):
+        return self.GetBitmapHover()
 
-        return locals()
+    @BitmapHover.setter
+    def BitmapHover(self, bitmap):
+        self.SetBitmapHover(self, bitmap)
 
-    @Property
-    def BitmapHover():
-        def fget(self):
-            return self.GetBitmapHover()
+    @property
+    def BitmapSelected(self):
+        return self.GetBitmapSelected()
 
-        def fset(self, bitmap):
-            self.SetBitmapHover(self, bitmap)
+    @BitmapSelected.setter
+    def BitmapSelected(self, bitmap):
+        self.SetBitmapSelected(self, bitmap)
 
-        return locals()
+    @property
+    def BitmapLabel(self):
+        return self.GetBitmapLabel()
 
-    @Property
-    def BitmapSelected():
-        def fget(self):
-            return self.GetBitmapSelected()
-
-        def fset(self, bitmap):
-            self.SetBitmapSelected(self, bitmap)
-
-        return locals()
-
-    @Property
-    def BitmapLabel():
-        def fget(self):
-            return self.GetBitmapLabel()
-
-        def fset(self, bitmap):
-            self.SetBitmapLabel(self, bitmap)
-
-        return locals()
+    @BitmapLabel.setter
+    def BitmapLabel(self, bitmap):
+        self.SetBitmapLabel(self, bitmap)
 
     def DrawLabel(self, dc, width, height, dx=0, dy=0):
         bmp = self.BitmapLabel
@@ -1316,15 +1303,13 @@ class ThemedGenButton(GenButton, _ThemedGenButton):
             wx.PyControl.Enable(self, enable)
             self.Refresh()
 
-    @Property
-    def Enabled():
-        def fget(self):
-            return self._reallyenabled
+    @property
+    def Enabled(self):
+        return self._reallyenabled
 
-        def fset(self, enabled):
-            self._reallyenabled = enabled
-
-        return locals()
+    @Enabled.setter
+    def Enabled(self, enabled):
+        self._reallyenabled = enabled
 
     def IsEnabled(self):
         return self.Enabled

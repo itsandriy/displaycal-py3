@@ -32,9 +32,8 @@ if sys.platform == "win32":
         win32api = None
 
 from config import pydir
-from log import safe_print
 from util_os import dlopen, getenvu
-from util_str import safe_str, safe_unicode
+from util_str import safe_str
 
 
 _ch = {}
@@ -143,7 +142,7 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
             if sys.platform == "win32":
                 if libfn and win32api:
                     # Support for unicode paths
-                    libfn = safe_unicode(libfn)
+                    libfn = str(libfn)
                     try:
                         handle = win32api.LoadLibrary(libfn)
                     except pywintypes.error:
@@ -159,7 +158,7 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
                     libfn += "-1.2.so.0"
             dll = dlopen(libfn, handle=handle)
             if dll:
-                safe_print("%s:" % libname, libfn)
+                print("%s:" % libname, libfn)
             if libname.endswith("_mixer"):
                 if not dll:
                     continue
@@ -227,7 +226,7 @@ def Sound(filename, loop=False, raise_exceptions=False):
         except Exception as exception:
             if raise_exceptions:
                 raise
-            safe_print(exception)
+            print(exception)
             sound = _Sound(None, loop)
         _sounds[(filename, loop)] = sound
         return sound

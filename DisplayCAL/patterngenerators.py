@@ -16,18 +16,13 @@ import urllib.request, urllib.parse, urllib.error
 import urllib.parse
 
 import localization as lang
-from log import safe_print
 from network import get_network_addr
 from util_http import encode_multipart_formdata
-from util_str import safe_unicode
 import webwin
 
 
 _lock = threading.RLock()
 
-
-def Property(func):
-    return property(**func())
 
 
 def _eintr_retry(func, *args):
@@ -47,14 +42,13 @@ def _shutdown(sock, addr):
         sock.shutdown(SHUT_RDWR)
     except error as exception:
         if exception.errno != errno.ENOTCONN:
-            safe_print("PatternGenerator: SHUT_RDWR for %s:%i failed:" %
-                       addr[:2], exception)
+            print("PatternGenerator: SHUT_RDWR for %s:%i failed:" % addr[:2], exception)
     sock.close()
 
 
 class GenHTTPPatternGeneratorClient(object):
-
-    """ Generic pattern generator client using HTTP REST interface """
+    """Generic pattern generator client using HTTP REST interface
+    """
 
     def __init__(self, host, port, bits, use_video_levels=False,
                  logfile=None):
@@ -109,7 +103,8 @@ class GenHTTPPatternGeneratorClient(object):
     def send(self, rgb=(0, 0, 0), bgrgb=(0, 0, 0), bits=None,
              use_video_levels=None, x=0, y=0, w=1, h=1):
         rgb, bgrgb, bits = self._get_rgb(rgb, bgrgb, bits, use_video_levels)
-    # Override this method in subclass!
+        # Override this method in subclass!
+        # raise NotImplementedError
 
 
 class GenTCPSockPatternGeneratorServer(object):
@@ -145,7 +140,7 @@ class GenTCPSockPatternGeneratorServer(object):
             self.conn.settimeout(1)
             break
         if self.listening:
-            safe_print(lang.getstr("connection.established"))
+            print(lang.getstr("connection.established"))
 
     def __del__(self):
         self.disconnect_client()
@@ -181,8 +176,7 @@ class GenTCPSockPatternGeneratorServer(object):
                 self.conn.shutdown(SHUT_RDWR)
             except error as exception:
                 if exception.errno != errno.ENOTCONN:
-                    safe_print("Warning - could not shutdown pattern generator "
-                               "connection:", exception)
+                    print("Warning - could not shutdown pattern generator connection:", exception)
             self.conn.close()
             del self.conn
 
@@ -237,47 +231,42 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
             self._threads.append(thread)
             thread.start()
         except error as exception:
-            safe_print("PrismaPatternGeneratorClient: UDP Port %i: %s" %
-                       (port, exception))
+            print("PrismaPatternGeneratorClient: UDP Port %i: %s" % (port, exception))
 
     def _cast_receive_handler(self, sock, host, port):
         cast = "broadcast"
         if self.debug:
-            safe_print("PrismaPatternGeneratorClient: Entering receiver thread for %s port %i" %
-                       (cast, port))
+            print("PrismaPatternGeneratorClient: Entering receiver thread for %s port %i" % (cast, port))
         self._cast_sockets[(host, port)] = sock
         while getattr(self, "listening", False):
             try:
                 data, addr = sock.recvfrom(4096)
             except timeout as exception:
-                safe_print("PrismaPatternGeneratorClient: In receiver thread for %s port %i:" %
-                           (cast, port), exception)
+                print("PrismaPatternGeneratorClient: In receiver thread for %s port %i:" % (cast, port), exception)
                 continue
             except error as exception:
                 if exception.errno == errno.EWOULDBLOCK:
                     sleep(.05)
                     continue
                 if exception.errno != errno.ECONNRESET or self.debug:
-                    safe_print("PrismaPatternGeneratorClient: In receiver thread for %s port %i:" %
-                               (cast, port), exception)
+                    print("PrismaPatternGeneratorClient: In receiver thread for %s port %i:" % (cast, port), exception)
                 break
             else:
                 with _lock:
                     if self.debug:
-                        safe_print("PrismaPatternGeneratorClient: Received %s from %s:%s: %r" %
-                                   (cast, addr[0], addr[1], data))
+                        print(
+                            "PrismaPatternGeneratorClient: Received %s from %s:%s: %r" % (cast, addr[0], addr[1], data)
+                        )
                     if data.startswith(self.prod_oem):
                         name = data[8:32].rstrip("\0")
                         serial = data[32:].rstrip("\0")
-                        self.prismas[addr[0]] = {"serial": serial,
-                                                 "name": name}
+                        self.prismas[addr[0]] = {"serial": serial, "name": name}
                         self._dispatch_event("on_client_added",
                                              (addr, self.prismas[addr[0]]))
         self._cast_sockets.pop((host, port))
         _shutdown(sock, (host, port))
         if self.debug:
-            safe_print("PrismaPatternGeneratorClient: Exiting %s receiver thread for port %i" %
-                       (cast, port))
+            print("PrismaPatternGeneratorClient: Exiting %s receiver thread for port %i" % (cast, port))
 
     def announce(self):
         """ Anounce ourselves """
@@ -288,8 +277,7 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
         sock.connect((self.broadcast_ip, port))
         addr = sock.getsockname()
         if self.debug:
-            safe_print("PrismaPatternGeneratorClient: Sending broadcast from %s:%s to port %i" %
-                       (addr[0], addr[1], port))
+            print("PrismaPatternGeneratorClient: Sending broadcast from %s:%s to port %i" % (addr[0], addr[1], port))
         sock.sendall(self.prod_oem)
         sock.close()
 
@@ -316,7 +304,7 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
     def _dispatch_event(self, event_name, event_data=None):
         """ Dispatch events """
         if self.debug:
-            safe_print("PrismaPatternGeneratorClient: Dispatching", event_name)
+            print("PrismaPatternGeneratorClient: Dispatching", event_name)
         for handler in self._event_handlers.get(event_name, []):
             handler(event_data)
 
@@ -359,8 +347,8 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
             components = urllib.parse.urlparse(url)
             api = components.path[1:]
             query = urllib.parse.parse_qs(components.query)
-            if "m" in query:
-                method = query["m"][0]
+            if b"m" in query:
+                method = query[b"m"][0]
                 if data.get(method) == "Error" and "msg" in data:
                     raise http.client.HTTPException("%s: %s" % (self.host, data["msg"]))
             for key, value in validate.items():
@@ -483,27 +471,23 @@ class WebWinHTTPPatternGeneratorServer(TCPServer, object):
         self.listening = False
 
     def handle_error(self, request, client_address):
-        safe_print("Exception happened during processing of "
-                   "request from %s:%s:" % client_address,
-                   sys.exc_info()[1])
+        print("Exception happened during processing of request from %s:%s:" % client_address, sys.exc_info()[1])
 
-    @Property
-    def listening():
-        def fget(self):
-            return self._listening.is_set()
+    @property
+    def listening(self):
+        return self._listening.is_set()
 
-        def fset(self, value):
-            if value:
-                self._listening.set()
-            else:
-                self._listening.clear()
-                if hasattr(self, "conn"):
-                    self.shutdown_request(self.conn)
-                    del self.conn
-                if hasattr(self, "_thread") and self._thread.isAlive():
-                    self.shutdown()
-
-        return locals()
+    @listening.setter
+    def listening(self, value):
+        if value:
+            self._listening.set()
+        else:
+            self._listening.clear()
+            if hasattr(self, "conn"):
+                self.shutdown_request(self.conn)
+                del self.conn
+            if hasattr(self, "_thread") and self._thread.is_alive():
+                self.shutdown()
 
     def send(self, rgb=(0, 0, 0), bgrgb=(0, 0, 0), bits=None,
              use_video_levels=None, x=0, y=0, w=1, h=1):
@@ -530,8 +514,7 @@ class WebWinHTTPPatternGeneratorServer(TCPServer, object):
                 if self in r:
                     self._handle_request_noblock()
         except Exception as exception:
-            safe_print("Exception in WebWinHTTPPatternGeneratorServer.serve_forever:",
-                       exception)
+            print("Exception in WebWinHTTPPatternGeneratorServer.serve_forever:", exception)
             self._listening.clear()
 
     def shutdown(self):
@@ -541,7 +524,7 @@ class WebWinHTTPPatternGeneratorServer(TCPServer, object):
         serve_forever() is running in another thread.
         """
         self._listening.clear()
-        while self._thread.isAlive():
+        while self._thread.is_alive():
             sleep(0.05)
 
     def wait(self):
@@ -572,7 +555,7 @@ class WebWinHTTPPatternGeneratorServer(TCPServer, object):
                 self._thread = threading.Thread(target=self.serve_forever,
                                                 name="WebWinHTTPPatternGeneratorServerThread")
                 self._thread.start()
-                safe_print(lang.getstr("connection.established"))
+                print(lang.getstr("connection.established"))
 
 
 if __name__ == "__main__":

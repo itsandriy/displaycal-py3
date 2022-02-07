@@ -29,7 +29,6 @@ from config import (defaults, fs_enc, getbitmap, getcfg,
                     get_argyll_display_number, get_default_dpi,
                     get_display_name, get_icon_bundle, geticon, initcfg,
                     profile_ext, setcfg)
-from log import safe_print
 from meta import name as appname
 from util_list import intlist
 from util_str import wrap
@@ -51,10 +50,6 @@ aui.framemanager.AuiManager_UseNativeMiniframes = lambda manager: (manager.GetAG
 
 colourAttributes = ["r", "g", "b", "h", "s", "v"]
 colourMaxValues = [255, 255, 255, 359, 255, 255]
-
-
-def Property(func):
-    return property(**func())
 
 
 def rad2deg(x):
@@ -110,7 +105,7 @@ def _wait_thread(fn, *args, **kwargs):
                               name="VisualWhitepointEditorMaintenance",
                               args=args, kwargs=kwargs)
     thread.start()
-    while thread.isAlive():
+    while thread.is_alive():
         wx.Yield()
         sleep(0.05)
 
@@ -1421,16 +1416,13 @@ class HSlider(BaseLineCtrl):
         self.value = value
         self.DrawMarkers()
 
-    @Property
-    def Value():
-        def fget(self):
-            return self.GetValue()
+    @property
+    def Value(self):
+        return self.GetValue()
 
-        def fset(self, value):
-            self.SetValue(value)
-
-        return locals()
-
+    @Value.setter
+    def Value(self, value):
+        self.SetValue(value)
 
     def GetMax(self):
         return self.maxval
@@ -1442,16 +1434,13 @@ class HSlider(BaseLineCtrl):
         self.maxval = maxval
         self.Refresh()
 
-    @Property
-    def Max():
-        def fget(self):
-            return self.GetMax()
+    @property
+    def Max(self):
+        return self.GetMax()
 
-        def fset(self, value):
-            self.SetMax(value)
-
-        return locals()
-
+    @Max.setter
+    def Max(self, value):
+        self.SetMax(value)
 
     def focus_handler(self, event):
         self._hasfocus = event.GetEventType() == wx.EVT_SET_FOCUS.evtType[0]
@@ -1601,15 +1590,13 @@ class NumSpin(wx_Panel):
         self.spinup.Enable(self.numctrl.GetMax() > value)
         self.spindn.Enable(self.numctrl.GetMin() < value)
 
-    @Property
-    def Value():
-        def fget(self):
-            return self.GetValue()
+    @property
+    def Value(self):
+        return self.GetValue()
 
-        def fset(self, value):
-            self.SetValue(value)
-
-        return locals()
+    @Value.setter
+    def Value(self, value):
+        self.SetValue(value)
 
 
 class ProfileManager(object):
@@ -1651,7 +1638,7 @@ class ProfileManager(object):
                 display_profile = ICCP.get_display_profile(display_no)
             except (ICCP.ICCProfileInvalidError, IOError,
                     IndexError) as exception:
-                safe_print("Could not get display profile for display %i" %
+                print("Could not get display profile for display %i" %
                            (display_no + 1), "@ %i, %i, %ix%i:" %
                            geometry, exception)
             else:
@@ -1765,7 +1752,7 @@ class ProfileManager(object):
                                           lang.getstr("whitepoint.visual_editor"))
         else:
             msg = lang.getstr("whitepoint.visual_editor.display_changed.warning")
-            safe_print(msg)
+            print(msg)
 
 
     def restore_display_profiles(self, wrapup=False, wait=False):
@@ -1786,7 +1773,7 @@ class ProfileManager(object):
                     thread.join()
             else:
                 msg = lang.getstr("whitepoint.visual_editor.display_changed.warning")
-                safe_print(msg)
+                print(msg)
 
 
     def display_changed_handler(self, event):

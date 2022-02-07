@@ -16,7 +16,6 @@ import win32con
 import win32gui
 import winerror
 
-from log import safe_print
 from options import debug, verbose
 from wxaddons import wx, IdFactory
 
@@ -109,10 +108,10 @@ class Menu(wx.EvtHandler):
             menuitem.Destroy()
         if not self.Parent:
             if debug or verbose > 1:
-                safe_print('DestroyMenu HMENU', self.hmenu)
+                print('DestroyMenu HMENU', self.hmenu)
             win32gui.DestroyMenu(self.hmenu)
         if debug or verbose > 1:
-            safe_print('Destroy', self.__class__.__name__, self)
+            print('Destroy', self.__class__.__name__, self)
         self._destroyed = True
         wx.EvtHandler.Destroy(self)
 
@@ -154,7 +153,7 @@ class MenuItem(object):
         if self.subMenu:
             self.subMenu.Destroy()
         if debug or verbose > 1:
-            safe_print('Destroy', self.__class__.__name__, self.Id,
+            print('Destroy', self.__class__.__name__, self.Id,
                        _get_kind_str(self.Kind), self.ItemLabel)
         if self.Id in IdFactory.ReservedIds:
             IdFactory.UnreserveId(self.Id)
@@ -246,16 +245,16 @@ class SysTrayIcon(wx.EvtHandler):
         return menu
 
     def OnCommand(self, hwnd, msg, wparam, lparam):
-        safe_print("SysTrayIcon.OnCommand(hwnd=%r, msg=%r, wparam=%r, lparam=%r)" % (hwnd, msg, wparam, lparam))
+        print("SysTrayIcon.OnCommand(hwnd=%r, msg=%r, wparam=%r, lparam=%r)" % (hwnd, msg, wparam, lparam))
         if not self.menu:
-            safe_print("Warning: Don't have menu")
+            print("Warning: Don't have menu")
             return
         item = _get_selected_menu_item(wparam, self.menu)
         if not item:
-            safe_print("Warning: Don't have menu item ID %s" % wparam)
+            print("Warning: Don't have menu item ID %s" % wparam)
             return
         if debug or verbose > 1:
-            safe_print(item.__class__.__name__, item.Id,
+            print(item.__class__.__name__, item.Id,
                        _get_kind_str(item.Kind), item.ItemLabel)
         event = wx.CommandEvent(wx.wxEVT_COMMAND_MENU_SELECTED)
         event.Id = item.Id

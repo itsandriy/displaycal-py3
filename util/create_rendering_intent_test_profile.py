@@ -35,7 +35,7 @@ def create_rendering_intent_test_profile(filename, add_fallback_matrix=True,
         tagnames.append("B2A")
     else:
         del p.tags["B2A0"]
-    for i in xrange(1, 3):
+    for i in range(1, 3):
         for tagname in tagnames:
             tag0 = p.tags[tagname + "0"]
             tag = p.tags[tagname + "%i" % i] = ICCP.LUT16Type()
@@ -44,7 +44,7 @@ def create_rendering_intent_test_profile(filename, add_fallback_matrix=True,
                 if component_name == "clut":
                     component = deepcopy(component)
                 setattr(tag, component_name, component)
-    for i in xrange(3):
+    for i in range(3):
         for tagname in tagnames:
             tag = p.tags[tagname + "%i" % i]
             if i == 0:
@@ -57,14 +57,14 @@ def create_rendering_intent_test_profile(filename, add_fallback_matrix=True,
                 # Saturation
                 RGB = (0, f, 0)
             block = 0
-            for R in xrange(clutres):
+            for R in range(clutres):
                 r = min(max(R, f), clutres - 2)
                 b1 = min(max(R, f) + 1, clutres - 2)
                 b2 = min(max(R - 1, f), clutres - 2)
-                for G in xrange(clutres):
+                for G in range(clutres):
                     if tagname == "B2A":
                         tag.clut.append([])
-                    for B in xrange(clutres):
+                    for B in range(clutres):
                         if tagname == "B2A":
                             tag.clut[block].append([v / (clutres - 1.0) * 65535
                                                     for v in (R, G, B)])

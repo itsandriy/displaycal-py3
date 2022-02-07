@@ -7,9 +7,8 @@ import sys
 from argyll_instruments import (get_canonical_instrument_name, instruments)
 from config import getcfg
 from debughelpers import UnloggedError
-from log import safe_print
 from meta import name as appname
-from util_str import make_filename_safe, safe_unicode
+from util_str import make_filename_safe
 from worker_base import get_argyll_util
 from wxaddons import wx
 from wxLUTViewer import LUTCanvas
@@ -154,7 +153,7 @@ class CCXXPlot(wx.Frame):
                 # Interpolate if lores
                 # 1nm intervals
                 steps = int(x_max - x_min) + 1
-                safe_print("Up-interpolating", bands, "spectral bands to", steps)
+                print("Up-interpolating", bands, "spectral bands to", steps)
                 step = (x_max - x_min) / (steps - 1.)
             else:
                 step = (x_max - x_min) / (bands - 1.)
@@ -313,7 +312,7 @@ class CCXXPlot(wx.Frame):
 
         ref = cgats.queryv1("REFERENCE")
         if ref:
-            ref = get_canonical_instrument_name(safe_unicode(ref, "UTF-8"))
+            ref = get_canonical_instrument_name(ref)
 
         if not self.is_ccss:
             observers_ab = {}

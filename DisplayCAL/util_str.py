@@ -351,7 +351,7 @@ def box(text, width=80, collapse=False):
 
     """
     content_width = width - 4
-    text = wrap(safe_unicode(text), content_width)
+    text = wrap(str(text), content_width)
     lines = text.splitlines()
     if collapse:
         content_width = 0
@@ -500,7 +500,7 @@ def safe_basestring(obj):
             error = list(obj.args)
         if getattr(obj, "filename", None) is not None:
             error.append(obj.filename)
-        error = [safe_unicode(arg) for arg in error]
+        error = [str(arg) for arg in error]
         obj = " ".join(error)
     elif isinstance(obj, KeyError) and obj.args:
         obj = "Key does not exist: " + repr(obj.args[0])
@@ -534,13 +534,6 @@ def safe_str(obj, enc=fs_enc, errors="replace"):
         return obj
 
 
-def safe_unicode(obj, enc=fs_enc, errors="replace"):
-    """ Return unicode representation of obj """
-    obj = safe_basestring(obj)
-    if isinstance(obj, str):
-        return obj
-
-
 def strtr(txt, replacements):
     """
     String multi-replace, a bit like PHP's strtr.
@@ -549,7 +542,7 @@ def strtr(txt, replacements):
     If list or string, all matches are replaced with the empty string ("").
 
     """
-    if hasattr(replacements, "iteritems"):
+    if hasattr(replacements, "items"):
         replacements = iter(replacements.items())
     elif isinstance(replacements, str):
         for srch in replacements:

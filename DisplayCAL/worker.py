@@ -6,7 +6,7 @@ from binascii import hexlify
 import atexit
 import ctypes
 import datetime
-import exceptions
+
 import getpass
 import http.client
 import math
@@ -33,7 +33,7 @@ import zipfile
 import zlib
 from collections import UserString
 from hashlib import md5, sha256
-from threading import _MainThread, currentThread
+from threading import currentThread
 from time import sleep, strftime, time
 if sys.platform == "darwin":
     from platform import mac_ver
@@ -86,7 +86,7 @@ from debughelpers import (Error, DownloadError, Info, UnloggedError,
 from defaultpaths import (cache, get_known_folder_path, iccprofiles_home,
                           iccprofiles_display_home, appdata)
 from edid import WMIError, get_edid
-from log import DummyLogger, LogFile, get_file_logger, log, safe_print
+from log import DummyLogger, LogFile, get_file_logger, log
 import madvr
 from meta import VERSION, VERSION_BASE, domain, name as appname, version
 from multiprocess import cpu_count, pool_slice
@@ -114,7 +114,7 @@ elif sys.platform == "win32":
     try:
         import wmi
     except Exception as exception:
-        safe_print("Error - could not import WMI:", exception)
+        print("Error - could not import WMI:", exception)
         wmi = None
 else:
     # Linux
@@ -134,7 +134,7 @@ if sys.platform not in ("darwin", "win32"):
 if sys.platform == "win32" and sys.getwindowsversion() >= (6, ):
     from util_os import win64_disable_file_system_redirection
 from util_str import (make_filename_safe, safe_basestring, safe_asciize,
-                      safe_str, safe_unicode, strtr, universal_newlines)
+                      safe_str, strtr, universal_newlines)
 from worker_base import (MP_Xicclu, WorkerBase, Xicclu, _mp_generate_B2A_clut,
                          _mp_xicclu,
                          check_argyll_bin, get_argyll_util, get_argyll_utilname,
@@ -152,8 +152,9 @@ if sys.platform not in ("darwin", "win32"):
     try:
         import RealDisplaySizeMM as RDSMM
     except ImportError as exception:
-        warnings.warn(safe_str(exception, enc), Warning)
+        warnings.warn(exception, Warning)
 import wx.lib.delayedresult as delayedresult
+
 
 INST_CAL_MSGS = ["Do a reflective white calibration",
                  "Do a transmissive white calibration",
@@ -190,10 +191,6 @@ keycodes = {wx.WXK_NUMPAD0: ord("0"),
 workers = []
 
 
-def Property(func):
-    return property(**func())
-
-
 def add_keywords_to_cgats(cgats, keywords):
     """ Add keywords to CGATS """
     if not isinstance(cgats, CGATS.CGATS):
@@ -205,14 +202,14 @@ def add_keywords_to_cgats(cgats, keywords):
 
 def check_create_dir(path):
     """
-	Try to create a directory and show an error message on failure.
-	"""
+    Try to create a directory and show an error message on failure.
+    """
     if not os.path.exists(path):
         try:
             os.makedirs(path)
         except Exception as exception:
             return Error(lang.getstr("error.dir_creation", path) + "\n\n" +
-                         safe_unicode(exception))
+                         str(exception))
     if not os.path.isdir(path):
         return Error(lang.getstr("error.dir_notdir", path))
     return True
@@ -221,8 +218,8 @@ def check_create_dir(path):
 def check_cal_isfile(cal=None, missing_msg=None, notfile_msg=None,
                      silent=False):
     """
-	Check if a calibration file exists and show an error message if not.
-	"""
+    Check if a calibration file exists and show an error message if not.
+    """
     if not silent:
         if not missing_msg:
             missing_msg = lang.getstr("error.calibration.file_missing", cal)
@@ -234,8 +231,8 @@ def check_cal_isfile(cal=None, missing_msg=None, notfile_msg=None,
 def check_profile_isfile(profile_path=None, missing_msg=None,
                          notfile_msg=None, silent=False):
     """
-	Check if a profile exists and show an error message if not.
-	"""
+    Check if a profile exists and show an error message if not.
+    """
     if not silent:
         if not missing_msg:
             missing_msg = lang.getstr("error.profile.file_missing",
@@ -249,8 +246,8 @@ def check_profile_isfile(profile_path=None, missing_msg=None,
 def check_file_isfile(filename, missing_msg=None, notfile_msg=None,
                       silent=False):
     """
-	Check if a file exists and show an error message if not.
-	"""
+    Check if a file exists and show an error message if not.
+    """
     if not os.path.exists(filename):
         if not silent:
             if not missing_msg:
@@ -268,8 +265,8 @@ def check_file_isfile(filename, missing_msg=None, notfile_msg=None,
 
 def check_set_argyll_bin(paths=None):
     """
-	Check if Argyll binaries can be found, otherwise let the user choose.
-	"""
+    Check if Argyll binaries can be found, otherwise let the user choose.
+    """
     if check_argyll_bin(paths):
         return True
     else:
@@ -366,7 +363,7 @@ def check_ti3_criteria1(RGB, XYZ, black_XYZ, white_XYZ,
                   delta_to_sRGB["E"], delta_to_sRGB["L"], delta_to_sRGB["C"],
                   delta_to_sRGB["H"]))
     if print_debuginfo:
-        safe_print(debuginfo)
+        print(debuginfo)
 
     return sRGBLab, Lab, delta_to_sRGB, criteria1, debuginfo
 
@@ -398,14 +395,14 @@ def check_ti3_criteria2(prev_Lab, Lab, prev_sRGBLab, sRGBLab,
 
 def check_ti3(ti3, print_debuginfo=True):
     """ Check subsequent patches' expected vs real deltaE and collect patches
-	with different RGB values, but suspiciously low delta E
+    with different RGB values, but suspiciously low delta E
 
-	Used as a means to find misreads.
+    Used as a means to find misreads.
 
-	The expected dE is calculated by converting from a patches RGB values
-	(assuming sRGB) to Lab and comparing the values.
+    The expected dE is calculated by converting from a patches RGB values
+    (assuming sRGB) to Lab and comparing the values.
 
-	"""
+    """
     if not isinstance(ti3, CGATS.CGATS):
         ti3 = CGATS.CGATS(ti3)
     data = ti3.queryv1("DATA")
@@ -414,12 +411,12 @@ def check_ti3(ti3, print_debuginfo=True):
     if black:
         black = black["XYZ_X"], black["XYZ_Y"], black["XYZ_Z"]
     elif print_debuginfo:
-        safe_print("Warning - no black patch found in CGATS")
+        print("Warning - no black patch found in CGATS")
     white = data.queryi1({"RGB_R": 100, "RGB_G": 100, "RGB_B": 100})
     if white:
         white = white["XYZ_X"], white["XYZ_Y"], white["XYZ_Z"]
     elif print_debuginfo:
-        safe_print("Warning - no white patch found in CGATS")
+        print("Warning - no white patch found in CGATS")
     suspicious = []
     prev = {}
     delta = {}
@@ -467,7 +464,7 @@ def check_ti3(ti3, print_debuginfo=True):
                                      (debuginfo, delta["E"], delta["E_ok"],
                                       delta["L_ok"], sRGB_delta["E"]))
                     sample_id = "Patch #%%.0%id" % len(str(datalen))
-                    safe_print(sample_id % item.SAMPLE_ID, debuginfo)
+                    print(sample_id % item.SAMPLE_ID, debuginfo)
                 suspicious.append((prev["item"] if criteria2 else None,
                                    item, delta if criteria2 else None,
                                    sRGB_delta if criteria2 else None,
@@ -625,10 +622,10 @@ def create_shaper_curves(RGB_XYZ, bwd_mtx, single_curve=False, bpc=True,
         for values in RGB:
             values[:] = colormath.interp_fill(values, values, numentries, True)
 
-        # for i in xrange(numentries):
-        # safe_print(i, R_R[i], G_G[i], B_B[i], gammas_resized[0][i],
-        # gammas_resized[1][i], gammas_resized[2][i], R_X[i],
-        # G_Y[i], B_Z[i])
+        # for i in range(numentries):
+        #     print(i, R_R[i], G_G[i], B_B[i], gammas_resized[0][i],
+        #           gammas_resized[1][i], gammas_resized[2][i], R_X[i],
+        #           G_Y[i], B_Z[i])
 
         numentries = final
     else:
@@ -699,12 +696,9 @@ def create_shaper_curves(RGB_XYZ, bwd_mtx, single_curve=False, bpc=True,
 
     return curves
 
-def _create_optimized_shaper_curves(bwd_mtx, bpc, single_curve, curves,
-                                    profile, options_dispcal, XYZbp=None,
-                                    logfn=None):
+def _create_optimized_shaper_curves(bwd_mtx, bpc, single_curve, curves, profile, options_dispcal, XYZbp=None, logfn=None):
     # Get black and white luminance
-    if isinstance(profile.tags.get("lumi"),
-                  ICCP.XYZType):
+    if isinstance(profile.tags.get("lumi"), ICCP.XYZType):
         white_cdm2 = profile.tags.lumi.Y
     else:
         white_cdm2 = 100.0
@@ -719,14 +713,13 @@ def _create_optimized_shaper_curves(bwd_mtx, bpc, single_curve, curves,
     calgarg = get_arg("g", options_dispcal)
     if not calgarg:
         calgarg = get_arg("G", options_dispcal)
-    if (calgarg and
-            isinstance(profile.tags.get("vcgt"),
-                       ICCP.VideoCardGammaType) and
-            not profile.tags.vcgt.is_linear()):
-        calgamma = {"l": -3.0,
-                    "s": -2.4,
-                    "709": -709,
-                    "240": -240}.get(calgarg[1][1:], calgamma)
+    if calgarg and isinstance(profile.tags.get("vcgt"), ICCP.VideoCardGammaType) and not profile.tags.vcgt.is_linear():
+        calgamma = {
+            "l": -3.0,
+            "s": -2.4,
+            "709": -709,
+            "240": -240
+        }.get(calgarg[1][1:], calgamma)
         if not calgamma:
             try:
                 calgamma = float(calgarg[1][1:])
@@ -900,9 +893,9 @@ def _applycal_bug_workaround(profile):
 
 def get_argyll_version(name, silent=False, paths=None):
     """
-	Determine version of a certain Argyll utility.
+    Determine version of a certain Argyll utility.
 
-	"""
+    """
     argyll_version_string = get_argyll_version_string(name, silent, paths)
     return parse_argyll_version_string(argyll_version_string)
 
@@ -925,7 +918,7 @@ def get_current_profile_path(include_display_profile=True,
             try:
                 profile = ICCP.ICCProfile(profile_path)
             except Exception as exception:
-                safe_print("ICCP.ICCProfile(%r):" % profile_path,
+                print("ICCP.ICCProfile(%r):" % profile_path,
                            exception)
     elif include_display_profile:
         profile = config.get_display_profile()
@@ -966,8 +959,8 @@ def get_cfg_option_from_args(option_name, argmatch, args, whole=False):
 
 def get_options_from_args(dispcal_args=None, colprof_args=None):
     """
-	Extract options used for dispcal and colprof from argument strings.
-	"""
+    Extract options used for dispcal and colprof from argument strings.
+    """
     re_options_dispcal = [
         "[moupHVFE]",
         "d(?:\d+(?:,\d+)?|madvr|web)",
@@ -1004,8 +997,8 @@ def get_options_from_args(dispcal_args=None, colprof_args=None):
 
 def get_options_from_cprt(cprt):
     """
-	Extract options used for dispcal and colprof from profile copyright.
-	"""
+    Extract options used for dispcal and colprof from profile copyright.
+    """
     if not isinstance(cprt, str):
         if isinstance(cprt, (ICCP.TextDescriptionType,
                              ICCP.MultiLocalizedUnicodeType)):
@@ -1043,9 +1036,9 @@ def get_options_from_cal(cal):
 
 def get_options_from_profile(profile):
     """ Try and get options from profile. First, try the 'targ' tag and
-	look for the special DisplayCAL sections 'ARGYLL_DISPCAL_ARGS' and
-	'ARGYLL_COLPROF_ARGS'. If either does not exist, fall back to the
-	copyright tag (DisplayCAL < 0.4.0.2) """
+    look for the special DisplayCAL sections 'ARGYLL_DISPCAL_ARGS' and
+    'ARGYLL_COLPROF_ARGS'. If either does not exist, fall back to the
+    copyright tag (DisplayCAL < 0.4.0.2) """
     if not isinstance(profile, ICCP.ICCProfile):
         profile = ICCP.ICCProfile(profile)
     dispcal_args = None
@@ -1069,7 +1062,7 @@ def get_options_from_profile(profile):
 
 def get_options_from_ti3(ti3):
     """ Try and get options from TI3 file by looking for the special
-	DisplayCAL sections 'ARGYLL_DISPCAL_ARGS' and 'ARGYLL_COLPROF_ARGS'. """
+    DisplayCAL sections 'ARGYLL_DISPCAL_ARGS' and 'ARGYLL_COLPROF_ARGS'. """
     if not isinstance(ti3, CGATS.CGATS):
         ti3 = CGATS.CGATS(ti3)
     dispcal_args = None
@@ -1202,7 +1195,7 @@ def http_request(parent=None, domain=None, request_type="GET", path="",
         msg = " ".join([failure_msg, lang.getstr("connection.fail",
                                                  " ".join([str(arg) for
                                                            arg in exception.args]))]).strip()
-        safe_print(msg)
+        print(msg)
         if not silent:
             wx.CallAfter(InfoDialog, parent,
                          msg=msg,
@@ -1215,13 +1208,13 @@ def http_request(parent=None, domain=None, request_type="GET", path="",
                         lang.getstr("connection.fail.http",
                                     " ".join([str(resp.status),
                                               resp.reason]))]).strip() + "\n" + uri
-        safe_print(msg)
+        print(msg)
         html = universal_newlines(resp.read().strip())
         html = re.sub(re.compile(r"<script.*?</script>", re.I | re.S),
                       "<!-- SCRIPT removed -->", html)
         html = re.sub(re.compile(r"<style.*?</style>", re.I | re.S),
                       "<!-- STYLE removed -->", html)
-        safe_print(html)
+        print(html)
         if not silent:
             wx.CallAfter(HtmlInfoDialog, parent, msg=msg, html=html,
                          ok=lang.getstr("ok"),
@@ -1231,12 +1224,12 @@ def http_request(parent=None, domain=None, request_type="GET", path="",
 
 
 def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path,
-                                              logfn=safe_print):
+                                              logfn=print):
     """
-	Insert patches from first TI file after first patch of second TI,
-	ignoring RGB duplicates. Return second TI as CGATS instance.
+    Insert patches from first TI file after first patch of second TI,
+    ignoring RGB duplicates. Return second TI as CGATS instance.
 
-	"""
+    """
     cgats2 = CGATS.CGATS(cgats2_path)
     cgats1_data = cgats1.queryv1("DATA")
     data = cgats2.queryv1("DATA")
@@ -1276,13 +1269,13 @@ def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path,
 
 def make_argyll_compatible_path(path):
     """
-	Make the path compatible with the Argyll utilities.
+    Make the path compatible with the Argyll utilities.
 
-	This is currently only effective under Windows to make sure that any
-	unicode 'division' slashes in the profile name are replaced with
-	underscores.
+    This is currently only effective under Windows to make sure that any
+    unicode 'division' slashes in the profile name are replaced with
+    underscores.
 
-	"""
+    """
     skip = -1
     if re.match(r'\\\\\?\\', path, re.I):
         # Don't forget about UNC paths:
@@ -1378,7 +1371,7 @@ def set_argyll_bin(parent=None, silent=False, callafter=None, callafter_args=())
             result = check_argyll_bin([path])
             if result:
                 if verbose >= 3:
-                    safe_print("Setting Argyll binary directory:", path)
+                    print("Setting Argyll binary directory:", path)
                 setcfg("argyll.dir", path)
                 # Always write cfg directly after setting Argyll directory so
                 # subprocesses that read the configuration will use the right
@@ -1506,9 +1499,9 @@ class FilteredStream():
     def write(self, data):
         """ Write data to stream, stripping all unwanted output.
 
-		Incoming lines are expected to be delimited by linesep_in.
+        Incoming lines are expected to be delimited by linesep_in.
 
-		"""
+        """
         if not data:
             return
         if self.prestrip and (re.search(self.prestrip, data) or self._buffer):
@@ -1601,7 +1594,7 @@ class Sudo(object):
                                      "K": bool(re.search("-K\W", stdout)),
                                      "k": bool(re.search("-k\W", stdout))}
             if debug:
-                safe_print("[D] Available sudo options:",
+                print("[D] Available sudo options:",
                            ", ".join([option for option in list(self.availoptions.keys()) if self.availoptions[option]]))
 
     def __len__(self):
@@ -1615,15 +1608,15 @@ class Sudo(object):
 
     def _expect_timeout(self, patterns, timeout=-1, child_timeout=1):
         """
-		wexpect.spawn.expect with better timeout handling.
+        wexpect.spawn.expect with better timeout handling.
 
-		The default expect can block up to timeout seconds if the child is
-		already dead. To prevent this, we run expect in a loop until a pattern
-		is matched, timeout is reached or an exception occurs. The max time an
-		expect call will block if the child is already dead can be set with the
-		child_timeout parameter.
+        The default expect can block up to timeout seconds if the child is
+        already dead. To prevent this, we run expect in a loop until a pattern
+        is matched, timeout is reached or an exception occurs. The max time an
+        expect call will block if the child is already dead can be set with the
+        child_timeout parameter.
 
-		"""
+        """
         if timeout == -1:
             timeout = self.subprocess.timeout
         patterns = list(patterns)
@@ -1642,25 +1635,25 @@ class Sudo(object):
         self.subprocess.sendcontrol("C")
         self._expect_timeout([wexpect.EOF], 10)
         if self.subprocess.after is wexpect.TIMEOUT:
-            safe_print("Warning: sudo timed out")
+            print("Warning: sudo timed out")
             if not self.subprocess.terminate(force=True):
-                safe_print("Warning: Couldn't terminate timed-out "
+                print("Warning: Couldn't terminate timed-out "
                            "sudo subprocess")
         else:
-            safe_print(self.subprocess.before.strip().decode(enc, "replace"))
+            print(self.subprocess.before.strip().decode(enc, "replace"))
 
     def authenticate(self, args, title, parent=None):
         """
-		Athenticate for a given command
+        Athenticate for a given command
 
-		The return value will be a tuple (auth_succesful, password).
+        The return value will be a tuple (auth_succesful, password).
 
-		auth_succesful will be a custom class that will always have length 0 if
-		authentication was not successful or the command is not allowed (even
-		if the actual string length is non-zero), thus allowing for easy
-		boolean comparisons.
+        auth_succesful will be a custom class that will always have length 0 if
+        authentication was not successful or the command is not allowed (even
+        if the actual string length is non-zero), thus allowing for easy
+        boolean comparisons.
 
-		"""
+        """
         # Authentication using sudo is pretty convoluted if dealing with
         # platform and configuration differences. Ask for a password by first
         # clearing any cached credentials (sudo -K) so that sudo is guaranteed
@@ -1714,7 +1707,7 @@ class Sudo(object):
                 msg = lang.getstr("dialog.enter_password")
                 errstr = p.before.strip().decode(enc, "replace")
                 if errstr:
-                    safe_print(errstr)
+                    print(errstr)
                     msg = "\n\n".join([errstr, msg])
                 dlg.message.SetLabel(msg)
                 dlg.message.Wrap(dlg.GetSize()[0] - 32 - 12 * 2)
@@ -1723,9 +1716,9 @@ class Sudo(object):
                 dlg.sizer0.Layout()
         dlg.Destroy()
         if p.after is wexpect.TIMEOUT:
-            safe_print("Error: sudo timed out")
+            print("Error: sudo timed out")
             if not p.terminate(force=True):
-                safe_print("Warning: Couldn't terminate timed-out sudo "
+                print("Warning: Couldn't terminate timed-out sudo "
                            "subprocess")
             return StringWithLengthOverride("sudo timed out", 0), pwd
         if p.exitstatus != 0:
@@ -1738,16 +1731,16 @@ class Sudo(object):
 
     def is_allowed(self, args=None, pwd=""):
         """
-		Check if a command is allowed via sudo. Return either a string
-		listing allowed and forbidden commands, or the fully-qualified path of
-		the command along with any arguments, or an error message in case the
-		command is not allowed, or False if the password was not accepted.
+        Check if a command is allowed via sudo. Return either a string
+        listing allowed and forbidden commands, or the fully-qualified path of
+        the command along with any arguments, or an error message in case the
+        command is not allowed, or False if the password was not accepted.
 
-		The returned error is a custom class that will always have length 0
-		if the command is not allowed (even if the actual string length is
-		non-zero), thus allowing for easy boolean comparisons.
+        The returned error is a custom class that will always have length 0
+        if the command is not allowed (even if the actual string length is
+        non-zero), thus allowing for easy boolean comparisons.
 
-		"""
+        """
         sudo_args = ["-p", "Password:", "-l"]
         # Set sudo args based on available options
         if self.availoptions.get("l [command]") and args:
@@ -1771,9 +1764,9 @@ class Sudo(object):
                                                                         "replace"),
                                                 0)
         if p.after is wexpect.TIMEOUT:
-            safe_print("Error: sudo timed out")
+            print("Error: sudo timed out")
             if not p.terminate(force=True):
-                safe_print("Warning: Couldn't terminate timed-out sudo "
+                print("Warning: Couldn't terminate timed-out sudo "
                            "subprocess")
             return StringWithLengthOverride("sudo timed out", 0)
         if p.exitstatus != 0:
@@ -1860,8 +1853,8 @@ class Worker(WorkerBase):
 
     def __init__(self, owner=None):
         """
-		Create and return a new worker instance.
-		"""
+        Create and return a new worker instance.
+        """
         WorkerBase.__init__(self)
         self.owner = owner # owner should be a wxFrame or similar
         if sys.platform == "win32":
@@ -2103,7 +2096,7 @@ class Worker(WorkerBase):
                             return Error(lang.getstr("error.copy_failed",
                                                      (ccmx, ccmxcopy)) +
                                          "\n\n" +
-                                         safe_unicode(exception))
+                                         str(exception))
                         result = check_file_isfile(ccmxcopy)
                         if isinstance(result, Exception):
                             return result
@@ -2144,13 +2137,13 @@ class Worker(WorkerBase):
 
     def authenticate(self, cmd, title=appname, parent=None):
         """
-		Athenticate (using sudo) for a given command
+        Athenticate (using sudo) for a given command
 
-		The return value will either be True (authentication successful and
-		command allowed), False (in case of the user cancelling the password
-		dialog), None (Windows or running as root) or an error.
+        The return value will either be True (authentication successful and
+        command allowed), False (in case of the user cancelling the password
+        dialog), None (Windows or running as root) or an error.
 
-		"""
+        """
         if sys.platform == "win32" or os.geteuid() == 0:
             return
         self.auth_timestamp = 0
@@ -2174,7 +2167,7 @@ class Worker(WorkerBase):
                 # If no password was previously available, or if the requested
                 # command cannot be run via sudo regardless of password (we check
                 # this with sudo -l <command>), we ask for a password.
-                safe_print(lang.getstr("auth"))
+                print(lang.getstr("auth"))
                 progress_dlg = self._progress_wnd or getattr(wx.GetApp(),
                                                              "progress_dlg", None)
                 if parent is None:
@@ -2187,7 +2180,7 @@ class Worker(WorkerBase):
                     self.pwd = pwd
                     result = True
                 elif result is False:
-                    safe_print(lang.getstr("aborted"))
+                    print(lang.getstr("aborted"))
                 else:
                     result = Error(result)
             if result is True:
@@ -2204,11 +2197,11 @@ class Worker(WorkerBase):
                                  hdr_chroma_compression=False, hdr_sat=0.5,
                                  hdr_hue=0.5, hdr_target_profile=None):
         """
-		Apply BT.1886-like tone response to profile1 using profile2 blackpoint.
+        Apply BT.1886-like tone response to profile1 using profile2 blackpoint.
 
-		profile1 has to be a matrix profile
+        profile1 has to be a matrix profile
 
-		"""
+        """
         odata = self.xicclu(profile2, (0, 0, 0), pcs="x")
         if len(odata) != 1 or len(odata[0]) != 3:
             raise ValueError("Blackpoint is invalid: %s" % odata)
@@ -2290,7 +2283,7 @@ class Worker(WorkerBase):
                 self.recent.write(desc + "\n")
                 linebuffered_logfiles = []
                 if sys.stdout.isatty():
-                    linebuffered_logfiles.append(safe_print)
+                    linebuffered_logfiles.append(print)
                 else:
                     linebuffered_logfiles.append(log)
                 if self.sessionlogfile:
@@ -2384,10 +2377,10 @@ class Worker(WorkerBase):
     def instrument_can_use_ccxx(self, check_measurement_mode=True,
                                 instrument_name=None):
         """
-		Return boolean whether the instrument in its current measurement mode
-		can use a CCMX or CCSS colorimeter correction
+        Return boolean whether the instrument in its current measurement mode
+        can use a CCMX or CCSS colorimeter correction
 
-		"""
+        """
         # Special cases:
         # Spectrometer (not needed),
         # ColorHug (only sensible in factory or raw measurement mode),
@@ -2431,23 +2424,21 @@ class Worker(WorkerBase):
         return bool(self.get_instrument_features(instrument_name).get("spectral") or
                     self.instrument_supports_ccss(instrument_name))
 
-    @Property
-    def progress_wnd():
-        def fget(self):
-            if not self._progress_wnd:
-                if (getattr(self, "progress_start_timer", None) and
-                        self.progress_start_timer.IsRunning()):
-                    if currentThread().__class__ is not _MainThread:
-                        raise RuntimeError("GUI access in non-main thread!")
-                    # Instantiate the progress dialog instantly on access
-                    self.progress_start_timer.Notify()
-                    self.progress_start_timer.Stop()
-            return self._progress_wnd
+    @property
+    def progress_wnd(self):
+        if not self._progress_wnd:
+            if (getattr(self, "progress_start_timer", None) and
+                    self.progress_start_timer.IsRunning()):
+                if currentThread().__class__.__name__ != "_MainThread":
+                    raise RuntimeError("GUI access in non-main thread!")
+                # Instantiate the progress dialog instantly on access
+                self.progress_start_timer.Notify()
+                self.progress_start_timer.Stop()
+        return self._progress_wnd
 
-        def fset(self, progress_wnd):
-            self._progress_wnd = progress_wnd
-
-        return locals()
+    @progress_wnd.setter
+    def progress_wnd(self, progress_wnd):
+        self._progress_wnd = progress_wnd
 
     @property
     def progress_wnds(self):
@@ -2456,17 +2447,15 @@ class Worker(WorkerBase):
             progress_wnds.append(self.terminal)
         return progress_wnds
 
-    @Property
-    def pwd():
-        def fget(self):
-            return self._pwdstr[10:].ljust(int(math.ceil(len(self._pwdstr[10:]) / 4.0) * 4),
-                                           "=").decode("base64").decode("UTF-8")
+    @property
+    def pwd(self):
+        return self._pwdstr[10:].ljust(int(math.ceil(len(self._pwdstr[10:]) / 4.0) * 4),
+                                       "=").decode("base64").decode("UTF-8")
 
-        def fset(self, pwd):
-            self._pwdstr = "/tmp/%s%s" % (md5(getpass.getuser()).hexdigest().encode("base64")[:5],
-                                          pwd.encode("UTF-8").encode("base64").rstrip("=\n"))
-
-        return locals()
+    @pwd.setter
+    def pwd(self, pwd):
+        self._pwdstr = "/tmp/%s%s" % (md5(getpass.getuser()).hexdigest().encode("base64")[:5],
+                                      pwd.encode("UTF-8").encode("base64").rstrip("=\n"))
 
     def get_argyll_instrument_conf(self, what=None):
         """ Check for Argyll CMS udev rules/hotplug scripts """
@@ -2524,22 +2513,22 @@ class Worker(WorkerBase):
                                   "F": 1,
                                   "f": 1,
                                   "g": 3}.get(getcfg(cfgname), 1))
-            safe_print("Added DISPLAY_TYPE_BASE_ID %r" %
+            print("Added DISPLAY_TYPE_BASE_ID %r" %
                        cgats[0].DISPLAY_TYPE_BASE_ID)
             return True
 
     def check_display_conf_oy_compat(self, display_no):
         """ Check the screen configuration for oyranos-monitor compatibility
 
-		oyranos-monitor works off screen coordinates, so it will not handle
-		overlapping screens (like separate X screens, which will usually
-		have the same x, y coordinates)!
-		So, oyranos-monitor can only be used if:
-		- The wx.Display count is > 1 which means NOT separate X screens
-		  OR if we use the 1st screen
-		- The screens don't overlap
+        oyranos-monitor works off screen coordinates, so it will not handle
+        overlapping screens (like separate X screens, which will usually
+        have the same x, y coordinates)!
+        So, oyranos-monitor can only be used if:
+        - The wx.Display count is > 1 which means NOT separate X screens
+          OR if we use the 1st screen
+        - The screens don't overlap
 
-		"""
+        """
         oyranos = False
         if wx.Display.GetCount() > 1 or display_no == 1:
             oyranos = True
@@ -2591,7 +2580,7 @@ class Worker(WorkerBase):
 
     def check_instrument_calibration(self, txt):
         """ Check if current instrument needs sensor calibration by looking
-		at Argyll CMS command output """
+        at Argyll CMS command output """
         if not self.instrument_calibration_complete:
             if "calibration complete" in txt.lower():
                 self.log("%s: Detected instrument calibration complete message" %
@@ -2700,7 +2689,7 @@ class Worker(WorkerBase):
 
     def check_instrument_place_on_screen(self, txt):
         """ Check if instrument should be placed on screen by looking
-		at Argyll CMS command output """
+        at Argyll CMS command output """
         self.instrument_place_on_spot_msg = False
         if "place instrument on test window" in txt.lower():
             self.instrument_place_on_screen_msg = True
@@ -2760,7 +2749,7 @@ class Worker(WorkerBase):
 
     def check_instrument_sensor_position(self, txt):
         """ Check instrument sensor position by looking
-		at Argyll CMS command output """
+        at Argyll CMS command output """
         if "read failed due to the sensor being in the wrong position" in txt.lower():
             self.instrument_sensor_position_msg = True
         if (self.instrument_sensor_position_msg and
@@ -2936,7 +2925,7 @@ END_DATA
 
     def do_instrument_calibration(self, failed=False):
         """ Ask user to initiate sensor calibration and execute.
-		Give an option to cancel. """
+        Give an option to cancel. """
         if getattr(self, "subprocess_abort", False) or \
                 getattr(self, "thread_abort", False):
             # If we are aborting, ignore request
@@ -3075,7 +3064,7 @@ END_DATA
 
     def instrument_place_on_screen(self):
         """ Show a dialog asking user to place the instrument on the screen
-		and give an option to cancel """
+        and give an option to cancel """
         if getattr(self, "subprocess_abort", False) or \
                 getattr(self, "thread_abort", False):
             # If we are aborting, ignore request
@@ -3159,8 +3148,8 @@ END_DATA
 
     def clear_argyll_info(self):
         """
-		Clear Argyll CMS version, detected displays and instruments.
-		"""
+        Clear Argyll CMS version, detected displays and instruments.
+        """
         self.argyll_bin_dir = None
         self.argyll_version = [0, 0, 0]
         self.argyll_version_string = "0.0.0"
@@ -3176,16 +3165,16 @@ END_DATA
 
     def reset_argyll_enum(self):
         """
-		Reset auto-detected (during display/instrument enumeration) properties
+        Reset auto-detected (during display/instrument enumeration) properties
 
-		"""
+        """
         self.measurement_modes = {}
         self.argyll_virtual_display = None
 
     def clear_cmd_output(self):
         """
-		Clear any output from the last run command.
-		"""
+        Clear any output from the last run command.
+        """
         self.cmd = None
         self.cmdname = None
         self.retcode = -1
@@ -3204,7 +3193,7 @@ END_DATA
                 self.logger = DummyLogger()
             else:
                 self.logger = get_file_logger("interact")
-        if (hasattr(self, "thread") and self.thread.isAlive() and
+        if (hasattr(self, "thread") and self.thread.is_alive() and
                 self.interactive):
             self.logger.info("-" * 80)
         self.sessionlogfile = None
@@ -3342,15 +3331,15 @@ END_DATA
                      ambient_cdm2=5, content_rgb_space="DCI P3",
                      hdr_display=False, XYZwp=None):
         """ Create a 3D LUT from one (device link) or two (device) profiles,
-		optionally incorporating an abstract profile. """
+        optionally incorporating an abstract profile. """
         # .cube: http://doc.iridas.com/index.php?title=LUT_Formats
         # .3dl: http://www.kodak.com/US/plugins/acrobat/en/motion/products/look/UserGuide.pdf
         #       http://download.autodesk.com/us/systemdocs/pdf/lustre_color_management_user_guide.pdf
         # .spi3d: https://github.com/imageworks/OpenColorIO/blob/master/src/core/FileFormatSpi3D.cpp
         # .mga: http://pogle.pandora-int.com/download/manual/lut3d_format.html
 
-        safe_print("-" * 80)
-        safe_print(lang.getstr("3dlut.create"))
+        print("-" * 80)
+        print(lang.getstr("3dlut.create"))
 
         for profile in (profile_in, profile_out):
             if (profile.profileClass not in ("mntr", "link", "scnr", "spac") or
@@ -3781,16 +3770,16 @@ END_DATA
 
                 def clipVidRGB(RGB, black_hack=True):
                     """
-					Clip a value to the RGB Video range 16..235 RGB.
+                    Clip a value to the RGB Video range 16..235 RGB.
 
-					Clip the incoming value RGB[] in place.
-					Return a bit mask of the channels that have/would clip,
-					scale all non-black values to avoid positive clipping and
-					return the restoring scale factor (> 1.0) if this has occured,
-					return the full value in the clip direction in full[],
-					and return the uncliped value in unclipped[].
+                    Clip the incoming value RGB[] in place.
+                    Return a bit mask of the channels that have/would clip,
+                    scale all non-black values to avoid positive clipping and
+                    return the restoring scale factor (> 1.0) if this has occured,
+                    return the full value in the clip direction in full[],
+                    and return the uncliped value in unclipped[].
 
-					"""
+                    """
 
                     clipmask = 0
                     scale = 1.0
@@ -4305,8 +4294,8 @@ END_DATA
                     result = UnloggedError(lang.getstr("aborted"))
                 if isinstance(result2, Exception):
                     if isinstance(result, Exception):
-                        result = Error(safe_unicode(result) + "\n\n" +
-                                       safe_unicode(result2))
+                        result = Error(str(result) + "\n\n" +
+                                       str(result2))
                     else:
                         result = result2
                 if not isinstance(result, Exception):
@@ -4545,19 +4534,19 @@ END_DATA
                                      enumerate_ports=True,
                                      include_network_devices=True):
         """
-		Enumerate the available displays and ports.
+        Enumerate the available displays and ports.
 
-		Also sets Argyll version number, availability of certain options
-		like black point rate, and checks LUT access for each display.
+        Also sets Argyll version number, availability of certain options
+        like black point rate, and checks LUT access for each display.
 
-		"""
+        """
         if (silent and check_argyll_bin()) or (not silent and
                                                check_set_argyll_bin()):
             displays = []
             xrandr_names = {}
             lut_access = []
             if verbose >= 1:
-                safe_print(lang.getstr("enumerating_displays_and_comports"))
+                print(lang.getstr("enumerating_displays_and_comports"))
             instruments = []
             current_display_name = config.get_display_name()
             cfg_instruments = getcfg("instruments")
@@ -4579,12 +4568,12 @@ END_DATA
             argyll_bin_dir = os.path.dirname(cmd)
             if (argyll_bin_dir != self.argyll_bin_dir):
                 self.argyll_bin_dir = argyll_bin_dir
-                safe_print(self.argyll_bin_dir)
+                print(self.argyll_bin_dir)
             result = self.exec_cmd(cmd, args, capture_output=True,
                                    skip_scripts=True, silent=True,
                                    log_output=False)
             if isinstance(result, Exception):
-                safe_print(result)
+                print(result)
             arg = None
             defaults["calibration.black_point_hack"] = 0
             defaults["calibration.black_point_rate.enabled"] = 0
@@ -4609,7 +4598,7 @@ END_DATA
                                                      + 8:]
                         if (argyll_version_string != self.argyll_version_string):
                             self.set_argyll_version_from_string(argyll_version_string)
-                        safe_print("ArgyllCMS " + self.argyll_version_string)
+                        print("ArgyllCMS " + self.argyll_version_string)
                         config.defaults["copyright"] = ("No copyright. Created "
                                                         "with %s %s and Argyll"
                                                         "CMS %s" %
@@ -4659,7 +4648,7 @@ END_DATA
                             # Custom modified Argyll V2.0.2 (-dvirtual)
                             # or Argyll >= 2.0.2 (-d dummy)
                             self.argyll_virtual_display = arg[2:]
-                            safe_print("Argyll has virtual display support")
+                            print("Argyll has virtual display support")
                     elif len(line) > 1 and line[1][0] == "=":
                         value = line[1].strip(" ='")
                         if arg == "-d":
@@ -4691,7 +4680,7 @@ END_DATA
                                 # by a re-encode/decode step
                                 displays.append("Chromecast %s: %s" %
                                                 (line[0],
-                                                 safe_unicode(safe_str(value, enc),
+                                                 str(safe_str(value, enc),
                                                               "UTF-8")))
                         elif arg == "-dprisma[:host]":
                             # Prisma (via Argyll CMS)
@@ -4701,7 +4690,7 @@ END_DATA
                             if len(match):
                                 displays.append("Prisma %s: %s @ %s" %
                                                 (line[0],
-                                                 safe_unicode(safe_str(match[0][0], enc),
+                                                 str(safe_str(match[0][0], enc),
                                                               "UTF-8"), match[0][1]))
                         elif arg == "-c" and enumerate_ports:
                             if ((re.match("/dev(?:/[\w.\-]+)*$", value) or
@@ -4726,7 +4715,7 @@ END_DATA
                     iname = get_canonical_instrument_name(iname)
                     if not iname in instruments:
                         instruments.append(iname)
-            if verbose >= 1: safe_print(lang.getstr("success"))
+            if verbose >= 1: print(lang.getstr("success"))
             if instruments != self.instruments:
                 self.instruments = instruments
                 setcfg("instruments", instruments)
@@ -4752,7 +4741,7 @@ END_DATA
                         monitors = util_win.get_real_display_devices_info()
                     except Exception as exception:
                         if not isinstance(exception, pywintypes.error):
-                            safe_print(traceback.format_exc())
+                            print(traceback.format_exc())
                         monitors = []
                 for i, display in enumerate(displays):
                     if (display.startswith("Chromecast ") or
@@ -4800,9 +4789,9 @@ END_DATA
                         if sys.platform == "win32":
                             suppress_errors += (pywintypes.error, )
                         if isinstance(exception, EnvironmentError):
-                            safe_print(exception)
+                            print(exception)
                         elif not isinstance(exception, suppress_errors):
-                            safe_print(traceback.format_exc())
+                            print(traceback.format_exc())
                         edid = {}
                     self.display_edid.append(edid)
                     if edid:
@@ -4879,10 +4868,10 @@ END_DATA
                     dispwin = get_argyll_util("dispwin")
                     test_cal = get_data_path("test.cal")
                     if not test_cal:
-                        safe_print(lang.getstr("file.missing", "test.cal"))
+                        print(lang.getstr("file.missing", "test.cal"))
                     tmp = self.create_tempdir()
                     if isinstance(tmp, Exception):
-                        safe_print(tmp)
+                        print(tmp)
                         tmp = None
                     for i, disp in enumerate(displays):
                         if (disp.startswith("Chromecast ") or
@@ -4897,7 +4886,7 @@ END_DATA
                             lut_access.append(True)
                             continue
                         if verbose >= 1:
-                            safe_print(lang.getstr("checking_lut_access", (i + 1)))
+                            print(lang.getstr("checking_lut_access", (i + 1)))
                         # Save current calibration?
                         if tmp:
                             current_cal = os.path.join(tmp, "current.cal")
@@ -4912,7 +4901,7 @@ END_DATA
                                                skip_scripts=True,
                                                silent=True)
                         if isinstance(result, Exception):
-                            safe_print(result)
+                            print(result)
                         elif result is None:
                             lut_access.append(None)
                             continue
@@ -4923,7 +4912,7 @@ END_DATA
                                                skip_scripts=True,
                                                silent=True)
                         if isinstance(result, Exception):
-                            safe_print(result)
+                            print(result)
                         elif result is None:
                             lut_access.append(None)
                             continue
@@ -4941,18 +4930,18 @@ END_DATA
                                                skip_scripts=True,
                                                silent=True)
                         if isinstance(result, Exception):
-                            safe_print(result)
+                            print(result)
                         if tmp and os.path.isfile(tmp_cal):
                             try:
                                 os.remove(tmp_cal)
                             except EnvironmentError as exception:
-                                safe_print(exception)
+                                print(exception)
                         lut_access.append(retcode == 0)
                         if verbose >= 1:
                             if retcode == 0:
-                                safe_print(lang.getstr("success"))
+                                print(lang.getstr("success"))
                             else:
-                                safe_print(lang.getstr("failure"))
+                                print(lang.getstr("failure"))
                 else:
                     lut_access.extend([None] * len(displays))
                 if self.argyll_version >= [1, 4, 0]:
@@ -4977,32 +4966,32 @@ END_DATA
                  title=appname, shell=False, working_dir=None, dry_run=None,
                  sessionlogfile=None, use_pty=False):
         """
-		Execute a command.
+        Execute a command.
 
-		Return value is either True (succeed), False (failed), None (canceled)
-		or an exception.
+        Return value is either True (succeed), False (failed), None (canceled)
+        or an exception.
 
-		cmd is the full path of the command.
-		args are the arguments, if any.
-		capture_output (if True) swallows any output from the command and
-		sets the 'output' and 'errors' properties of the Worker instance.
-		display_output shows the log after the command.
-		low_contrast (if True) sets low contrast shell colors while the
-		command is run.
-		skip_scripts (if True) skips the creation of shell scripts that allow
-		re-running the command. Note that this is also controlled by a global
-		config option and scripts will only be created if it evaluates to False.
-		silent (if True) skips most output and also most error dialogs
-		(except unexpected failures)
-		parent sets the parent window for auth dialog (if asroot is True).
-		asroot (if True) on Linux runs the command using sudo.
-		log_output (if True) logs any output if capture_output is also set.
-		title = Title for auth dialog (if asroot is True)
-		working_dir = Working directory. If None, will be determined from
-		absulte path of last argument and last argument will be set to only
-		the basename. If False, no working dir will be used and file arguments
-		not changed.
-		"""
+        cmd is the full path of the command.
+        args are the arguments, if any.
+        capture_output (if True) swallows any output from the command and
+        sets the 'output' and 'errors' properties of the Worker instance.
+        display_output shows the log after the command.
+        low_contrast (if True) sets low contrast shell colors while the
+        command is run.
+        skip_scripts (if True) skips the creation of shell scripts that allow
+        re-running the command. Note that this is also controlled by a global
+        config option and scripts will only be created if it evaluates to False.
+        silent (if True) skips most output and also most error dialogs
+        (except unexpected failures)
+        parent sets the parent window for auth dialog (if asroot is True).
+        asroot (if True) on Linux runs the command using sudo.
+        log_output (if True) logs any output if capture_output is also set.
+        title = Title for auth dialog (if asroot is True)
+        working_dir = Working directory. If None, will be determined from
+        absulte path of last argument and last argument will be set to only
+        the basename. If False, no working dir will be used and file arguments
+        not changed.
+        """
         # If dry_run is explicitly set to False, ignore dry_run config value
         dry_run = dry_run is not False and (dry_run or getcfg("dry_run"))
         if not capture_output:
@@ -5010,7 +4999,7 @@ END_DATA
         self.clear_cmd_output()
         if None in [cmd, args]:
             if verbose >= 1 and not silent:
-                safe_print(lang.getstr("aborted"))
+                print(lang.getstr("aborted"))
             return False
         self.cmd = cmd
         cmdname = os.path.splitext(os.path.basename(cmd))[0]
@@ -5227,8 +5216,8 @@ END_DATA
         if not silent or verbose >= 3:
             self.log("-" * 80)
             if self.sessionlogfile:
-                safe_print("Session log:", self.sessionlogfile.filename)
-                safe_print("")
+                print("Session log:", self.sessionlogfile.filename)
+                print("")
         use_madvr = (cmdname in (get_argyll_utilname("dispcal"),
                                  get_argyll_utilname("dispread"),
                                  get_argyll_utilname("dispwin")) and
@@ -5348,7 +5337,7 @@ BEGIN_DATA
                                                    ("RGB_R", "RGB_G", "RGB_B"))
                                 if len(cal.DATA) != 256:
                                     # Needs to have 256 entries
-                                    raise CGATSError("%s: %s != 256" %
+                                    raise CGATS.CGATSError("%s: %s != 256" %
                                                      (lang.getstr("calibration"),
                                                       lang.getstr("number_of_entries")))
                             except CGATS.CGATSError as exception:
@@ -5542,20 +5531,20 @@ BEGIN_DATA
             script_dir = working_dir
             pythonscript = """import os, sys, time
 if sys.platform != "win32":
-	print(*["\\nCurrent RGB"] + sys.argv[1:])
+    print(*["\\nCurrent RGB"] + sys.argv[1:])
 abortfilename = os.path.join(%r, ".abort")
 okfilename = os.path.join(%r, ".ok")
 while 1:
-	if os.path.isfile(abortfilename):
-		break
-	if os.path.isfile(okfilename):
-		try:
-			os.remove(okfilename)
-		except OSError, e:
-			pass
-		else:
-			break
-	time.sleep(0.001)
+    if os.path.isfile(abortfilename):
+        break
+    if os.path.isfile(okfilename):
+        try:
+            os.remove(okfilename)
+        except OSError, e:
+            pass
+        else:
+            break
+    time.sleep(0.001)
 """ % (script_dir, script_dir)
             waitfilename = os.path.join(script_dir, ".wait")
             if sys.platform == "win32":
@@ -5583,7 +5572,7 @@ while 1:
             else:
                 # Write out .wait file
                 with open(waitfilename, "w") as waitfile:
-                    waitfile.write('#!/usr/bin/env python\n')
+                    waitfile.write('#!/usr/bin/env python3\n')
                     waitfile.write(pythonscript)
                 os.chmod(waitfilename, 0o755)
                 args[index] += '"%s" ./%s' % (strtr(safe_str(python),
@@ -5594,8 +5583,8 @@ while 1:
             if not silent or verbose >= 3:
                 if (not silent and dry_run and
                         not self.cmdrun):
-                    safe_print(lang.getstr("dry_run"))
-                    safe_print("")
+                    print(lang.getstr("dry_run"))
+                    print("")
                     self.cmdrun = True
                 if working_dir:
                     self.log(lang.getstr("working_dir"))
@@ -5613,7 +5602,7 @@ while 1:
                 self.log("")
                 if not silent and dry_run:
                     if not self.lastcmdname or self.lastcmdname == cmdname:
-                        safe_print(lang.getstr("dry_run.end"))
+                        print(lang.getstr("dry_run.end"))
                     if self.owner and hasattr(self.owner, "infoframe_toggle_handler"):
                         wx.CallAfter(self.owner.infoframe_toggle_handler,
                                      show=True)
@@ -5653,7 +5642,7 @@ while 1:
                 pass
             else:
                 if not self.auth_timestamp:
-                    if hasattr(self, "thread") and self.thread.isAlive():
+                    if hasattr(self, "thread") and self.thread.is_alive():
                         # Careful: We can only show the auth dialog if running
                         # in the main GUI thread!
                         if use_madnet:
@@ -5791,7 +5780,7 @@ while 1:
                             os.remove(allfilename)
             except Exception as exception:
                 self.log("Warning - error during shell script creation:",
-                         safe_unicode(exception))
+                         str(exception))
         cmdline = [safe_str(arg, fs_enc) for arg in cmdline]
         working_dir = None if not working_dir else working_dir.encode(fs_enc)
         try:
@@ -5886,7 +5875,7 @@ while 1:
                 stderr = None
                 stdout = EncodedWriter(StringIO(), None, data_encoding)
                 logfiles = []
-                if (hasattr(self, "thread") and self.thread.isAlive() and
+                if (hasattr(self, "thread") and self.thread.is_alive() and
                         self.interactive and getattr(self, "terminal", None)):
                     logfiles.append(FilteredStream(self.terminal,
                                                    discard="",
@@ -5894,7 +5883,7 @@ while 1:
                 if log_output:
                     linebuffered_logfiles = []
                     if sys.stdout.isatty():
-                        linebuffered_logfiles.append(safe_print)
+                        linebuffered_logfiles.append(print)
                     else:
                         linebuffered_logfiles.append(log)
                     if self.sessionlogfile:
@@ -5906,7 +5895,7 @@ while 1:
                                        linesep_in="\n",
                                        triggers=[])))
                 logfiles.append(stdout)
-                if hasattr(self, "thread") and self.thread.isAlive():
+                if hasattr(self, "thread") and self.thread.is_alive():
                     logfiles.extend([self.recent, self.lastmsg, self])
                 logfiles = Files(logfiles)
                 if self.use_patterngenerator:
@@ -5951,7 +5940,7 @@ while 1:
                                                             **kwargs)
                         except wexpect.ExceptionPexpect as exception:
                             self.retcode = -1
-                            raise Error(safe_unicode(exception))
+                            raise Error(str(exception))
                         if sys.platform == "darwin" and self.measure_cmd:
                             # Caffeinate (prevent sleep/screensaver)
                             caffeinate = which("caffeinate")
@@ -6099,7 +6088,7 @@ while 1:
                                                        startupinfo=startupinfo)
                     except Exception as exception:
                         self.retcode = -1
-                        raise Error(safe_unicode(exception))
+                        raise Error(str(exception))
                     self.retcode = self.subprocess.wait()
                     if stdin != sp.PIPE and not getattr(stdin, "closed", True):
                         stdin.close()
@@ -6153,7 +6142,7 @@ while 1:
             if debug:
                 self.log('[D] working_dir:', working_dir)
             errmsg = (" ".join(cmdline).decode(fs_enc) + "\n" +
-                      safe_unicode(traceback.format_exc()))
+                      str(traceback.format_exc()))
             self.retcode = -1
             return Error(errmsg)
         finally:
@@ -6303,7 +6292,7 @@ while 1:
         self.thread_abort = False
         self.recent.clear()
         self.lastmsg.clear()
-        if self.thread.isAlive():
+        if self.thread.is_alive():
             # Consumer may check if thread is still alive. Technically
             # it shouldn't be at that point when using CallAfter, but e.g. on
             # OS X there seems to be overlap with the thread counting as
@@ -6320,7 +6309,7 @@ while 1:
                                      profile.connectionColorSpace)))
 
         if logfile:
-            safe_print("-" * 80)
+            print("-" * 80)
             logfile.write("Creating perceptual A2B0 table\n")
             logfile.write("\n")
         # Make new A2B0
@@ -6385,13 +6374,13 @@ while 1:
                                         logfile=None, filename=None,
                                         only_input_curves=False):
         """
-		Generate a profile's B2A table by inverting the A2B table
-		(default A2B1 or A2B0)
+        Generate a profile's B2A table by inverting the A2B table
+        (default A2B1 or A2B0)
 
-		It is also poosible to re-generate a B2A table by interpolating
-		the B2A table itself.
+        It is also poosible to re-generate a B2A table by interpolating
+        the B2A table itself.
 
-		"""
+        """
 
         if tableno is None:
             if "A2B1" in profile.tags:
@@ -6600,7 +6589,7 @@ while 1:
                 if logfile:
                     logfile.write(wrgb_warning)
                 else:
-                    safe_print(wrgb_warning)
+                    print(wrgb_warning)
 
         xpR = [v[0] for v in odata]
         xpG = [v[1] for v in odata]
@@ -6691,7 +6680,7 @@ while 1:
                 if logfile:
                     logfile.write("Warning - could not compute RGBW matrix")
                     if result:
-                        logfile.write(": " + safe_unicode(result))
+                        logfile.write(": " + str(result))
                     else:
                         logfile.write("\n")
             else:
@@ -6948,7 +6937,7 @@ while 1:
                 # Use PCS candidate with best fit
                 # (best fit is the smallest fit greater or equal 1 and
                 # largest possible coverage)
-                pcs_candidates.sort(key=lambda row: (-row[0], row[1]))
+                pcs_candidates.sort(key=lambda row_: (-row_[0], row_[1]))
                 for coverage, fit, rgb_space in pcs_candidates:
                     if round(fit, 2) >= 1:
                         break
@@ -7359,9 +7348,9 @@ while 1:
     def get_display(self):
         """ Get the currently configured display.
 
-		Returned is the Argyll CMS dispcal/dispread -d argument
+        Returned is the Argyll CMS dispcal/dispread -d argument
 
-		"""
+        """
         display_name = config.get_display_name(None, True)
         if display_name == "Web @ localhost":
             return "web:%i" % getcfg("webserver.portnumber")
@@ -7457,10 +7446,10 @@ while 1:
     def get_display_name_short(self, prepend_manufacturer=False, prefer_edid=False):
         """ Return shortened name of configured display (if possible)
 
-		If name can't be shortened (e.g. because it's already 10 characters
-		or less), return full string
+        If name can't be shortened (e.g. because it's already 10 characters
+        or less), return full string
 
-		"""
+        """
         display_name = self.get_display_name(prepend_manufacturer, prefer_edid)
         if len(display_name) > 10:
             maxweight = 0
@@ -7486,16 +7475,16 @@ while 1:
 
     def get_dispwin_display_profile_argument(self, display_no=0):
         """ Return argument corresponding to the display profile for use
-		with dispwin.
+        with dispwin.
 
-		Will either return '-L' (use current profile) or a filename
+        Will either return '-L' (use current profile) or a filename
 
-		"""
+        """
         arg = "-L"
         try:
             profile = ICCP.get_display_profile(display_no)
         except Exception as exception:
-            safe_print(exception)
+            print(exception)
             return arg
         else:
             if not profile:
@@ -7508,7 +7497,7 @@ while 1:
             prefix += "-"
         if (profile.version >= 4 and
                 not profile.convert_iccv4_tags_to_iccv2()):
-            safe_print("\n".join([lang.getstr("profile.iccv4.unsupported"),
+            print("\n".join([lang.getstr("profile.iccv4.unsupported"),
                                   profile.getDescription()]))
         elif not profile.fileName:
             fd, profile.fileName = tempfile.mkstemp("", prefix)
@@ -7522,7 +7511,7 @@ while 1:
                                          display_manufacturer=None,
                                          write=True):
         """ Update display name and manufacturer in colprof arguments
-		embedded in 'ARGYLL_COLPROF_ARGS' section in a TI3 file. """
+        embedded in 'ARGYLL_COLPROF_ARGS' section in a TI3 file. """
         options_colprof = []
         if not display_name and not display_manufacturer:
             # Note: Do not mix'n'match display name and manufacturer from
@@ -7532,7 +7521,7 @@ while 1:
             except (IOError, CGATS.CGATSInvalidError,
                     CGATS.CGATSInvalidOperationError, CGATS.CGATSKeyError,
                     CGATS.CGATSTypeError, CGATS.CGATSValueError) as exception:
-                safe_print(exception)
+                print(exception)
                 ti3_options_colprof = []
             for option in ti3_options_colprof:
                 if option[0] == "M":
@@ -7592,7 +7581,7 @@ while 1:
                                        capture_output=True, skip_scripts=True,
                                        silent=True, log_output=False)
                 if isinstance(result, Exception):
-                    safe_print(result)
+                    print(result)
                 # Need to get and remember output of spotread because calling
                 # self.get_technology_strings() will overwrite self.output
                 output = self.output
@@ -7750,7 +7739,7 @@ usage: spotread [-options] [logfile]
                                capture_output=True, skip_scripts=True,
                                silent=True, log_output=False)
         if isinstance(result, Exception):
-            safe_print(result)
+            print(result)
             return OrderedDict()
         technology_strings = OrderedDict()
         in_tech = False
@@ -7790,7 +7779,7 @@ usage: spotread [-options] [logfile]
 
     def import_colorimeter_corrections(self, cmd, args=None, asroot=False):
         """ Import colorimeter corrections. cmd can be 'i1d3ccss', 'spyd4en'
-		or 'oeminst' """
+        or 'oeminst' """
         if not args:
             args = []
         if (is_superuser() or asroot) and not "-Sl" in args:
@@ -7814,7 +7803,7 @@ usage: spotread [-options] [logfile]
     def install_3dlut(self, path, filename=None):
         if getcfg("3dlut.format") == "madVR" and madvr:
             # Install (load) 3D LUT using madTPG
-            safe_print(path)
+            print(path)
             hdr_to_sdr = not getcfg("3dlut.hdr_display")
             # Get parameters from actual 3D LUT file
             h3dlut = madvr.H3DLUT(path)
@@ -7826,7 +7815,7 @@ usage: spotread [-options] [logfile]
                              "Input_Primaries")
             slot, rgb_space_name = h3dlut.source_colorspace
             if slot is not None:
-                safe_print("Input primaries match", rgb_space_name)
+                print("Input primaries match", rgb_space_name)
             else:
                 return Error(lang.getstr("3dlut.madvr.colorspace.unsupported",
                                          [rgb_space_name or
@@ -7842,7 +7831,7 @@ usage: spotread [-options] [logfile]
             else:
                 methodname = "load_3dlut_file"
                 lut3d_section = "calibration"
-            safe_print("Installing madVR 3D LUT for %s slot %i (%s)..." %
+            print("Installing madVR 3D LUT for %s slot %i (%s)..." %
                        (lut3d_section, slot, rgb_space_name))
             try:
                 # Connect & load 3D LUT
@@ -7939,7 +7928,7 @@ usage: spotread [-options] [logfile]
     def install_profile(self, profile_path, capture_output=True,
                         skip_scripts=False, silent=False):
         """ Install a profile by copying it to an appropriate location and
-		registering it with the system """
+        registering it with the system """
         colord_install = None
         oy_install = None
         argyll_install = self._install_profile_argyll(profile_path,
@@ -8243,7 +8232,7 @@ usage: spotread [-options] [logfile]
                             usb_ids[usb_id].append(instrument_name)
 
             # Check connected USB devices for supported instruments
-            not_main_thread = currentThread().__class__ is not _MainThread
+            not_main_thread = currentThread().__class__.__name__ != "_MainThread"
             if not_main_thread:
                 # If running in a thread, need to call pythoncom.CoInitialize
                 pythoncom.CoInitialize()
@@ -8312,11 +8301,11 @@ usage: spotread [-options] [logfile]
     def _install_profile_argyll(self, profile_path, capture_output=False,
                                 skip_scripts=False, silent=False):
         """
-		Install profile using dispwin.
+        Install profile using dispwin.
 
-		Return the profile path, an error or False
+        Return the profile path, an error or False
 
-		"""
+        """
         if (sys.platform == "darwin" and False):  # NEVER
             # Alternate way of 'installing' the profile under OS X by just
             # copying it
@@ -8650,7 +8639,7 @@ usage: spotread [-options] [logfile]
                 except Exception as exception:
                     self.log("Warning - could not remove old "
                              "v0.1b calibration loader '%s': %s"
-                             % tuple(safe_unicode(s) for s in
+                             % tuple(str(s) for s in
                                      (loader_v01b, exception)))
             loader_v02b = os.path.join(autostart_home,
                                        name + ".lnk")
@@ -8661,7 +8650,7 @@ usage: spotread [-options] [logfile]
                 except Exception as exception:
                     self.log("Warning - could not remove old "
                              "v0.2b calibration loader '%s': %s"
-                             % tuple(safe_unicode(s) for s in
+                             % tuple(str(s) for s in
                                      (loader_v02b, exception)))
             loader_v0558 = os.path.join(autostart_home,
                                         name + ".lnk")
@@ -8672,7 +8661,7 @@ usage: spotread [-options] [logfile]
                 except Exception as exception:
                     self.log("Warning - could not remove old "
                              "v0.2b calibration loader '%s': %s"
-                             % tuple(safe_unicode(s) for s in
+                             % tuple(str(s) for s in
                                      (loader_v02b, exception)))
         if autostart:
             loader_v0558 = os.path.join(autostart,
@@ -8684,7 +8673,7 @@ usage: spotread [-options] [logfile]
                 except Exception as exception:
                     self.log("Warning - could not remove old "
                              "v0.2b calibration loader '%s': %s"
-                             % tuple(safe_unicode(s) for s in
+                             % tuple(str(s) for s in
                                      (loader_v02b, exception)))
         # Create unified loader
         name = appname + " Profile Loader"
@@ -8724,7 +8713,7 @@ usage: spotread [-options] [logfile]
         else:
             cmd = os.path.join(pydir, appname + "-apply-profiles.exe")
 
-        not_main_thread = currentThread().__class__ is not _MainThread
+        not_main_thread = currentThread().__class__.__name__ != "_MainThread"
         if not_main_thread:
             # If running in a thread, need to call pythoncom.CoInitialize
             pythoncom.CoInitialize()
@@ -8733,7 +8722,7 @@ usage: spotread [-options] [logfile]
         try:
             ts = taskscheduler.TaskScheduler()
         except Exception as exception:
-            safe_print("Warning - could not access task scheduler:", exception)
+            print("Warning - could not access task scheduler:", exception)
             ts = None
             task = None
         else:
@@ -8763,7 +8752,7 @@ usage: spotread [-options] [logfile]
                     errmsg += " (user cancelled)"
                 else:
                     errmsg += " " + safe_str(exception)
-                safe_print(errmsg)
+                print(errmsg)
 
         if task or (ts and ts.query_task(appname + " Profile Loader Launcher")):
             if not_main_thread:
@@ -8794,7 +8783,7 @@ usage: spotread [-options] [logfile]
                         if not silent:
                             result = Warning(lang.getstr("error.autostart_creation",
                                                          autostart) + "\n" +
-                                             safe_unicode(exception))
+                                             str(exception))
                     # Now try user scope
                 else:
                     if not silent:
@@ -8815,7 +8804,7 @@ usage: spotread [-options] [logfile]
                         if not silent:
                             result = Warning(lang.getstr("error.autostart_creation",
                                                          autostart_home) + "\n" +
-                                             safe_unicode(exception))
+                                             str(exception))
             else:
                 if not silent:
                     result = Warning(lang.getstr("error.autostart_user"))
@@ -8823,7 +8812,7 @@ usage: spotread [-options] [logfile]
             if not silent:
                 result = Warning(lang.getstr("error.autostart_creation",
                                              autostart_home) + "\n" +
-                                 safe_unicode(exception))
+                                 str(exception))
         finally:
             if not_main_thread:
                 # If running in a thread, need to call pythoncom.CoUninitialize
@@ -8924,7 +8913,7 @@ usage: spotread [-options] [logfile]
             if not silent:
                 result = Warning(lang.getstr("error.autostart_creation",
                                              desktopfile_path) + "\n" +
-                                 safe_unicode(exception))
+                                 str(exception))
         else:
             if getcfg("profile.install_scope") == "l" and autostart:
                 # Move system-wide loader
@@ -8982,7 +8971,7 @@ usage: spotread [-options] [logfile]
 
     def create_gamut_views(self, profile_path):
         """ Generate gamut views (VRML files) and show progress in current
-		progress dialog """
+        progress dialog """
         if getcfg("profile.create_gamut_views"):
             self.log("-" * 80)
             self.log(lang.getstr("gamut.view.create"))
@@ -8998,7 +8987,7 @@ usage: spotread [-options] [logfile]
                        skip_scripts=False, display_name=None,
                        display_manufacturer=None, tags=None):
         """ Create an ICC profile and process the generated file """
-        safe_print(lang.getstr("create_profile"))
+        print(lang.getstr("create_profile"))
         if dst_path is None:
             dst_path = os.path.join(getcfg("profile.save_path"),
                                     getcfg("profile.name.expanded"),
@@ -9483,7 +9472,7 @@ usage: spotread [-options] [logfile]
                     # Smooth existing B2A tables
                     linebuffered_logfiles = []
                     if sys.stdout.isatty():
-                        linebuffered_logfiles.append(safe_print)
+                        linebuffered_logfiles.append(print)
                     else:
                         linebuffered_logfiles.append(log)
                     if self.sessionlogfile:
@@ -9832,8 +9821,8 @@ usage: spotread [-options] [logfile]
                               dst_path=dst_path)
         if isinstance(result2, Exception):
             if isinstance(result, Exception):
-                result = Error(safe_unicode(result) + "\n\n" +
-                               safe_unicode(result2))
+                result = Error(str(result) + "\n\n" +
+                               str(result2))
             else:
                 result = result2
         elif not isinstance(result, Exception) and result:
@@ -10112,21 +10101,21 @@ usage: spotread [-options] [logfile]
     def _create_matrix_profile(self, outname, profile=None, ptype="s",
                                omit=None, bpc=False, cat="Bradford"):
         """
-		Create matrix profile from lookup through ti3
+        Create matrix profile from lookup through ti3
 
-		<outname>.ti3 has to exist.
-		If <profile> is given, it has to be an ICCProfile instance, and the
-		matrix tags will be added to this profile.
-		<ptype> should be the type of profile, i.e. one of g, G, s or S.
-		<omit> if given should be the tag to omit, either 'TRC' or 'XYZ'.
+        <outname>.ti3 has to exist.
+        If <profile> is given, it has to be an ICCProfile instance, and the
+        matrix tags will be added to this profile.
+        <ptype> should be the type of profile, i.e. one of g, G, s or S.
+        <omit> if given should be the tag to omit, either 'TRC' or 'XYZ'.
 
-		We use a testchart with only gray + primaries for TRC,
-		and larger testchart for the matrix. This should give the smoothest
-		overall result.
+        We use a testchart with only gray + primaries for TRC,
+        and larger testchart for the matrix. This should give the smoothest
+        overall result.
 
-		Returns an ICCProfile with fileName set to <outname>.ic[cm].
+        Returns an ICCProfile with fileName set to <outname>.ic[cm].
 
-		"""
+        """
         if profile:
             cat = profile.guess_cat() or cat
         if omit == "XYZ":
@@ -10495,7 +10484,7 @@ usage: spotread [-options] [logfile]
     def get_logfiles(self, include_progress_buffers=True):
         linebuffered_logfiles = []
         if sys.stdout.isatty():
-            linebuffered_logfiles.append(safe_print)
+            linebuffered_logfiles.append(print)
         else:
             linebuffered_logfiles.append(log)
         if self.sessionlogfile:
@@ -10647,7 +10636,7 @@ usage: spotread [-options] [logfile]
     def start_measurement(self, consumer, apply_calibration=True,
                           progress_msg="", resume=False, continue_next=False):
         """ Start a measurement and use a progress dialog for progress
-		information """
+        information """
         self.start(consumer, self.measure,
                    wkwargs={"apply_calibration": apply_calibration},
                    progress_msg=progress_msg, resume=resume,
@@ -10656,7 +10645,7 @@ usage: spotread [-options] [logfile]
     def start_calibration(self, consumer, remove=False, progress_msg="",
                           resume=False, continue_next=False):
         """ Start a calibration and use a progress dialog for progress
-		information """
+        information """
         self.start(consumer, self.calibrate, wkwargs={"remove": remove},
                    progress_msg=progress_msg, resume=resume,
                    continue_next=continue_next, interactive_frame="adjust",
@@ -10743,9 +10732,9 @@ usage: spotread [-options] [logfile]
 
     def madtpg_show_osd(self, msg=None, leave_fullscreen=False):
         """
-		Show madTPG OSD, optionally with message and leaving fullscreen
+        Show madTPG OSD, optionally with message and leaving fullscreen
 
-		"""
+        """
         if self.madtpg.is_fullscreen() and leave_fullscreen:
             self.madtpg_previous_fullscreen = True
             self.madtpg.set_use_fullscreen_button(False)
@@ -10905,7 +10894,7 @@ usage: spotread [-options] [logfile]
                     except Exception as exception:
                         self.log("Warning - could not restore "
                                  "backup of original TI1 file %s:" %
-                                 safe_unicode(ti1_orig), exception)
+                                 str(ti1_orig), exception)
                     else:
                         self.log("Restored backup of original TI1 file")
                 if precond_ti1 and os.path.isfile(ti1):
@@ -10922,19 +10911,19 @@ usage: spotread [-options] [logfile]
                               isinstance(result, Exception) or not result)
         if isinstance(result2, Exception):
             if isinstance(result, Exception):
-                result = Error(safe_unicode(result) + "\n\n" +
-                               safe_unicode(result2))
+                result = Error(str(result) + "\n\n" +
+                               str(result2))
             else:
                 result = result2
         return result
 
     def ensure_patch_sequence(self, ti1, write=True):
         """
-		Ensure correct patch sequence of TI1 file
+        Ensure correct patch sequence of TI1 file
 
-		Return either the changed CGATS object or the original path/TI1
+        Return either the changed CGATS object or the original path/TI1
 
-		"""
+        """
         patch_sequence = getcfg("testchart.patch_sequence")
         if patch_sequence != "optimize_display_response_delay":
             # Need to re-order patches
@@ -10943,7 +10932,7 @@ usage: spotread [-options] [logfile]
                     ti1 = CGATS.CGATS(ti1)
                 except Exception as exception:
                     self.log("Warning - could not process TI1 file %s:" %
-                             safe_unicode(ti1), exception)
+                             str(ti1), exception)
                     return ti1
             self.log("Changing patch sequence:",
                      lang.getstr("testchart." + patch_sequence))
@@ -10966,13 +10955,13 @@ usage: spotread [-options] [logfile]
                                     ".original.ti1")
                 except Exception as exception:
                     self.log("Warning - could not make backup of TI1 file %s:" %
-                             safe_unicode(ti1.filename), exception)
+                             str(ti1.filename), exception)
                 # Write new TI1 to original filename
                 try:
                     ti1.write()
                 except Exception as exception:
                     self.log("Warning - could not write TI1 file %s:" %
-                             safe_unicode(ti1.filename), exception)
+                             str(ti1.filename), exception)
         return ti1
 
     def parse(self, txt):
@@ -11056,17 +11045,15 @@ usage: spotread [-options] [logfile]
                 use_video_levels=getcfg("patterngenerator.use_video_levels"),
                 logfile=logfile)
 
-    @Property
-    def patterngenerator():
-        def fget(self):
-            pgname = config.get_display_name()
-            return self._patterngenerators.get(pgname)
+    @property
+    def patterngenerator(self):
+        pgname = config.get_display_name()
+        return self._patterngenerators.get(pgname)
 
-        def fset(self, patterngenerator):
-            pgname = config.get_display_name()
-            self._patterngenerators[pgname] = patterngenerator
-
-        return locals()
+    @patterngenerator.setter
+    def patterngenerator(self, patterngenerator):
+        pgname = config.get_display_name()
+        self._patterngenerators[pgname] = patterngenerator
 
     @property
     def patterngenerators(self):
@@ -11122,16 +11109,14 @@ usage: spotread [-options] [logfile]
             self.log("%s: Patterngenerator sent count: %i" %
                      (appname, self.patterngenerator_sent_count))
 
-    @Property
-    def pauseable():
-        def fget(self):
-            return self._pauseable
+    @property
+    def pauseable(self):
+        return self._pauseable
 
-        def fset(self, pauseable):
-            self._pauseable = pauseable
-            self.pauseable_now = False
-
-        return locals()
+    @pauseable.setter
+    def pauseable(self, pauseable):
+        self._pauseable = pauseable
+        self.pauseable_now = False
 
     def pause_continue(self):
         if not self.pauseable or not self.pauseable_now:
@@ -11154,13 +11139,13 @@ usage: spotread [-options] [logfile]
     def prepare_colprof(self, profile_name=None, display_name=None,
                         display_manufacturer=None, tags=None):
         """
-		Prepare a colprof commandline.
+        Prepare a colprof commandline.
 
-		All options are read from the user configuration.
-		Profile name and display name can be ovverridden by passing the
-		corresponding arguments.
+        All options are read from the user configuration.
+        Profile name and display name can be ovverridden by passing the
+        corresponding arguments.
 
-		"""
+        """
         if profile_name is None:
             profile_name = getcfg("profile.name.expanded")
         inoutfile = self.setup_inout(profile_name)
@@ -11193,7 +11178,7 @@ usage: spotread [-options] [logfile]
                 # profile, otherwise create hires CIECAM02 tables with collink
                 try:
                     gamap_profile = ICCP.ICCProfile(getcfg("gamap_profile"))
-                except ICCProfileInvalidError as exception:
+                except ICCP.ICCProfileInvalidError as exception:
                     self.log(exception)
                     return Error(lang.getstr("profile.invalid") + "\n" +
                                  getcfg("gamap_profile"))
@@ -11419,13 +11404,13 @@ usage: spotread [-options] [logfile]
 
     def prepare_dispcal(self, calibrate=True, verify=False, dry_run=False):
         """
-		Prepare a dispcal commandline.
+        Prepare a dispcal commandline.
 
-		All options are read from the user configuration.
-		You can choose if you want to calibrate and/or verify by passing
-		the corresponding arguments.
+        All options are read from the user configuration.
+        You can choose if you want to calibrate and/or verify by passing
+        the corresponding arguments.
 
-		"""
+        """
         cmd = get_argyll_util("dispcal")
         args = []
         args.append("-v2") # verbose
@@ -11464,7 +11449,7 @@ usage: spotread [-options] [logfile]
                             return Error(lang.getstr("error.copy_failed",
                                                      (cal, calcopy)) +
                                          "\n\n" +
-                                         safe_unicode(exception)), None
+                                         str(exception)), None
                         result = check_cal_isfile(calcopy)
                         if isinstance(result, Exception):
                             return result, None
@@ -11499,7 +11484,7 @@ usage: spotread [-options] [logfile]
                             return Error(lang.getstr("error.copy_failed",
                                                      (profile_path,
                                                       profilecopy)) +
-                                         "\n\n" + safe_unicode(exception)), None
+                                         "\n\n" + str(exception)), None
                         result = check_profile_isfile(profilecopy)
                         if isinstance(result, Exception):
                             return result, None
@@ -11584,15 +11569,15 @@ usage: spotread [-options] [logfile]
 
     def prepare_dispread(self, apply_calibration=True):
         """
-		Prepare a dispread commandline.
+        Prepare a dispread commandline.
 
-		All options are read from the user configuration.
-		You can choose if you want to apply the current calibration,
-		either the previously by dispcal created one by passing in True, by
-		passing in a valid path to a .cal file, or by passing in None
-		(current video card gamma table).
+        All options are read from the user configuration.
+        You can choose if you want to apply the current calibration,
+        either the previously by dispcal created one by passing in True, by
+        passing in a valid path to a .cal file, or by passing in None
+        (current video card gamma table).
 
-		"""
+        """
         self.lastcmdname = get_argyll_utilname("dispread")
         inoutfile = self.setup_inout()
         if not inoutfile or isinstance(inoutfile, Exception):
@@ -11631,7 +11616,7 @@ usage: spotread [-options] [logfile]
             except Exception as exception:
                 return Error(lang.getstr("error.testchart.creation_failed",
                                          inoutfile + ".ti1") + "\n\n" +
-                             safe_unicode(exception)), None
+                             str(exception)), None
         if apply_calibration is not False:
             if apply_calibration is True:
                 # Always a .cal file in that case
@@ -11671,7 +11656,7 @@ usage: spotread [-options] [logfile]
                     except Exception as exception:
                         return Error(lang.getstr("error.copy_failed",
                                                  (cal, calcopy)) + "\n\n" +
-                                     safe_unicode(exception)), None
+                                     str(exception)), None
                     result = check_cal_isfile(calcopy)
                     if isinstance(result, Exception):
                         return result, None
@@ -11706,7 +11691,7 @@ usage: spotread [-options] [logfile]
                     tmpcal.close()
                 except Exception as exception:
                     return Error(lang.getstr("error.cal_extraction", (cal)) +
-                                 "\n\n" + safe_unicode(exception)), None
+                                 "\n\n" + str(exception)), None
             cal = calcopy
             if options_dispcal:
                 self.options_dispcal = ["-" + arg for arg in options_dispcal]
@@ -11778,16 +11763,16 @@ usage: spotread [-options] [logfile]
 
     def prepare_dispwin(self, cal=None, profile_path=None, install=True):
         """
-		Prepare a dispwin commandline.
+        Prepare a dispwin commandline.
 
-		All options are read from the user configuration.
-		If you pass in cal as True, it will try to load the current
-		display profile's calibration. If cal is a path, it'll use
-		that instead. If cal is False, it'll clear the current calibration.
-		If cal is None, it'll try to load the calibration from a profile
-		specified by profile_path.
+        All options are read from the user configuration.
+        If you pass in cal as True, it will try to load the current
+        display profile's calibration. If cal is a path, it'll use
+        that instead. If cal is False, it'll clear the current calibration.
+        If cal is None, it'll try to load the calibration from a profile
+        specified by profile_path.
 
-		"""
+        """
         cmd = get_argyll_util("dispwin")
         args = []
         args.append("-v")
@@ -11889,11 +11874,11 @@ usage: spotread [-options] [logfile]
 
     def prepare_targen(self):
         """
-		Prepare a targen commandline.
+        Prepare a targen commandline.
 
-		All options are read from the user configuration.
+        All options are read from the user configuration.
 
-		"""
+        """
         path = self.create_tempdir()
         if not path or isinstance(path, Exception):
             return path, None
@@ -11942,7 +11927,7 @@ usage: spotread [-options] [logfile]
                 ("-c" in args or self.argyll_version >= [1, 6, 3])):
             args.append('-V%s' % (1 + getcfg("tc_dark_emphasis") * 3))
         if self.argyll_version == [1, 1, "RC2"] or self.argyll_version >= [1, 1]:
-            args.append('-p%s' % getcfg("tc_gamma")) \
+            args.append('-p%s' % getcfg("tc_gamma"))
         if getcfg("extra_args.targen").strip():
             # Disallow -d and -D as the testchart editor only supports
             # video RGB (-d3)
@@ -12013,12 +11998,12 @@ usage: spotread [-options] [logfile]
         self.set_progress_type()
         if getattr(self.progress_wnd, "original_msg", None) and \
                 msg != self.progress_wnd.original_msg:
-            # UGLY HACK: This 'safe_print' call fixes a GTK assertion and
+            # UGLY HACK: This 'print' call fixes a GTK assertion and
             # segfault under Arch Linux when setting the window title.
             # This has a chance of throwing a IOError: [Errno 9] Bad file
             # descriptor under Windows, so check for wxGTK
             if "__WXGTK__" in wx.PlatformInfo:
-                safe_print("")
+                print("")
             self.progress_wnd.SetTitle(self.progress_wnd.original_msg)
             self.progress_wnd.original_msg = None
         if percentage is not None:
@@ -12086,7 +12071,7 @@ usage: spotread [-options] [logfile]
         fancy = fancy and getcfg("use_fancy_progress")
         if (resume and self._progress_wnd and
                 self._progress_wnd in list(self._progress_dlgs.values())):
-            progress_wnd = self._progress_wnd \
+            progress_wnd = self._progress_wnd
         else:
             key = (self.show_remaining_time, self.cancelable, fancy, parent,
                    parent and parent.IsShownOnScreen())
@@ -12094,12 +12079,12 @@ usage: spotread [-options] [logfile]
         if progress_wnd:
             if self._progress_wnd is not progress_wnd:
                 self.progress_wnd = progress_wnd
-            # UGLY HACK: This 'safe_print' call fixes a GTK assertion and
+            # UGLY HACK: This 'print' call fixes a GTK assertion and
             # segfault under Arch Linux when setting the window title
             # This has a chance of throwing a IOError: [Errno 9] Bad file
             # descriptor under Windows, so check for wxGTK
             if "__WXGTK__" in wx.PlatformInfo:
-                safe_print("")
+                print("")
             self.progress_wnd.SetTitle(progress_title)
             if not resume or not self.progress_wnd.IsShown():
                 self.progress_wnd.reset()
@@ -12158,21 +12143,21 @@ usage: spotread [-options] [logfile]
     def quit_terminate_cmd(self):
         """ Forcefully abort the current subprocess.
 
-		Try to gracefully exit first by sending common Argyll CMS abort
-		keystrokes (ESC), forcefully terminate the subprocess if not
-		reacting
+        Try to gracefully exit first by sending common Argyll CMS abort
+        keystrokes (ESC), forcefully terminate the subprocess if not
+        reacting
 
-		"""
+        """
         # If running wexpect.spawn in a thread under Windows, writing to
         # sys.stdout from another thread can fail sporadically with IOError 9
         # 'Bad file descriptor', so don't use sys.stdout
         # Careful: Python 2.5 Producer objects don't have a name attribute
-        if (hasattr(self, "thread") and self.thread.isAlive() and
+        if (hasattr(self, "thread") and self.thread.is_alive() and
                 (not hasattr(currentThread(), "name") or
                  currentThread().name != self.thread.name)):
             logfn = log
         else:
-            logfn = safe_print
+            logfn = print
         subprocess = getattr(self, "subprocess", None)
         if self.isalive(subprocess):
             try:
@@ -12241,7 +12226,7 @@ usage: spotread [-options] [logfile]
                          (appname, exception), fn=logfn)
         subprocess_isalive = self.isalive(subprocess)
         if (subprocess_isalive or
-                (hasattr(self, "thread") and not self.thread.isAlive())):
+                (hasattr(self, "thread") and not self.thread.is_alive())):
             # We don't normally need this as closing of the progress window is
             # handled by _generic_consumer(), but there are two cases where it
             # is desirable to have this 'safety net':
@@ -12258,7 +12243,7 @@ usage: spotread [-options] [logfile]
             #    happen if we design our result consumer correctly to handle
             #    this particular case, but we need to make sure the user can
             #    close the progress window in case we mess up.
-            if hasattr(self, "thread") and not self.thread.isAlive():
+            if hasattr(self, "thread") and not self.thread.is_alive():
                 wx.CallAfter(self.stop_progress)
             if subprocess_isalive:
                 wx.CallAfter(show_result_dialog,
@@ -12309,7 +12294,7 @@ usage: spotread [-options] [logfile]
             try:
                 wrote = self.subprocess.send(bytes)
             except Exception as exception:
-                self.logger.exception("Exception: %s" % safe_unicode(exception))
+                self.logger.exception("Exception: %s" % str(exception))
             else:
                 if wrote == len(bytes):
                     return True
@@ -12341,7 +12326,7 @@ usage: spotread [-options] [logfile]
         cgats = CGATS.CGATS(outfilename)
         data = cgats.queryv1("DATA")
         if data and len(data) != 256:
-            safe_print("VideoLUT has %i entries, interpolating to 256" %
+            print("VideoLUT has %i entries, interpolating to 256" %
                        len(data))
             rgb = {"I": [], "R": [], "G": [], "B": []}
             for entry in data.values():
@@ -12416,11 +12401,11 @@ usage: spotread [-options] [logfile]
 
     def argyll_support_file_exists(self, name, scope=None):
         """ Check if named file exists in any of the known Argyll support
-		locations valid for the chosen Argyll CMS version.
+        locations valid for the chosen Argyll CMS version.
 
-		Scope can be 'u' (user), 'l' (local system) or None (both)
+        Scope can be 'u' (user), 'l' (local system) or None (both)
 
-		"""
+        """
         paths = []
         if sys.platform != "darwin":
             if not scope or scope == "u":
@@ -12459,11 +12444,11 @@ usage: spotread [-options] [logfile]
 
     def spyder2_firmware_exists(self, scope=None):
         """ Check if the Spyder 2 firmware file exists in any of the known
-		locations valid for the chosen Argyll CMS version.
+        locations valid for the chosen Argyll CMS version.
 
-		Scope can be 'u' (user), 'l' (local system) or None (both)
+        Scope can be 'u' (user), 'l' (local system) or None (both)
 
-		"""
+        """
         if self.argyll_version < [1, 2, 0]:
             spyd2en = get_argyll_util("spyd2en")
             if not spyd2en:
@@ -12475,7 +12460,7 @@ usage: spotread [-options] [logfile]
 
     def spyder4_cal_exists(self):
         """ Check if the Spyder4/5 calibration file exists in any of the known
-		locations valid for the chosen Argyll CMS version. """
+        locations valid for the chosen Argyll CMS version. """
         if self.argyll_version < [1, 3, 6]:
             # We couldn't use it even if it exists
             return False
@@ -12488,32 +12473,32 @@ usage: spotread [-options] [logfile]
               pauseable=False, cancelable=True, show_remaining_time=True,
               fancy=True):
         """
-		Start a worker process.
-		
-		Also show a progress dialog while the process is running.
-		
-		consumer            consumer function.
-		producer            producer function.
-		cargs               consumer arguments.
-		ckwargs             consumer keyword arguments.
-		wargs               producer arguments.
-		wkwargs             producer keyword arguments.
-		progress_title      progress dialog title. Defaults to '%s'.
-		progress_msg        progress dialog message. Defaults to ''.
-		progress_start      show progress dialog after delay (ms).
-		resume              resume previous progress dialog (elapsed time etc).
-		continue_next       do not hide progress dialog after producer finishes.
-		stop_timers         stop the timers on the owner window if True
-		interactive_frame   "" or "uniformity" (selects the type of
-		                    interactive window)
-		pauseable           Is the operation pauseable? (show pause button on
-		                    progress dialog)
-		cancelable          Is the operation cancelable? (show cancel button on
-		                    progress dialog)
-		fancy               Use fancy progress dialog with animated throbber &
-		                    sound fx
-		
-		""" % appname
+        Start a worker process.
+        
+        Also show a progress dialog while the process is running.
+        
+        consumer            consumer function.
+        producer            producer function.
+        cargs               consumer arguments.
+        ckwargs             consumer keyword arguments.
+        wargs               producer arguments.
+        wkwargs             producer keyword arguments.
+        progress_title      progress dialog title. Defaults to '%s'.
+        progress_msg        progress dialog message. Defaults to ''.
+        progress_start      show progress dialog after delay (ms).
+        resume              resume previous progress dialog (elapsed time etc).
+        continue_next       do not hide progress dialog after producer finishes.
+        stop_timers         stop the timers on the owner window if True
+        interactive_frame   "" or "uniformity" (selects the type of
+                            interactive window)
+        pauseable           Is the operation pauseable? (show pause button on
+                            progress dialog)
+        cancelable          Is the operation cancelable? (show cancel button on
+                            progress dialog)
+        fancy               Use fancy progress dialog with animated throbber &
+                            sound fx
+        
+        """ % appname
         if ckwargs is None:
             ckwargs = {}
         if wkwargs is None:
@@ -12588,9 +12573,9 @@ usage: spotread [-options] [logfile]
                 self.progress_wnd.stop_timer()
                 self.progress_wnd.Resume()
                 self.progress_wnd.start_timer()
-                # UGLY HACK: This 'safe_print' call fixes a GTK assertion and
+                # UGLY HACK: This 'print' call fixes a GTK assertion and
                 # segfault under Arch Linux when setting the window title
-                safe_print("")
+                print("")
                 if isinstance(self.progress_wnd, SimpleTerminal):
                     self.progress_wnd.SetTitle(progress_title)
                 self.progress_wnd.Show()
@@ -12621,7 +12606,7 @@ usage: spotread [-options] [logfile]
                                                    handler=self.progress_handler,
                                                    keyhandler=self.terminal_key_handler)
                 if getattr(self.terminal, "worker", self) is not self:
-                    safe_print("DEBUG: In worker.Worker.start: worker.Worker()."
+                    print("DEBUG: In worker.Worker.start: worker.Worker()."
                                "terminal.worker is not self! This is probably a"
                                "bug.")
                 self.terminal.worker = self
@@ -12661,7 +12646,7 @@ usage: spotread [-options] [logfile]
         if hasattr(self, "_disabler"):
             del self._disabler
         if getattr(self, "progress_wnd", False):
-            if getattr(self.progress_wnd, "dlg", None): \
+            if getattr(self.progress_wnd, "dlg", None):
                 if self.progress_wnd.dlg.IsShownOnScreen():
                     self.progress_wnd.dlg.EndModal(wx.ID_CANCEL)
                 self.progress_wnd.dlg = None
@@ -12725,12 +12710,12 @@ usage: spotread [-options] [logfile]
     def calculate_gamut(self, profile_path, intent="r", direction="f",
                         order="n", compare_standard_gamuts=True):
         """
-		Calculate gamut, volume, and coverage % against sRGB and Adobe RGB.
+        Calculate gamut, volume, and coverage % against sRGB and Adobe RGB.
 
-		Return gamut volume (int, scaled to sRGB = 1.0) and
-		coverage (dict) as tuple.
+        Return gamut volume (int, scaled to sRGB = 1.0) and
+        coverage (dict) as tuple.
 
-		"""
+        """
         if isinstance(profile_path, list):
             profile_paths = profile_path
         else:
@@ -13007,8 +12992,8 @@ usage: spotread [-options] [logfile]
                               not result)
         if isinstance(result2, Exception):
             if isinstance(result, Exception):
-                result = Error(safe_unicode(result) + "\n\n" +
-                               safe_unicode(result2))
+                result = Error(str(result) + "\n\n" +
+                               str(result2))
             else:
                 result = result2
         elif not isinstance(result, Exception) and result and getcfg("trc"):
@@ -13045,11 +13030,11 @@ usage: spotread [-options] [logfile]
                                               calibration_only=False,
                                               use_collink=False):
         """
-		Change display profile (and calibration) whitepoint.
+        Change display profile (and calibration) whitepoint.
 
-		Do it in an colorimetrically accurate manner (as far as possible).
+        Do it in an colorimetrically accurate manner (as far as possible).
 
-		"""
+        """
         XYZw = colormath.xyY2XYZ(x, y)
         xicclu = get_argyll_util("xicclu")
         if not xicclu:
@@ -13060,7 +13045,7 @@ usage: spotread [-options] [logfile]
         outpathname = os.path.splitext(outfilename)[0]
         outname = os.path.basename(outpathname)
         logfiles = Files([self.recent, self.lastmsg,
-                          LineBufferedStream(safe_print)])
+                          LineBufferedStream(print)])
         ofilename = profile.fileName
         temppathname = os.path.join(tempdir, outname)
         if ofilename and os.path.isfile(ofilename):
@@ -13393,11 +13378,11 @@ BEGIN_DATA
     def ti1_lookup_to_ti3(self, ti1, profile, function="f", pcs=None,
                           intent="r", white_patches=4, white_patches_total=True):
         """
-		Read TI1 (filename or CGATS instance), lookup device->pcs values
-		colorimetrically through profile using Argyll's xicclu
-		utility and return TI3 (CGATS instance)
+        Read TI1 (filename or CGATS instance), lookup device->pcs values
+        colorimetrically through profile using Argyll's xicclu
+        utility and return TI3 (CGATS instance)
 
-		"""
+        """
 
         # ti1
         if isinstance(ti1, str):
@@ -13497,17 +13482,17 @@ BEGIN_DATA
                     while white_added_count < white_patches:
                         data.insert(0, white)
                         white_added_count += 1
-                safe_print("Added %i white patch(es)" % white_added_count)
+                print("Added %i white patch(es)" % white_added_count)
 
         idata = []
         for primaries in list(device_data.values()):
             idata.append(list(primaries.values()))
 
         if debug:
-            safe_print("ti1_lookup_to_ti3 %s -> %s idata" % (profile.colorSpace,
+            print("ti1_lookup_to_ti3 %s -> %s idata" % (profile.colorSpace,
                                                              color_rep))
             for v in idata:
-                safe_print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
+                print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
 
         # lookup device->cie values through profile using (x)icclu
         if pcs or self.argyll_version >= [1, 6]:
@@ -13675,20 +13660,20 @@ BEGIN_DATA
                 while white_added_count < white_patches:
                     ti3.DATA.insert(0, white)
                     white_added_count += 1
-            safe_print("Added %i white patch(es)" % white_added_count)
+            print("Added %i white patch(es)" % white_added_count)
 
         if debug:
-            safe_print(ti3)
+            print(ti3)
         return ti1, ti3, list(map(list, gray))
 
     def ti3_lookup_to_ti1(self, ti3, profile, fields=None, intent="r",
                           add_white_patches=4):
         """
-		Read TI3 (filename or CGATS instance), lookup cie->device values
-		colorimetrically through profile using Argyll's xicclu
-		utility and return TI1 and compatible TI3 (CGATS instances)
+        Read TI3 (filename or CGATS instance), lookup cie->device values
+        colorimetrically through profile using Argyll's xicclu
+        utility and return TI1 and compatible TI3 (CGATS instances)
 
-		"""
+        """
 
         # ti3
         copy = True
@@ -13713,7 +13698,7 @@ BEGIN_DATA
         except CGATS.CGATSInvalidError as exception:
             raise ValueError(lang.getstr("error.testchart.invalid",
                                          ti3_filename) + "\n" +
-                             lang.getstr(safe_unicode(exception)))
+                             lang.getstr(str(exception)))
         except CGATS.CGATSKeyError:
             try:
                 if fields:
@@ -13772,7 +13757,7 @@ BEGIN_DATA
             else:
                 wp = OrderedDict((('X', wp[0]), ('Y', wp[1]), ('Z', wp[2])))
             wp = [wp] * int(add_white_patches)
-            safe_print("Added %i white patches" % add_white_patches)
+            print("Added %i white patches" % add_white_patches)
         else:
             wp = []
 
@@ -13784,10 +13769,10 @@ BEGIN_DATA
             idata.append(cie)
 
         if debug:
-            safe_print("ti3_lookup_to_ti1 %s -> %s idata" % (color_rep,
+            print("ti3_lookup_to_ti1 %s -> %s idata" % (color_rep,
                                                              profile.colorSpace))
             for v in idata:
-                safe_print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
+                print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
 
         # lookup cie->device values through profile.icc using xicclu
         odata = self.xicclu(profile, idata, intent, "b", pcs=pcs, scale=100)
@@ -13873,7 +13858,7 @@ BEGIN_DATA
         ti1out.seek(0)
         ti1 = CGATS.CGATS(ti1out)
         if debug:
-            safe_print(ti1)
+            print(ti1)
         return ti1, ti3v
 
     def download(self, uri, force=False, download_dir=None):
@@ -13915,14 +13900,14 @@ BEGIN_DATA
                 if hasattr(ssl, "get_default_verify_paths"):
                     cafile = ssl.get_default_verify_paths().cafile
                     if cafile:
-                        safe_print("Using CA file", cafile)
+                        print("Using CA file", cafile)
             components = urllib.parse.urlparse(uri)
             # Don't use socket.getservbyname, as it apparently can fail with
             # socket.error under Windows 10 (although why remains a mystery,
             # we're only dealing with HTTP and HTTPS protocols...)
             scheme2port = {"http": 80,
                            "https": 443}
-            safe_print(lang.getstr("connecting.to",
+            print(lang.getstr("connecting.to",
                                    ("%s://%s" % (components.scheme,
                                                  components.hostname),
                                     components.port or
@@ -13955,13 +13940,13 @@ BEGIN_DATA
                     ekey = "ssl.certificate_verify_failed"
                     if not cafile and isapp:
                         ekey += ".root_ca_missing"
-                    safe_print(lang.getstr(ekey))
+                    print(lang.getstr(ekey))
                 elif "SSLV3_ALERT_HANDSHAKE_FAILURE" in safe_str(exception):
-                    safe_print(lang.getstr("ssl.handshake_failure"))
+                    print(lang.getstr("ssl.handshake_failure"))
                 elif not "SSL:" in safe_str(exception):
                     return exception
                 else:
-                    safe_print(exception)
+                    print(exception)
                 if getattr(LoggingHTTPRedirectHandler, "newurl", uri) != uri:
                     uri = LoggingHTTPRedirectHandler.newurl
                 return DownloadError(lang.getstr("download.fail") + " " +
@@ -14036,9 +14021,9 @@ BEGIN_DATA
                         try:
                             os.remove(download_path)
                         except EnvironmentError as exception:
-                            safe_print(exception)
+                            print(exception)
                 return mksfile_exception
-            safe_print(lang.getstr("downloading"), uri, "\u2192", download_path)
+            print(lang.getstr("downloading"), uri, "\u2192", download_path)
             self.recent.write(lang.getstr("downloading") + " " + filename + "\n")
             min_chunk_size = 1024 * 8
             chunk_size = min_chunk_size
@@ -14067,7 +14052,7 @@ BEGIN_DATA
                 with os.fdopen(tmp_fd, "rb+") as tmp_download_file:
                     while True:
                         if self.thread_abort:
-                            safe_print(lang.getstr("aborted"))
+                            print(lang.getstr("aborted"))
                             return False
 
                         chunk = response.read(chunk_size)
@@ -14126,7 +14111,7 @@ BEGIN_DATA
                         if (int(bps / fps) > chunk_size or
                                 min_chunk_size <= int(bps / fps) < int(chunk_size * 0.75)):
                             if debug or test or verbose > 1:
-                                safe_print("Download buffer size changed from %i KB to %i KB" %
+                                print("Download buffer size changed from %i KB to %i KB" %
                                            (chunk_size / 1024.0, bps / fps / 1024))
                             chunk_size = int(bps / fps)
 
@@ -14151,7 +14136,7 @@ BEGIN_DATA
                                         actualhash.update(chunk)
                         except EnvironmentError as download_file_exception:
                             return download_file_exception
-                        safe_print(lang.getstr("success"))
+                        print(lang.getstr("success"))
             finally:
                 response.close()
                 if not download_file_exception:
@@ -14160,7 +14145,7 @@ BEGIN_DATA
                     try:
                         os.remove(tmp_download_path)
                     except EnvironmentError as exception:
-                        safe_print(exception)
+                        print(exception)
                 if self.thread_abort or download_file_exception:
                     # Remove destination file if download aborted or error
                     # writing destination \
@@ -14170,7 +14155,7 @@ BEGIN_DATA
                     try:
                         os.remove(download_path)
                     except EnvironmentError as exception:
-                        safe_print(exception)
+                        print(exception)
         else:
             # File already exists
             if response:
@@ -14192,7 +14177,7 @@ BEGIN_DATA
                                           "SHA-256=" + expectedhash_hex,
                                           "SHA-256=" + actualhash_hex)))
             else:
-                safe_print("Verified hash SHA-256=" + actualhash_hex)
+                print("Verified hash SHA-256=" + actualhash_hex)
         return download_path
 
     def process_argyll_download(self, result, exit=False):
@@ -14243,7 +14228,7 @@ BEGIN_DATA
                     # in the file, 'name' will already be Unicode.
                     # Otherwise, it'll either be 7-bit ASCII or (legacy)
                     # cp437 encoding
-                    outname = safe_unicode(name, "cp437")
+                    outname = str(name, "cp437")
                     outpath = os.path.join(outdir, os.path.normpath(outname))
                     if outname.endswith("/"):
                         if not os.path.isdir(outpath):
@@ -14342,10 +14327,10 @@ BEGIN_DATA
 
     def wrapup(self, copy=True, remove=True, dst_path=None, ext_filter=None):
         """
-		Wrap up - copy and/or clean temporary file(s).
+        Wrap up - copy and/or clean temporary file(s).
 
-		"""
-        if debug: safe_print("[D] wrapup(copy=%s, remove=%s)" % (copy, remove))
+        """
+        if debug: print("[D] wrapup(copy=%s, remove=%s)" % (copy, remove))
         if not self.tempdir or not os.path.isdir(self.tempdir):
             return # nothing to do
         if (isinstance(copy, Exception) and
@@ -14406,7 +14391,7 @@ BEGIN_DATA
                     remove = False
                 else:
                     if isinstance(copy, Exception):
-                        safe_print("Moving files of incomplete run to",
+                        print("Moving files of incomplete run to",
                                    os.path.dirname(dst_path))
                     for basename in src_listdir:
                         name, ext = os.path.splitext(basename)
@@ -14418,42 +14403,42 @@ BEGIN_DATA
                             if os.path.exists(dst):
                                 if os.path.isdir(dst):
                                     if verbose >= 2:
-                                        safe_print(appname +
+                                        print(appname +
                                                    ": Removing existing "
                                                    "destination directory tree",
                                                    dst)
                                     try:
                                         shutil.rmtree(dst, True)
                                     except Exception as exception:
-                                        safe_print("Warning - directory '%s' "
+                                        print("Warning - directory '%s' "
                                                    "could not be removed: %s" %
-                                                   tuple(safe_unicode(s)
+                                                   tuple(str(s)
                                                          for s in (dst,
                                                                    exception)))
                                 else:
                                     if verbose >= 2:
-                                        safe_print(appname +
+                                        print(appname +
                                                    ": Removing existing "
                                                    "destination file", dst)
                                     try:
                                         os.remove(dst)
                                     except Exception as exception:
-                                        safe_print("Warning - file '%s' could "
+                                        print("Warning - file '%s' could "
                                                    "not be removed: %s" %
-                                                   tuple(safe_unicode(s)
+                                                   tuple(str(s)
                                                          for s in (dst,
                                                                    exception)))
                             if remove:
                                 if verbose >= 2:
-                                    safe_print(appname + ": Moving temporary "
+                                    print(appname + ": Moving temporary "
                                                          "object %s to %s" % (src, dst))
                                 try:
                                     shutil.move(src, dst)
                                 except Exception as exception:
-                                    safe_print("Warning - temporary object "
+                                    print("Warning - temporary object "
                                                "'%s' could not be moved to "
                                                "'%s': %s" %
-                                               tuple(safe_unicode(s) for s in
+                                               tuple(str(s) for s in
                                                      (src, dst, exception)))
                                     try:
                                         shutil.copyfile(src, dst)
@@ -14461,9 +14446,9 @@ BEGIN_DATA
                                         result2 = Error(lang.getstr("error.copy_failed",
                                                                     (src, dst)) +
                                                         "\n" +
-                                                        safe_unicode(exception))
+                                                        str(exception))
                                         if isinstance(result, Exception):
-                                            result = "\n".join(safe_unicode(error)
+                                            result = "\n".join(str(error)
                                                                for error in
                                                                (result, result2))
                                         else:
@@ -14472,39 +14457,39 @@ BEGIN_DATA
                             else:
                                 if os.path.isdir(src):
                                     if verbose >= 2:
-                                        safe_print(appname +
+                                        print(appname +
                                                    ": Copying temporary "
                                                    "directory tree %s to %s" %
                                                    (src, dst))
                                     try:
                                         shutil.copytree(src, dst)
                                     except Exception as exception:
-                                        safe_print("Warning - temporary "
+                                        print("Warning - temporary "
                                                    "directory '%s' could not "
                                                    "be copied to '%s': %s" %
-                                                   tuple(safe_unicode(s)
+                                                   tuple(str(s)
                                                          for s in
                                                          (src, dst, exception)))
                                 else:
                                     if verbose >= 2:
-                                        safe_print(appname +
+                                        print(appname +
                                                    ": Copying temporary "
                                                    "file %s to %s" % (src, dst))
                                     try:
                                         shutil.copyfile(src, dst)
                                     except Exception as exception:
-                                        safe_print("Warning - temporary file "
+                                        print("Warning - temporary file "
                                                    "'%s' could not be copied "
                                                    "to '%s': %s" %
-                                                   tuple(safe_unicode(s)
+                                                   tuple(str(s)
                                                          for s in
                                                          (src, dst, exception)))
         if remove:
             try:
                 src_listdir = os.listdir(self.tempdir)
             except Exception as exception:
-                safe_print("Error - directory '%s' listing failed: %s" %
-                           tuple(safe_unicode(s) for s in (self.tempdir,
+                print("Error - directory '%s' listing failed: %s" %
+                           tuple(str(s) for s in (self.tempdir,
                                                            exception)))
             else:
                 for basename in src_listdir:
@@ -14514,48 +14499,48 @@ BEGIN_DATA
                         isdir = os.path.isdir(src)
                         if isdir:
                             if verbose >= 2:
-                                safe_print(appname + ": Removing temporary "
+                                print(appname + ": Removing temporary "
                                                      "directory tree", src)
                             try:
                                 shutil.rmtree(src, True)
                             except Exception as exception:
-                                safe_print("Warning - temporary directory "
+                                print("Warning - temporary directory "
                                            "'%s' could not be removed: %s" %
-                                           tuple(safe_unicode(s) for s in
+                                           tuple(str(s) for s in
                                                  (src, exception)))
                         else:
                             if verbose >= 2:
-                                safe_print(appname +
+                                print(appname +
                                            ": Removing temporary file",
                                            src)
                             try:
                                 os.remove(src)
                             except Exception as exception:
-                                safe_print("Warning - temporary file "
+                                print("Warning - temporary file "
                                            "'%s' could not be removed: %s" %
-                                           tuple(safe_unicode(s) for s in
+                                           tuple(str(s) for s in
                                                  (src, exception)))
             try:
                 src_listdir = os.listdir(self.tempdir)
             except Exception as exception:
-                safe_print("Error - directory '%s' listing failed: %s" %
-                           tuple(safe_unicode(s) for s in (self.tempdir,
+                print("Error - directory '%s' listing failed: %s" %
+                           tuple(str(s) for s in (self.tempdir,
                                                            exception)))
             else:
                 if not src_listdir:
                     if verbose >= 2:
-                        safe_print(appname +
+                        print(appname +
                                    ": Removing empty temporary directory",
                                    self.tempdir)
                     try:
                         shutil.rmtree(self.tempdir, True)
                     except Exception as exception:
-                        safe_print("Warning - temporary directory '%s' could "
+                        print("Warning - temporary directory '%s' could "
                                    "not be removed: %s" %
-                                   tuple(safe_unicode(s) for s in
+                                   tuple(str(s) for s in
                                          (self.tempdir, exception)))
         if isinstance(result, Exception):
-            result = Error(safe_unicode(result) + "\n\n" +
+            result = Error(str(result) + "\n\n" +
                            lang.getstr("tempdir_should_still_contain_files",
                                        self.tempdir))
         return result

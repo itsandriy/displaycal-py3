@@ -1,4 +1,5 @@
 #include "Python.h"
+#include "bytesobject.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,9 +59,21 @@
 #endif
 
 
+#if PY_MAJOR_VERSION >= 3
+  #define IS_PY3K
+  #define PyBaseString_Type            PyUnicode_Type
+  #define PyStringObject               PyUnicodeObject
+  #define PyString_Type                PyUnicode_Type
+  #define PyString_Check               PyUnicode_Check
+  #define PyString_CheckExact          PyUnicode_CheckExact
+  #define PyString_FromString          PyUnicode_FromString
+  #define PyString_FromStringAndSize   PyUnicode_FromStringAndSize
+#endif
+
+
 // START disppath
 
-/* Structure to store infomation about possible displays */
+/* Structure to store information about possible displays */
 typedef struct {
     char *name;			/* Display name */
     char *description;	/* Description of display or URL */
@@ -1332,21 +1345,21 @@ enumerate_displays(PyObject *self, PyObject *args)
 #endif /* NT */
 
 #ifdef __APPLE__
-            //value = PyInt_FromLong(dp[i]->ddid);
+            //value = PyLong_FromLong(dp[i]->ddid);
             //PyDict_SetItemString(d, "CGDirectDisplayID", value);
 #endif /* __APPLE__ */
 
 #if defined(UNIX) && !defined(__APPLE__)
-            value = PyInt_FromLong(dp[i]->screen);
+            value = PyLong_FromLong(dp[i]->screen);
             PyDict_SetItemString(d, "x11_screen", value);
 
-            value = PyInt_FromLong(dp[i]->uscreen);
+            value = PyLong_FromLong(dp[i]->uscreen);
             PyDict_SetItemString(d, "screen", value);
 
-            value = PyInt_FromLong(dp[i]->rscreen);
+            value = PyLong_FromLong(dp[i]->rscreen);
             PyDict_SetItemString(d, "ramdac_screen", value);
 
-            value = PyInt_FromLong(dp[i]->icc_atom);
+            value = PyLong_FromLong(dp[i]->icc_atom);
             PyDict_SetItemString(d, "icc_profile_atom_id", value);
 
             if (dp[i]->edid_len > 0 && dp[i]->edid != NULL &&
@@ -1354,13 +1367,13 @@ enumerate_displays(PyObject *self, PyObject *args)
                 PyDict_SetItemString(d, "edid", value);
             }
 #if RANDR_MAJOR == 1 && RANDR_MINOR >= 2
-            //value = PyInt_FromLong(dp[i]->crtc);
+            //value = PyLong_FromLong(dp[i]->crtc);
             //PyDict_SetItemString(d, "crtc", value);
 
-            value = PyInt_FromLong(dp[i]->output);
+            value = PyLong_FromLong(dp[i]->output);
             PyDict_SetItemString(d, "output", value);
 
-            value = PyInt_FromLong(dp[i]->icc_out_atom);
+            value = PyLong_FromLong(dp[i]->icc_out_atom);
             PyDict_SetItemString(d, "icc_profile_output_atom_id", value);
 #endif /* randr >= V 1.2 */
 #endif /* UNIX */
@@ -1406,8 +1419,27 @@ static PyMethodDef RealDisplaySizeMM_methods[] = {
     {NULL, NULL, 0, NULL}  /* Sentinel - marks the end of this structure */
 };
 
-PyMODINIT_FUNC
-initRealDisplaySizeMM(void)
-{
-    Py_InitModule("RealDisplaySizeMM", RealDisplaySizeMM_methods);
-}
+
+#ifdef IS_PY3K
+
+    static struct PyModuleDef RealDisplaySizeMM_ModuleDef =
+    {
+        PyModuleDef_HEAD_INIT,
+        "RealDisplaySizeMM", /* name of module */
+        "",          /* module documentation, may be NULL */
+        -1,          /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+        RealDisplaySizeMM_methods
+    };
+
+    PyMODINIT_FUNC PyInit_RealDisplaySizeMM(void)
+    {
+        return PyModule_Create(&RealDisplaySizeMM_ModuleDef);
+    }
+
+#else
+
+    PyMODINIT_FUNC initRealDisplaySizeMM(void)
+    {
+            Py_InitModule("RealDisplaySizeMM", RealDisplaySizeMM_methods);
+    }
+#endif

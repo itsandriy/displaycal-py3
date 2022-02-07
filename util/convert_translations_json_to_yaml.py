@@ -11,7 +11,6 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, root)
 
 from DisplayCAL import jsondict
-from DisplayCAL.safe_print import safe_print
 from DisplayCAL.util_list import natsort
 from DisplayCAL.util_os import safe_glob
 from DisplayCAL.util_str import wrap
@@ -32,8 +31,8 @@ def convert(infilename):
 
 if __name__ == "__main__":
     if "-h" in sys.argv[1:] or "--help" in sys.argv[1:]:
-        safe_print("Usage: %s" % os.path.basename(sys.argv[0]))
-        safe_print("Converts translation JSON files to YAML files")
+        print("Usage: %s" % os.path.basename(sys.argv[0]))
+        print("Converts translation JSON files to YAML files")
     else:
         for langfile in safe_glob(os.path.join(root, "DisplayCAL", "lang",
                                                "*.json")):

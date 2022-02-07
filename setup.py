@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from configparser import RawConfigParser
-from distutils.sysconfig import get_python_lib
-from distutils.util import change_root, get_platform
-from hashlib import md5, sha1
-from subprocess import call, Popen
-from time import gmtime, strftime
-from textwrap import fill
 import calendar
 import codecs
+from configparser import RawConfigParser
+from distutils.util import change_root, get_platform
 import glob
+from hashlib import md5, sha1
 import os
 import re
 import shutil
-import subprocess as sp
+import subprocess
 import sys
+from textwrap import fill
 import time
+from time import gmtime, strftime
 
 if sys.platform == "win32":
     import msilib
@@ -37,7 +35,7 @@ def create_appdmg(zeroinstall=False):
     else:
         dmgname = name + "-" + version
         srcdir = "py2app.%s-py%s" % (get_platform(), sys.version[:3])
-    retcode = call(["hdiutil", "create", os.path.join(pydir, "dist",
+    retcode = subprocess.call(["hdiutil", "create", os.path.join(pydir, "dist",
                                                       dmgname + ".dmg"),
                     "-volname", dmgname, "-srcfolder",
                     os.path.join(pydir, "dist", srcdir, dmgname)])
@@ -48,7 +46,7 @@ def create_appdmg(zeroinstall=False):
 def format_chglog(chglog, format="appstream"):
     if format.lower() in ("appstream", "rpm"):
         # Remove changelog entries of prev versions
-        chglog = re.sub(r'\s*<p id="changelog-.*$(?s)', "", chglog)
+        chglog = re.sub(r'(?s:\s*<p id="changelog-.*$)', "", chglog)
         # AppStream: Do not assume the format is HTML. Only paragraph (p),
         # ordered list (ol) and unordered list (ul) are supported at this time.
         # + list items (li)
@@ -59,7 +57,7 @@ def format_chglog(chglog, format="appstream"):
         chglog = re.sub(r"<(h4|p)(?:\s+[^>]*)?>(.+?)</\1>",
                         r"<p>\2</p>", chglog)
         # Remove everything between <!--more-->..<!--/more-->
-        chglog = re.sub(r"<!--more-->.+?<!--/more-->(?s)", "", chglog)
+        chglog = re.sub(r"(?s:<!--more-->.+?<!--/more-->)", "", chglog)
         # Remove all except allowed tags
         tags = re.findall(r'<[^/][^>]+>', chglog)
         for tag in tags:
@@ -68,7 +66,7 @@ def format_chglog(chglog, format="appstream"):
                 chglog = chglog.replace(tag, "")
                 chglog = chglog.replace("</" + tagname + ">", "")
         # Remove macOS and Windows specific items
-        chglog = re.sub(r"<li>[^,:<]*(?:Mac ?OS ?X?|Windows)([^,:<]*):.*?</li>(?is)", "", chglog)
+        chglog = re.sub(r"(?is:<li>[^,:<]*(?:Mac ?OS ?X?|Windows)([^,:<]*):.*?</li>)", "", chglog)
         # Remove text "Linux" in item before colon (":")
         chglog = re.sub(r"(<li>[^,:<]*)\s+Linux([^,:<]*):", r"\1\2", chglog)
         if format.lower() == "appstream":
@@ -89,7 +87,7 @@ def format_chglog(chglog, format="appstream"):
                             lambda matches: truncate(matches, 100),
                             chglog)
         # Nice formatting
-        chglog = re.sub(r"^\s+(?m)", r"\t" * 4, chglog)  # Multi-line
+        chglog = re.sub(r"(?m:^\s+)", r"\t" * 4, chglog)  # Multi-line
         chglog = re.sub(r"(<li)", r"\t\1", chglog)
         chglog = re.sub(r"\s*\n\s*\n", "\n", chglog)
         # Remove line breaks
@@ -225,7 +223,7 @@ def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
         "AUTHOR_EMAIL": author_email.replace("@", "_at_"),
         "MAINTAINER": author,
         "MAINTAINER_EMAIL": author_email.replace("@", "_at_"),
-        "MAINTAINER_EMAIL_SHA1": sha1(author_email).hexdigest(),
+        "MAINTAINER_EMAIL_SHA1": sha1(author_email.encode('utf-8')).hexdigest(),
         "PACKAGE": name,
         "PY_MAXVERSION": ".".join(str(n) for n in py_maxversion),
         "PY_MINVERSION": ".".join(str(n) for n in py_minversion),
@@ -237,7 +235,7 @@ def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
         "YEAR": strftime("%Y", gmtime(lastmod_time or
                                       os.stat(tmpl_path).st_mtime))}
     mapping.update(iterable or {})
-    for key, val in mapping.iteritems():
+    for key, val in mapping.items():
         tmpl_data = tmpl_data.replace("${%s}" % key, val)
     tmpl_data = tmpl_data.replace("%s-%s" % (mapping["YEAR"],
                                              mapping["YEAR"]), mapping["YEAR"])
@@ -252,25 +250,6 @@ def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
         os.makedirs(os.path.dirname(out_path))
     with codecs.open(out_path, "w", "UTF-8") as out:
         out.write(tmpl_data)
-
-
-def svnversion_bump(svnversion):
-    print("Bumping version number %s ->" % ".".join(svnversion))
-    svnversion = svnversion_parse(str(int("".join(svnversion)) + 1))
-    print(".".join(svnversion))
-    return svnversion
-
-
-def svnversion_parse(svnversion):
-    svnversion = [n for n in svnversion]
-    if len(svnversion) > 4:
-        svnversion = ["".join(svnversion[:len(svnversion) - 3])] + \
-                     svnversion[len(svnversion) - 3:]
-        # e.g. ["1", "1", "2", "5", "0"] -> ["11", "2", "5", "0"]
-    elif len(svnversion) < 4:
-        svnversion.insert(0, "0")
-        # e.g. ["2", "8", "3"] -> ["0", "2", "8", "3"]
-    return svnversion
 
 
 def setup():
@@ -331,131 +310,66 @@ def setup():
 
     lastmod_time = 0
 
-    non_build_args = filter(lambda arg: arg in sys.argv[1:],
-                            ["bdist_appdmg", "clean", "purge", "purge_dist",
-                             "uninstall", "-h", "--help", "--help-commands",
-                             "--all", "--name", "--fullname", "--author",
-                             "--author-email", "--maintainer",
-                             "--maintainer-email", "--contact",
-                             "--contact-email", "--url", "--license",
-                             "--licence", "--description",
-                             "--long-description", "--platforms",
-                             "--classifiers", "--keywords", "--provides",
-                             "--requires", "--obsoletes", "--quiet", "-q",
-                             "register", "--list-classifiers", "upload",
-                             "--use-distutils", "--use-setuptools",
-                             "--verbose", "-v", "finalize_msi"])
+    non_build_args = list(
+        filter(
+            lambda x: x in sys.argv[1:],
+            ["bdist_appdmg", "clean", "purge", "purge_dist", "uninstall", "-h", "--help", "--help-commands", "--all",
+             "--name", "--fullname", "--author", "--author-email", "--maintainer", "--maintainer-email", "--contact",
+             "--contact-email", "--url", "--license", "--licence", "--description", "--long-description", "--platforms",
+             "--classifiers", "--keywords", "--provides", "--requires", "--obsoletes", "--quiet", "-q", "register",
+             "--list-classifiers", "upload", "--use-distutils", "--use-setuptools", "--verbose", "-v", "finalize_msi"]
+        )
+    )
 
-    if os.path.isdir(os.path.join(pydir, ".svn")) and (which("svn") or which("svn.exe")) and (
-       not sys.argv[1:] or (len(non_build_args) < len(sys.argv[1:]) and not help)):
-        print("Trying to get SVN version information...")
-        svnversion = None
+    if os.path.isdir(os.path.join(pydir, ".git")) and (which("git") or which("git.exe")) and \
+            (not sys.argv[1:] or (len(non_build_args) < len(sys.argv[1:]) and not help)):
+        print("Trying to get git version information...")
+        git_version = None
         try:
-            p = Popen(["svnversion"], stdout=sp.PIPE, cwd=pydir)
+            p = subprocess.Popen(["git", "rev-parse", "--short", "HEAD"], stdout=subprocess.PIPE, cwd=pydir)
         except Exception as exception:
             print("...failed:", exception)
         else:
-            svnversion = p.communicate()[0]
-            svnversion = strtr(svnversion.strip().split(":")[-1], "MPS")
-            svnbasefilename = os.path.join(pydir, "VERSION_BASE")
-            if os.path.isfile(svnbasefilename):
-                with open(svnbasefilename) as svnbasefile:
-                    svnbase = int("".join(svnbasefile.read().strip().split(".")),
-                                  10)
-                svnversion = int(svnversion)
-                svnversion += svnbase
-            svnversion = svnversion_parse(str(svnversion))
-            svnbase = svnversion
+            git_version = p.communicate()[0].strip().decode()
+            version_base_filename = os.path.join(pydir, "VERSION_BASE")
+            version_base = "0.0.0.0".split(".")
+            if os.path.isfile(version_base_filename):
+                with open(version_base_filename) as version_base_file:
+                    version_base = version_base_file.read().strip().split(".")
+            # version_base = "%s.%s" % (version_base, git_version)
 
-        print("Trying to get SVN information...")
-        mod = False
+        print("Trying to get git information...")
         lastmod = ""
-        entries = []
-        args = ["svn", "status", "--xml"]
-        while not entries:
-            try:
-                p = Popen(args, stdout=sp.PIPE, cwd=pydir)
-            except Exception as exception:
-                print("...failed:", exception)
-                break
-            else:
-                from xml.dom import minidom
-                xml = p.communicate()[0]
-                xml = minidom.parseString(xml)
-                entries = xml.getElementsByTagName("entry")
-                if not entries:
-                    if "info" in args:
-                        break
-                    args = ["svn", "info", "-R", "--xml"]
         timestamp = None
-        for entry in iter(entries):
-            pth = entry.getAttribute("path")
-            mtime = 0
-            if "status" in args:
-                status = entry.getElementsByTagName("wc-status")
-                item = status[0].getAttribute("item")
-                if item.lower() in ("none", "normal"):
-                    item = " "
-                props = status[0].getAttribute("props")
-                if props.lower() in ("none", "normal"):
-                    props = " "
-                print(item.upper()[0] + props.upper()[0] + " " * 5, pth)
-                mod = True
-                if item.upper()[0] != "D" and os.path.exists(pth):
-                    mtime = os.stat(pth).st_mtime
-                    if mtime > lastmod_time:
-                        lastmod_time = mtime
-                        timestamp = time.gmtime(mtime)
-            schedule = entry.getElementsByTagName("schedule")
-            if schedule:
-                schedule = schedule[0].firstChild.wholeText.strip()
-                if schedule != "normal":
-                    print(schedule.upper()[0] + " " * 6, pth)
-                    mod = True
-                    mtime = os.stat(pth).st_mtime
-                    if mtime > lastmod_time:
-                        lastmod_time = mtime
-                        timestamp = time.gmtime(mtime)
-            lmdate = entry.getElementsByTagName("date")
-            if lmdate:
-                lmdate = lmdate[0].firstChild.wholeText.strip()
-                dateparts = lmdate.split(".")  # split off milliseconds
-                mtime = calendar.timegm(time.strptime(dateparts[0],
-                                                      "%Y-%m-%dT%H:%M:%S"))
-                mtime += float("." + strtr(dateparts[1], "Z"))
-                if mtime > lastmod_time:
-                    lastmod_time = mtime
-                    timestamp = time.gmtime(mtime)
+
+        try:
+            p = subprocess.Popen(["git", "log", "-1", "--format=%ct"], stdout=subprocess.PIPE, cwd=pydir)
+        except Exception as exception:
+            print("...failed:", exception)
+        else:
+            mtime = int(p.communicate()[0].strip().decode())
+            timestamp = time.gmtime(mtime)
+
         if timestamp:
-            lastmod = strftime("%Y-%m-%dT%H:%M:%S", timestamp) + \
-                      str(round(mtime - int(mtime), 6))[1:] + \
-                      "Z"
-            ## print lmdate, lastmod, pth
+            lastmod = strftime("%Y-%m-%dT%H:%M:%S", timestamp) + str(round(mtime - int(mtime), 6))[1:] + "Z"
 
         if not dry_run:
             print("Generating __version__.py")
-            versionpy = open(os.path.join(pydir, "DisplayCAL", "__version__.py"), "w")
-            versionpy.write("# generated by setup.py\n\n")
-            buildtime = time.time()
-            versionpy.write("BUILD_DATE = %r\n" %
-                            (strftime("%Y-%m-%dT%H:%M:%S",
-                                     gmtime(buildtime)) +
-                             str(round(buildtime - int(buildtime), 6))[1:] +
-                             "Z"))
-            if lastmod:
-                versionpy.write("LASTMOD = %r\n" % lastmod)
-            if svnversion:
-                if mod:
-                    svnversion = svnversion_bump(svnversion)
-                else:
-                    print("Version", ".".join(svnversion))
-                versionpy.write("VERSION = (%s)\n" % ", ".join(svnversion))
-                versionpy.write("VERSION_BASE = (%s)\n" % ", ".join(svnbase))
-                versionpy.write("VERSION_STRING = %r\n" % ".".join(svnversion))
-                versiontxt = open(os.path.join(pydir, "VERSION"), "w")
-                versiontxt.write(".".join(svnversion))
-                versiontxt.close()
-            versionpy.close()
+            with open(os.path.join(pydir, "DisplayCAL", "__version__.py"), "w") as versionpy:
+                versionpy.write("# generated by setup.py\n\n")
+                build_time = time.time()
+                versionpy.write(
+                    "BUILD_DATE = %r\n" % (strftime("%Y-%m-%dT%H:%M:%S", gmtime(build_time)) + "Z")
+                )
+                if lastmod:
+                    versionpy.write("LASTMOD = %r\n" % lastmod)
+                if git_version:
+                    print("Version", ".".join(version_base))
+                    versionpy.write("VERSION = (%s)\n" % ", ".join(version_base))
+                    versionpy.write("VERSION_BASE = (%s)\n" % ", ".join(version_base))
+                    versionpy.write("VERSION_STRING = %r\n" % ".".join(version_base))
+                    with open(os.path.join(pydir, "VERSION"), "w") as versiontxt:
+                        versiontxt.write(".".join(version_base))
 
     if not help and not dry_run:
         # Restore setup.cfg.backup if it exists
@@ -481,8 +395,7 @@ def setup():
     longdesc = fill(longdesc)
 
     if not lastmod_time:
-        lastmod_time = calendar.timegm(time.strptime(lastmod,
-                                                     "%Y-%m-%dT%H:%M:%S.%fZ"))
+        lastmod_time = calendar.timegm(time.strptime(lastmod, "%Y-%m-%dT%H:%M:%SZ"))
 
     msiversion = ".".join((str(version_tuple[0]),
                            str(version_tuple[1]),
@@ -851,59 +764,53 @@ def setup():
             if os.path.exists(target_dir + ".orig"):
                 shutil.rmtree(target_dir + ".orig")
             # use alien to create deb dir from rpm package
-            retcode = call(["alien", "-c", "-g", "-k",
-                            os.path.basename(rpm_filename)],
-                            cwd=os.path.join(pydir, "dist"))
+            retcode = subprocess.call(
+                ["alien", "-c", "-g", "-k", os.path.basename(rpm_filename)], cwd=os.path.join(pydir, "dist")
+            )
             if retcode != 0:
                 sys.exit(retcode)
             # update changelog
             shutil.copy2(os.path.join(pydir, "dist", "debian.changelog"),
-                         os.path.join(pydir, "dist", "%s-%s" % (name, version),
-                                      "debian", "changelog"))
+                         os.path.join(pydir, "dist", "%s-%s" % (name, version), "debian", "changelog"))
             # update rules
             shutil.copy2(os.path.join(pydir, "misc", "alien.rules"),
-                         os.path.join(pydir, "dist", "%s-%s" % (name, version),
-                                      "debian", "rules"))
+                         os.path.join(pydir, "dist", "%s-%s" % (name, version), "debian", "rules"))
             # update control
-            control_filename = os.path.join(pydir, "dist", "%s-%s" % (name,
-                                                                      version),
-                                            "debian", "control")
-            shutil.copy2(os.path.join(pydir, "dist", "debian.control"),
-                         control_filename)
-            ### read control file from deb dir
-            ##control = open(control_filename, "r")
-            ##lines = [line.rstrip("\n") for line in control.readlines()]
-            ##control.close()
-            ### update control with info from setup.cfg
-            ##for i in range(len(lines)):
-                ##if lines[i].startswith("Depends:"):
-                    ### add dependencies
-                    ##lines[i] += ", python"
-                    ##lines[i] += ", python" + sys.version[:3]
-                    ##lines[i] += ", " + ", ".join(dependencies)
-                ##elif lines[i].startswith("Maintainer:") and (maintainer or
-                                                             ##packager):
-                    ### set maintainer
-                    ##lines[i] = "Maintainer: " + (maintainer or packager)
-                ##elif lines[i].startswith("Section:") and group:
-                    ### set section
-                    ##lines[i] = "Section: " + group
-                ##elif lines[i].startswith("Description:"):
-                    ##lines.pop()
-                    ##lines.pop()
-                    ##break
-            ### write updated control file
-            ##control = open(control_filename, "w")
-            ##control.write("\n".join(lines))
-            ##control.close()
-            ### run strip on shared libraries
-            ##sos = os.path.join(change_root(target_dir, get_python_lib(True)),
-                               ##name, "*.so")
-            ##for so in glob.glob(sos):
-                ##retcode = call(["strip", "--strip-unneeded", so])
+            control_filename = os.path.join(pydir, "dist", "%s-%s" % (name, version), "debian", "control")
+            shutil.copy2(os.path.join(pydir, "dist", "debian.control"), control_filename)
+            # # read control file from deb dir
+            # control = open(control_filename, "r")
+            # lines = [line.rstrip("\n") for line in control.readlines()]
+            # control.close()
+            # # update control with info from setup.cfg
+            # for i in range(len(lines)):
+            #     if lines[i].startswith("Depends:"):
+            #         # add dependencies
+            #         lines[i] += ", python"
+            #         lines[i] += ", python" + sys.version[:3]
+            #         lines[i] += ", " + ", ".join(dependencies)
+            #     elif lines[i].startswith("Maintainer:") and (maintainer or packager):
+            #         # set maintainer
+            #         lines[i] = "Maintainer: " + (maintainer or packager)
+            #     elif lines[i].startswith("Section:") and group:
+            #         # set section
+            #         lines[i] = "Section: " + group
+            #     elif lines[i].startswith("Description:"):
+            #         lines.pop()
+            #         lines.pop()
+            #         break
+            # # write updated control file
+            # control = open(control_filename, "w")
+            # control.write("\n".join(lines))
+            # control.close()
+            # # run strip on shared libraries
+            # sos = os.path.join(change_root(target_dir, get_python_lib(True)), name, "*.so")
+            # for so in glob.glob(sos):
+            #     retcode = call(["strip", "--strip-unneeded", so])
+
             # create deb package
-            retcode = call(["chmod", "+x", "./debian/rules"], cwd=target_dir)
-            retcode = call(["./debian/rules", "binary"], cwd=target_dir)
+            retcode = subprocess.call(["chmod", "+x", "./debian/rules"], cwd=target_dir)
+            retcode = subprocess.call(["./debian/rules", "binary"], cwd=target_dir)
             if retcode != 0:
                 sys.exit(retcode)
 
@@ -912,19 +819,10 @@ def setup():
                      os.path.join(pydir, "setup.cfg"))
 
     if bdist_pyi:
-
         # create an executable using pyinstaller
-
-        retcode = call([sys.executable, os.path.join(pydir, "pyinstaller",
-                                                     "pyinstaller.py"),
-                        "--workpath", os.path.join(pydir, "build",
-                                                   "pyi.%s-%s" %
-                                                   (get_platform(),
-                                                    sys.version[:3])),
-                        "--distpath", os.path.join(pydir, "dist",
-                                                   "pyi.%s-py%s" %
-                                                    (get_platform(),
-                                                     sys.version[:3])),
+        retcode = subprocess.call([sys.executable, os.path.join(pydir, "pyinstaller", "pyinstaller.py"),
+                        "--workpath", os.path.join(pydir, "build", "pyi.%s-%s" % (get_platform(), sys.version[:3])),
+                        "--distpath", os.path.join(pydir, "dist", "pyi.%s-py%s" % (get_platform(), sys.version[:3])),
                         os.path.join(pydir, "misc", "%s.pyi.spec" % name)])
         if retcode != 0:
             sys.exit(retcode)
@@ -941,15 +839,15 @@ def setup():
             if script != name:
                 cmdname += "-" + script.replace(name + "-", "")
             cmds.append((cmdname, script, desc))
-            ##if script.endswith("-apply-profiles"):
-                ### Add forced calibration loading entry
-                ##cmds.append((cmdname + "-force", script, desc))
+            # if script.endswith("-apply-profiles"):
+            #     # Add forced calibration loading entry
+            #     cmds.append((cmdname + "-force", script, desc))
         # Get archive digest
         extract = "%s-%s" % (name, version)
         archive_name = extract + ".tar.gz"
         archive_path = os.path.join(pydir, "dist", archive_name)
-        p = Popen(["0install", "digest", archive_path.encode(fs_enc), extract],
-                  stdout=sp.PIPE, cwd=pydir)
+        p = subprocess.Popen(["0install", "digest", archive_path.encode(fs_enc), extract],
+                  stdout=subprocess.PIPE, cwd=pydir)
         stdout, stderr = p.communicate()
         print(stdout)
         hash = re.search("(sha\d+\w+[=_][0-9a-f]+)", stdout.strip())
@@ -1030,9 +928,7 @@ def setup():
                     if not match:
                         implementation = domtree.createElement("implementation")
                         implementation.setAttribute("version", version)
-                        implementation.setAttribute("released",
-                                                    strftime("%Y-%m-%d",
-                                                             gmtime(lastmod_time)))
+                        implementation.setAttribute("released", strftime("%Y-%m-%d", gmtime(lastmod_time)))
                         implementation.setAttribute("stability", stability)
                         digest = domtree.createElement("manifest-digest")
                         implementation.appendChild(digest)
@@ -1061,8 +957,7 @@ def setup():
                 if create:
                     for cmdname, script, desc in cmds:
                         # Add entry-points to interface
-                        if (script == name + "-eeColor-to-madVR-converter" or
-                            script.endswith("-console")):
+                        if script == name + "-eeColor-to-madVR-converter" or script.endswith("-console"):
                             continue
                         entry_point = domtree.createElement("entry-point")
                         entry_point.setAttribute("command", cmdname)
@@ -1143,14 +1038,14 @@ def setup():
                         except:
                             p.terminate()
                     else:
-                        call([zeropublish] + args + ["-x", dist_path.encode(fs_enc)])
+                        subprocess.call([zeropublish] + args + ["-x", dist_path.encode(fs_enc)])
                 else:
                     print("WARNING: 0publish not found, please sign the feed!")
         # Create 0install app bundles
         bundletemplate = os.path.join("0install", "template.app", "Contents")
         bundletemplatepath = os.path.join(pydir, bundletemplate)
         if os.path.isdir(bundletemplatepath):
-            p = Popen(["0install", "-V"], stdout=sp.PIPE)
+            p = subprocess.Popen(["0install", "-V"], stdout=subprocess.PIPE)
             stdout, stderr = p.communicate()
             zeroinstall_version = re.search(r" (\d(?:\.\d+)+)", stdout)
             if zeroinstall_version:
@@ -1233,28 +1128,36 @@ def setup():
 </plist>
 """ % domain.lower())
             # Copy LICENSE.txt
-            shutil.copy2(os.path.join(pydir, "LICENSE.txt"),
-                         os.path.join(dist_dir, "LICENSE.txt"))
+            shutil.copy2(
+                os.path.join(pydir, "LICENSE.txt"),
+                os.path.join(dist_dir, "LICENSE.txt")
+            )
 
     if bdist_appdmg:
         create_appdmg(zeroinstall)
 
     if bdist_pkg:
         version_dir = os.path.join(pydir, "dist", version)
-        replace_placeholders(os.path.join(pydir, "misc", name + ".pkgproj"),
-                             os.path.join(version_dir, name + "-" + version + ".pkgproj"),
-                             lastmod_time, {"PYDIR": pydir})
-        shutil.move(os.path.join(pydir, "dist", "py2app.%s-py%s" %
-                                              (get_platform(), sys.version[:3]),
-                                 name + "-" + version),
-                    version_dir)
-        os.rename(os.path.join(version_dir, name + "-" + version),
-                  os.path.join(version_dir, name))
-        if sp.call(["/usr/local/bin/packagesbuild", "-v",
-                   os.path.join(version_dir, name + "-" + version + ".pkgproj")]) == 0:
+        replace_placeholders(
+            os.path.join(pydir, "misc", name + ".pkgproj"),
+            os.path.join(version_dir, name + "-" + version + ".pkgproj"),
+            lastmod_time, {"PYDIR": pydir}
+        )
+        shutil.move(
+            os.path.join(pydir, "dist", "py2app.%s-py%s" % (get_platform(), sys.version[:3]), name + "-" + version),
+            version_dir
+        )
+        os.rename(
+            os.path.join(version_dir, name + "-" + version),
+            os.path.join(version_dir, name)
+        )
+        if subprocess.call(["/usr/local/bin/packagesbuild", "-v",
+                            os.path.join(version_dir, name + "-" + version + ".pkgproj")]) == 0:
             # Success
-            os.rename(os.path.join(version_dir, name + ".pkg"),
-                  os.path.join(version_dir, name + "-" + version + ".pkg"))
+            os.rename(
+                os.path.join(version_dir, name + ".pkg"),
+                os.path.join(version_dir, name + "-" + version + ".pkg")
+            )
 
 
 if __name__ == "__main__":

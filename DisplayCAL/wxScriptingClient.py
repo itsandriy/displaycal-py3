@@ -10,8 +10,7 @@ import threading
 
 from config import confighome, getcfg, geticon, initcfg, setcfg, writecfg
 from meta import name as appname
-from safe_print import safe_print
-from util_str import safe_str, safe_unicode, universal_newlines
+from util_str import safe_str, universal_newlines
 from wexpect import split_command_line
 from wxaddons import wx
 from wxfixes import GenBitmapButton
@@ -55,10 +54,9 @@ class ScriptingClientFrame(SimpleTerminal):
             try:
                 with open(self.historyfilename) as historyfile:
                     for line in historyfile:
-                        self.history.append(safe_unicode(line,
-                                                         "UTF-8").rstrip("\r\n"))
+                        self.history.append(line.rstrip("\r\n"))
             except EnvironmentError as exception:
-                safe_print("Warning - couldn't read history file:", exception)
+                print("Warning - couldn't read history file:", exception)
         # Always have empty selection at bottom
         self.history.append("")
         self.historypos = len(self.history) - 1
@@ -119,7 +117,7 @@ class ScriptingClientFrame(SimpleTerminal):
                     if command:
                         historyfile.write(safe_str(command, "UTF-8") + os.linesep)
         except EnvironmentError as exception:
-            safe_print("Warning - couldn't write history file:", exception)
+            print("Warning - couldn't write history file:", exception)
         self.listening = False
         # Need to use CallAfter to prevent hang under Windows if minimized
         wx.CallAfter(self.Destroy)
@@ -160,7 +158,7 @@ class ScriptingClientFrame(SimpleTerminal):
             if isinstance(result, socket.socket):
                 self.conn = result
                 result = lang.getstr("connection.established")
-            text = "%s\n" % safe_unicode(result)
+            text = "%s\n" % result
             self.add_text(text)
             if colorize or isinstance(result, Exception):
                 end = self.console.GetLastPosition()
@@ -225,7 +223,7 @@ class ScriptingClientFrame(SimpleTerminal):
                 self.conn.shutdown(socket.SHUT_RDWR)
             except socket.error as exception:
                 if exception.errno != errno.ENOTCONN:
-                    self.add_text(safe_unicode(exception) + "\n")
+                    self.add_text("%s\n" % exception)
             else:
                 self.add_text(lang.getstr("disconnected.from", peer) + "\n")
             self.conn.close()
@@ -236,6 +234,7 @@ class ScriptingClientFrame(SimpleTerminal):
             self.add_error_text(lang.getstr("not_connected") + "\n")
 
     def get_app_info(self):
+        print("Code is here H1")
         commands = ["setresponseformat plain", "getcommands", "getappname"]
         try:
             for command in commands:
@@ -457,7 +456,7 @@ class ScriptingClientFrame(SimpleTerminal):
             if lastline:
                 self.add_text("\n")
             txt = " ".join(data[1:])
-            safe_print(txt)
+            print(txt)
             self.add_text(txt + "\n")
             if lastline:
                 self.add_text("> ")

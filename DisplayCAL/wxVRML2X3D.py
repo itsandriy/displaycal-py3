@@ -4,9 +4,7 @@ import os
 import sys
 
 from meta import name as appname
-from safe_print import safe_print
 from util_os import launch_file, make_win32_compatible_long_path, waccess
-from util_str import safe_unicode
 import config
 import localization as lang
 import x3dom
@@ -100,57 +98,54 @@ if gui:
 
 def main():
     if "--help" in sys.argv[1:] or (not sys.argv[1:] and not gui):
-        safe_print("Convert VRML file to X3D")
-        safe_print("Author: Florian Hoech, licensed under the GPL version 3")
-        safe_print("Usage: %s [OPTION]... FILE..." %
-                   os.path.basename(sys.argv[0]))
-        safe_print("The output is written to FILENAME.x3d(.html)")
-        safe_print("")
-        safe_print("  --embed      Embed viewer components in HTML instead of "
-                   "referencing them")
-        safe_print("  --force      Force fresh download of viewer components")
-        safe_print("  --no-cache   Don't use viewer components cache (only "
-                   "uses existing cache if")
-        safe_print("               embedding components, can be overridden "
-                   "with --force)")
+        print("Convert VRML file to X3D")
+        print("Author: Florian Hoech, licensed under the GPL version 3")
+        print("Usage: %s [OPTION]... FILE..." % os.path.basename(sys.argv[0]))
+        print("The output is written to FILENAME.x3d(.html)")
+        print("")
+        print("  --embed      Embed viewer components in HTML instead of referencing them")
+        print("  --force      Force fresh download of viewer components")
+        print("  --no-cache   Don't use viewer components cache (only uses existing cache if")
+        print("               embedding components, can be overridden with --force)")
         if gui:
-            safe_print("  --no-gui     Don't use GUI (console mode)")
-        safe_print("  --no-html    Don't generate HTML file")
-        safe_print("  --view       View the generated file (if no GUI)")
+            print("  --no-gui     Don't use GUI (console mode)")
+        print("  --no-html    Don't generate HTML file")
+        print("  --view       View the generated file (if no GUI)")
         if not gui:
-            safe_print("  --batch      Don't pause after processing")
-        safe_print("  FILE         Filename of VRML file to convert")
+            print("  --batch      Don't pause after processing")
+        print("  FILE         Filename of VRML file to convert")
         if gui:
             return
     if gui:
         config.initcfg("VRML-to-X3D-converter")
         lang.init()
         lang.update_defaults()
-    cache = not "--no-cache" in sys.argv[1:]
+    cache = "--no-cache" not in sys.argv[1:]
     embed = "--embed" in sys.argv
     force = "--force" in sys.argv
-    html = not "--no-html" in sys.argv[1:]
+    html = "--no-html" not in sys.argv[1:]
     if not gui:
         result = None
         view = "--view" in sys.argv[1:]
         for arg in sys.argv[1:]:
             if not arg.startswith("--"):
-                result = vrmlfile2x3dfile(safe_unicode(arg), html=html,
+                result = vrmlfile2x3dfile(str(arg), html=html,
                                           embed=embed, view=view, force=force,
                                           cache=cache, gui=gui)
         if result is None:
-            safe_print("No filename given.")
-        if sys.stdout.isatty() and not "--batch" in sys.argv[1:]:
+            print("No filename given.")
+        if sys.stdout.isatty() and "--batch" not in sys.argv[1:]:
             input("Press RETURN to exit")
         sys.exit(int(not result))
     else:
-        view = not "--no-view" in sys.argv[1:]
+        view = "--no-view" not in sys.argv[1:]
         app = BaseApp(0)
         app.TopWindow = VRML2X3DFrame(html, embed, view, force, cache)
         if sys.platform == "darwin":
             app.TopWindow.init_menubar()
         wx.CallLater(1, _main, app)
         app.MainLoop()
+
 
 def _main(app):
     app.TopWindow.listen()
@@ -167,9 +162,9 @@ def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
     while not vrmlpath or not os.path.isfile(vrmlpath):
         if not gui:
             if not vrmlpath or vrmlpath.startswith("--"):
-                safe_print("No filename given.")
+                print("No filename given.")
             else:
-                safe_print("%r is not a file." % vrmlpath)
+                print("%r is not a file." % vrmlpath)
             return False
         if not wx.GetApp():
             app = BaseApp(0)
@@ -197,9 +192,9 @@ def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
     while not x3dpath or not waccess(dirname, os.W_OK):
         if not gui:
             if not x3dpath:
-                safe_print("No HTML output filename given.")
+                print("No HTML output filename given.")
             else:
-                safe_print("%r is not writable." % dirname)
+                print("%r is not writable." % dirname)
             return False
         if not wx.GetApp():
             app = BaseApp(0)
@@ -221,7 +216,7 @@ def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
             return
         x3dpath = dlg.GetPath()
         dirname = os.path.dirname(x3dpath)
-    vrmlpath, x3dpath = [safe_unicode(path) for path in (vrmlpath, x3dpath)]
+    vrmlpath, x3dpath = [str(path) for path in (vrmlpath, x3dpath)]
     if sys.platform == "win32":
         vrmlpath = make_win32_compatible_long_path(vrmlpath)
         x3dpath = make_win32_compatible_long_path(x3dpath)

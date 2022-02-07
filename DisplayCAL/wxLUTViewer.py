@@ -13,13 +13,11 @@ from argyll_cgats import cal_to_fake_profile, vcgt_to_cal
 from config import (fs_enc, get_argyll_display_number, get_data_path,
                     get_display_profile, get_display_rects, getcfg, geticon,
                     get_verified_path, setcfg)
-from log import safe_print
 from meta import name as appname
 from options import debug
 from ordereddict import OrderedDict
 from util_decimal import float2dec
 from util_os import waccess
-from util_str import safe_unicode
 from worker import (Error, UnloggedError, UnloggedInfo, Worker, get_argyll_util,
                     make_argyll_compatible_path, show_result_dialog)
 from wxaddons import get_platform_window_decoration_size, wx
@@ -954,10 +952,10 @@ class LUTFrame(BaseFrame):
 
     def handle_errors(self):
         if self.client.errors:
-            show_result_dialog(Error("\n\n".join(set(safe_unicode(error)
-                                                     for error in
-                                                     self.client.errors))),
-                               self)
+            show_result_dialog(
+                Error(
+                    "\n\n".join(set(self.client.errors))
+                ), self)
             self.client.errors = []
 
     def install_vcgt_handler(self, event):
@@ -987,10 +985,7 @@ class LUTFrame(BaseFrame):
             try:
                 os.remove(cal)
             except Exception as exception:
-                safe_print("Warning - temporary file "
-                           "'%s' could not be removed: %s" %
-                           tuple(safe_unicode(s) for s in
-                                 (cal, exception)))
+                print("Warning - temporary file '%s' could not be removed: %s" % (cal, exception))
 
     def key_handler(self, event):
         # AltDown
@@ -1043,7 +1038,7 @@ class LUTFrame(BaseFrame):
             self.lookup_tone_response_curves()
         except Exception as exception:
             import traceback
-            safe_print(traceback.format_exc())
+            print(traceback.format_exc())
             show_result_dialog(exception, self)
         else:
             self.trc = None
@@ -1094,16 +1089,13 @@ class LUTFrame(BaseFrame):
                 profile = cal_to_fake_profile(outfilename)
             else:
                 if isinstance(result, Exception):
-                    safe_print(result)
+                    print(result)
             # Important: lut_viewer_load_lut is called after measurements,
             # so make sure to only delete the temporary cal file we created
             try:
                 os.remove(outfilename)
             except Exception as exception:
-                safe_print("Warning - temporary file "
-                           "'%s' could not be removed: %s" %
-                           tuple(safe_unicode(s) for s in
-                                 (outfilename, exception)))
+                print("Warning - temporary file '%s' could not be removed: %s" % (outfilename, exception))
         if profile and (profile.is_loaded or not profile.fileName or
                         os.path.isfile(profile.fileName)):
             if not self.profile or \
@@ -1226,7 +1218,7 @@ class LUTFrame(BaseFrame):
                                        use_icclu=use_icclu,
                                        get_clip=direction == "if")
         except Exception as exception:
-            self.client.errors.append(Error(safe_unicode(exception)))
+            self.client.errors.append(Error(exception))
 
         if self.client.errors:
             return
@@ -2155,11 +2147,12 @@ def _main(app):
     app.TopWindow.update_controls()
     for arg in sys.argv[1:]:
         if os.path.isfile(arg):
-            app.TopWindow.drop_handler(safe_unicode(os.path.abspath(arg)))
+            app.TopWindow.drop_handler(os.path.abspath(arg))
             break
     else:
         app.TopWindow.load_lut(get_display_profile(display_no))
     app.TopWindow.Show()
+
 
 if __name__ == '__main__':
     main()

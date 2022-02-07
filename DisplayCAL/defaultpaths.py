@@ -64,8 +64,7 @@ def get_known_folder_path(folderid, user=True):
                                                   getattr(win_knownpaths.UserHandle,
                                                           "current" if user else "common"))
         except Exception as exception:
-            from log import safe_print
-            safe_print("Warning: Could not get known folder %r" % folderid)
+            print("Warning: Could not get known folder %r" % folderid)
     elif sys.platform not in ("darwin", "win32"):
         # Linux
         user_dir = folderid
@@ -198,8 +197,7 @@ else:
                                                       locale_dir,
                                                       codeset="UTF-8")
             except IOError as exception:
-                from log import safe_print
-                safe_print("XDG:", exception)
+                print("XDG:", exception)
                 obj.translation = gettext.NullTranslations()
                 return False
             return True
@@ -243,8 +241,7 @@ else:
                     for key, value in XDG.config_file_parser(f):
                         fn(key, value)
             except EnvironmentError as exception:
-                from log import safe_print
-                safe_print("XDG: Couldn't read '%s':" % path, exception)
+                print("XDG: Couldn't read '%s':" % path, exception)
                 return False
             return True
 
@@ -288,8 +285,7 @@ else:
             def load_default_dirs(self):
                 paths = XDG.get_config_files("user-dirs.defaults")
                 if not paths:
-                    from log import safe_print
-                    safe_print("XDG.UserDirs: No default user directories")
+                    print("XDG.UserDirs: No default user directories")
                     return False
 
                 def fn(name, path):
@@ -341,8 +337,7 @@ else:
                 try:
                     codecs.lookup(self.filename_encoding)
                 except LookupError:
-                    from log import safe_print
-                    safe_print("XDG.UserDirs: Can't convert from UTF-8 to",
+                    print("XDG.UserDirs: Can't convert from UTF-8 to",
                                self.filename_encoding)
                     return False
 

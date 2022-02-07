@@ -6,7 +6,6 @@ import os
 import sys
 
 from config import get_data_path, initcfg, getcfg, geticon, hascfg, setcfg
-from log import safe_print
 from meta import name as appname
 from util_str import strtr
 from worker import Error, get_current_profile_path, show_result_dialog
