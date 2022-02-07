@@ -13,6 +13,7 @@ import math
 import mimetypes
 import os
 import pipes
+import distro
 import platform
 import re
 import socket
@@ -25,8 +26,12 @@ import tempfile
 import textwrap
 import threading
 import traceback
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.parse
+import urllib.error
+import urllib.request
+import urllib.error
+import urllib.parse
 import urllib.parse
 import warnings
 import zipfile
@@ -1157,7 +1162,7 @@ def get_default_headers():
                             {"AMD64": "x86_64"}.get(machine, machine))
     else:
         # Linux
-        oscpu = "%s; %s" % (' '.join(platform.dist()), platform.machine())
+        oscpu = "%s; %s" % (' '.join(distro.linux_distribution()), platform.machine())
     return {"User-Agent": "%s/%s (%s)" % (appname, version, oscpu),
             "Accept-Language": "%s,*;q=0.5" % lang.getcode()}
 
@@ -1678,7 +1683,8 @@ class Sudo(object):
         dlg.pwd_txt_ctrl.Bind(wx.EVT_TEXT_ENTER,
                               lambda event: dlg.EndModal(wx.ID_OK))
         dlg.sizer3.Add(dlg.pwd_txt_ctrl, 1,
-                       flag=wx.TOP | wx.ALIGN_LEFT, border=12)
+                       # flag=wx.TOP | wx.ALIGN_LEFT, border=12)
+                       flag=wx.TOP, border=12)
         dlg.ok.SetDefault()
         dlg.sizer0.SetSizeHints(dlg)
         dlg.sizer0.Layout()

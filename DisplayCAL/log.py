@@ -97,7 +97,7 @@ class DummyLogger():
         pass
 
 
-class Log():
+class Log(object):
 
     def __call__(self, msg, fn=None):
         """
@@ -117,7 +117,8 @@ class Log():
         # imported at the point our showwarning() function calls log().
         # Check for presence of our wxfixes module and if it has an attribute
         # "wx", in which case wxPython has finished importing.
-        wxfixes = sys.modules.get("%s.wxfixes" % appname)
+        # wxfixes = sys.modules.get("%s.wxfixes" % appname)
+        wxfixes = sys.modules.get("wxfixes" )
         if (wxfixes and hasattr(wxfixes, "wx") and
                 mp.current_process().name == "MainProcess"):
             wx = wxfixes.wx
@@ -135,8 +136,7 @@ class Log():
 log = Log()
 
 
-class LogFile():
-
+class LogFile(object):
     """ Logfile class. Default is to not rotate. """
 
     def __init__(self, filename, logdir, when="never", backupCount=0):

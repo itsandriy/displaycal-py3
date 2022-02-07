@@ -5845,7 +5845,7 @@ class ICCProfile(object):
             if data[36:40] != "acsp":
                 raise ICCProfileInvalidError("Profile signature mismatch - "
                                              "expected 'acsp', found '" +
-                                             data[36:40] + "'")
+                                             data[36:40].decode('utf-8') + "'")
 
             # ICC profile
             header = data[:128]

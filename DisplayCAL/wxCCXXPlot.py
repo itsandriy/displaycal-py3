@@ -374,7 +374,8 @@ class CCXXPlot(wx.Frame):
             bg.MinSize = (513 * scale, 557 * scale)
             btnsizer = wx.BoxSizer(wx.HORIZONTAL)
             bg.Sizer.Add(btnsizer, flag=wx.EXPAND |
-                                        wx.TOP | wx.RIGHT | wx.LEFT, border=16)
+                                        # wx.TOP | wx.RIGHT | wx.LEFT, border=16)
+                                        wx.TOP, border=16)
             self.toggle_btn = FlatShadedButton(bg, -1,
                                                label=lang.getstr("spectral"))
             btnsizer.Add(self.toggle_btn, 1)

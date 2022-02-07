@@ -773,7 +773,8 @@ class LUTFrame(BaseFrame):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.box_sizer.Add(hsizer,
-                           flag=wx.ALIGN_CENTER | wx.BOTTOM | wx.TOP, border=4)
+                           # flag=wx.ALIGN_CENTER | wx.BOTTOM | wx.TOP, border=4)
+                           flag=wx.BOTTOM | wx.TOP, border=4)
 
         self.rendering_intent_select = wx.Choice(self.box_panel, -1,
                                                  choices=[lang.getstr("gamap.intents.a"),
@@ -798,8 +799,9 @@ class LUTFrame(BaseFrame):
                                                  lang.getstr("calibration.show_actual_lut"))
         self.show_actual_lut_cb.SetForegroundColour(FGCOLOUR)
         self.show_actual_lut_cb.SetMaxFontSize(11)
-        hsizer.Add(self.show_actual_lut_cb, flag=wx.ALIGN_CENTER |
-                                                 wx.ALIGN_CENTER_VERTICAL)
+        hsizer.Add(self.show_actual_lut_cb,
+                   # flag=wx.ALIGN_CENTER |
+                   flag=wx.ALIGN_CENTER_VERTICAL)
         self.show_actual_lut_cb.Bind(wx.EVT_CHECKBOX,
                                      self.show_actual_lut_handler)
 
@@ -809,8 +811,9 @@ class LUTFrame(BaseFrame):
 
         self.cbox_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.box_sizer.Add(self.cbox_sizer,
-                           flag=wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL |
-                                wx.TOP, border=4)
+                           # flag=wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.TOP,
+                           flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP,
+                           border=4)
 
         self.box_sizer.Add((0, 0))
 
@@ -820,8 +823,10 @@ class LUTFrame(BaseFrame):
                                             geticon(16, "stock_refresh-inverted"),
                                             style=wx.NO_BORDER)
         self.reload_vcgt_btn.SetBackgroundColour(BGCOLOUR)
-        self.cbox_sizer.Add(self.reload_vcgt_btn, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                       wx.RIGHT, border=8)
+        self.cbox_sizer.Add(self.reload_vcgt_btn,
+                            # flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+                            flag=wx.ALIGN_CENTER_VERTICAL,
+                            border=8)
         self.reload_vcgt_btn.Bind(wx.EVT_BUTTON, self.reload_vcgt_handler)
         self.reload_vcgt_btn.SetToolTipString(
             lang.getstr("calibration.load_from_display_profile"))
@@ -831,8 +836,10 @@ class LUTFrame(BaseFrame):
                                           geticon(16, "color-inverted"),
                                           style=wx.NO_BORDER)
         self.apply_bpc_btn.SetBackgroundColour(BGCOLOUR)
-        self.cbox_sizer.Add(self.apply_bpc_btn, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                     wx.RIGHT, border=8)
+        self.cbox_sizer.Add(self.apply_bpc_btn,
+                            # flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+                            flag=wx.ALIGN_CENTER_VERTICAL,
+                            border=8)
         self.apply_bpc_btn.Bind(wx.EVT_BUTTON, self.apply_bpc_handler)
         self.apply_bpc_btn.SetToolTipString(lang.getstr("black_point_compensation"))
         self.apply_bpc_btn.Disable()
@@ -842,7 +849,9 @@ class LUTFrame(BaseFrame):
                                              style=wx.NO_BORDER)
         self.install_vcgt_btn.SetBackgroundColour(BGCOLOUR)
         self.cbox_sizer.Add(self.install_vcgt_btn,
-                            flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=8)
+                            # flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+                            flag=wx.ALIGN_CENTER_VERTICAL,
+                            border=8)
         self.install_vcgt_btn.Bind(wx.EVT_BUTTON, self.install_vcgt_handler)
         self.install_vcgt_btn.SetToolTipString(lang.getstr("apply_cal"))
         self.install_vcgt_btn.Disable()
@@ -851,8 +860,10 @@ class LUTFrame(BaseFrame):
                                           geticon(16, "document-save-as-inverted"),
                                           style=wx.NO_BORDER)
         self.save_vcgt_btn.SetBackgroundColour(BGCOLOUR)
-        self.cbox_sizer.Add(self.save_vcgt_btn, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                     wx.RIGHT, border=20)
+        self.cbox_sizer.Add(self.save_vcgt_btn,
+                            # flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+                            flag=wx.ALIGN_CENTER_VERTICAL,
+                            border=20)
         self.save_vcgt_btn.Bind(wx.EVT_BUTTON, self.SaveFile)
         self.save_vcgt_btn.SetToolTipString(lang.getstr("save_as") + " " +
                                             "(*.cal)")
@@ -862,8 +873,9 @@ class LUTFrame(BaseFrame):
         self.show_as_L.SetForegroundColour(FGCOLOUR)
         self.show_as_L.SetMaxFontSize(11)
         self.show_as_L.SetValue(True)
-        self.cbox_sizer.Add(self.show_as_L, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                 wx.RIGHT,
+        self.cbox_sizer.Add(self.show_as_L,
+                            # flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
+                            flag=wx.ALIGN_CENTER_VERTICAL,
                             border=4)
         self.show_as_L.Bind(wx.EVT_CHECKBOX, self.DrawLUT)
 
@@ -872,8 +884,10 @@ class LUTFrame(BaseFrame):
         self.toggle_clut = CustomCheckBox(self.box_panel, -1, "LUT")
         self.toggle_clut.SetForegroundColour(FGCOLOUR)
         self.toggle_clut.SetMaxFontSize(11)
-        self.cbox_sizer.Add(self.toggle_clut, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                   wx.LEFT, border=16)
+        self.cbox_sizer.Add(self.toggle_clut,
+                            # flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+                            flag=wx.ALIGN_CENTER_VERTICAL,
+                            border=16)
         self.toggle_clut.Bind(wx.EVT_CHECKBOX, self.toggle_clut_handler)
 
         self.client.canvas.Bind(wx.EVT_MOTION, self.OnMotion)

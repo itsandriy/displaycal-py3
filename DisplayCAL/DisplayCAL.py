@@ -232,7 +232,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
     if not wx.GetApp():
         return
     try:
-        newversion_tuple = tuple(int(n) for n in data.split("."))
+        newversion_tuple = tuple(int(n) for n in data.decode().split("."))
     except ValueError:
         print(lang.getstr("update_check.fail.version", domain))
         if not silent:
@@ -2286,12 +2286,13 @@ class MainFrame(ReportFrame, BaseFrame):
         self.menuitem_advanced_options = options.FindItemById(options.FindItem("advanced"))
         options_advanced = self.menuitem_advanced_options.SubMenu
         self.menu_advanced_options = options_advanced
-        self.menuitem_skip_legacy_serial_ports = options_advanced.FindItemById(
-            options_advanced.FindItem("skip_legacy_serial_ports"))
+        self.menuitem_skip_legacy_serial_ports = \
+            options_advanced.FindItemById(options_advanced.FindItem("skip_legacy_serial_ports"))
         self.Bind(wx.EVT_MENU, self.skip_legacy_serial_ports_handler,
                   self.menuitem_skip_legacy_serial_ports)
         self.menuitem_use_separate_lut_access = options_advanced.FindItemById(
-            options_advanced.FindItem("use_separate_lut_access"))
+            options_advanced.FindItem("use_separate_lut_access")
+        )
         if sys.platform not in ("darwin", "win32") or test:
             self.Bind(wx.EVT_MENU, self.use_separate_lut_access_handler,
                       self.menuitem_use_separate_lut_access)
@@ -3330,7 +3331,11 @@ class MainFrame(ReportFrame, BaseFrame):
                             bool(getcfg("use_separate_lut_access")))
             menubar = self.GetMenuBar()
             menuitem = self.menu_advanced_options.FindItemById(
-                self.menu_advanced_options.FindItem(lang.getstr("use_separate_lut_access")))
+                self.menu_advanced_options.FindItem(
+                    # lang.getstr("use_separate_lut_access")
+                    "use_separate_lut_access"
+                )
+            )
             menuitem.Check(use_lut_ctrl)
         else:
             use_lut_ctrl = False

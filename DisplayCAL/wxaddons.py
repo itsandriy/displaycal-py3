@@ -18,7 +18,7 @@ def AdjustMinMax(self, minvalue=0.0, maxvalue=1.0):
     """ Adjust min/max """
     buffer = self.GetDataBuffer()
     for i, byte in enumerate(buffer):
-        buffer[i] = chr(min(int(round(minvalue * 255 + ord(byte) * (maxvalue - minvalue))), 255))
+        buffer[i] = min(int(round(minvalue * 255 + byte * (maxvalue - minvalue))), 255)
 
 wx.Image.AdjustMinMax = AdjustMinMax
 
@@ -32,10 +32,11 @@ wx.Bitmap.Blend = Blend
 
 
 def Invert(self):
-    """ Invert image colors """
+    """Invert image colors
+    """
     databuffer = self.GetDataBuffer()
     for i, byte in enumerate(databuffer):
-        databuffer[i] = chr(255 - ord(byte))
+        databuffer[i] = 255 - byte
 
 wx.Image.Invert = Invert
 
@@ -44,7 +45,7 @@ def GammaCorrect(self, from_gamma=-2.4, to_gamma=1.8):
     """ Gamma correct """
     buffer = self.GetDataBuffer()
     for i, byte in enumerate(buffer):
-        buffer[i] = chr(int(round(specialpow(ord(byte) / 255., from_gamma) ** (1.0 / to_gamma) * 255)))
+        buffer[i] = int(round(specialpow(byte / 255., from_gamma) ** (1.0 / to_gamma) * 255))
 
 wx.Image.GammaCorrect = GammaCorrect
 
@@ -809,7 +810,6 @@ class FileDrop(wx.FileDropTarget):
 
 
 class IdFactory(object):
-
     """ Inspired by wxPython 4 (Phoenix) wx.IdManager """
 
     CurrentId = 100

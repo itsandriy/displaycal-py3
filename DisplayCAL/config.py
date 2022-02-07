@@ -13,6 +13,7 @@ import re
 import string
 import sys
 from time import gmtime, strftime, timezone
+from log import logger
 
 if sys.platform == "win32":
     import winreg
@@ -135,10 +136,8 @@ else:
         if not datahome_default in data_dirs:
             data_dirs.append(datahome_default)
         data_dirs.extend(os.path.join(dir_, appbasename) for dir_ in xdg_data_dirs)
-        extra_data_dirs.extend(os.path.join(dir_, "argyllcms") for dir_ in
-                               xdg_data_dirs)
-        extra_data_dirs.extend(os.path.join(dir_, "color", "argyll") for dir_ in
-                               xdg_data_dirs)
+        extra_data_dirs.extend(os.path.join(dir_, "argyllcms") for dir_ in xdg_data_dirs)
+        extra_data_dirs.extend(os.path.join(dir_, "color", "argyll") for dir_ in xdg_data_dirs)
     exe_ext = ""
     profile_ext = ".icc"
 
@@ -226,8 +225,7 @@ def check_3dlut_format(devicename):
 
 
 def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
-    """
-    Create (if necessary) and return a named bitmap.
+    """Create (if necessary) and return a named bitmap.
 
     name has to be a relative path to a png file, omitting the extension, e.g.
     'theme/mybitmap' or 'theme/icons/16x16/myicon', which is searched for in
@@ -423,7 +421,7 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                         path = None
             if not path:
                 print("Warning: Missing bitmap '%s'" % name)
-                img = wx.EmptyImage(w, h)
+                img = wx.Image(w, h)
                 img.SetMaskColour(0, 0, 0)
                 img.InitAlpha()
                 bmp = img.ConvertToBitmap()
@@ -580,16 +578,14 @@ def geticon(size, name, scale=True, use_mask=False):
 
 
 def get_data_path(relpath, rex=None):
-    """
-    Search data_dirs for relpath and return the path or a file list.
+    """Search data_dirs for relpath and return the path or a file list.
 
     If relpath is a file, return the full path, if relpath is a directory,
     return a list of files in the intersection of searched directories.
 
     """
-    if (not relpath or relpath.endswith(os.path.sep) or
-            (isinstance(os.path.altsep, str) and
-             relpath.endswith(os.path.altsep))):
+    if not relpath or relpath.endswith(os.path.sep) \
+       or (isinstance(os.path.altsep, str) and relpath.endswith(os.path.altsep)):
         return None
     dirs = list(data_dirs)
     argyll_dir = (getcfg("argyll.dir") or
@@ -647,8 +643,7 @@ def runtimeconfig(pyfile):
     attribute).
 
     """
-    global safe_log
-    # from log import setup_logging, print, safe_log
+    # global safe_log
     from log import setup_logging
     setup_logging(logdir, pyname, pyext, confighome=confighome)
     if debug:
@@ -1432,8 +1427,8 @@ def get_display_profile(display_no=None):
     try:
         return ICCP.get_display_profile(display_no)
     except Exception as exception:
-        from log import _print, log
-        _print("ICCP.get_display_profile(%s):" % display_no, exception, fn=log)
+        from log import log
+        print("ICCP.get_display_profile(%s):" % display_no, file=log)
 
 
 standard_profiles = []
@@ -1684,10 +1679,10 @@ def initcfg(module=None, cfg=cfg, force_load=False):
                         msg = "Reloading"
                     else:
                         msg = "Loading"
-                    safe_log(msg, cfgfile)
+                    # logger.debug(msg, cfgfile)
+                    print(msg, cfgfile)
                 # Make user config take precedence
                 break
-    print('cfgfiles: %s' % cfgfiles)
     if not cfgfiles:
         return
     if not module:
@@ -1867,7 +1862,6 @@ def get_hidpi_scaling_factor():
 def setcfg(name, value, cfg=cfg):
     """Set an option value in the configuration.
     """
-    print('setcfg start')
     if value is None:
         cfg.remove_option(configparser.DEFAULTSECT, name)
     else:
@@ -1876,7 +1870,6 @@ def setcfg(name, value, cfg=cfg):
                 strtr(v, [("%", "%25"), (os.pathsep, "%" + hex(ord(os.pathsep))[2:].upper())]) for v in value
             )
         cfg.set(configparser.DEFAULTSECT, name, value)
-    print('setcfg end')
 
 
 def setcfg_cond(condition, name, value, set_if_backup_exists=False,

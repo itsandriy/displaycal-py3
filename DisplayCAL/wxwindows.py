@@ -1957,10 +1957,20 @@ class BaseFrame(wx.Frame):
             self._menuitems = {}
         if not menu in self._menuitems:
             # Backup un-translated labels
-            self._menuitems[menu] = [(item, item.Label) for item in
-                                     menu.GetMenuItems()]
+            try:
+                self._menuitems[menu] = [(item, item.Label) for item in
+                                         menu.GetMenuItems()]
+            except AttributeError:
+                self._menuitems[menu] = [(item, item.GetItemLabelText()) for item in
+                                         menu.GetMenuItems()]
+
         for item, label in self._menuitems[menu]:
-            if item.Label:
+            try:
+                item_label = item.Label
+            except AttributeError:
+                item_label = item.GetItemLabelText()
+
+            if item_label:
                 label = GTKMenuItemGetFixedLabel(label)
                 if item.Accel:
                     item.Text = lang.getstr(label) + "\t" + \
@@ -2212,16 +2222,19 @@ class BaseInteractiveDialog(wx.Dialog):
             self.sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer3 = wx.FlexGridSizer(0, 1, 0, 0)
-        self.sizer0.Add(self.sizer1, flag = wx.ALIGN_LEFT | wx.RIGHT,
+        self.sizer0.Add(self.sizer1,
+                        flag = wx.ALIGN_LEFT | wx.RIGHT,
                         border=margin)
         self.buttonpanel = wx.Panel(self)
         self.buttonpanel.SetSizer(wx.BoxSizer(wx.VERTICAL))
-        self.buttonpanel.Sizer.Add(self.sizer2, 1, flag=wx.ALL | wx.EXPAND,
+        self.buttonpanel.Sizer.Add(self.sizer2, 1,
+                                   flag=wx.ALL | wx.EXPAND,
                                    border=margin)
         if sys.platform == "win32":
             self.buttonpanel_line = wx.Panel(self, size=(-1,1))
             self.buttonpanel_line.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
-            self.sizer0.Add(self.buttonpanel_line, flag=wx.TOP | wx.EXPAND,
+            self.sizer0.Add(self.buttonpanel_line,
+                            flag=wx.TOP | wx.EXPAND,
                             border=margin)
             self.buttonpanel.SetBackgroundColour(bgcolor)
         self.sizer0.Add(self.buttonpanel, flag=wx.EXPAND)
@@ -2557,7 +2570,7 @@ class BitmapBackgroundPanel(wx.PyPanel):
         bmp = self._bitmap
         if bmp:
             if self.alpha < 1.0 or self.blend:
-                key = (id(bmp), bgcolor, self.alpha)
+                key = (id(bmp), (bgcolor.Red(), bgcolor.Green(), bgcolor.Blue()), self.alpha)
                 bmp = bitmaps.get(key)
                 if not bmp:
                     bmp = self._bitmap
@@ -2567,29 +2580,24 @@ class BitmapBackgroundPanel(wx.PyPanel):
                             image.InitAlpha()
                         alphabuffer = image.GetAlphaBuffer()
                         for i, byte in enumerate(alphabuffer):
-                            if byte > "\0":
-                                alphabuffer[i] = chr(int(round(ord(byte) *
-                                                               self.alpha)))
+                            if byte > 0:
+                                alphabuffer[i] = int(round(byte * self.alpha))
                     if self.blend:
                         databuffer = image.GetDataBuffer()
                         for i, byte in enumerate(databuffer):
-                            if byte > "\0":
-                                databuffer[i] = chr(int(round(ord(byte) *
-                                                              (bgcolor[i % 3] /
-                                                               255.0))))
+                            if byte > 0:
+                                databuffer[i] = int(round(byte * (bgcolor[i % 3] / 255.0)))
                     bmp = image.ConvertToBitmap()
                     bitmaps[key] = bmp
             if True in self.scalebitmap:
                 img = bmp.ConvertToImage()
-                img.Rescale(self.GetSize()[0] if self.scalebitmap[0]
-                            else img.GetSize()[0],
-                            self.GetSize()[1]  if self.scalebitmap[1]
-                            else img.GetSize()[1], quality=self.scalequality)
+                img.Rescale(self.GetSize()[0] if self.scalebitmap[0] else img.GetSize()[0],
+                            self.GetSize()[1] if self.scalebitmap[1] else img.GetSize()[1],
+                            quality=self.scalequality)
                 bmp = img.ConvertToBitmap()
             dc.DrawBitmap(bmp, 0, 0)
-            if (self.repeat_sub_bitmap_h and self.Size[0] > bmp.Size[0] and
-                    bmp.Size[0] >= self.repeat_sub_bitmap_h[0] and
-                    bmp.Size[1] >= self.repeat_sub_bitmap_h[1]):
+            if self.repeat_sub_bitmap_h and self.Size[0] > bmp.Size[0] \
+               and bmp.Size[0] >= self.repeat_sub_bitmap_h[0] and bmp.Size[1] >= self.repeat_sub_bitmap_h[1]:
                 sub_bmp = bmp.GetSubBitmap(self.repeat_sub_bitmap_h)
                 sub_img = sub_bmp.ConvertToImage()
                 sub_img.Rescale(self.GetSize()[0] -
@@ -3250,6 +3258,7 @@ class BorderGradientButton(GradientButton):
                  name="gradientbutton"):
         self.dpiscale = getcfg("app.dpi") / get_default_dpi()
         self.use_sierra_style = sys.platform == "darwin"
+        self._enabled = True
         GradientButton.__init__(self, parent, id, bitmap, label, pos, size,
                                 style, validator, name)
         self.SetFont(adjust_font_size_for_gcdc(self.GetFont()))
@@ -3266,7 +3275,6 @@ class BorderGradientButton(GradientButton):
             sel = sel.AdjustChannels(1, 1, 1, .8)
             sel = sel.ConvertToBitmap()
             self.SetBitmapSelected(sel)
-        self._enabled = True
 
     BitmapLabel = property(lambda self: self._bitmap,
                            lambda self, bitmap: self.SetBitmap(bitmap))
@@ -5016,7 +5024,12 @@ class BetterStaticFancyText_SetLabelMarkup(BetterStaticFancyTextBase,
         markup = label.replace("<font", "<span")
         markup = markup.replace("</font>", "</span>")
         # Decode entities
-        markup = htmlparser.unescape(markup)
+        try:
+            markup = htmlparser.unescape(markup)
+        except AttributeError:
+            # Python3.9+
+            from html import unescape
+            markup = unescape(markup)
         self._st.SetLabelMarkup(markup)
         # Figure out min size
         minw = 0
@@ -5042,7 +5055,12 @@ class BetterStaticFancyText_SetLabelMarkup(BetterStaticFancyTextBase,
                     text = re.sub(r"<[^>]*?>", "", text)
                     text = text.replace("<", "").replace(">", "")
                     # Decode entities
-                    text = htmlparser.unescape(text)
+                    try:
+                        text = htmlparser.unescape(text)
+                    except AttributeError:
+                        # Python 3.9+
+                        from html import unescape
+                        text = unescape(text)
                     te = self.GetFullTextExtent(text, font)[:2]
                     w += te[0]
                     h = max(te[1], h)
@@ -7022,8 +7040,8 @@ def get_gradient_panel(parent, label, x=16):
         image = bitmap.ConvertToImage()
         databuffer = image.GetDataBuffer()
         for i, byte in enumerate(databuffer):
-            if byte > "\0":
-                databuffer[i] = chr(int(round(ord(byte) * (255.0 / 223.0))))
+            if byte > 0:
+                databuffer[i] = int(round(ord(byte) * (255.0 / 223.0)))
         bitmap = image.ConvertToBitmap()
         bitmaps["gradient_panel"] = bitmap
     gradientpanel.SetBitmap(bitmap)

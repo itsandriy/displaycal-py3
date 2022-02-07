@@ -88,8 +88,8 @@ class DisplayUniformityFrame(BaseFrame):
             label.SetForegroundColour(wx.WHITE)
             self.labels[index] = label
             sizer.Add(label, 1, wx.ALIGN_CENTER)
-            sizer.Add(button, 0, wx.ALIGN_BOTTOM | wx.ALIGN_CENTER | wx.BOTTOM |
-                      wx.LEFT | wx.RIGHT,
+            sizer.Add(button, 0, wx.ALIGN_BOTTOM | wx.ALIGN_CENTER | wx.BOTTOM,
+                      # | wx.LEFT | wx.RIGHT,
                       border=8)
             self.sizer.Add(panel, 1, wx.EXPAND)
         self.disable_buttons()

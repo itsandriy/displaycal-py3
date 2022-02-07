@@ -229,8 +229,9 @@ class MeasureFrame(InvincibleFrame):
             self.Bind(wx.EVT_CHECKBOX, self.measure_darken_background_ctrl_handler,
                       id=self.measure_darken_background_cb.GetId())
             self.vsizer.Add(self.measure_darken_background_cb,
-                            flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL |
-                                 wx.LEFT | wx.RIGHT | wx.TOP, border=10)
+                            # flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT | wx.TOP,
+                            flag=wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT,
+                            border=10)
         else:
             self.vsizer.Add((10, 10))
 
@@ -238,9 +239,10 @@ class MeasureFrame(InvincibleFrame):
                                        lang.getstr("measureframe.measurebutton"), name="measurebutton")
         self.measurebutton.Bind(wx.EVT_KILL_FOCUS, self.focus_lost_handler)
         self.Bind(wx.EVT_BUTTON, self.measure_handler, self.measurebutton)
-        self.vsizer.Add(self.measurebutton, flag=wx.ALIGN_BOTTOM |
-                                                 wx.ALIGN_CENTER_HORIZONTAL |
-                                                 wx.ALL, border=10)
+        self.vsizer.Add(self.measurebutton,
+                        # flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
+                        flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
+                        border=10)
         self.measurebutton.SetMaxFontSize(11)
         self.measurebutton.SetDefault()
         self.last_focused = self.measurebutton

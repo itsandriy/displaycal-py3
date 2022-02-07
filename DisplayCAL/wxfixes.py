@@ -493,7 +493,13 @@ def FindMenuItem(self, label):
     """
     label = GTKMenuItemGetFixedLabel(label)
     for menuitem in self.GetMenuItems():
-        if GTKMenuItemGetFixedLabel(menuitem.Label) == label:
+
+        try:
+            fixed_label = GTKMenuItemGetFixedLabel(menuitem.Label)
+        except AttributeError:
+            # wxPython 4.1.0+
+            fixed_label = GTKMenuItemGetFixedLabel(menuitem.GetItemLabelText())
+        if fixed_label == label:
             return menuitem.GetId()
 
 
@@ -660,7 +666,9 @@ def _adjust_sizer_args_scaling_for_appdpi(*args, **kwargs):
             args = [tuple(spacer)] + args[1:]
     return args, kwargs
 
+
 wx._Sizer = wx.Sizer
+
 
 class Sizer(wx._Sizer):
 
@@ -807,8 +815,8 @@ def get_bitmap_disabled(bitmap):
     if image.HasAlpha():
         alphabuffer = image.GetAlphaBuffer()
         for i, byte in enumerate(alphabuffer):
-            if byte > "\0":
-                alphabuffer[i] = chr(int(round(ord(byte) * .3)))
+            if byte > 0:
+                alphabuffer[i] = int(round(byte * .3))
     return image.ConvertToBitmap()
 
 
@@ -853,7 +861,7 @@ def get_bitmap_hover(bitmap, ctrl=None):
     j = 0
     RGB = {}
     for i, byte in enumerate(databuffer):
-        RGB[i % 3] = ord(byte)
+        RGB[i % 3] = byte
         if i % 3 == 2:
             RGBv = list(RGB.values())
             if not is_bw:
@@ -882,7 +890,7 @@ def get_bitmap_hover(bitmap, ctrl=None):
                         # at black.
                         v = convert_range(v, 0, 255, color[k], 255)
                     v = int(round(v))
-                databuffer[i - 2 + k] = chr(v)
+                databuffer[i - 2 + k] = v
             j += 1
     if isinstance(ctrl, wx.BitmapButton) and sys.platform == "win32":
         # wx.BitmapButton draws the focus bitmap over the normal bitmap,
@@ -907,8 +915,8 @@ def get_bitmap_pressed(bitmap):
         image.InitAlpha()
     databuffer = image.GetDataBuffer()
     for i, byte in enumerate(databuffer):
-        if byte > "\0":
-            databuffer[i] = chr(int(round(ord(byte) * .85)))
+        if byte > 0:
+            databuffer[i] = int(round(byte * .85))
     return image.ConvertToBitmap()
 
 
@@ -918,8 +926,8 @@ def get_bitmap_focus(bitmap):
         image.InitAlpha()
     databuffer = image.GetDataBuffer()
     for i, byte in enumerate(databuffer):
-        if byte > "\0":
-            databuffer[i] = chr(int(round((ord(byte) / 255.0) ** 0.8 * 255)))
+        if byte > 0:
+            databuffer[i] = int(round((byte / 255.0) ** 0.8 * 255))
     return image.ConvertToBitmap()
 
 
@@ -1568,36 +1576,37 @@ class TempXmlResource(object):
                     pass
             if TempXmlResource._temp and os.path.isdir(TempXmlResource._temp):
                 # Read original XML
+                print("xmlpath: %s" % xmlpath)
                 with open(xmlpath, "rb") as xmlfile:
-                    xml = xmlfile.read()
+                    xml = xmlfile.read().decode()
                 # Adjust spacing for scale
                 for tag in ("border", "hgap", "vgap"):
-                    xml = re.sub(r"<%s>(\d+)</%s>" % (tag, tag),
-                                 lambda match: "<%s>%i</%s>" %
-                                               (tag, round(int(match.group(1)) * scale), tag),
-                                 xml)
+                    xml = re.sub(
+                        r"<%s>(\d+)</%s>" % (tag, tag),
+                        lambda match: "<%s>%i</%s>" % (tag, round(int(match.group(1)) * scale), tag),
+                        xml
+                    )
                 for tag in ("size", ):
-                    xml = re.sub(r"<%s>(-?\d+)\s*,\s*(-?\d+)</%s>" % (tag, tag),
-                                 lambda match: "<%s>%i,%i</%s>" %
-                                               ((tag, ) +
-                                                tuple(round(int(v) * scale)
-                                                      if int(v) > 0 else int(v)
-                                                      for v in match.groups()) +
-                                                (tag, )),
-                                 xml)
+                    xml = re.sub(
+                        r"<%s>(-?\d+)\s*,\s*(-?\d+)</%s>" % (tag, tag),
+                        lambda match: "<%s>%i,%i</%s>" % ((tag, ) + tuple(round(int(v) * scale)
+                                                                          if int(v) > 0 else int(v)
+                                                                          for v in match.groups()) + (tag, )),
+                        xml
+                    )
                 # Set relative paths to absolute
                 basedir = os.path.dirname(os.path.dirname(xmlpath))
                 basedir = basedir.replace("\\", "/")
-                xml = xml.replace(">../", ">%s/" % safe_str(basedir, "UTF-8"))
+                xml = xml.replace(">../", ">%s/" % basedir)
                 # Fix background color not working for panels under wxGTK3
                 if "gtk3" in wx.PlatformInfo:
                     xml = xml.replace('class="wxPanel"',
-                                      'class="wxPanel" subclass="DisplayCAL.wxfixes.wx_Panel"')
+                                      # 'class="wxPanel" subclass="DisplayCAL.wxfixes.wx_Panel"')
+                                      'class="wxPanel" subclass="wxfixes.wx_Panel"')
                 # Write modified XML
-                xmlpath = os.path.join(TempXmlResource._temp,
-                                       os.path.basename(xmlpath))
+                xmlpath = os.path.join(TempXmlResource._temp, os.path.basename(xmlpath))
                 with open(xmlpath, "wb") as xmlfile:
-                    xmlfile.write(xml)
+                    xmlfile.write(xml.encode())
                 from wxwindows import BaseApp
                 BaseApp.register_exitfunc(self._cleanup)
         self.xmlpath = xmlpath
