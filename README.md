@@ -10,4 +10,6 @@ been done by the ``setup.py``, these should be fairly easy to fix.
 
 I have not tested doing a proper profiling yet!
 
+![image](https://user-images.githubusercontent.com/1786804/152724907-fdea50c1-8b69-454e-8634-93880c16aeff.png)
+
 Have fun!
