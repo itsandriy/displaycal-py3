@@ -204,13 +204,13 @@ def icc_device_link_to_madvr(icc_device_link_filename, unity=False,
         # Note that the calibration curves are full range, never TV encoded output values
         #
         # Format is (little endian):
-        #	4 byte magic number 'cal1'
-        #	4 byte version = 1
-        #	4 byte number per channel entries = 256
-        #	4 byte bytes per entry = 2
-        #	[3][256] 2 byte entry values. Tables are in RGB order
+        #    4 byte magic number 'cal1'
+        #    4 byte version = 1
+        #    4 byte number per channel entries = 256
+        #    4 byte bytes per entry = 2
+        #    [3][256] 2 byte entry values. Tables are in RGB order
 
-        raw.write("cal1")
+        raw.write("cal1".encode())
         raw.write(struct.pack('<I', 1))
         raw.write(struct.pack('<I', 256))
         raw.write(struct.pack('<I', 2))
@@ -390,7 +390,7 @@ class H3DLUT(object):
 
         """
         stream = self._get_stream(stream_or_filename)
-        stream.write(self.data)
+        stream.write(self.data.encode())
         if isinstance(stream_or_filename, str):
             if not self.fileName:
                 self.fileName = stream_or_filename

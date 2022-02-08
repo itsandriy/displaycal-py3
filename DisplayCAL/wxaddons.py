@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import functools
 from time import sleep
 import os
 import sys
@@ -618,21 +618,27 @@ class BetterWindowDisabler(object):
                             for menu, label in menubar.GetMenus():
                                 for item in menu.GetMenuItems():
                                     self._windows.append(item)
-            def Enable(w, enable=True):
-                w._BetterWindowDisabler_enabled = enable
-            def Disable(w):
-                w._BetterWindowDisabler_enabled = False
+
+            def Enable(w_, enable=True):
+                w_._BetterWindowDisabler_enabled = enable
+
+            def Disable(w_):
+                w_._BetterWindowDisabler_enabled = False
+
             for w in reversed(self._windows):
                 BetterWindowDisabler.windows.add(w)
                 enabled = w.IsEnabled()
                 w.Enable(False)
                 if hasattr(w, "Disable"):
                     w._BetterWindowDisabler_Disable = w.Disable
-                    w.Disable = types.MethodType(Disable, w, type(w))
+                    # w.Disable = types.MethodType(Disable, w, type(w))
+                    w.Disable = types.MethodType(Disable, w)
                 w._BetterWindowDisabler_Enable = w.Enable
-                w.Enable = types.MethodType(Enable, w, type(w))
+                # w.Enable = types.MethodType(Enable, w, type(w))
+                w.Enable = types.MethodType(Enable, w)
                 w.Enable(enabled)
             return
+
         for w in self._windows:
             BetterWindowDisabler.windows.remove(w)
             if w:

@@ -922,8 +922,7 @@ defaults = {
     "comport.number": 1,
     "comport.number.backup": 1,
     # Note: worker.Worker.enumerate_displays_and_ports() overwrites copyright
-    "copyright": "No copyright. Created with %s %s and ArgyllCMS" % (appname,
-                                                                     version),
+    "copyright": "No copyright. Created with %s %s and ArgyllCMS" % (appname, version),
     "dimensions.measureframe": "0.5,0.5,1.0",
     "dimensions.measureframe.unzoomed": "0.5,0.5,1.0",
     "dimensions.measureframe.whitepoint.visual_editor": "0.5,0.5,1.0",
@@ -1638,7 +1637,6 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     Read in settings if the configuration file exists, else create the
     settings directory if nonexistent.
     """
-    print('initcfg start!')
     if module:
         cfgbasename = "%s-%s" % (appbasename, module)
     else:
@@ -1706,10 +1704,10 @@ def initcfg(module=None, cfg=cfg, force_load=False):
         if not module and not getcfg("calibration.ambient_viewcond_adjust"):
             # Reset to default
             setcfg("calibration.ambient_viewcond_adjust.lux", None, cfg=cfg)
-    print('initcfg end!')
 
 
 dpiset = False
+
 
 def set_default_app_dpi():
     """ Set application DPI """
@@ -1901,12 +1899,10 @@ def setcfg_cond(condition, name, value, set_if_backup_exists=False,
 
 
 def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
-    """
-    Write configuration file.
+    """Write configuration file.
 
     which: 'user' or 'system'
-    worker: worker instance if which == 'system'
-
+    worker: worker instance if ``which == 'system'``
     """
     if module:
         cfgbasename = "%s-%s" % (appbasename, module)
@@ -1936,7 +1932,7 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             # Sorting works as long as config has only one section
             lines = lines[:1] + sorted(optionlines)
             cfgfile = open(cfgfilename, "wb")
-            cfgfile.write(os.linesep.join(lines) + os.linesep)
+            cfgfile.write((os.linesep.join(lines) + os.linesep).encode())
             cfgfile.close()
         except Exception as exception:
             print("Warning - could not write user configuration file "
@@ -1954,10 +1950,10 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             cfgfile = open(cfgfilename, "wb")
             if getcfg("argyll.dir"):
                 cfgfile.write(
-                    "%s%s" % (
+                    ("%s%s" % (
                         os.linesep.join(["[Default]", "%s = %s" % ("argyll.dir", getcfg("argyll.dir"))]),
                         os.linesep
-                    )
+                    )).encode()
                 )
             cfgfile.close()
             if sys.platform != "win32":
@@ -1977,8 +1973,10 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             return False
     return True
 
+
 _init_testcharts()
 runtype = runtimeconfig(pyfile)
+
 
 if sys.platform in ("darwin", "win32") and not os.getenv("SSL_CERT_FILE"):
     try:

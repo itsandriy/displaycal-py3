@@ -23,8 +23,7 @@ class EncodedWriter(object):
 
     """
 
-    def __init__(self, file_obj, data_encoding=None, file_encoding=None,
-                 errors="replace"):
+    def __init__(self, file_obj, data_encoding=None, file_encoding=None, errors="replace"):
         self.file = file_obj
         self.data_encoding = data_encoding
         self.file_encoding = file_encoding
@@ -38,7 +37,7 @@ class EncodedWriter(object):
             data = data.decode(self.data_encoding, self.errors)
         if self.file_encoding and isinstance(data, str):
             data = data.encode(self.file_encoding, self.errors)
-        self.file.write(data)
+        self.file.write(data.decode())
 
 
 class Files():
@@ -71,7 +70,10 @@ class Files():
 
     def flush(self):
         for item in self.files:
-            item.flush()
+            try:
+                item.flush()
+            except AttributeError:  # TODO: Restore safe_log
+                pass
 
     def seek(self, pos, mode=0):
         for item in self.files:
@@ -83,21 +85,24 @@ class Files():
 
     def write(self, data):
         for item in self.files:
-            item.write(data)
+            try:
+                item.write(data)
+            except AttributeError:  # TODO: restore safe_log, safe_print etc...
+                try:
+                    item(data)
+                except TypeError:
+                    pass
 
     def writelines(self, str_sequence):
         self.write("".join(str_sequence))
 
 
 class GzipFileProper(gzip.GzipFile):
-
-    """
-    Proper GZIP file implementation, where the optional filename in the
+    """Proper GZIP file implementation, where the optional filename in the
     header has directory components removed, and is converted to ISO 8859-1
     (Latin-1). On Windows, the filename will also be forced to lowercase.
 
     See RFC 1952 GZIP File Format Specification	version 4.3
-
     """
 
     def _write_gzip_header(self):
@@ -133,10 +138,9 @@ class GzipFileProper(gzip.GzipFile):
         self.close()
 
 
-class LineBufferedStream():
-
-    """ Buffer lines and only write them to stream if line separator is
-        detected """
+class LineBufferedStream(object):
+    """Buffer lines and only write them to stream if line separator is detected
+    """
 
     def __init__(self, stream, data_encoding=None, file_encoding=None,
                  errors="replace", linesep_in="\r\n", linesep_out="\n"):
@@ -168,6 +172,7 @@ class LineBufferedStream():
             self.buf = ""
 
     def write(self, data):
+        data = data.decode()
         data = data.replace(self.linesep_in, "\n")
         for char in data:
             if char == "\r":

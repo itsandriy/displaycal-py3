@@ -237,10 +237,10 @@ int g_error_handler_triggered = 0;
 
 /* A noop X11 error handler */
 int null_error_handler(Display *disp, XErrorEvent *ev) {
-     g_error_handler_triggered = 1;
+    g_error_handler_triggered = 1;
     return 0;
 }
-#endif	/* X11 */
+#endif /* X11 */
 
 /* Return pointer to list of disppath. Last will be NULL. */
 /* Return NULL on failure. Call free_disppaths() to free up allocation */
@@ -1089,7 +1089,6 @@ disppath **get_displays() {
     XCloseDisplay(mydisplay);
 
 #endif /* UNIX X11 */
-
     return disps;
 }
 
@@ -1273,7 +1272,6 @@ static size_mm get_real_screen_size_mm(int ix) {
     size = get_real_screen_size_mm_disp(disp);
 
     free_a_disppath(disp);
-
     return size;
 }
 
@@ -1295,8 +1293,7 @@ static int get_xrandr_output_xid(int ix) {
     return xid;
 }
 
-static PyObject *
-enumerate_displays(PyObject *self, PyObject *args)
+static PyObject * enumerate_displays(PyObject *self, PyObject *args)
 {
     PyObject *l = PyList_New(0);
     disppath **dp;
@@ -1313,9 +1310,7 @@ enumerate_displays(PyObject *self, PyObject *args)
                 break;
 
             d = PyDict_New();
-
-            if (dp[i]->name != NULL &&
-                (value = PyString_FromString(dp[i]->name)) != NULL) {
+            if (dp[i]->name != NULL && (value = PyString_FromString(dp[i]->name)) != NULL) {
                 PyDict_SetItemString(d, "name", value);
             }
 
@@ -1363,7 +1358,9 @@ enumerate_displays(PyObject *self, PyObject *args)
             PyDict_SetItemString(d, "icc_profile_atom_id", value);
 
             if (dp[i]->edid_len > 0 && dp[i]->edid != NULL &&
-                (value = PyString_FromStringAndSize(dp[i]->edid, dp[i]->edid_len)) != NULL) {
+//              (value = PyString_FromStringAndSize(dp[i]->edid, dp[i]->edid_len)) != NULL) {
+// TODO: The line above was causing Unicode errors, replaced with the line below, but we may lost some functionality, this needs to be checked properly.
+                (value = PyString_FromString(dp[i]->edid)) != NULL) {
                 PyDict_SetItemString(d, "edid", value);
             }
 #if RANDR_MAJOR == 1 && RANDR_MINOR >= 2
@@ -1382,7 +1379,6 @@ enumerate_displays(PyObject *self, PyObject *args)
         }
     }
     free_disppaths(dp);
-
     return l;
 }
 

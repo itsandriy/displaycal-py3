@@ -130,8 +130,7 @@ class GenTCPSockPatternGeneratorServer(object):
                 host = get_network_addr()
             except error:
                 host = gethostname()
-            self.logfile.write(lang.getstr("connection.waiting") +
-                               (" %s:%s\n" % (host, self.port)))
+            self.logfile.write(lang.getstr("connection.waiting") + (" %s:%s\n" % (host, self.port)))
         while self.listening:
             try:
                 self.conn, addr = self.socket.accept()
@@ -534,8 +533,7 @@ class WebWinHTTPPatternGeneratorServer(TCPServer, object):
                 host = get_network_addr()
             except error:
                 host = gethostname()
-            self.logfile.write(lang.getstr("webserver.waiting") +
-                               (" %s:%s\n" % (host, self.port)))
+            self.logfile.write(lang.getstr("webserver.waiting") + (" %s:%s\n" % (host, self.port)))
         self.socket.settimeout(1)
         while self.listening:
             try:

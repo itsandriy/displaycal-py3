@@ -758,7 +758,14 @@ def GridGetSelection(self):
                     sel.append((i, j))
     # single selected cells
     sel.extend(self.GetSelectedCells())
-    sel = list(set(sel))
+    # sel = list(set(sel))
+
+    new_sel = []
+    for item in sel:
+        if item not in new_sel:
+            new_sel.append(item)
+    sel = new_sel
+
     sel.sort()
     return sel
 
@@ -1576,7 +1583,6 @@ class TempXmlResource(object):
                     pass
             if TempXmlResource._temp and os.path.isdir(TempXmlResource._temp):
                 # Read original XML
-                print("xmlpath: %s" % xmlpath)
                 with open(xmlpath, "rb") as xmlfile:
                     xml = xmlfile.read().decode()
                 # Adjust spacing for scale

@@ -776,9 +776,8 @@ def colorimeter_correction_check_overwrite(parent=None, cgats=None,
         if result != wx.ID_OK:
             return False
     try:
-        cgatsfile = open(path, 'wb')
-        cgatsfile.write(cgats.rstrip("\n") + "\n")
-        cgatsfile.close()
+        with open(path, 'wb') as cgatsfile:
+            cgatsfile.write((cgats.rstrip("\n") + "\n").encode())
     except EnvironmentError as exception:
         show_result_dialog(exception, parent)
         return False

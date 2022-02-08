@@ -122,7 +122,7 @@ class TestchartEditor(BaseFrame):
 
             p2 = wx.Panel(splitter)
             # Setting a droptarget seems to cause crash when destroying
-            ##p2.SetDropTarget(self.droptarget)
+            # p2.SetDropTarget(self.droptarget)
             p2.sizer = wx.BoxSizer(wx.VERTICAL)
             p2.SetSizer(p2.sizer)
 
@@ -2916,8 +2916,7 @@ END_DATA""")
             # UGLY HACK: This 'print' call fixes a GTK assertion and
             # segfault under Arch Linux when setting the window title
             print("")
-            self.SetTitle(lang.getstr("testchart.edit").rstrip(".") + ": " +
-                          os.path.basename(self.ti1.filename))
+            self.SetTitle(lang.getstr("testchart.edit").rstrip(".") + ": " + os.path.basename(self.ti1.filename))
 
             print(lang.getstr("success"))
             (white_patches, black_patches, single_channel_patches, gray_patches,
@@ -2926,14 +2925,14 @@ END_DATA""")
 
             fullspread_ba = {
                 "ERROR_OPTIMISED_PATCHES": "",  # OFPS in older Argyll CMS versions
-                #"ERROR_OPTIMISED_PATCHES": "R",  # Perc. space random - same keyword as OFPS in older Argyll CMS versions, don't use
+                # "ERROR_OPTIMISED_PATCHES": "R",  # Perc. space random - same keyword as OFPS in older Argyll CMS versions, don't use
                 "IFP_PATCHES": "t",  # Inc. far point
                 "INC_FAR_PATCHES": "t",  # Inc. far point in older Argyll CMS versions
                 "OFPS_PATCHES": "",  # OFPS
                 "RANDOM_DEVICE_PATCHES": "r",  # Dev. space random
                 "RANDOM_PATCHES": "r",  # Dev. space random in older Argyll CMS versions
                 "RANDOM_PERCEPTUAL_PATCHES": "R",  # Perc. space random
-                #"RANDOM_PERCEPTUAL_PATCHES": "Q",  # Perc. space filling quasi-random - same keyword as perc. space random, don't use
+                # "RANDOM_PERCEPTUAL_PATCHES": "Q",  # Perc. space filling quasi-random - same keyword as perc. space random, don't use
                 "SIMPLEX_DEVICE_PATCHES": "i",  # Dev. space body centered cubic grid
                 "SIMPLEX_PERCEPTUAL_PATCHES": "I",  # Perc. space body centered cubic grid
                 "SPACEFILING_RANDOM_PATCHES": "q",  # Device space filling quasi-random, typo in older Argyll CMS versions
@@ -2943,7 +2942,8 @@ END_DATA""")
             algo = None
 
             for key in list(fullspread_ba.keys()):
-                if self.ti1.queryv1(key) > 0:
+                queryv_ = self.ti1.queryv1(key)
+                if queryv_ is not None and queryv_ > 0:
                     algo = fullspread_ba[key]
                     break
 

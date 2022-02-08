@@ -191,7 +191,6 @@ def _main(module, name, applockfilename, probe_ports=True):
                             # running under that port
                             print("Getting instance name")
                             if appsocket.send("getappname"):
-                                print('code is here D1')
                                 print("Sent scripting request, awaiting response...")
                                 data_read = appsocket.read()
                                 print('data_read: %s' % data_read)
@@ -219,7 +218,6 @@ def _main(module, name, applockfilename, probe_ports=True):
                                         data.append(str(arg))
                             data = sp.list2cmdline(data)
                             if appsocket.send(data):
-                                print('code is here D2')
                                 print("Sent scripting request, awaiting response...")
                                 data_read = appsocket.read().decode()
                                 print('data_read: %s' % data_read)
@@ -455,10 +453,8 @@ def _main(module, name, applockfilename, probe_ports=True):
             from DisplayCAL import main
     # Run main after releasing lock
     try:
-        print('Code is here E1')
         main()
     except TypeError:
-        print('Code is here E2')
         main.main()
 
 
@@ -693,12 +689,8 @@ class AppSocket(object):
         incoming = ""
         while "\4" not in incoming:
             try:
-                print('code is here C1')
                 data = self.socket.recv(1024)
-                print('data: %s' % data)
                 data = data.decode()
-                print('data.decode(): %s' % data)
-                print('code is here C2')
             except socket.error as exception:
                 if exception.errno == errno.EWOULDBLOCK:
                     sleep(.05)

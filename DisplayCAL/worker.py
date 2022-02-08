@@ -1502,13 +1502,16 @@ class FilteredStream():
         return getattr(self.stream, name)
 
     def write(self, data):
-        """ Write data to stream, stripping all unwanted output.
+        """Write data to stream, stripping all unwanted output.
 
         Incoming lines are expected to be delimited by linesep_in.
-
         """
         if not data:
             return
+
+        if isinstance(data, bytes):
+            data = data.decode()
+
         if self.prestrip and (re.search(self.prestrip, data) or self._buffer):
             if not data.endswith(self.linesep_in):
                 # Buffer all data until we see a line ending
@@ -1519,6 +1522,7 @@ class FilteredStream():
                 data = self._buffer + data
                 self._buffer = ""
             data = re.sub(self.prestrip, "", data)
+
         lines = []
         for line in data.split(self.linesep_in):
             if line and not re.sub(self.discard, "", line):
@@ -2694,15 +2698,14 @@ class Worker(WorkerBase):
         return True
 
     def check_instrument_place_on_screen(self, txt):
-        """ Check if instrument should be placed on screen by looking
-        at Argyll CMS command output """
+        """Check if instrument should be placed on screen by looking at Argyll CMS command output
+        """
         self.instrument_place_on_spot_msg = False
         if "place instrument on test window" in txt.lower():
             self.instrument_place_on_screen_msg = True
         elif "place instrument on spot" in txt.lower():
             self.instrument_place_on_spot_msg = True
-        if (self.instrument_place_on_screen_msg or
-                self.instrument_place_on_spot_msg):
+        if self.instrument_place_on_screen_msg or self.instrument_place_on_spot_msg:
             if not self.check_instrument_calibration_file():
                 return
         if ((self.instrument_place_on_screen_msg and
@@ -2775,10 +2778,8 @@ class Worker(WorkerBase):
                  in self.recent.read()) and
                 not self.subprocess_abort):
             self.retrycount += 1
-            self.log("%s: Retrying (%s)..." %
-                     (appname, self.retrycount))
-            self.recent.write("\r\n%s: Retrying (%s)..." %
-                              (appname, self.retrycount))
+            self.log("%s: Retrying (%s)..." % (appname, self.retrycount))
+            self.recent.write("\r\n%s: Retrying (%s)..." % (appname, self.retrycount))
             self.safe_send(" ")
 
     def check_spotread_result(self, txt):
@@ -5684,8 +5685,7 @@ while 1:
                 # Use a designated prompt
                 cmdline.insert(1, "Password:")
                 cmdline.insert(1, "-p")
-        if (working_dir and working_basename and not skip_scripts and
-                not getcfg("skip_scripts")):
+        if (working_dir and working_basename and not skip_scripts and not getcfg("skip_scripts")):
             try:
                 cmdfilename = os.path.join(working_dir, working_basename +
                                            "." + cmdname + script_ext)
@@ -5767,10 +5767,8 @@ while 1:
                         p = sp.Popen(cmdargs, stdin=sp.PIPE, stdout=sp.PIPE,
                                      stderr=sp.PIPE)
                         p.communicate()
-                        shutil.move(cmdfilename, appfilename +
-                                    "/Contents/Resources/main.command")
-                        os.chmod(appfilename +
-                                 "/Contents/Resources/main.command", 0o755)
+                        shutil.move(cmdfilename, appfilename + "/Contents/Resources/main.command")
+                        os.chmod(appfilename + "/Contents/Resources/main.command", 0o755)
                         # Part 2: "allfile"
                         appfilename = os.path.join(
                             working_dir,  working_basename + ".all.app")
@@ -5941,9 +5939,7 @@ while 1:
                                 sys.getwindowsversion() < (5, 1)):
                             raise Error(lang.getstr("windows.version.unsupported"))
                         try:
-                            self.subprocess = wexpect.spawn(cmdline[0],
-                                                            cmdline[1:],
-                                                            **kwargs)
+                            self.subprocess = wexpect.spawn(cmdline[0], cmdline[1:], **kwargs)
                         except wexpect.ExceptionPexpect as exception:
                             self.retcode = -1
                             raise Error(str(exception))
@@ -5992,8 +5988,7 @@ while 1:
                     if self.measure_cmd:
                         keyhit_strs = [" or Q to ", "8\) Exit"]
                         patterns = keyhit_strs + ["Current", r" \d+ of \d+"]
-                        self.log("%s: Starting interaction with subprocess" %
-                                 appname)
+                        self.log("%s: Starting interaction with subprocess" % appname)
                     else:
                         patterns = []
                         self.log("%s: Waiting for EOF" % appname)
@@ -6008,9 +6003,7 @@ while 1:
                             curpatterns = patterns
                         # NOTE: Using a timeout of None can block indefinitely
                         # and prevent expect() from ever returning!
-                        self.subprocess.expect(curpatterns + [wexpect.EOF,
-                                                              wexpect.TIMEOUT],
-                                               timeout=1)
+                        self.subprocess.expect(curpatterns + [wexpect.EOF, wexpect.TIMEOUT], timeout=1)
                         if self.subprocess.after is wexpect.EOF:
                             self.log("%s: Reached EOF (OK)" % appname)
                             break
@@ -6029,32 +6022,27 @@ while 1:
                                 authfailed = True
                                 self.auth_timestamp = 0
                             else:
-                                self._safe_send(self.pwd.encode(enc, "replace") +
-                                                os.linesep, obfuscate=True)
+                                self._safe_send(self.pwd.encode(enc, "replace") + os.linesep, obfuscate=True)
                                 pwdsent = True
                             if not self.subprocess.isalive():
                                 break
                             continue
                         elif self.measure_cmd:
-                            if [keyhit_str for keyhit_str in keyhit_strs if re.search(keyhit_str,
-                                                                                      self.subprocess.after)]:
+
+                            if [keyhit_str for keyhit_str in keyhit_strs if re.search(keyhit_str, self.subprocess.after)]:
                                 # Wait for the keypress
-                                self.log("%s: Waiting for send buffer" %
-                                         appname)
+                                self.log("%s: Waiting for send buffer" % appname)
                                 while not self.send_buffer:
                                     if not self.subprocess.isalive():
-                                        self.log("%s: Subprocess no longer alive (unknown reason)" %
-                                                 appname)
+                                        self.log("%s: Subprocess no longer alive (unknown reason)" % appname)
                                         break
                                     sleep(.05)
-                            if (self.send_buffer and
-                                    self.subprocess.isalive()):
-                                if (self.send_buffer == "7" and use_madvr and
-                                        cmdname == get_argyll_utilname("dispcal")):
+                                self.log("%s: Send buffer received: %s" % (appname, self.send_buffer))
+                            if self.send_buffer is not None and self.subprocess.isalive():
+                                if self.send_buffer == "7" and use_madvr and cmdname == get_argyll_utilname("dispcal"):
                                     # Restore madTPG OSD and fullscreen
                                     self.madtpg_restore_settings(False)
-                                self.log("%s: Sending buffer: %r" %
-                                         (appname, self.send_buffer))
+                                self.log("%s: Sending buffer: %r" % (appname, self.send_buffer))
                                 self._safe_send(self.send_buffer)
                                 self.send_buffer = None
                         if not self.subprocess.isalive():
@@ -6119,22 +6107,23 @@ while 1:
                                     line.find("User Aborted") < 0 and \
                                     line.find("XRandR 1.2 is faulty - falling back "
                                               "to older extensions") < 0:
-                                self.errors.append(line.decode(data_encoding,
-                                                               "replace"))
+                                self.errors.append(line.decode(data_encoding, "replace"))
                     if tries > 0 and not use_pty:
                         stderr = tempfile.SpooledTemporaryFile()
                 if capture_output or use_pty:
                     stdout.seek(0)
-                    self.output = [re.sub("^\.{4,}\s*$", "",
-                                          line.decode(data_encoding,
-                                                      "replace"))
-                                   for line in stdout.readlines()]
+                    stdout_readlines = stdout.readlines()
+                    self.output = []
+                    for line in stdout_readlines:
+                        if isinstance(line, bytes):
+                            line = line.decode()
+                        self.output.append(re.sub(r"^\.{4,}\s*$", "", line))
+                    # self.output = [re.sub(r"^\.{4,}\s*$", "", line) for line in stdout_readlines]
                     stdout.close()
                     if len(self.output) and log_output:
                         if not use_pty:
                             self.log("".join(self.output).strip())
-                        if display_output and self.owner and \
-                                hasattr(self.owner, "infoframe_toggle_handler"):
+                        if display_output and self.owner and hasattr(self.owner, "infoframe_toggle_handler"):
                             wx.CallAfter(self.owner.infoframe_toggle_handler,
                                          show=True)
                     if tries > 0 and not use_pty:
@@ -6147,25 +6136,29 @@ while 1:
         except Exception as exception:
             if debug:
                 self.log('[D] working_dir:', working_dir)
-            errmsg = (" ".join(cmdline).decode(fs_enc) + "\n" +
-                      str(traceback.format_exc()))
+
+            # TODO: Fix this in the source of the problem, not here!!!
+            new_cmdline = []
+            for item in cmdline:
+                if isinstance(item, bytes):
+                    item = item.decode()
+                new_cmdline.append(item)
+            cmdline = new_cmdline
+
+            errmsg = (" ".join(cmdline) + "\n" + str(traceback.format_exc()))
             self.retcode = -1
             return Error(errmsg)
         finally:
-            if (sudo and cmdname not in ("chown",
-                                         get_argyll_utilname("dispwin")) and
-                    working_dir and working_dir == self.tempdir and
-                    os.listdir(working_dir)):
+            if sudo and cmdname not in ("chown", get_argyll_utilname("dispwin")) \
+               and working_dir and working_dir == self.tempdir and os.listdir(working_dir):
                 # We need to take ownership of any files created by commands
                 # run via sudo otherwise we cannot move or remove them from
                 # the temporary directory!
                 errors = self.errors
                 output = self.output
                 retcode = self.retcode
-                self.exec_cmd("chown", ["-R", getpass.getuser().decode(fs_enc),
-                                        working_dir],
-                              capture_output=capture_output, skip_scripts=True,
-                              asroot=True)
+                self.exec_cmd("chown", ["-R", getpass.getuser().decode(fs_enc), working_dir],
+                              capture_output=capture_output, skip_scripts=True, asroot=True)
                 self.errors = errors
                 self.output = output
                 self.retcode = retcode
@@ -10973,7 +10966,7 @@ usage: spotread [-options] [logfile]
     def parse(self, txt):
         if not txt:
             return
-        self.logger.info("%r" % txt)
+        self.logger.info("%s" % txt)
         self.check_instrument_calibration(txt)
         self.check_instrument_place_on_screen(txt)
         self.check_instrument_sensor_position(txt)
@@ -10982,6 +10975,9 @@ usage: spotread [-options] [logfile]
         self.check_spotread_result(txt)
 
     def audio_visual_feedback(self, txt):
+        if isinstance(txt, bytes):
+            txt = txt.decode()
+
         if self.cmdname in (get_argyll_utilname("dispcal"),
                             get_argyll_utilname("dispread"),
                             get_argyll_utilname("spotread")):
@@ -10990,11 +10986,10 @@ usage: spotread [-options] [logfile]
                 self.repeat = True
             elif ", ok" in txt.lower():
                 self.repeat = False
-            if (re.search(r"Patch [2-9]\d* of ", txt, re.I) or
-                    (re.search(r"Patch \d+ of |The instrument can be removed from "
-                               "the screen", txt, re.I) and self.patch_count > 1) or
-                    ("Result is XYZ:" in txt and
-                     not isinstance(self.progress_wnd, UntetheredFrame))):
+            if re.search(r"Patch [2-9]\d* of ", txt, re.I) \
+               or (re.search(r"Patch \d+ of |The instrument can be removed from the screen", txt, re.I)
+               and self.patch_count > 1) \
+               or ("Result is XYZ:" in txt and not isinstance(self.progress_wnd, UntetheredFrame)):
                 if self.cmdname == get_argyll_utilname("dispcal") and self.repeat:
                     if (getcfg("measurement.play_sound") and
                             hasattr(self.progress_wnd, "sound_on_off_btn")):
@@ -11047,7 +11042,7 @@ usage: spotread [-options] [logfile]
             else:
                 patterngenerator = ResolveCMPatternGeneratorServer
             self.patterngenerator = patterngenerator(
-                port=getcfg("patterngenerator.resolve.port"), \
+                port=getcfg("patterngenerator.resolve.port"),
                 use_video_levels=getcfg("patterngenerator.use_video_levels"),
                 logfile=logfile)
 
@@ -12290,7 +12285,9 @@ usage: spotread [-options] [logfile]
         return True
 
     def _safe_send(self, bytes, retry=3, obfuscate=False):
-        """ Safely send a keystroke to the current subprocess """
+        """Safely send a keystroke to the current subprocess
+        """
+        print('_safe_send.bytes:', bytes)
         for i in range(0, retry):
             if obfuscate:
                 logbytes = "***"
@@ -12298,12 +12295,12 @@ usage: spotread [-options] [logfile]
                 logbytes = bytes
             self.logger.info("Sending key(s) %r (%i)" % (logbytes, i + 1))
             try:
-                wrote = self.subprocess.send(bytes)
+                self.subprocess.send(bytes)
             except Exception as exception:
                 self.logger.exception("Exception: %s" % str(exception))
             else:
-                if wrote == len(bytes):
-                    return True
+                # if wrote == len(bytes):
+                return True
             sleep(.25)
         return False
 
@@ -14567,19 +14564,22 @@ BEGIN_DATA
             self.buffer = self.buffer[1:]
 
     def _write(self, txt):
+
+        if isinstance(txt, bytes):
+            txt = txt.decode()
+
         wx.CallAfter(self.audio_visual_feedback, txt)
         if getattr(self, "measure_cmd", None):
             # i1 Pro, Spyders: Instrument Type
             # i1D3: Product Name
             # K10: Model
             # specbos: Identification
-            instrument = re.search(r"(?:Instrument Type|Product Name|Model|"
-                                   r"Identificaton):\s+([^\r\n]+)",
-                                   txt, re.I)
+            instrument = re.search(
+                r"(?:Instrument Type|Product Name|Model|Identificaton):\s+([^\r\n]+)", txt, re.I
+            )
             if instrument:
                 self._detected_instrument = instrument.group(1)
-            serial = re.search(r"(?:Serial Number):\s+([^\r\n]+)",
-                               txt, re.I)
+            serial = re.search(r"(?:Serial Number):\s+([^\r\n]+)", txt, re.I)
             if serial:
                 self._detected_instrument_serial = serial.group(1)
         if re.search("press 1|space when done|patch 1 of ", txt, re.I):
@@ -14590,16 +14590,14 @@ BEGIN_DATA
                     self.patch_sequence = True
                 self.patch_count = 0
                 self.patterngenerator_sent_count = 0
-        update = re.search(r"[/\\] current|patch \d+ of |the instrument "
-                           "can be removed from the screen", txt, re.I)
+        update = re.search(r"[/\\] current|patch \d+ of |the instrument can be removed from the screen", txt, re.I)
         # Send colors to pattern generator
         use_patterngenerator = (self.use_patterngenerator and
                                 self.patterngenerator and
                                 hasattr(self.patterngenerator, "conn"))
         if (use_patterngenerator or self.use_madnet_tpg or
                 self._use_patternwindow):
-            rgb = re.search(r"Current RGB(?:\s+\d+){3}((?:\s+\d+(?:\.\d+)){3})",
-                            txt)
+            rgb = re.search(r"Current RGB(?:\s+\d+){3}((?:\s+\d+(?:\.\d+)){3})", txt)
             if rgb:
                 update_ffp_insertion_ts = False
                 if getcfg("patterngenerator.ffp_insertion") and self.patterngenerator_sent_count > 1:
@@ -14608,20 +14606,18 @@ BEGIN_DATA
                     if time() - getattr(self, "_ffp_insertion_ts", 0) > frq:
                         dur = getcfg("patterngenerator.ffp_insertion.duration")
                         lvl = getcfg("patterngenerator.ffp_insertion.level")
-                        self.log("%s: Frame insertion duration %is, level = %i%%" %
-                                 (appname, dur, lvl * 100))
+                        self.log("%s: Frame insertion duration %is, level = %i%%" % (appname, dur, lvl * 100))
                         ts = time()
+                        patternconfig = []
                         if self.use_madnet_tpg:
                             patternconfig = self.madtpg.get_pattern_config()
-                            self.madtpg.set_pattern_config(patternconfig[0],
-                                                           int(lvl * 100), 0, 0)
+                            self.madtpg.set_pattern_config(patternconfig[0], int(lvl * 100), 0, 0)
                             self.madtpg.show_rgb(lvl, lvl, lvl)
                             self.madtpg.set_pattern_config(100, 0, 0, 0)
                         else:
                             self.patterngenerator_send((lvl, lvl, lvl),
                                                        (lvl, lvl, lvl))
-                        while time() - ts < dur and not (self.subprocess_abort or
-                                                         self.thread_abort):
+                        while time() - ts < dur and not (self.subprocess_abort or self.thread_abort):
                             sleep(.05)
                         if self.use_madnet_tpg:
                             self.madtpg.set_pattern_config(*patternconfig)

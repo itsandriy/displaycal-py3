@@ -1634,7 +1634,7 @@ Transform {
                             else:
                                 result[n] = result_n
 
-                if isintance(item, CGATS) and item != self:
+                if isinstance(item, CGATS) and item != self:
                     result_n = item.query(query, query_value, get_value, get_first)
                     if result_n is not None:
                         if get_first:

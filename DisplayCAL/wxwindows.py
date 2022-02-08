@@ -838,17 +838,19 @@ class BaseApp(wx.App):
 active_window = None
 responseformats = {}
 
-class BaseFrame(wx.Frame):
 
-    """ Main frame base class. """
+class BaseFrame(wx.Frame):
+    """Main frame base class.
+    """
 
     def __init__(self, *args, **kwargs):
         wx.Frame.__init__(self, *args, **kwargs)
         self.init()
 
     def FindWindowByName(self, name):
-        """ wxPython Phoenix FindWindowByName descends into the parent windows,
-        we don't want that """
+        """wxPython Phoenix FindWindowByName descends into the parent windows,
+        we don't want that
+        """
         for child in self.GetAllChildren():
             if hasattr(child, "Name") and child.Name == name:
                 return child
@@ -2274,7 +2276,7 @@ class BaseInteractiveDialog(wx.Dialog):
 
         self.ok = wx.Button(self.buttonpanel, wx.ID_OK, ok)
         self.sizer2.Add((-1, 1), 1)
-        self.sizer2.Add(self.ok, flag=wx.ALIGN_RIGHT)
+        self.sizer2.Add(self.ok)
         self.Bind(wx.EVT_BUTTON, self.OnClose, id=wx.ID_OK)
 
         self.buttonpanel.Layout()
@@ -3614,7 +3616,7 @@ class CustomGrid(wx.grid.Grid):
     if not hasattr(wx.grid.Grid, "CalcColLabelsExposed"):
         # wxPython < 2.8.10
         def CalcColLabelsExposed(self, region):
-            x, y = self.CalcUnscrolledPosition((0,0))
+            x, y = self.CalcUnscrolledPosition((0, 0))
             ri = wx.RegionIterator(region)
             cols = []
             while ri:
@@ -3653,6 +3655,14 @@ class CustomGrid(wx.grid.Grid):
                     row += 1
                 ri.Next()
             return rows
+
+    # def AppendCols(self, numCols=1):
+    #     """th overridden AppendCols method
+    #
+    #     :param numCols:
+    #     :return:
+    #     """
+    #     raise NotImplementedError("testing")
 
     def GetColLeftRight(self, col, c=0):
         left = 0
@@ -3848,11 +3858,14 @@ class CustomGrid(wx.grid.Grid):
         window = evt.GetEventObject()
         dc = wx.PaintDC(window)
 
+        # TODO: This is a temporary fix, please fix this properly
+        return
+
         cols = self.CalcColLabelsExposed(window.GetUpdateRegion())
         if -1 in cols:
             return
 
-        x, y = self.CalcUnscrolledPosition((0,0))
+        x, y = self.CalcUnscrolledPosition((0, 0))
         pt = dc.GetDeviceOrigin()
         dc.SetDeviceOrigin(pt.x-x, pt.y)
         leftoffset = 0

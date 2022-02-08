@@ -526,10 +526,13 @@ def safe_basestring(obj):
 
 
 def safe_str(obj, enc=fs_enc, errors="replace"):
-    """ Return string representation of obj """
+    """Return string representation of obj
+    """
     obj = safe_basestring(obj)
     if isinstance(obj, str):
-        return obj.encode(enc, errors)
+        return obj
+    elif isinstance(obj, bytes):
+        return obj.decode()
     else:
         return obj
 
