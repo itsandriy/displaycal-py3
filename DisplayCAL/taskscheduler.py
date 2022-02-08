@@ -272,8 +272,7 @@ class TaskScheduler(object):
                     replace_existing=False,
                     elevated=False,
                     echo=False):
-        """
-        Create a new task.
+        """Create a new task.
 
         If replace_existing evaluates to True, delete any existing task with
         same name first, otherwise raise KeyError.
@@ -352,8 +351,7 @@ class TaskScheduler(object):
         return default
 
     def get_exit_code(self, task):
-        """
-        Shorthand for task.GetExitCode().
+        """Shorthand for task.GetExitCode().
 
         Return a 2-tuple exitcode, startup_error_code.
 
@@ -380,8 +378,7 @@ class TaskScheduler(object):
         return name in self
 
     def query_task(self, name, echo=False):
-        """
-        Query task.
+        """Query task.
 
         """
         return self._schtasks(["/Query", "/TN", name], False, echo)

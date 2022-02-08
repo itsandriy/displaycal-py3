@@ -287,8 +287,7 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
         self._event_handlers[event_name].append(handler)
 
     def unbind(self, event_name, handler=None):
-        """
-        Unbind (remove) a handler from an event
+        """Unbind (remove) a handler from an event
 
         If handler is None, remove all handlers for the event.
 

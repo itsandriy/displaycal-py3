@@ -455,8 +455,7 @@ wx.BitmapButton.SetBitmapLabel = SetBitmapLabel
 
 
 def BitmapButtonEnable(self, enable = True):
-    """
-    Replacement for BitmapButton.Enable which circumvents repainting issues
+    """Replacement for BitmapButton.Enable which circumvents repainting issues
 
     (bitmap does not change on button state change)
 
@@ -1049,8 +1048,7 @@ wx._ScrolledWindow = wx.ScrolledWindow
 
 class ScrolledWindow(wx._ScrolledWindow):
 
-    """
-    ScrolledWindow that scrolls child controls into view on focus.
+    """ScrolledWindow that scrolls child controls into view on focus.
 
     OnChildFocus and ScrollChildIntoView borrowed from wx.lib.scrolledpanel.
     """
@@ -1067,8 +1065,7 @@ class ScrolledWindow(wx._ScrolledWindow):
         self.ScrollChildIntoView(child)
 
     def ScrollChildIntoView(self, child):
-        """
-        Scrolls the panel such that the specified child window is in view.
+        """Scrolls the panel such that the specified child window is in view.
         """
         sppu_x, sppu_y = self.GetScrollPixelsPerUnit()
         vs_x, vs_y   = self.GetViewStart()
@@ -1114,8 +1111,7 @@ wx.ScrolledWindow = ScrolledWindow
 
 class GenButton(object):
 
-    """
-    A generic button, based on wx.lib.buttons.GenButton.
+    """A generic button, based on wx.lib.buttons.GenButton.
 
     Fixes wx.lib.buttons.ThemedGenButton not taking into account backgroun
     color when pressed.
@@ -1241,8 +1237,7 @@ class GenBitmapButton(GenButton, _GenBitmapButton):
 
 class ThemedGenButton(GenButton, _ThemedGenButton):
 
-    """
-    A themed generic button, based on wx.lib.buttons.ThemedGenButton.
+    """A themed generic button, based on wx.lib.buttons.ThemedGenButton.
 
     Fixes wx.lib.buttons.ThemedGenButton sometimes not reflecting enabled
     state correctly as well as not taking into account background color when
@@ -1265,8 +1260,7 @@ class ThemedGenButton(GenButton, _ThemedGenButton):
         self.Enable(False)
 
     def DoGetBestSize(self):
-        """
-        Overridden base class virtual.  Determines the best size of the
+        """Overridden base class virtual.  Determines the best size of the
         button based on the label and bezel size.
         """
         w, h, useMin = self._GetLabelSize()
@@ -1353,8 +1347,7 @@ class ThemedGenButton(GenButton, _ThemedGenButton):
 
 class PlateButton(platebtn.PlateButton):
 
-    """
-    Fixes wx.lib.platebtn.PlateButton sometimes not reflecting enabled state
+    """Fixes wx.lib.platebtn.PlateButton sometimes not reflecting enabled state
     correctly aswelll as other quirks
 
     """
@@ -1427,7 +1420,7 @@ class PlateButton(platebtn.PlateButton):
     def SetBitmapHover(self, bmp):
         """Set the bitmap displayed in the button
 
-        :param `bmp`: :class:`wx.Bitmap`
+        :param bmp: :class:`wx.Bitmap`
 
         """
         self._bmp['hilite'] = bmp

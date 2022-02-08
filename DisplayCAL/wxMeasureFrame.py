@@ -28,8 +28,7 @@ except ImportError as exception:
     warnings.warn(str(exception), Warning)
 
 def get_default_size():
-    """
-    Get and return the default size for the window in pixels.
+    """Get and return the default size for the window in pixels.
 
     The default size is always equivalent to 100 x 100 mm according
     to the display's size as returned by the RealDisplaySizeMM function,
@@ -110,8 +109,7 @@ def get_default_size():
 
 class MeasureFrame(InvincibleFrame):
 
-    """
-    A rectangular window to set the measure area size for dispcal/dispread.
+    """A rectangular window to set the measure area size for dispcal/dispread.
 
     """
 
@@ -328,8 +326,7 @@ class MeasureFrame(InvincibleFrame):
         self.Show(False)
 
     def place_n_zoom(self, x=None, y=None, scale=None):
-        """
-        Place and scale the window.
+        """Place and scale the window.
 
         x, y and scale need to be in Argyll coordinates (0.0...1.0)
         if given. Without arguments, they are read from the user
@@ -483,8 +480,7 @@ class MeasureFrame(InvincibleFrame):
                 MeasureFrame.exitcode = 0
 
     def get_display(self, display_no=None):
-        """
-        Get the display number, geometry and client area, taking into
+        """Get the display number, geometry and client area, taking into
         account separate X screens, TwinView and similar
 
         """
@@ -629,8 +625,7 @@ class MeasureFrame(InvincibleFrame):
             self.Parent.worker._patterngenerator_wait = False
 
     def get_dimensions(self):
-        """
-        Calculate and return the relative dimensions from the pixel values.
+        """Calculate and return the relative dimensions from the pixel values.
 
         Returns x, y and scale in Argyll coordinates (0.0...1.0).
 

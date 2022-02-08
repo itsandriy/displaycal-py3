@@ -7,8 +7,7 @@ from lazydict import LazyDict
 
 class JSONDict(LazyDict):
 
-    """
-    JSON lazy dictionary
+    """JSON lazy dictionary
 
     """
 

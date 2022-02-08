@@ -53,28 +53,25 @@ colourMaxValues = [255, 255, 255, 359, 255, 255]
 
 
 def rad2deg(x):
-    """
-    Transforms radians into degrees.
+    """Transforms radians into degrees.
 
-    :param `x`: a float representing an angle in radians.    
+    :param x: a float representing an angle in radians.
     """
     
     return 180.0*x/pi
 
 
 def deg2rad(x):
-    """
-    Transforms degrees into radians.
+    """Transforms degrees into radians.
 
-    :param `x`: a float representing an angle in degrees.    
+    :param x: a float representing an angle in degrees.
     """
 
     return x*pi/180.0
 
 
 def s(i):
-    """
-    Scale for HiDPI if necessary
+    """Scale for HiDPI if necessary
     
     """
     return i * max(getcfg("app.dpi") / get_default_dpi(), 1)
@@ -111,11 +108,10 @@ def _wait_thread(fn, *args, **kwargs):
 
 
 def Distance(pt1, pt2):
-    """
-    Returns the distance between 2 points.
+    """Returns the distance between 2 points.
 
-    :param `pt1`: an instance of :class:`Point`;
-    :param `pt2`: another instance of :class:`Point`.    
+    :param pt1: an instance of :class:`Point`;
+    :param pt2: another instance of :class:`Point`.
     """
 
     distance = sqrt((pt1.x - pt2.x)**2.0 + (pt1.y - pt2.y)**2.0)
@@ -123,12 +119,11 @@ def Distance(pt1, pt2):
 
 
 def AngleFromPoint(pt, center):
-    """
-    Returns the angle between the x-axis and the line connecting the center and
+    """Returns the angle between the x-axis and the line connecting the center and
     the point `pt`.
 
-    :param `pt`: an instance of :class:`Point`;
-    :param `center`: a float value representing the center.
+    :param pt: an instance of :class:`Point`;
+    :param center: a float value representing the center.
     """
 
     y = -1*(pt.y - center.y)
@@ -168,11 +163,10 @@ class AuiDarkDockArt(aui.dockart.AuiDefaultDockArt):
 
 
     def DrawBackground(self, dc, window, orient, rect):
-        """
-        Draws a background.
+        """Draws a background.
 
-        :param `dc`: a :class:`DC` device context;
-        :param `window`: an instance of :class:`Window`;
+        :param dc: a :class:`DC` device context;
+        :param window: an instance of :class:`Window`;
         :param integer `orient`: the gradient (if any) orientation;
         :param Rect `rect`: the background rectangle.
         """
@@ -183,15 +177,14 @@ class AuiDarkDockArt(aui.dockart.AuiDefaultDockArt):
 
 
     def DrawPaneButton(self, dc, window, button, button_state, _rect, pane):
-        """
-        Draws a pane button in the pane caption area.
+        """Draws a pane button in the pane caption area.
 
-        :param `dc`: a :class:`DC` device context;
-        :param `window`: an instance of :class:`Window`;
+        :param dc: a :class:`DC` device context;
+        :param window: an instance of :class:`Window`;
         :param integer `button`: the button to be drawn;
         :param integer `button_state`: the pane button state;
         :param Rect `_rect`: the pane caption rectangle;
-        :param `pane`: the pane for which the button is drawn.
+        :param pane: the pane for which the button is drawn.
         """
 
         if not pane:
@@ -257,8 +250,7 @@ class AuiDarkDockArt(aui.dockart.AuiDefaultDockArt):
 
 
     def SetCustomPaneBitmap(self, bmp, button, active, maximize=False):
-        """
-        Sets a custom button bitmap for the pane button.
+        """Sets a custom button bitmap for the pane button.
 
         :param Bitmap `bmp`: the actual bitmap to set;
         :param integer `button`: the button identifier;
@@ -302,8 +294,7 @@ class AuiDarkDockArt(aui.dockart.AuiDefaultDockArt):
 
 class AuiManager_LRDocking(aui.AuiManager):
     
-    """
-    AuiManager with only left/right docking.
+    """AuiManager with only left/right docking.
     
     Also, it is not necessary to hover the drop guide, a drop hint will show
     near the edges regardless.
@@ -315,15 +306,14 @@ class AuiManager_LRDocking(aui.AuiManager):
 
 
     def DoDrop(self, docks, panes, target, pt, offset=wx.Point(0, 0)):
-        """
-        This is an important function. It basically takes a mouse position,
+        """This is an important function. It basically takes a mouse position,
         and determines where the panes new position would be. If the pane is to be
         dropped, it performs the drop operation using the specified dock and pane
         arrays. By specifying copy dock and pane arrays when calling, a "what-if"
         scenario can be performed, giving precise coordinates for drop hints.
 
-        :param `docks`: a list of :class:`AuiDockInfo` classes;
-        :param `panes`: a list of :class:`AuiPaneInfo` instances;
+        :param docks: a list of :class:`AuiDockInfo` classes;
+        :param panes: a list of :class:`AuiPaneInfo` instances;
         :param Point `pt`: a mouse position to check for a drop operation;
         :param Point `offset`: a possible offset from the input point `pt`.
         """
@@ -339,11 +329,10 @@ class AuiManager_LRDocking(aui.AuiManager):
 
 
     def DoDropNonFloatingPane(self, docks, panes, target, pt):
-        """
-        Handles the situation in which the dropped pane is not floating.
+        """Handles the situation in which the dropped pane is not floating.
 
-        :param `docks`: a list of :class:`AuiDockInfo` classes;
-        :param `panes`: a list of :class:`AuiPaneInfo` instances;
+        :param docks: a list of :class:`AuiDockInfo` classes;
+        :param panes: a list of :class:`AuiPaneInfo` instances;
         :param AuiPaneInfo `target`: the target pane containing the toolbar;
         :param Point `pt`: a mouse position to check for a drop operation.
         """
@@ -498,17 +487,15 @@ class AuiManager_LRDocking(aui.AuiManager):
 
 
 class Colour(object):
-    """
-    This is a class similar to :class:`Colour`, which adds Hue, Saturation and
+    """This is a class similar to :class:`Colour`, which adds Hue, Saturation and
     Brightness capability. It contains also methods to convert RGB triplets
     into HSB triplets and vice-versa.
     """
 
     def __init__(self, colour):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `colour`: a standard :class:`Colour`.
+        :param colour: a standard :class:`Colour`.
         """
 
         self.r = colour.Red()
@@ -627,18 +614,16 @@ class Colour(object):
 
 
 class BasePyControl(wx.PyControl):
-    """
-    Base class used to hold common code for the HSB colour wheel and the RGB
+    """Base class used to hold common code for the HSB colour wheel and the RGB
     colour cube.
     """
 
     def __init__(self, parent, bitmap=None):
-        """
-        Default class constructor.
+        """Default class constructor.
         Used internally. Do not call it in your code!
 
-        :param `parent`: the control parent;
-        :param `bitmap`: the background bitmap for this custom control.
+        :param parent: the control parent;
+        :param bitmap: the background bitmap for this custom control.
         """
 
         wx.PyControl.__init__(self, parent, style=wx.NO_BORDER)
@@ -657,10 +642,9 @@ class BasePyControl(wx.PyControl):
 
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` for :class:`BasePyControl`.
+        """Handles the ``wx.EVT_PAINT`` for :class:`BasePyControl`.
 
-        :param `event`: a :class:`PaintEvent` event to be processed.
+        :param event: a :class:`PaintEvent` event to be processed.
         """
 
         dc = wx.AutoBufferedPaintDC(self)
@@ -680,10 +664,9 @@ class BasePyControl(wx.PyControl):
         
 
     def OnEraseBackground(self, event):
-        """
-        Handles the ``wx.EVT_ERASE_BACKGROUND`` for :class:`BasePyControl`.
+        """Handles the ``wx.EVT_ERASE_BACKGROUND`` for :class:`BasePyControl`.
 
-        :param `event`: a :class:`EraseEvent` event to be processed.
+        :param event: a :class:`EraseEvent` event to be processed.
 
         :note: This is intentionally empty to reduce flicker.        
         """
@@ -692,10 +675,9 @@ class BasePyControl(wx.PyControl):
 
     
     def DrawMarkers(self, dc=None):
-        """
-        Draws the markers on top of the background bitmap.
+        """Draws the markers on top of the background bitmap.
 
-        :param `dc`: an instance of :class:`DC`.
+        :param dc: an instance of :class:`DC`.
         
         :note: This method must be overridden in derived classes.
         """
@@ -704,10 +686,9 @@ class BasePyControl(wx.PyControl):
 
 
     def DrawLines(self, dc):
-        """
-        Draws the lines connecting the markers on top of the background bitmap.
+        """Draws the lines connecting the markers on top of the background bitmap.
 
-        :param `dc`: an instance of :class:`DC`.
+        :param dc: an instance of :class:`DC`.
         
         :note: This method must be overridden in derived classes.
         """
@@ -716,8 +697,7 @@ class BasePyControl(wx.PyControl):
     
 
     def AcceptsFocusFromKeyboard(self):
-        """
-        Can this window be given focus by keyboard navigation? If not, the
+        """Can this window be given focus by keyboard navigation? If not, the
         only way to give it focus (provided it accepts it at all) is to click
         it.
 
@@ -731,8 +711,7 @@ class BasePyControl(wx.PyControl):
 
 
     def AcceptsFocus(self):
-        """
-        Can this window be given focus by mouse click?
+        """Can this window be given focus by mouse click?
 
         :note: This method always returns ``False`` as we do not accept focus from
          mouse click.
@@ -744,10 +723,9 @@ class BasePyControl(wx.PyControl):
 
     
     def OnLeftDown(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_DOWN`` for :class:`BasePyControl`.
+        """Handles the ``wx.EVT_LEFT_DOWN`` for :class:`BasePyControl`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         
         :note: This method must be overridden in derived classes.
         """
@@ -756,10 +734,9 @@ class BasePyControl(wx.PyControl):
 
 
     def OnLeftUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` for :class:`BasePyControl`.
+        """Handles the ``wx.EVT_LEFT_UP`` for :class:`BasePyControl`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         
         :note: This method must be overridden in derived classes.
         """
@@ -768,10 +745,9 @@ class BasePyControl(wx.PyControl):
 
 
     def OnMotion(self, event):
-        """
-        Handles the ``wx.EVT_MOTION`` for :class:`BasePyControl`.
+        """Handles the ``wx.EVT_MOTION`` for :class:`BasePyControl`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         
         :note: This method must be overridden in derived classes.
         """
@@ -780,18 +756,16 @@ class BasePyControl(wx.PyControl):
     
     
     def OnSize(self, event):
-        """
-        Handles the ``wx.EVT_SIZE`` for :class:`BasePyControl`.
+        """Handles the ``wx.EVT_SIZE`` for :class:`BasePyControl`.
 
-        :param `event`: a :class:`SizeEvent` event to be processed.        
+        :param event: a :class:`SizeEvent` event to be processed.
         """
 
         self.Refresh()
         
 
     def DoGetBestSize(self):
-        """
-        Overridden base class virtual. Determines the best size of the
+        """Overridden base class virtual. Determines the best size of the
         control based on the bitmap size.
 
         :note: Overridden from :class:`PyControl`.
@@ -855,17 +829,15 @@ class BasePyButton(BasePyControl):
 
 
 class HSVWheel(BasePyControl):
-    """
-    Implements the drawing, mouse handling and sizing routines for the HSV
+    """Implements the drawing, mouse handling and sizing routines for the HSV
     colour wheel.
     """
 
     def __init__(self, parent, bgcolour):
-        """
-        Default class constructor.
+        """Default class constructor.
         Used internally. Do not call it in your code!
 
-        :param `parent`: the control parent window.
+        :param parent: the control parent window.
         """
 
         BasePyControl.__init__(self, parent, bitmap=getbitmap("theme/colorwheel"))
@@ -879,10 +851,9 @@ class HSVWheel(BasePyControl):
 
 
     def DrawMarkers(self, dc=None):
-        """
-        Draws the markers on top of the background bitmap.
+        """Draws the markers on top of the background bitmap.
 
-        :param `dc`: an instance of :class:`DC`.
+        :param dc: an instance of :class:`DC`.
         """
 
         if dc is None:
@@ -910,10 +881,9 @@ class HSVWheel(BasePyControl):
         
 
     def OnLeftDown(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_DOWN`` for :class:`HSVWheel`.
+        """Handles the ``wx.EVT_LEFT_DOWN`` for :class:`HSVWheel`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         """
 
         point = wx.Point(event.GetX(), event.GetY())
@@ -928,10 +898,9 @@ class HSVWheel(BasePyControl):
 
 
     def OnLeftUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` for :class:`HSVWheel`.
+        """Handles the ``wx.EVT_LEFT_UP`` for :class:`HSVWheel`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         """
 
         if self.GetCapture():
@@ -940,10 +909,9 @@ class HSVWheel(BasePyControl):
 
 
     def OnMotion(self, event):
-        """
-        Handles the ``wx.EVT_MOTION`` for :class:`HSVWheel`.
+        """Handles the ``wx.EVT_MOTION`` for :class:`HSVWheel`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         """
 
         point = wx.Point(event.GetX(), event.GetY())
@@ -953,10 +921,9 @@ class HSVWheel(BasePyControl):
 
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` for :class:`BasePyControl`.
+        """Handles the ``wx.EVT_PAINT`` for :class:`BasePyControl`.
 
-        :param `event`: a :class:`PaintEvent` event to be processed.
+        :param event: a :class:`PaintEvent` event to be processed.
         """
 
         dc = wx.AutoBufferedPaintDC(self)
@@ -968,20 +935,18 @@ class HSVWheel(BasePyControl):
         
 
     def InCircle(self, pt):
-        """
-        Returns whether a point is inside the HSV wheel or not.
+        """Returns whether a point is inside the HSV wheel or not.
 
-        :param `pt`: an instance of :class:`Point`.
+        :param pt: an instance of :class:`Point`.
         """
 
         return Distance(pt, self._mainFrame._centre) <= (self._bitmap.Size[0]) / 2
 
 
     def TrackPoint(self, pt):
-        """
-        Track a mouse event inside the HSV colour wheel.
+        """Track a mouse event inside the HSV colour wheel.
 
-        :param `pt`: an instance of :class:`Point`.
+        :param pt: an instance of :class:`Point`.
         """
 
         if not self._mouseIn:
@@ -1007,17 +972,15 @@ class HSVWheel(BasePyControl):
 
 
 class BaseLineCtrl(wx.PyControl):
-    """
-    Base class used to hold common code for the Alpha channel control and the
+    """Base class used to hold common code for the Alpha channel control and the
     brightness palette control.
     """
 
     def __init__(self, parent, size=wx.DefaultSize):
-        """
-        Default class constructor.
+        """Default class constructor.
         Used internally. Do not call it in your code!
 
-        :param `parent`: the control parent window.
+        :param parent: the control parent window.
         """
 
         wx.PyControl.__init__(self, parent, size=size,
@@ -1034,10 +997,9 @@ class BaseLineCtrl(wx.PyControl):
 
 
     def OnEraseBackground(self, event):
-        """
-        Handles the ``wx.EVT_ERASE_BACKGROUND`` for :class:`BaseLineCtrl`.
+        """Handles the ``wx.EVT_ERASE_BACKGROUND`` for :class:`BaseLineCtrl`.
 
-        :param `event`: a :class:`EraseEvent` event to be processed.
+        :param event: a :class:`EraseEvent` event to be processed.
 
         :note: This is intentionally empty to reduce flicker.        
         """
@@ -1046,10 +1008,9 @@ class BaseLineCtrl(wx.PyControl):
 
     
     def OnLeftDown(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_DOWN`` for :class:`BaseLineCtrl`.
+        """Handles the ``wx.EVT_LEFT_DOWN`` for :class:`BaseLineCtrl`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         """
 
         point = wx.Point(event.GetX(), event.GetY())
@@ -1064,10 +1025,9 @@ class BaseLineCtrl(wx.PyControl):
 
 
     def OnLeftUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` for :class:`BaseLineCtrl`.
+        """Handles the ``wx.EVT_LEFT_UP`` for :class:`BaseLineCtrl`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         """
 
         if self.GetCapture():
@@ -1076,10 +1036,9 @@ class BaseLineCtrl(wx.PyControl):
             
 
     def OnMotion(self, event):
-        """
-        Handles the ``wx.EVT_MOTION`` for :class:`BaseLineCtrl`.
+        """Handles the ``wx.EVT_MOTION`` for :class:`BaseLineCtrl`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         """
 
         point = wx.Point(event.GetX(), event.GetY())
@@ -1089,10 +1048,9 @@ class BaseLineCtrl(wx.PyControl):
 
 
     def OnSize(self, event):
-        """
-        Handles the ``wx.EVT_SIZE`` for :class:`BaseLineCtrl`.
+        """Handles the ``wx.EVT_SIZE`` for :class:`BaseLineCtrl`.
 
-        :param `event`: a :class:`SizeEvent` event to be processed.
+        :param event: a :class:`SizeEvent` event to be processed.
         """
 
         self.Refresh()
@@ -1111,8 +1069,7 @@ class BaseLineCtrl(wx.PyControl):
 
 
     def AcceptsFocusFromKeyboard(self):
-        """
-        Can this window be given focus by keyboard navigation? If not, the
+        """Can this window be given focus by keyboard navigation? If not, the
         only way to give it focus (provided it accepts it at all) is to click
         it.
 
@@ -1126,8 +1083,7 @@ class BaseLineCtrl(wx.PyControl):
 
 
     def AcceptsFocus(self):
-        """
-        Can this window be given focus by mouse click? 
+        """Can this window be given focus by mouse click? 
 
         :note: This method always returns ``False`` as we do not accept focus from
          mouse click.
@@ -1140,17 +1096,15 @@ class BaseLineCtrl(wx.PyControl):
 
 
 class BrightCtrl(BaseLineCtrl):
-    """
-    Implements the drawing, mouse handling and sizing routines for the brightness
+    """Implements the drawing, mouse handling and sizing routines for the brightness
     palette control.
     """
 
     def __init__(self, parent, colour=None):
-        """
-        Default class constructor.
+        """Default class constructor.
         Used internally. Do not call it in your code!
 
-        :param `parent`: the control parent window.
+        :param parent: the control parent window.
         """
 
         BaseLineCtrl.__init__(self, parent, size=(s(20), s(102)))
@@ -1160,10 +1114,9 @@ class BrightCtrl(BaseLineCtrl):
 
         
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` for :class:`BrightCtrl`.
+        """Handles the ``wx.EVT_PAINT`` for :class:`BrightCtrl`.
 
-        :param `event`: a :class:`PaintEvent` event to be processed.
+        :param event: a :class:`PaintEvent` event to be processed.
         """
 
         dc = wx.AutoBufferedPaintDC(self)
@@ -1172,8 +1125,7 @@ class BrightCtrl(BaseLineCtrl):
 
 
     def DoGetBestSize(self):
-        """
-        Overridden base class virtual. Determines the best size of the control.
+        """Overridden base class virtual. Determines the best size of the control.
 
         :note: Overridden from :class:`PyControl`.
         """
@@ -1214,10 +1166,9 @@ class BrightCtrl(BaseLineCtrl):
         
         
     def TrackPoint(self, pt):
-        """
-        Tracks a mouse action inside the palette control.
+        """Tracks a mouse action inside the palette control.
 
-        :param `pt`: an instance of :class:`Point`.
+        :param pt: an instance of :class:`Point`.
         """
 
         brightRect = self.BuildRect()
@@ -1240,10 +1191,9 @@ class BrightCtrl(BaseLineCtrl):
 
 
     def DrawMarkers(self, dc=None):
-        """
-        Draws square markers used with mouse gestures.
+        """Draws square markers used with mouse gestures.
 
-        :param `dc`: an instance of :class:`DC`.
+        :param dc: an instance of :class:`DC`.
         """
 
         if dc is None:
@@ -1290,17 +1240,15 @@ class BrightCtrl(BaseLineCtrl):
 
 
 class HSlider(BaseLineCtrl):
-    """
-    Implements the drawing, mouse handling and sizing routines for the 
+    """Implements the drawing, mouse handling and sizing routines for the 
     slider control.
     """
 
     def __init__(self, parent, value=0, minval=0, maxval=100, onchange=None):
-        """
-        Default class constructor.
+        """Default class constructor.
         Used internally. Do not call it in your code!
 
-        :param `parent`: the control parent window.
+        :param parent: the control parent window.
         """
 
         BaseLineCtrl.__init__(self, parent, size=(s(140), s(8)))
@@ -1318,10 +1266,9 @@ class HSlider(BaseLineCtrl):
 
         
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` for :class:`BrightCtrl`.
+        """Handles the ``wx.EVT_PAINT`` for :class:`BrightCtrl`.
 
-        :param `event`: a :class:`PaintEvent` event to be processed.
+        :param event: a :class:`PaintEvent` event to be processed.
         """
 
         dc = wx.AutoBufferedPaintDC(self)
@@ -1330,8 +1277,7 @@ class HSlider(BaseLineCtrl):
 
 
     def DoGetBestSize(self):
-        """
-        Overridden base class virtual. Determines the best size of the control.
+        """Overridden base class virtual. Determines the best size of the control.
 
         :note: Overridden from :class:`PyControl`.
         """
@@ -1363,10 +1309,9 @@ class HSlider(BaseLineCtrl):
         
         
     def TrackPoint(self, pt):
-        """
-        Tracks a mouse action inside the palette control.
+        """Tracks a mouse action inside the palette control.
 
-        :param `pt`: an instance of :class:`Point`.
+        :param pt: an instance of :class:`Point`.
         """
 
         brightRect = self.BuildRect()
@@ -1386,10 +1331,9 @@ class HSlider(BaseLineCtrl):
 
 
     def DrawMarkers(self, dc=None):
-        """
-        Draws square markers used with mouse gestures.
+        """Draws square markers used with mouse gestures.
 
-        :param `dc`: an instance of :class:`DC`.
+        :param dc: an instance of :class:`DC`.
         """
 
         if dc is None:
@@ -1601,8 +1545,7 @@ class NumSpin(wx_Panel):
 
 class ProfileManager(object):
     
-    """
-    Manages profiles associated with the display that a window is on.
+    """Manages profiles associated with the display that a window is on.
     
     Clears calibration on the display we're on, and restores it when moved
     to another display or the window is closed.
@@ -1729,8 +1672,7 @@ class ProfileManager(object):
     
     
     def update(self, restore_display_profiles=True):
-        """
-        Clear calibration on the current display, and restore it on
+        """Clear calibration on the current display, and restore it on
         the previous one (if any)
         
         """
@@ -1756,8 +1698,7 @@ class ProfileManager(object):
 
 
     def restore_display_profiles(self, wrapup=False, wait=False):
-        """
-        Reinstall memorized display profiles, restore calibration
+        """Reinstall memorized display profiles, restore calibration
         
         """
         while self._profiles:
@@ -1787,8 +1728,7 @@ class ProfileManager(object):
 
 
     def window_close_handler(self, event):
-        """
-        Restores profile(s) when the managed window is closed.
+        """Restores profile(s) when the managed window is closed.
         
         """
         self._stop_timer()
@@ -1797,8 +1737,7 @@ class ProfileManager(object):
 
 
     def window_move_handler(self, event):
-        """
-        Clear calibration on the current display, and restore it on
+        """Clear calibration on the current display, and restore it on
         the previous one (if any) when the window is moved from one to
         another display.
         
@@ -1814,21 +1753,19 @@ class ProfileManager(object):
 
 
 class VisualWhitepointEditor(wx.Frame):
-    """
-    This is the VisualWhitepointEditor main class implementation.
+    """This is the VisualWhitepointEditor main class implementation.
     """
 
     def __init__(self, parent, colourData=None, title=wx.EmptyString,
                  pos=wx.DefaultPosition, patterngenerator=None,
                  geometry=None, profile=None):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `colourData`: a standard :class:`ColourData` (as used in :class:`ColourFrame`);
+        :param colourData: a standard :class:`ColourData` (as used in :class:`ColourFrame`);
          to hide the alpha channel control or not.
-        :param `patterngenerator`: a patterngenerator object
-        :param `geometry`: the geometry of the display the profile is assigned to
-        :param `profile`: the profile of the display with the given geometry
+        :param patterngenerator: a patterngenerator object
+        :param geometry: the geometry of the display the profile is assigned to
+        :param profile: the profile of the display with the given geometry
         """
         
         self.patterngenerator = patterngenerator
@@ -2199,10 +2136,9 @@ class VisualWhitepointEditor(wx.Frame):
 
 
     def DrawMarkers(self, dc=None):
-        """
-        Draws the markers for all the controls.
+        """Draws the markers for all the controls.
 
-        :param `dc`: an instance of :class:`DC`. If `dc` is ``None``, a :class:`ClientDC` is
+        :param dc: an instance of :class:`DC`. If `dc` is ``None``, a :class:`ClientDC` is
          created on the fly.
         """
 
@@ -2263,10 +2199,9 @@ class VisualWhitepointEditor(wx.Frame):
         
         
     def OnCloseWindow(self, event):
-        """
-        Handles the ``wx.EVT_CLOSE`` event for :class:`VisualWhitepointEditor`.
+        """Handles the ``wx.EVT_CLOSE`` event for :class:`VisualWhitepointEditor`.
         
-        :param `event`: a :class:`CloseEvent` event to be processed.
+        :param event: a :class:`CloseEvent` event to be processed.
         """
 
         if self.IsFullScreen():
@@ -2275,10 +2210,9 @@ class VisualWhitepointEditor(wx.Frame):
     
     
     def OnKeyDown(self, event):
-        """
-        Handles the ``wx.EVT_CHAR_HOOK`` event for :class:`VisualWhitepointEditor`.
+        """Handles the ``wx.EVT_CHAR_HOOK`` event for :class:`VisualWhitepointEditor`.
         
-        :param `event`: a :class:`KeyEvent` event to be processed.
+        :param event: a :class:`KeyEvent` event to be processed.
         """
 
         if event.GetKeyCode() == wx.WXK_ESCAPE:
@@ -2313,13 +2247,12 @@ class VisualWhitepointEditor(wx.Frame):
     
 
     def PtFromAngle(self, angle, sat, center):
-        """
-        Given the angle with respect to the x-axis, returns the point based on
+        """Given the angle with respect to the x-axis, returns the point based on
         the saturation value.
 
-        :param `angle`: a float representing an angle;
-        :param `sat`: a float representing the colour saturation value;
-        :param `center`: a float value representing the center.
+        :param angle: a float representing an angle;
+        :param sat: a float representing the colour saturation value;
+        :param center: a float value representing the center.
         """
 
         angle = deg2rad(angle)
@@ -2337,10 +2270,9 @@ class VisualWhitepointEditor(wx.Frame):
         
 
     def OnSpinCtrl(self, event):
-        """
-        Handles the ``wx.EVT_SPINCTRL`` event for RGB and HSB colours.
+        """Handles the ``wx.EVT_SPINCTRL`` event for RGB and HSB colours.
 
-        :param `event`: a :class:`SpinEvent` event to be processed.
+        :param event: a :class:`SpinEvent` event to be processed.
         """
 
         obj = event.GetEventObject().Parent
@@ -2497,8 +2429,7 @@ class VisualWhitepointEditor(wx.Frame):
 
 
     def maximize_handler(self, event):
-        """
-        Handles maximize and fullscreen events
+        """Handles maximize and fullscreen events
         
         """
         #print '_isfullscreen?', getattr(self, "_isfullscreen", False)

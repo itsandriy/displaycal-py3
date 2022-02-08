@@ -51,8 +51,7 @@ class File(object):
         self.filename = filename
     
     def get_resources(self, types=None, names=None, languages=None):
-        """
-        Get resources.
+        """Get resources.
         
         types = a list of resource types to search for (None = all)
         names = a list of resource names to search for (None = all)
@@ -64,8 +63,7 @@ class File(object):
         return GetResources(self.filename, types, names, languages)
     
     def update_resources(self, data, type_, names=None, languages=None):
-        """
-        Update or add resource data.
+        """Update or add resource data.
         
         type_ = resource type to update
         names = a list of resource names to update (None = all)
@@ -76,8 +74,7 @@ class File(object):
     
     def update_resources_from_datafile(self, srcpath, type_, names=None, 
                                        languages=None):
-        """
-        Update or add resource data from file srcpath.
+        """Update or add resource data from file srcpath.
         
         type_ = resource type to update
         names = a list of resource names to update (None = all)
@@ -89,8 +86,7 @@ class File(object):
     
     def update_resources_from_dict(self, res, types=None, names=None, 
                                    languages=None):
-        """
-        Update or add resources from resource dict.
+        """Update or add resources from resource dict.
         
         types = a list of resource types to update (None = all)
         names = a list of resource names to update (None = all)
@@ -102,8 +98,7 @@ class File(object):
     
     def update_resources_from_resfile(self, srcpath, types=None, names=None, 
                                       languages=None):
-        """
-        Update or add resources from dll/exe file srcpath.
+        """Update or add resources from dll/exe file srcpath.
         
         types = a list of resource types to update (None = all)
         names = a list of resource names to update (None = all)
@@ -115,8 +110,7 @@ class File(object):
 
 
 def _GetResources(hsrc, types=None, names=None, languages=None):
-    """
-    Get resources from hsrc.
+    """Get resources from hsrc.
     
     types = a list of resource types to search for (None = all)
     names = a list of resource names to search for (None = all)
@@ -170,8 +164,7 @@ def _GetResources(hsrc, types=None, names=None, languages=None):
 
 
 def GetResources(filename, types=None, names=None, languages=None):
-    """
-    Get resources from dll/exe file.
+    """Get resources from dll/exe file.
     
     types = a list of resource types to search for (None = all)
     names = a list of resource names to search for (None = all)
@@ -187,8 +180,7 @@ def GetResources(filename, types=None, names=None, languages=None):
 
 
 def UpdateResources(dstpath, data, type_, names=None, languages=None):
-    """
-    Update or add resource data in dll/exe file dstpath.
+    """Update or add resource data in dll/exe file dstpath.
     
     type_ = resource type to update
     names = a list of resource names to update (None = all)
@@ -221,8 +213,7 @@ def UpdateResources(dstpath, data, type_, names=None, languages=None):
 
 def UpdateResourcesFromDataFile(dstpath, srcpath, type_, names=None, 
                                 languages=None):
-    """
-    Update or add resource data from file srcpath in dll/exe file dstpath.
+    """Update or add resource data from file srcpath in dll/exe file dstpath.
     
     type_ = resource type to update
     names = a list of resource names to update (None = all)
@@ -237,8 +228,7 @@ def UpdateResourcesFromDataFile(dstpath, srcpath, type_, names=None,
 
 def UpdateResourcesFromDict(dstpath, res, types=None, names=None, 
                             languages=None):
-    """
-    Update or add resources from resource dict in dll/exe file dstpath.
+    """Update or add resources from resource dict in dll/exe file dstpath.
     
     types = a list of resource types to update (None = all)
     names = a list of resource names to update (None = all)
@@ -258,8 +248,7 @@ def UpdateResourcesFromDict(dstpath, res, types=None, names=None,
 
 def UpdateResourcesFromResFile(dstpath, srcpath, types=None, names=None, 
                                languages=None):
-    """
-    Update or add resources from dll/exe file srcpath in dll/exe file dstpath.
+    """Update or add resources from dll/exe file srcpath in dll/exe file dstpath.
     
     types = a list of resource types to update (None = all)
     names = a list of resource names to update (None = all)

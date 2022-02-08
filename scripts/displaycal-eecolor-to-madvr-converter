@@ -80,8 +80,7 @@ def eecolor_to_icc_devicelink(eecolor_3dlut_filename, unity=False):
 def eecolor_to_madvr(eecolor_3dlut_filename, unity=False, colorspace=None,
                      hdr=None, logfile=sys.stdout,
                      convert_video_rgb_to_clut65=False, append_linear_cal=True):
-    """
-    Convert eeColor 65^3 3D LUT to madVR 256^3 3D LUT using interpolation
+    """Convert eeColor 65^3 3D LUT to madVR 256^3 3D LUT using interpolation
 
     madvr 3D LUT will be written to:
     <eeColor 3D LUT filename without extension> + '.3dlut'

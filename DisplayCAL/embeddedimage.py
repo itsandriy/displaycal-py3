@@ -23,8 +23,7 @@ except AttributeError:
     
 
 class PyEmbeddedImage(object):
-    """
-    PyEmbeddedImage is primarily intended to be used by code generated
+    """PyEmbeddedImage is primarily intended to be used by code generated
     by img2py as a means of embedding image data in a python module so
     the image can be used at runtime without needing to access the
     image from an image file.  This makes distributing icons and such

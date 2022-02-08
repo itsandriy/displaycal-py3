@@ -185,36 +185,22 @@ def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
                               for line in longdesc.splitlines()])
     appdatadesc = "\n\t\t\t" + longdesc.replace("\n", "\n\t\t\t").replace(".\n", ".\n\t\t</p>\n\t\t<p>\n") + "\n\t\t"
     mapping = {
-        "DATE":
-            strftime("%a %b %d %Y",  # e.g. Tue Jul 06 2010
-                     gmtime(lastmod_time or
-                            os.stat(tmpl_path).st_mtime)),
+        "DATE": strftime("%a %b %d %Y",  # e.g. Tue Jul 06 2010
+                         gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)),
         "DATETIME": strftime("%a %b %d %H:%M:%S UTC %Y",  # e.g. Wed Jul 07 15:25:00 UTC 2010
-                              gmtime(lastmod_time or
-                                     os.stat(tmpl_path).st_mtime)),
+                             gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)),
         "DEBPACKAGE": name.lower(),
         "DEBDATETIME": strftime("%a, %d %b %Y %H:%M:%S ",  # e.g. Wed, 07 Jul 2010 15:25:00 +0100
-                                 gmtime(lastmod_time or
-                                        os.stat(tmpl_path).st_mtime)) + "+0000",
+                                gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)) + "+0000",
         "DOMAIN": domain.lower(),
         "REVERSEDOMAIN": ".".join(reversed(domain.split("."))),
-        "ISODATE":
-            strftime("%Y-%m-%d",
-                     gmtime(lastmod_time or
-                            os.stat(tmpl_path).st_mtime)),
-        "ISODATETIME":
-            strftime("%Y-%m-%dT%H:%M:%S",
-                     gmtime(lastmod_time or
-                            os.stat(tmpl_path).st_mtime)) + "+0000",
-        "ISOTIME":
-            strftime("%H:%M",
-                     gmtime(lastmod_time or
-                            os.stat(tmpl_path).st_mtime)),
+        "ISODATE": strftime("%Y-%m-%d", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)),
+        "ISODATETIME": strftime("%Y-%m-%dT%H:%M:%S", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)) + "+0000",
+        "ISOTIME": strftime("%H:%M", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)),
         "TIMESTAMP": str(int(lastmod_time)),
         "SUMMARY": description,
         "DESC": longdesc,
-        "APPDATADESC": '<p>%s</p>\n\t\t<p xml:lang="en">%s</p>' %
-                       (appdatadesc, appdatadesc),
+        "APPDATADESC": '<p>%s</p>\n\t\t<p xml:lang="en">%s</p>' % (appdatadesc, appdatadesc),
         "APPNAME": name,
         "APPNAME_HTML": name_html,
         "APPNAME_LOWER": name.lower(),
@@ -232,13 +218,11 @@ def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
         "URL": "https://%s/" % domain.lower(),
         "HTTPURL": "http://%s/" % domain.lower(),  # For share counts...
         "WX_MINVERSION": ".".join(str(n) for n in wx_minversion),
-        "YEAR": strftime("%Y", gmtime(lastmod_time or
-                                      os.stat(tmpl_path).st_mtime))}
+        "YEAR": strftime("%Y", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime))}
     mapping.update(iterable or {})
     for key, val in mapping.items():
         tmpl_data = tmpl_data.replace("${%s}" % key, val)
-    tmpl_data = tmpl_data.replace("%s-%s" % (mapping["YEAR"],
-                                             mapping["YEAR"]), mapping["YEAR"])
+    tmpl_data = tmpl_data.replace("%s-%s" % (mapping["YEAR"], mapping["YEAR"]), mapping["YEAR"])
     if os.path.basename(tmpl_path).startswith("debian"):
         longdesc = longdesc_backup
     if os.path.isfile(out_path):
@@ -341,6 +325,7 @@ def setup():
         print("Trying to get git information...")
         lastmod = ""
         timestamp = None
+        mtime = 0
 
         try:
             p = subprocess.Popen(["git", "log", "-1", "--format=%ct"], stdout=subprocess.PIPE, cwd=pydir)
@@ -865,8 +850,7 @@ def setup():
             dist_path = os.path.join(pydir, "dist", "0install", tmpl_name)
             create = not os.path.isfile(dist_path)
             if create:
-                tmpl_path = os.path.join(pydir, "misc", "0install",
-                                         tmpl_name)
+                tmpl_path = os.path.join(pydir, "misc", "0install", tmpl_name)
                 replace_placeholders(tmpl_path, dist_path, lastmod_time)
             if tmpl_name.startswith(name):
                 with open(dist_path) as dist_file:
@@ -875,8 +859,7 @@ def setup():
                 # Get interface
                 interface = domtree.getElementsByTagName("interface")[0]
                 # Get languages
-                langs = [os.path.splitext(os.path.basename(lang))[0] for lang in
-                         glob.glob(os.path.join(name, "lang", "*.json"))]
+                langs = [os.path.splitext(os.path.basename(lang))[0] for lang in glob.glob(os.path.join(name, "lang", "*.json"))]
                 # Get architecture groups
                 groups = domtree.getElementsByTagName("group")
                 if groups:
@@ -981,8 +964,7 @@ def setup():
                                     suffix = ""
                                 option = "%s%s" % (option, suffix)
                                 if cfg.has_option("Desktop Entry", option):
-                                    value = cfg.get("Desktop Entry",
-                                                    option).decode("UTF-8")
+                                    value = cfg.get("Desktop Entry", option)
                                     if value:
                                         tag = domtree.createElement(tagname)
                                         if not lang:
@@ -990,8 +972,7 @@ def setup():
                                         tag.setAttribute("xml:lang", lang)
                                         tag.appendChild(domtree.createTextNode(value))
                                         entry_point.appendChild(tag)
-                        for ext, mime_type in (("ico", "image/vnd.microsoft.icon"),
-                                               ("png", "image/png")):
+                        for ext, mime_type in (("ico", "image/vnd.microsoft.icon"), ("png", "image/png")):
                             icon = domtree.createElement("icon")
                             if ext == "ico":
                                 subdir = ""
@@ -999,10 +980,9 @@ def setup():
                             else:
                                 subdir = "256x256/"
                                 filename = script.lower()
-                            icon.setAttribute("href",
-                                              "http://%s/theme/icons/%s%s.%s" %
-                                              (domain.lower(), subdir,
-                                               filename, ext))
+                            icon.setAttribute(
+                                "href", "http://%s/theme/icons/%s%s.%s" % (domain.lower(), subdir, filename, ext)
+                            )
                             icon.setAttribute("type", mime_type)
                             entry_point.appendChild(icon)
                         interface.appendChild(entry_point)
@@ -1012,7 +992,7 @@ def setup():
                     xml = domtree.toprettyxml(encoding="utf-8")
                     xml = re.sub(r"\n\s+\n", "\n", xml)
                     xml = re.sub(r"\n\s*([^<]+)\n\s*", r"\1", xml)
-                    dist_file.write(xml)
+                    dist_file.write(xml.encode())
                 # Sign feed
                 zeropublish = which("0publish") or which("0publish.exe")
                 args = []
@@ -1028,8 +1008,7 @@ def setup():
                         import wexpect
                         with open(passphrase_path) as passphrase_file:
                             passphrase = passphrase_file.read().strip()
-                        p = wexpect.spawn(zeropublish.encode(fs_enc), args +
-                                          ["-x", dist_path.encode(fs_enc)])
+                        p = wexpect.spawn(zeropublish.encode(fs_enc), args + ["-x", dist_path.encode(fs_enc)])
                         p.expect(":")
                         p.send(passphrase)
                         p.send("\n")
@@ -1047,7 +1026,7 @@ def setup():
         if os.path.isdir(bundletemplatepath):
             p = subprocess.Popen(["0install", "-V"], stdout=subprocess.PIPE)
             stdout, stderr = p.communicate()
-            zeroinstall_version = re.search(r" (\d(?:\.\d+)+)", stdout)
+            zeroinstall_version = re.search(r" (\d(?:\.\d+)+)", stdout.decode())
             if zeroinstall_version:
                 zeroinstall_version = zeroinstall_version.groups()[0]
             if zeroinstall_version < "2.8":
@@ -1055,10 +1034,8 @@ def setup():
             feeduri = "http://%s/0install/%s.xml" % (domain.lower(), name)
             dist_dir = os.path.join(pydir, "dist", "0install",
                                     name + "-0install")
-            for script, desc in scripts + [("0install-launcher",
-                                            "0install Launcher"),
-                                           ("0install-cache-manager",
-                                            "0install Cache Manager")]:
+            for script, desc in scripts + [("0install-launcher", "0install Launcher"),
+                                           ("0install-cache-manager", "0install Cache Manager")]:
                 if script.endswith("-apply-profiles"):
                     continue
                 desc = re.sub("^%s " % name, "", desc).strip()
@@ -1066,20 +1043,14 @@ def setup():
                     bundlename = name
                 else:
                     bundlename = desc
-                bundledistpath = os.path.join(dist_dir, desc + ".app",
-                                              "Contents")
-                replace_placeholders(os.path.join(bundletemplatepath,
-                                                  "Info.plist"),
-                                     os.path.join(bundledistpath,
-                                                  "Info.plist"), lastmod_time,
+                bundledistpath = os.path.join(dist_dir, desc + ".app", "Contents")
+                replace_placeholders(os.path.join(bundletemplatepath, "Info.plist"),
+                                     os.path.join(bundledistpath, "Info.plist"), lastmod_time,
                                      {"NAME": bundlename,
                                       "EXECUTABLE": script,
-                                      "ID": ".".join(reversed(domain.split("."))) +
-                                            "." + script})
+                                      "ID": ".".join(reversed(domain.split("."))) + "." + script})
                 if script.startswith(name):
-                    run = "0launch%s -- %s" % (re.sub("^%s" % name,
-                                                      " --command=run", script),
-                                               feeduri)
+                    run = "0launch%s -- %s" % (re.sub("^%s" % name, " --command=run", script), feeduri)
                 else:
                     run = {"0install-launcher": "0launch --gui " + feeduri,
                            "0install-cache-manager": "0store manage"}.get(script)
@@ -1107,17 +1078,14 @@ def setup():
                 if not os.path.isdir(resdir):
                     os.mkdir(resdir)
                 if script.startswith(name):
-                    iconsrc = os.path.join(pydir, name, "theme", "icons",
-                                           script + ".icns")
+                    iconsrc = os.path.join(pydir, name, "theme", "icons", script + ".icns")
                 else:
-                    iconsrc = os.path.join(pydir, "0install",
-                                           "ZeroInstall.icns")
+                    iconsrc = os.path.join(pydir, "0install", "ZeroInstall.icns")
                 icondst = os.path.join(resdir, script + ".icns")
                 if os.path.isfile(iconsrc) and not os.path.isfile(icondst):
                     shutil.copy2(iconsrc, icondst)
             # README as .webloc file (link to homepage)
-            with codecs.open(os.path.join(dist_dir, "README.webloc"), "w",
-                             "UTF-8") as readme:
+            with codecs.open(os.path.join(dist_dir, "README.webloc"), "w", "UTF-8") as readme:
                 readme.write("""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">

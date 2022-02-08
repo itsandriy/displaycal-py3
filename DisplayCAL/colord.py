@@ -206,8 +206,7 @@ def find(what, search):
 
 
 def get_default_profile(device_id):
-    """
-    Get default profile for device
+    """Get default profile for device
 
     """
     # Find device object path
@@ -256,8 +255,7 @@ def get_object_path(search, object_type):
 def install_profile(device_id, profile,
                     timeout=CD_CLIENT_IMPORT_DAEMON_TIMEOUT / 1000.0,
                     logfn=None):
-    """
-    Install profile for device
+    """Install profile for device
 
     timeout				  Time to allow for colord to pick up new profiles
                           (recommended not below 2 secs)

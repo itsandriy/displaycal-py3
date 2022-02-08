@@ -207,8 +207,7 @@ class AnimatedBitmap(wx.PyControl):
     def __init__(self, parent, id=wx.ID_ANY, bitmaps=None, range=(0, -1),
                  loop=True, pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.NO_BORDER):
-        """
-        Create animated bitmap
+        """Create animated bitmap
 
         bitmaps should be an array of bitmaps.
         range should be the indexes of the range of frames that should be looped.
@@ -283,12 +282,11 @@ class AnimatedBitmap(wx.PyControl):
 class AuiBetterTabArt(AuiDefaultTabArt):
 
     def DrawTab(self, dc, wnd, page, in_rect, close_button_state, paint_control=False):
-        """
-        Draws a single tab.
+        """Draws a single tab.
 
-        :param `dc`: a :class:`DC` device context;
-        :param `wnd`: a :class:`Window` instance object;
-        :param `page`: the tab control page associated with the tab;
+        :param dc: a :class:`DC` device context;
+        :param wnd: a :class:`Window` instance object;
+        :param page: the tab control page associated with the tab;
         :param Rect `in_rect`: rectangle the tab should be confined to;
         :param integer `close_button_state`: the state of the close button on the tab;
         :param bool `paint_control`: whether to draw the control inside a tab (if any) on a :class:`MemoryDC`.
@@ -572,10 +570,9 @@ class AuiBetterTabArt(AuiDefaultTabArt):
         return out_tab_rect, out_button_rect, x_extent
 
     def SetDefaultColours(self, base_colour=None):
-        """
-        Sets the default colours, which are calculated from the given base colour.
+        """Sets the default colours, which are calculated from the given base colour.
 
-        :param `base_colour`: an instance of :class:`Colour`. If defaulted to ``None``, a colour
+        :param base_colour: an instance of :class:`Colour`. If defaulted to ``None``, a colour
          is generated accordingly to the platform and theme.
         """
 
@@ -1864,8 +1861,7 @@ class BaseFrame(wx.Frame):
             event.Skip()
 
     def setup_language(self):
-        """
-        Substitute translated strings for menus, controls, labels and tooltips.
+        """Substitute translated strings for menus, controls, labels and tooltips.
 
         """
         if not hasattr(self, "_menulabels"):
@@ -2041,8 +2037,7 @@ class BaseFrame(wx.Frame):
             self.SetMinSize(self.ClientToWindowSize(minsize))
 
     def set_child_ctrls_as_attrs(self, parent=None):
-        """
-        Set child controls and labels as attributes of the frame.
+        """Set child controls and labels as attributes of the frame.
 
         Will also set a maximum font size of 11 pt.
         parent is the window over which children will be iterated and
@@ -2380,8 +2375,7 @@ class BaseInteractiveDialog(wx.Dialog):
             self.Show()
 
     def ShowWindowModalBlocking(self):
-        """
-        Blocking ShoWindowModal implementation.
+        """Blocking ShoWindowModal implementation.
 
         Normally, ShowWindowModal is only implemented under macOS and doesn't
         block. This version blocks, while still allowing interaction with
@@ -2778,8 +2772,7 @@ class FileBrowseBitmapButtonWithChoiceHistory(filebrowse.FileBrowseButtonWithHis
         self.browseButton.Enable(enable)
 
     def GetName(self, path):
-        """
-        Return a name for a path. Return value may be a translated string.
+        """Return a name for a path. Return value may be a translated string.
 
         """
         name = None
@@ -2795,8 +2788,7 @@ class FileBrowseBitmapButtonWithChoiceHistory(filebrowse.FileBrowseButtonWithHis
         return lang.getstr(name)
 
     def GetValue(self):
-        """
-        retrieve current value of text control
+        """retrieve current value of text control
         """
         if self.textControl.GetSelection() > -1:
             return self.history[self.textControl.GetSelection()]
@@ -2991,8 +2983,7 @@ class FileDrop(_FileDrop):
         self.unsupported_handler = self.drop_unsupported_handler
 
     def drop_unsupported_handler(self):
-        """
-        Drag'n'drop handler for unsupported files.
+        """Drag'n'drop handler for unsupported files.
 
         Shows an error message.
 
@@ -3044,8 +3035,7 @@ class FlatShadedButton(GradientButton):
         self.Enable(False)
 
     def DoGetBestSize(self):
-        """
-        Overridden base class virtual. Determines the best size of the
+        """Overridden base class virtual. Determines the best size of the
         button based on the label and bezel size.
         """
 
@@ -3082,10 +3072,9 @@ class FlatShadedButton(GradientButton):
         return self._lastBestSize
 
     def OnGainFocus(self, event):
-        """
-        Handles the ``wx.EVT_SET_FOCUS`` event for L{GradientButton}.
+        """Handles the ``wx.EVT_SET_FOCUS`` event for L{GradientButton}.
 
-        :param `event`: a `wx.FocusEvent` event to be processed.
+        :param event: a `wx.FocusEvent` event to be processed.
         """
 
         self._hasFocus = True
@@ -3094,10 +3083,9 @@ class FlatShadedButton(GradientButton):
         self.Update()
 
     def OnLoseFocus(self, event):
-        """
-        Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{GradientButton}.
+        """Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{GradientButton}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         self._hasFocus = False
@@ -3110,10 +3098,9 @@ class FlatShadedButton(GradientButton):
         event.Skip()
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` event for L{GradientButton}.
+        """Handles the ``wx.EVT_PAINT`` event for L{GradientButton}.
 
-        :param `event`: a `wx.PaintEvent` event to be processed.
+        :param event: a `wx.PaintEvent` event to be processed.
         """
 
         if sys.platform != "win32":
@@ -3282,12 +3269,11 @@ class BorderGradientButton(GradientButton):
                            lambda self, bitmap: self.SetBitmap(bitmap))
 
     def DarkColour(self, colour, percent):
-        """
-        Return dark contrast of `colour`. The colour returned is from the scale of
+        """Return dark contrast of `colour`. The colour returned is from the scale of
         `colour` ==> white.
 
-        :param `colour`: the input colour to be brightened;
-        :param `percent`: determines how dark the colour will be. `percent` = 100
+        :param colour: the input colour to be brightened;
+        :param percent: determines how dark the colour will be. `percent` = 100
          returns black, `percent` = 0 returns `colour`.
         """
 
@@ -3308,8 +3294,7 @@ class BorderGradientButton(GradientButton):
         self.Enable(False)
 
     def DoGetBestSize(self):
-        """
-        Overridden base class virtual. Determines the best size of the
+        """Overridden base class virtual. Determines the best size of the
         button based on the label and bezel size.
         """
 
@@ -3345,10 +3330,9 @@ class BorderGradientButton(GradientButton):
     Enabled = property(IsEnabled, Enable)
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` event for L{GradientButton}.
+        """Handles the ``wx.EVT_PAINT`` event for L{GradientButton}.
 
-        :param `event`: a `wx.PaintEvent` event to be processed.
+        :param event: a `wx.PaintEvent` event to be processed.
         """
 
         if sys.platform != "win32":
@@ -3940,8 +3924,7 @@ class CustomGrid(wx.grid.Grid):
         event.Skip()
 
     def SetColLabelRenderer(self, col, renderer):
-        """
-        Register a renderer to be used for drawing the label for the
+        """Register a renderer to be used for drawing the label for the
         given column.
         """
         if renderer is None:
@@ -3958,8 +3941,7 @@ class CustomGrid(wx.grid.Grid):
         wx.grid.Grid.SetDefaultCellBackgroundColour(self, color)
 
     def SetRowLabelRenderer(self, row, renderer):
-        """
-        Register a renderer to be used for drawing the label for the
+        """Register a renderer to be used for drawing the label for the
         given row.
         """
         if renderer is None:
@@ -4010,8 +3992,7 @@ class CustomGrid(wx.grid.Grid):
 
 class CustomCheckBox(wx.Panel):
 
-    """
-    A custom checkbox where the label is independent from the checkbox itself.
+    """A custom checkbox where the label is independent from the checkbox itself.
 
     Works around wxMac not taking into account text (foreground) color on
     a default checkbox label.
@@ -4110,16 +4091,14 @@ class CustomCheckBox(wx.Panel):
         self._label.SetMaxFontSize(pointsize)
 
     def GetValue(self):
-        """
-        Returns the state of CustomCheckBox, True if checked, False
+        """Returns the state of CustomCheckBox, True if checked, False
         otherwise.
         """
 
         return self._cb.Value
 
     def IsChecked(self):
-        """
-        This is just a maybe more readable synonym for GetValue: just as the
+        """This is just a maybe more readable synonym for GetValue: just as the
         latter, it returns True if the CustomCheckBox is checked and False
         otherwise.
         """
@@ -4127,8 +4106,7 @@ class CustomCheckBox(wx.Panel):
         return self._cb.Value
 
     def SetValue(self, state):
-        """
-        Sets the CustomCheckBox to the given state. This does not cause a
+        """Sets the CustomCheckBox to the given state. This does not cause a
         wx.wxEVT_COMMAND_CHECKBOX_CLICKED event to get emitted.
         """
 
@@ -4177,8 +4155,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         self._cell_renderer = CustomCellRenderer()
 
     def Create(self, parent, id, evtHandler):
-        """
-        Called to create the control, which must derive from wx.Control.
+        """Called to create the control, which must derive from wx.Control.
         """
         print("CustomCellEditor.Create(%r, %r, %r) was called. This "
                    "should not happen, but is unlikely an issue." %
@@ -4186,8 +4163,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         self.SetControl(wx.StaticText(parent, -1, ""))
 
     def SetSize(self, rect):
-        """
-        Called to position/size the edit control within the cell rectangle.
+        """Called to position/size the edit control within the cell rectangle.
         If you don't fill the cell (the rect) then be sure to override
         PaintBackground and do something meaningful there.
         """
@@ -4197,8 +4173,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
                                    wx.SIZE_ALLOW_MINUS_ONE)
 
     def Show(self, show, attr):
-        """
-        Show or hide the edit control.  You can use the attr (if not None)
+        """Show or hide the edit control.  You can use the attr (if not None)
         to set colours or fonts for the control.
         """
         print("CustomCellEditor.Show(%r, %r) was called. This should "
@@ -4206,8 +4181,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         super(self.__class__, self).Show(show, attr)
 
     def PaintBackground(self, dc, rect, attr=None):
-        """
-        Draws the part of the cell not occupied by the edit control.  The
+        """Draws the part of the cell not occupied by the edit control.  The
         base  class version just fills it with background colour from the
         attribute.  In this class the edit control fills the whole cell so
         don't do anything at all in order to reduce flicker.
@@ -4217,8 +4191,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
                                  self._grid.GetGridCursorCol(), True)
 
     def BeginEdit(self, row, col, grid):
-        """
-        Fetch the value from the table and prepare the edit control
+        """Fetch the value from the table and prepare the edit control
         to begin editing.  Set the focus to the edit control.
         """
         print("CustomCellEditor.BeginEdit(%r, %r, %r) was called. This "
@@ -4226,8 +4199,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
                    (row, col, grid))
 
     def EndEdit(self, row, col, grid, value=None):
-        """
-        Complete the editing of the current cell. Returns True if the value
+        """Complete the editing of the current cell. Returns True if the value
         has changed.  If necessary, the control may be destroyed.
         """
         print("CustomCellEditor.EndEdit(%r, %r, %r, %r) was called. This "
@@ -4240,23 +4212,20 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         return changed
 
     def Reset(self):
-        """
-        Reset the value in the control back to its starting value.
+        """Reset the value in the control back to its starting value.
         """
         print("CustomCellEditor.Reset() was called. This should "
                    "not happen, but is unlikely an issue.")
 
     def IsAcceptedKey(self, evt):
-        """
-        Return True to allow the given key to start editing: the base class
+        """Return True to allow the given key to start editing: the base class
         version only checks that the event has no modifiers.  F2 is special
         and will always start the editor.
         """
         return False
 
     def StartingKey(self, evt):
-        """
-        If the editor is enabled by pressing keys on the grid, this will be
+        """If the editor is enabled by pressing keys on the grid, this will be
         called to let the editor do something about that first key if desired.
         """
         print("CustomCellEditor.StartingKey(%r) was called. This should "
@@ -4264,8 +4233,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         evt.Skip()
 
     def StartingClick(self):
-        """
-        If the editor is enabled by clicking on the cell, this method will be
+        """If the editor is enabled by clicking on the cell, this method will be
         called to allow the editor to simulate the click on the control if
         needed.
         """
@@ -4275,8 +4243,7 @@ class CustomCellEditor(wx.grid.PyGridCellEditor):
         super(self.__class__, self).Destroy()
 
     def Clone(self):
-        """
-        Create a new object which is the copy of this one
+        """Create a new object which is the copy of this one
         *Must Override*
         """
         return self.__class__()
@@ -4593,8 +4560,7 @@ class CustomRowLabelRenderer(object):
 
 class HStretchStaticBitmap(wx.StaticBitmap):
 
-    """
-    A StaticBitmap that will automatically stretch horizontally.
+    """A StaticBitmap that will automatically stretch horizontally.
 
     To be used with sizers.
 
@@ -4742,10 +4708,9 @@ class BetterPyGauge(pygauge.PyGauge):
         del self._timer
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` event for L{PyGauge}.
+        """Handles the ``wx.EVT_PAINT`` event for L{PyGauge}.
 
-        :param `event`: a `wx.PaintEvent` event to be processed.
+        :param event: a `wx.PaintEvent` event to be processed.
         """
 
         dc = wx.BufferedPaintDC(self)
@@ -4847,12 +4812,11 @@ class BetterPyGauge(pygauge.PyGauge):
         self._timer.Stop()
 
     def Update(self, value, time=0):
-        """
-        Update the gauge by adding `value` to it over `time` milliseconds. The `time` parameter
+        """Update the gauge by adding `value` to it over `time` milliseconds. The `time` parameter
         **must** be a multiple of 50 milliseconds.
 
-        :param `value`: The value to be added to the gauge;
-        :param `time`: The length of time in milliseconds that it will take to move the gauge.
+        :param value: The value to be added to the gauge;
+        :param time: The length of time in milliseconds that it will take to move the gauge.
         """
         self._indeterminate = False
 
@@ -4939,8 +4903,7 @@ class BetterStaticFancyTextBase(object):
 
 class BetterStaticFancyText(BetterStaticFancyTextBase, GenStaticBitmap):
 
-    """
-    Based on wx.lib.fancytext functionality.
+    """Based on wx.lib.fancytext functionality.
 
     Renders crisp on 'Retina' displays under OS X and in high DPI mode
     under Linux/Windows.
@@ -6352,7 +6315,7 @@ class TabButton(PlateButton):
     def OnLeftUp(self, evt):
         """Post a button event.
 
-        :param `evt`: :class:`MouseEvent`
+        :param evt: :class:`MouseEvent`
 
         """
         self._SetState(platebtn.PLATE_PRESSED)
@@ -6362,7 +6325,7 @@ class TabButton(PlateButton):
         """Execute a single button press action when the Return key is pressed
         and this control has the focus.
 
-        :param `evt`: wx.EVT_KEY_UP
+        :param evt: wx.EVT_KEY_UP
 
         """
         if evt.GetKeyCode() == wx.WXK_SPACE:
@@ -6501,8 +6464,7 @@ class TabButton(PlateButton):
 
 class TaskBarNotification(wx.Frame):
 
-    """
-    A popup window in a visual style similar to Win10 'toast' notifications.
+    """A popup window in a visual style similar to Win10 'toast' notifications.
 
     It will be shown next to the task bar tray, which makes it a possible
     replacement for 'balloon'-style notifications.
@@ -6759,8 +6721,7 @@ class TwoWaySplitter(FourWaySplitter):
 
     # Recompute layout
     def _SizeWindows(self):
-        """
-        Recalculate the layout based on split positions and split fractions.
+        """Recalculate the layout based on split positions and split fractions.
 
         :see: L{SetHSplit} and L{SetVSplit} for more information about split fractions.
         """
@@ -6797,10 +6758,9 @@ class TwoWaySplitter(FourWaySplitter):
 
     # Draw the horizontal split
     def DrawSplitter(self, dc):
-        """
-        Actually draws the sashes.
+        """Actually draws the sashes.
 
-        :param `dc`: an instance of `wx.DC`.
+        :param dc: an instance of `wx.DC`.
         """
 
         backColour = wx.Colour(*[int(v * .85) for v in self.BackgroundColour[:3]])
@@ -6833,10 +6793,9 @@ class TwoWaySplitter(FourWaySplitter):
 
     # Determine split mode
     def GetMode(self, pt):
-        """
-        Determines the split mode for L{FourWaySplitter}.
+        """Determines the split mode for L{FourWaySplitter}.
 
-        :param `pt`: the point at which the mouse has been clicked, an instance of
+        :param pt: the point at which the mouse has been clicked, an instance of
          `wx.Point`.
 
         :return: One of the following 3 split modes:
@@ -6878,10 +6837,9 @@ class TwoWaySplitter(FourWaySplitter):
         return self._splitsize
 
     def OnLeaveWindow(self, event):
-        """
-        Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{FourWaySplitter}.
+        """Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{FourWaySplitter}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         self.SetCursor(wx.STANDARD_CURSOR)
@@ -6916,10 +6874,9 @@ class TwoWaySplitter(FourWaySplitter):
 
     # Button being released
     def OnLeftUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` event for L{FourWaySplitter}.
+        """Handles the ``wx.EVT_LEFT_UP`` event for L{FourWaySplitter}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         if not self.IsEnabled():
@@ -6951,10 +6908,9 @@ class TwoWaySplitter(FourWaySplitter):
         self._mode = NOWHERE
 
     def OnMotion(self, event):
-        """
-        Handles the ``wx.EVT_MOTION`` event for L{FourWaySplitter}.
+        """Handles the ``wx.EVT_MOTION`` event for L{FourWaySplitter}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         if self.HasFlag(wx.SP_NOSASH):
@@ -7067,8 +7023,7 @@ def get_gradient_panel(parent, label, x=16):
 
 
 def get_html_colors(allow_alpha=False):
-    """
-    Get background, text, link and visited link colors based on system colors
+    """Get background, text, link and visited link colors based on system colors
 
     """
     bgcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)

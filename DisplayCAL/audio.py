@@ -372,8 +372,7 @@ class _Sound(object):
     _snd = property(_get_snd, _set_snd)
 
     def fade(self, fade_ms, fade_in=None):
-        """
-        Fade in/out.
+        """Fade in/out.
 
         If fade_in is None, fade in/out depending on current volume.
 

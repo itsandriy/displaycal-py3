@@ -7,8 +7,7 @@ import mimetypes
 import uuid
 
 def post_multipart(host, selector, fields, files, charset="UTF-8"):
-    """
-    Post fields and files to an http host as multipart/form-data.
+    """Post fields and files to an http host as multipart/form-data.
     fields is a sequence of (name, value) elements for regular form fields.
     files is a sequence of (name, filename, value) elements for data to be uploaded as files
     Return the server's response page.
@@ -24,8 +23,7 @@ def post_multipart(host, selector, fields, files, charset="UTF-8"):
     return resp.read()
 
 def encode_multipart_formdata(fields, files, charset="UTF-8"):
-    """
-    fields is a sequence of (name, value) elements for regular form fields.
+    """fields is a sequence of (name, value) elements for regular form fields.
     files is a sequence of (name, filename, value) elements for data to be uploaded as files
     Return (content_type, body) ready for httplib.HTTP instance
     """

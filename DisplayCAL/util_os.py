@@ -233,8 +233,7 @@ def dlopen(name, handle=None):
 
 
 def find_library(pattern, arch=None):
-    """
-    Use ldconfig cache to find installed library.
+    """Use ldconfig cache to find installed library.
 
     Can use fnmatch-style pattern matching.
 
@@ -418,8 +417,7 @@ def getenvu(name, default = None):
 
 
 def getgroups(username=None, names_only=False):
-    """
-    Return a list of groups that user is member of, or groups of current
+    """Return a list of groups that user is member of, or groups of current
     process if username not given
 
     """
@@ -435,8 +433,7 @@ def getgroups(username=None, names_only=False):
 
 
 def islink(path):
-    """
-    Cross-platform islink implementation.
+    """Cross-platform islink implementation.
 
     Supports Windows NT symbolic links and reparse points.
 
@@ -461,8 +458,7 @@ def is_superuser():
 
 
 def launch_file(filepath):
-    """
-    Open a file with its assigned default app.
+    """Open a file with its assigned default app.
 
     Return tuple(returncode, stdout, stderr) or None if functionality not available
 
@@ -504,8 +500,7 @@ def make_win32_compatible_long_path(path, maxpath=259):
 
 
 def mkstemp_bypath(path, dir=None, text=False):
-    """
-    Wrapper around mkstemp that uses filename and extension from path as prefix
+    """Wrapper around mkstemp that uses filename and extension from path as prefix
     and suffix for the temporary file, and the directory component as temporary
     file directory if 'dir' is not given.
 
@@ -517,8 +512,7 @@ def mkstemp_bypath(path, dir=None, text=False):
 
 
 def mksfile(filename):
-    """
-    Create a file safely and return (fd, abspath)
+    """Create a file safely and return (fd, abspath)
 
     If filename already exists, add '(n)' as suffix before extension (will
     try up to os.TMP_MAX or 10000 for n)
@@ -634,8 +628,7 @@ def parse_reparse_buffer(buf):
 
 
 def readlink(path):
-    """
-    Cross-platform implenentation of readlink.
+    """Cross-platform implenentation of readlink.
 
     Supports Windows NT symbolic links and reparse points.
 
@@ -696,8 +689,7 @@ def relpath(path, start):
 
 
 def safe_glob(pathname):
-    """
-    Return a list of paths matching a pathname pattern.
+    """Return a list of paths matching a pathname pattern.
 
     The pattern may contain simple shell-style wildcards a la
     fnmatch. However, unlike fnmatch, filenames starting with a
@@ -714,8 +706,7 @@ def safe_glob(pathname):
 
 
 def safe_iglob(pathname):
-    """
-    Return an iterator which yields the paths matching a pathname pattern.
+    """Return an iterator which yields the paths matching a pathname pattern.
 
     The pattern may contain simple shell-style wildcards a la
     fnmatch. However, unlike fnmatch, filenames starting with a
@@ -774,8 +765,7 @@ def safe_glob1(dirname, pattern):
 
 
 def safe_shell_filter(names, pat):
-    """
-    Return the subset of the list NAMES that match PAT
+    """Return the subset of the list NAMES that match PAT
 
     Like fnmatch.filter, but suppresses re.compile errors by escaping
     uncompilable path components.
@@ -807,8 +797,7 @@ def safe_shell_filter(names, pat):
 
 
 def safe_translate(pat):
-    """
-    Translate a shell PATTERN to a regular expression.
+    """Translate a shell PATTERN to a regular expression.
 
     Like fnmatch.translate, but suppresses re.compile errors by escaping
     uncompilable path components.
@@ -875,8 +864,7 @@ def which(executable, paths=None):
 
 def whereis(names, bin=True, bin_paths=None, man=True, man_paths=None, src=True,
             src_paths=None, unusual=False, list_paths=False):
-    """
-    Wrapper around whereis
+    """Wrapper around whereis
 
     """
     args = []

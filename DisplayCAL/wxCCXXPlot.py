@@ -74,8 +74,7 @@ class CCXXPlot(wx.Frame):
     """ CCMX/CCSS plot and information """
 
     def __init__(self, parent, cgats, worker=None):
-        """
-        Init new CCXPlot window.
+        """Init new CCXPlot window.
 
         parent   Parent window (only used for error dialogs)
         cgats    A CCMX/CCSS CGATS instance

@@ -49,8 +49,7 @@ alphanumeric_re = re.compile("\D+|\d+")
 
 
 def natsort_key_factory(ignorecase=True, n=10):
-    """
-    Create natural sort key function.
+    """Create natural sort key function.
 
     Note that if integer parts are longer than n digits, sort order may no
     longer be entirely natural.
@@ -72,8 +71,7 @@ def natsort_key_factory(ignorecase=True, n=10):
 
 
 def natsort(list_in, ignorecase=True, reverse=False, n=10):
-    """
-    Sort a list which (also) contains integers naturally.
+    """Sort a list which (also) contains integers naturally.
 
     Note that if integer parts are longer than n digits, sort order will no
     longer be entirely natural.

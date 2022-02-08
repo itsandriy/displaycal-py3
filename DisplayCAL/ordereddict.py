@@ -3,8 +3,7 @@
 
 
 def is_nan(obj):
-    """
-    Return boolean indicating if obj is considered not a number.
+    """Return boolean indicating if obj is considered not a number.
     """
     try:
         obj + 1
@@ -15,8 +14,7 @@ def is_nan(obj):
 
 class OrderedDict(dict):
 
-    """
-    Simple ordered dictionary.
+    """Simple ordered dictionary.
 
     Compatible with Python 3's OrderedDict, though performance is inferior
     as the approach is different (but should be more memory efficient),
@@ -38,15 +36,13 @@ class OrderedDict(dict):
         self._keys.remove(key)
 
     def __delslice__(self, i, j):
-        """
-        Delete a range of keys.
+        """Delete a range of keys.
         """
         for key in iter(self._keys[i:j]):
             del self[key]
 
     def __eq__(self, other):
-        """
-        od.__eq__(y) <==> od==y.  Comparison to another OD is order-sensitive
+        """od.__eq__(y) <==> od==y.  Comparison to another OD is order-sensitive
         while comparison to a regular mapping is order-insensitive.
         """
         if isinstance(other, OrderedDict):
@@ -55,8 +51,7 @@ class OrderedDict(dict):
         return dict.__eq__(self, other)
 
     def __getslice__(self, i, j):
-        """
-        Get a range of keys. Return a new OrderedDict.
+        """Get a range of keys. Return a new OrderedDict.
         """
         keys = self._keys[i:j]
         return self.__class__(list(zip(keys, list(map(self.get, keys)))))
@@ -79,16 +74,14 @@ class OrderedDict(dict):
         return self.__class__, (items,)
 
     def __repr__(self):
-        """
-        od.__repr__() <==> repr(od)
+        """od.__repr__() <==> repr(od)
         """
         if not self:
             return "%s.%s()" % (self.__class__.__module__, self.__class__.__name__)
         return "%s.%s(%r)" % (self.__class__.__module__, self.__class__.__name__, list(self.items()))
 
     def __reversed__(self):
-        """
-        od.__reversed__() -- return a reverse iterator over the keys
+        """od.__reversed__() -- return a reverse iterator over the keys
         """
         return reversed(self._keys)
 
@@ -98,8 +91,7 @@ class OrderedDict(dict):
         dict.__setitem__(self, key, value)
 
     def __setslice__(self, i, j, iterable):
-        """
-        Set a range of keys.
+        """Set a range of keys.
         """
         for key in iter(self._keys[i:j]):
             dict.__delitem__(self, key)
@@ -114,8 +106,7 @@ class OrderedDict(dict):
         return self.__class__(self)
 
     def delslice(self, key1, key2):
-        """
-        Like __delslice__, but takes keys instead of numerical key positions.
+        """Like __delslice__, but takes keys instead of numerical key positions.
         """
         if key1:
             if key2:
@@ -129,8 +120,7 @@ class OrderedDict(dict):
 
     @classmethod
     def fromkeys(cls, iterable, value=None):
-        """
-        Return new dict with keys from S and values equal to v.
+        """Return new dict with keys from S and values equal to v.
         v defaults to None.
         """
         d = cls()
@@ -139,8 +129,7 @@ class OrderedDict(dict):
         return d
 
     def getslice(self, key1, key2):
-        """
-        Like __getslice__, but takes keys instead of numerical key positions.
+        """Like __getslice__, but takes keys instead of numerical key positions.
         """
         if key1:
             if key2:
@@ -153,8 +142,7 @@ class OrderedDict(dict):
             return self.copy()
 
     def index(self, key, start=0, stop=missing):
-        """
-        Return numerical position of key.
+        """Return numerical position of key.
         Raise KeyError if the key is not present.
         """
         if start != 0 or stop is not OrderedDict.missing:
@@ -169,8 +157,7 @@ class OrderedDict(dict):
         return iterable.index(key)
 
     def insert(self, i, key, value):
-        """
-        Insert key before index and assign value to self[key].
+        """Insert key before index and assign value to self[key].
         If the key is already present, it is overwritten.
         """
         if key in self:
@@ -190,8 +177,7 @@ class OrderedDict(dict):
         return map(self.get, self._keys)
 
     def key(self, value, start=0, stop=missing):
-        """
-        Return key of first value.
+        """Return key of first value.
         Raise ValueError if the value is not present.
         """
         if start != 0 or stop is not OrderedDict.missing:
@@ -215,8 +201,7 @@ class OrderedDict(dict):
         return dict.pop(self, key, *args)
 
     def popitem(self, last=True):
-        """
-        od.popitem() -> (k, v), return and remove a (key, value) pair.
+        """od.popitem() -> (k, v), return and remove a (key, value) pair.
         Pairs are returned in LIFO order if last is true or FIFO order if false.
 
         """
@@ -227,16 +212,14 @@ class OrderedDict(dict):
         return key, self.pop(key)
 
     def rename(self, key, name):
-        """
-        Rename a key in-place.
+        """Rename a key in-place.
         """
         i = self.index(key)
         value = self.pop(key)
         self.insert(i, name, value)
 
     def reverse(self):
-        """
-        Reverse keys in-place.
+        """Reverse keys in-place.
         """
         self._keys.reverse()
 
@@ -246,8 +229,7 @@ class OrderedDict(dict):
         return self[key]
 
     def setslice(self, key1, key2, iterable):
-        """
-        Like __setslice__, but takes keys instead of numerical key positions.
+        """Like __setslice__, but takes keys instead of numerical key positions.
         """
         if key1:
             if key2:
@@ -260,8 +242,7 @@ class OrderedDict(dict):
             self[:] = iterable
 
     def sort(self, *args, **kwargs):
-        """
-        Sort keys in-place.
+        """Sort keys in-place.
         """
         self._keys.sort(*args, **kwargs)
 

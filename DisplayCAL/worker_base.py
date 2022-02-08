@@ -80,8 +80,7 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
                           use_cam_clipping, clutres, step, threshold,
                           threshold2, interp, Linterp, m2, XYZbp, XYZwp, bpc,
                           abortmessage="Aborted"):
-    """
-    B2A cLUT generation worker
+    """B2A cLUT generation worker
 
     This should be spawned as a multiprocessing process
 
@@ -268,8 +267,7 @@ def get_argyll_utilname(name, paths=None):
 
 
 def get_argyll_version(name, paths=None):
-    """
-    Determine version of a certain Argyll utility.
+    """Determine version of a certain Argyll utility.
 
     """
     argyll_version_string = get_argyll_version_string(name, paths)
@@ -360,8 +358,7 @@ class ThreadAbort(object):
 class WorkerBase(object):
 
     def __init__(self):
-        """
-        Create and return a new base worker instance.
+        """Create and return a new base worker instance.
         """
         self.sessionlogfile = None
         self.subprocess_abort = False
@@ -421,8 +418,7 @@ class WorkerBase(object):
                logfile=None, use_icclu=False, use_cam_clipping=False,
                get_clip=False, show_actual_if_clipped=False,
                input_encoding=None, output_encoding=None):
-        """
-        Call xicclu, feed input floats into stdin, return output floats.
+        """Call xicclu, feed input floats into stdin, return output floats.
 
         input data needs to be a list of 3-tuples (or lists) with floats,
         alternatively a list of strings.

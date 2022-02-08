@@ -10,8 +10,7 @@ from util_str import safe_str
 
 
 def get_network_addr():
-    """
-    Tries to get the local machine's network address.
+    """Tries to get the local machine's network address.
 
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -27,8 +26,7 @@ def get_network_addr():
 
 
 def get_valid_host(hostname=None):
-    """
-    Tries to verify the hostname by resolving to an IPv4 address.
+    """Tries to verify the hostname by resolving to an IPv4 address.
 
     Both hostname with and without .local suffix will be tried if necessary.
 

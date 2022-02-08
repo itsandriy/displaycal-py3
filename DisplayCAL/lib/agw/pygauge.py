@@ -65,16 +65,15 @@ class PyGauge(wx.PyWindow):
     
     def __init__(self, parent, id=wx.ID_ANY, range=100, pos=wx.DefaultPosition,
                  size=(-1,30), style=0):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: parent window. Must not be ``None``;
-        :param `id`: window identifier. A value of -1 indicates a default value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: parent window. Must not be ``None``;
+        :param id: window identifier. A value of -1 indicates a default value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the underlying `wx.PyWindow` window style.
+        :param style: the underlying `wx.PyWindow` window style.
         """
 
         wx.PyWindow.__init__(self, parent, id, pos, size, style)
@@ -98,8 +97,7 @@ class PyGauge(wx.PyWindow):
         
         
     def DoGetBestSize(self):
-        """
-        Overridden base class virtual. Determines the best size of the
+        """Overridden base class virtual. Determines the best size of the
         button based on the label and bezel size.
         """
         
@@ -113,10 +111,9 @@ class PyGauge(wx.PyWindow):
 
     
     def SetBorderColour(self, colour):
-        """
-        Sets the L{PyGauge} border colour.
+        """Sets the L{PyGauge} border colour.
 
-        :param `colour`: an instance of `wx.Colour`.
+        :param colour: an instance of `wx.Colour`.
         """
         
         self._border_colour = colour
@@ -132,10 +129,9 @@ class PyGauge(wx.PyWindow):
     
 
     def SetBarColour(self, colour):
-        """
-        Sets the L{PyGauge} main bar colour.
+        """Sets the L{PyGauge} main bar colour.
 
-        :param `colour`: an instance of `wx.Colour`.
+        :param colour: an instance of `wx.Colour`.
         """
 
         if type(colour) != type([]):
@@ -162,7 +158,7 @@ class PyGauge(wx.PyWindow):
         """ 
         Sets the bar gradient. 
        
-        :param `gradient`: a tuple containing the gradient start and end colours.
+        :param gradient: a tuple containing the gradient start and end colours.
 
         :note: This overrides the bar colour previously set with L{SetBarColour}.        
         """
@@ -185,7 +181,7 @@ class PyGauge(wx.PyWindow):
         """ 
         Sets the border padding.
        
-        :param `padding`: pixels between the border and the progress bar.
+        :param padding: pixels between the border and the progress bar.
         """
         
         self._border_padding = padding
@@ -202,7 +198,7 @@ class PyGauge(wx.PyWindow):
         Sets the range of the gauge. The gauge length is its 
         value as a proportion of the range.
         
-        :param `range`: The maximum value of the gauge.
+        :param range: The maximum value of the gauge.
         """
 
         if range <= 0:
@@ -218,10 +214,9 @@ class PyGauge(wx.PyWindow):
     
 
     def SetValue(self, value):
-        """
-        Sets the current position of the gauge.
+        """Sets the current position of the gauge.
 
-        :param `value`: an integer specifying the current position of the gauge.
+        :param value: an integer specifying the current position of the gauge.
         """
         
         if type(value) != type([]):
@@ -237,10 +232,9 @@ class PyGauge(wx.PyWindow):
         
         
     def OnEraseBackground(self, event):
-        """
-        Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{PyGauge}.
+        """Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{PyGauge}.
 
-        :param `event`: a `wx.EraseEvent` event to be processed.
+        :param event: a `wx.EraseEvent` event to be processed.
 
         :note: This method is intentionally empty to reduce flicker.        
         """
@@ -249,10 +243,9 @@ class PyGauge(wx.PyWindow):
 
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` event for L{PyGauge}.
+        """Handles the ``wx.EVT_PAINT`` event for L{PyGauge}.
 
-        :param `event`: a `wx.PaintEvent` event to be processed.
+        :param event: a `wx.PaintEvent` event to be processed.
         """
 
         dc = wx.BufferedPaintDC(self)
@@ -291,10 +284,9 @@ class PyGauge(wx.PyWindow):
 
         
     def OnTimer(self,event):
-        """
-        Handles the ``wx.EVT_TIMER`` event for L{PyGauge}.
+        """Handles the ``wx.EVT_TIMER`` event for L{PyGauge}.
 
-        :param `event`: a `wx.TimerEvent` event to be processed.
+        :param event: a `wx.TimerEvent` event to be processed.
         """
         
         if self._timer and self._timer.Id == event.GetId():
@@ -320,12 +312,11 @@ class PyGauge(wx.PyWindow):
                 
         
     def Update(self, value, time=0):
-        """
-        Update the gauge by adding `value` to it over `time` milliseconds. The `time` parameter
+        """Update the gauge by adding `value` to it over `time` milliseconds. The `time` parameter
         **must** be a multiple of 50 milliseconds.
 
-        :param `value`: The value to be added to the gauge;
-        :param `time`: The length of time in milliseconds that it will take to move the gauge.
+        :param value: The value to be added to the gauge;
+        :param time: The length of time in milliseconds that it will take to move the gauge.
         """
        
         if type(value) != type([]):

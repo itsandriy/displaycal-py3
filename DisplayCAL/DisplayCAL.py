@@ -1299,8 +1299,7 @@ class GamapFrame(BaseFrame):
                 self.Parent.lut3dframe.update_controls()
 
     def setup_language(self):
-        """
-        Substitute translated strings for menus, controls, labels and tooltips.
+        """Substitute translated strings for menus, controls, labels and tooltips.
 
         """
         BaseFrame.setup_language(self)
@@ -1615,8 +1614,7 @@ class MainFrame(ReportFrame, BaseFrame):
         ]
 
     def init_frame(self):
-        """
-        Initialize the main window and its event handlers.
+        """Initialize the main window and its event handlers.
 
         Controls are initialized in a separate step (see init_controls).
 
@@ -1850,8 +1848,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.ccxx_plot_windows = {}
 
     def init_timers(self):
-        """
-        Setup the timers for display/instrument detection and profile name.
+        """Setup the timers for display/instrument detection and profile name.
 
         """
         self.update_profile_name_timer = wx.Timer(self)
@@ -1930,8 +1927,7 @@ class MainFrame(ReportFrame, BaseFrame):
         event.Skip()
 
     def cal_drop_handler(self, path):
-        """
-        Drag'n'drop handler for .cal files.
+        """Drag'n'drop handler for .cal files.
 
         Settings and calibration are loaded from dropped files.
 
@@ -1940,16 +1936,14 @@ class MainFrame(ReportFrame, BaseFrame):
             self.load_cal_handler(None, path)
 
     def ccxx_drop_handler(self, path):
-        """
-        Drag'n'drop handler for .ccmx/.ccss files.
+        """Drag'n'drop handler for .ccmx/.ccss files.
 
         """
         if not self.worker.is_working():
             self.colorimeter_correction_matrix_ctrl_handler(None, path)
 
     def ti1_drop_handler(self, path):
-        """
-        Drag'n'drop handler for .ti1 files.
+        """Drag'n'drop handler for .ti1 files.
 
         Dropped files are added to the testchart chooser and selected.
 
@@ -1958,8 +1952,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.testchart_btn_handler(None, path)
 
     def ti3_drop_handler(self, path):
-        """
-        Drag'n'drop handler for .ti3 files.
+        """Drag'n'drop handler for .ti3 files.
 
         Dropped files are used to create an ICC profile.
 
@@ -1968,15 +1961,13 @@ class MainFrame(ReportFrame, BaseFrame):
             self.create_profile_handler(None, path)
 
     def init_gamapframe(self):
-        """
-        Create & initialize the gamut mapping options window and its controls.
+        """Create & initialize the gamut mapping options window and its controls.
 
         """
         self.gamapframe = GamapFrame(self)
 
     def init_infoframe(self, show=None):
-        """
-        Create & initialize the info (log) window and its controls.
+        """Create & initialize the info (log) window and its controls.
 
         """
         self.infoframe = LogWindow(self)
@@ -1988,15 +1979,13 @@ class MainFrame(ReportFrame, BaseFrame):
             self.infoframe_toggle_handler(show=show)
 
     def init_lut3dframe(self):
-        """
-        Create & initialize the 3D LUT creation window and its controls.
+        """Create & initialize the 3D LUT creation window and its controls.
 
         """
         self.lut3dframe = LUT3DFrame(self)
 
     def init_reportframe(self):
-        """
-        Create & initialize the measurement report creation window and its controls.
+        """Create & initialize the measurement report creation window and its controls.
 
         """
         self.reportframe = ReportFrame(self)
@@ -2004,8 +1993,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                                      self.measurement_report_handler)
 
     def init_synthiccframe(self):
-        """
-        Create & initialize the 3D LUT creation window and its controls.
+        """Create & initialize the 3D LUT creation window and its controls.
 
         """
         # Avoid messing with main configuration (e.g. when not running standalone)
@@ -2018,8 +2006,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.infoframe_toggle_handler(event)
 
     def setup_language(self):
-        """
-        Substitute translated strings for menus, controls, labels and tooltips.
+        """Substitute translated strings for menus, controls, labels and tooltips.
 
         """
         # Set language specific defaults
@@ -2546,8 +2533,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.menubar.bind_keys()
 
     def update_menus(self):
-        """
-        Enable/disable menu items based on available Argyll functionality.
+        """Enable/disable menu items based on available Argyll functionality.
 
         """
         self.menuitem_testchart_edit.Enable(self.create_testchart_btn.Enabled)
@@ -2642,8 +2628,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.menuitem_app_auto_update_check.Check(bool(getcfg("update_check")))
 
     def init_controls(self):
-        """
-        Initialize the main window controls and their event handlers.
+        """Initialize the main window controls and their event handlers.
 
         """
 
@@ -2950,8 +2935,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                          self.measurement_report_handler)
 
     def set_language_handler(self, event):
-        """
-        Set a new language globally and on-the-fly.
+        """Set a new language globally and on-the-fly.
 
         """
         for lcode in lang.ldict:
@@ -3275,8 +3259,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 self.tcframe.tc_update_controls()
 
     def cal_changed(self, setchanged=True):
-        """
-        Called internally when calibration settings controls are changed.
+        """Called internally when calibration settings controls are changed.
 
         Exceptions are the calibration quality and interactive display
         adjustment controls, which do not cause a 'calibration changed' event.
@@ -3604,8 +3587,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def update_colorimeter_correction_matrix_ctrl_items(self, force=False,
                                                         warn_on_mismatch=False,
                                                         update_measurement_mode=True):
-        """
-        Show the currently selected correction matrix and list all files
+        """Show the currently selected correction matrix and list all files
         in ccmx directories below
 
         force	If True, reads the ccmx directory again, otherwise uses a
@@ -7020,8 +7002,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def select_profile(self, parent=None, title=appname, msg=None,
                        check_profile_class=True, ignore_current_profile=False,
                        prefer_current_profile=False):
-        """
-        Selects the currently configured profile or display profile. Falls
+        """Selects the currently configured profile or display profile. Falls
         back to user choice via FileDialog if both not set.
 
         """
@@ -8500,8 +8481,7 @@ class MainFrame(ReportFrame, BaseFrame):
             update_ccmx_items=update_ccmx_items)
 
     def get_ccxx_measurement_modes(self, instrument_name, swap=False):
-        """
-        Get measurement modes suitable for colorimeter correction creation
+        """Get measurement modes suitable for colorimeter correction creation
 
         """
         # IMPORTANT: Make changes aswell in the following locations:
@@ -8531,8 +8511,7 @@ class MainFrame(ReportFrame, BaseFrame):
         return modes
 
     def set_ccxx_measurement_mode(self):
-        """
-        Set measurement mode suitable for colorimeter correction creation
+        """Set measurement mode suitable for colorimeter correction creation
 
         """
         # IMPORTANT: Make changes aswell in the following locations:
@@ -10264,8 +10243,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def create_colorimeter_correction_handler(self, event=None, paths=None,
                                               luminance=None):
-        """
-        Create a CCSS or CCMX file from one or more .ti3 files
+        """Create a CCSS or CCMX file from one or more .ti3 files
 
         Atleast one of the ti3 files must be a measured with a spectrometer.
 
@@ -11698,8 +11676,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def import_colorimeter_corrections_handler(self, event, paths=None,
                                                callafter=None,
                                                callafter_args=()):
-        """
-        Convert correction matrices from other profiling softwares to Argyll's
+        """Convert correction matrices from other profiling softwares to Argyll's
         CCMX or CCSS format (or to spyd4cal.bin in case of the Spyder4/5)
 
         Currently supported: iColor Display (native import to CCMX),
@@ -13076,8 +13053,7 @@ class MainFrame(ReportFrame, BaseFrame):
                "\n".join(info)
 
     def check_profile_b2a_hires(self, profile):
-        """
-        Check if profile is a LUT-type, and if yes, if LUT is of high
+        """Check if profile is a LUT-type, and if yes, if LUT is of high
         enough resolution when created by ArgyllCMS
         (we assume anything >= 17 to be ok) and give choice to generate
         hires tables if not
@@ -13479,8 +13455,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 install_3dlut=getcfg("3dlut.create"))
 
     def create_profile_name(self):
-        """
-        Replace placeholders in profile name with values from configuration
+        """Replace placeholders in profile name with values from configuration
 
         """
         profile_name = self.profile_name_textctrl.GetValue()
@@ -13818,8 +13793,7 @@ class MainFrame(ReportFrame, BaseFrame):
         return None
 
     def get_argyll_data_files(self, scope, wildcard, include_lastmod=False):
-        """
-        Get paths of Argyll data files.
+        """Get paths of Argyll data files.
 
         scope should be a string containing "l" (local system) and/or "u" (user)
 
@@ -14378,8 +14352,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def check_update_controls(self, event=None, silent=False, callafter=None,
                               callafter_args=()):
-        """
-        Update controls and menuitems when changes in displays or instruments
+        """Update controls and menuitems when changes in displays or instruments
         are detected.
 
         Return True if update was needed and carried out, False otherwise.

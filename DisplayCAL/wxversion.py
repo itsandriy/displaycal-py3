@@ -90,8 +90,7 @@ class AlreadyImportedError(VersionError):
 #----------------------------------------------------------------------
 
 def select(versions, optionsRequired=False):
-    """
-    Search for a wxPython installation that matches version.  If one
+    """Search for a wxPython installation that matches version.  If one
     is found then sys.path is modified so that version will be
     imported with a 'import wx', otherwise a VersionError exception is
     raised.  This function should only be called once at the beginning
@@ -170,8 +169,7 @@ UPDATE_URL = "http://wxPython.org/"
 _EM_DEBUG=0
 
 def ensureMinimal(minVersion, optionsRequired=False):
-    """
-    Checks to see if the default version of wxPython is greater-than
+    """Checks to see if the default version of wxPython is greater-than
     or equal to `minVersion`.  If not then it will try to find an
     installed version that is >= minVersion.  If none are available
     then a message is displayed that will inform the user and will
@@ -238,8 +236,7 @@ def ensureMinimal(minVersion, optionsRequired=False):
 #----------------------------------------------------------------------
 
 def checkInstalled(versions, optionsRequired=False):
-    """
-    Check if there is a version of wxPython installed that matches one
+    """Check if there is a version of wxPython installed that matches one
     of the versions given.  Returns True if so, False if not.  This
     can be used to determine if calling `select` will succeed or not.
 
@@ -258,8 +255,7 @@ def checkInstalled(versions, optionsRequired=False):
 #----------------------------------------------------------------------
 
 def getInstalled():
-    """
-    Returns a list of strings representing the installed wxPython
+    """Returns a list of strings representing the installed wxPython
     versions that are found on the system.
     """
     installed = _find_installed()

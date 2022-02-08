@@ -217,13 +217,12 @@ class FloatSpinEvent(wx.PyCommandEvent):
     """ This event will be sent when a ``EVT_FLOATSPIN`` event is mapped in the parent. """
 
     def __init__(self, eventType, eventId=1, nSel=-1, nOldSel=-1):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `eventType`: the event type;
-        :param `eventId`: the event identifier;
-        :param `nSel`: the current selection;
-        :param `nOldSel`: the old selection.
+        :param eventType: the event type;
+        :param eventId: the event identifier;
+        :param nSel: the current selection;
+        :param nOldSel: the old selection.
         """
 
         wx.PyCommandEvent.__init__(self, eventType, eventId)
@@ -231,10 +230,9 @@ class FloatSpinEvent(wx.PyCommandEvent):
 
 
     def SetPosition(self, pos):
-        """
-        Sets event position.
+        """Sets event position.
 
-        :param `pos`: an integer specyfing the event position.
+        :param pos: an integer specyfing the event position.
         """
 
         self._position = pos
@@ -252,8 +250,7 @@ class FloatSpinEvent(wx.PyCommandEvent):
 
 
 class FloatTextCtrl(wx.TextCtrl):
-    """
-    A class which holds a :class:`TextCtrl`, one of the two building blocks
+    """A class which holds a :class:`TextCtrl`, one of the two building blocks
     of :class:`FloatSpin`.
     """
     
@@ -261,20 +258,19 @@ class FloatTextCtrl(wx.TextCtrl):
                  size=wx.DefaultSize, style=wx.TE_NOHIDESEL | wx.TE_PROCESS_ENTER,
                  validator=wx.DefaultValidator,
                  name=wx.TextCtrlNameStr):
-        """
-        Default class constructor.
+        """Default class constructor.
         Used internally. Do not call directly this class in your code!
 
-        :param `parent`: the :class:`FloatTextCtrl` parent;
-        :param `id`: an identifier for the control: a value of -1 is taken to mean a default;
-        :param `value`: default text value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: the :class:`FloatTextCtrl` parent;
+        :param id: an identifier for the control: a value of -1 is taken to mean a default;
+        :param value: default text value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the window style;
-        :param `validator`: the window validator;
-        :param `name`: the window name.
+        :param style: the window style;
+        :param validator: the window validator;
+        :param name: the window name.
         
         """
 
@@ -290,10 +286,9 @@ class FloatTextCtrl(wx.TextCtrl):
 
 
     def OnDestroy(self, event):
-        """
-        Handles the ``wx.EVT_WINDOW_DESTROY`` event for :class:`FloatTextCtrl`.
+        """Handles the ``wx.EVT_WINDOW_DESTROY`` event for :class:`FloatTextCtrl`.
 
-        :param `event`: a :class:`WindowDestroyEvent` event to be processed.
+        :param event: a :class:`WindowDestroyEvent` event to be processed.
 
         :note: This method tries to correctly handle the control destruction under MSW.
         """
@@ -304,10 +299,9 @@ class FloatTextCtrl(wx.TextCtrl):
 
 
     def OnKeyDown(self, event):
-        """
-        Handles the ``wx.EVT_KEYDOWN`` event for :class:`FloatTextCtrl`.
+        """Handles the ``wx.EVT_KEYDOWN`` event for :class:`FloatTextCtrl`.
 
-        :param `event`: a :class:`KeyEvent` event to be processed.
+        :param event: a :class:`KeyEvent` event to be processed.
         """
 
         if self._parent:
@@ -321,10 +315,9 @@ class FloatTextCtrl(wx.TextCtrl):
 
 
     def OnKillFocus(self, event):
-        """
-        Handles the ``wx.EVT_KILL_FOCUS`` event for :class:`FloatTextCtrl`.
+        """Handles the ``wx.EVT_KILL_FOCUS`` event for :class:`FloatTextCtrl`.
 
-        :param `event`: a :class:`FocusEvent` event to be processed.
+        :param event: a :class:`FocusEvent` event to be processed.
 
         :note: This method synchronizes the :class:`SpinButton` and the :class:`TextCtrl`
          when focus is lost.
@@ -338,8 +331,7 @@ class FloatTextCtrl(wx.TextCtrl):
         event.Skip()
 
     def RestoreSelection(self):
-        """
-        Restores the selection under Mac OS X, selects all under other platforms
+        """Restores the selection under Mac OS X, selects all under other platforms
         (consistent with default wx.TextCtrl behaviour)
         
         """
@@ -356,8 +348,7 @@ class FloatTextCtrl(wx.TextCtrl):
 # ---------------------------------------------------------------------------- #
 
 class FloatSpin(wx.PyControl):
-    """
-    :class:`FloatSpin` implements a floating point :class:`SpinCtrl`. It is built using a custom
+    """:class:`FloatSpin` implements a floating point :class:`SpinCtrl`. It is built using a custom
     :class:`PyControl`, composed by a :class:`TextCtrl` and a :class:`SpinButton`. In order to
     correctly handle floating points numbers without rounding errors or non-exact
     floating point representations, :class:`FloatSpin` uses the great :class:`FixedPoint` class
@@ -370,22 +361,21 @@ class FloatSpin(wx.PyControl):
                  size=(95,-1), style=0, value=0.0, min_val=None, max_val=None,
                  increment=1.0, digits=-1, agwStyle=FS_LEFT,
                  name="FloatSpin"):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: the :class:`FloatSpin` parent;
-        :param `id`: an identifier for the control: a value of -1 is taken to mean a default;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: the :class:`FloatSpin` parent;
+        :param id: an identifier for the control: a value of -1 is taken to mean a default;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the window style;
-        :param `value`: is the current value for :class:`FloatSpin`;
-        :param `min_val`: the minimum value, ignored if ``None``;
-        :param `max_val`: the maximum value, ignored if ``None``;
-        :param `increment`: the increment for every :class:`FloatSpinEvent` event;
-        :param `digits`: number of representative digits for your floating point numbers;
-        :param `agwStyle`: one of the following bits:
+        :param style: the window style;
+        :param value: is the current value for :class:`FloatSpin`;
+        :param min_val: the minimum value, ignored if ``None``;
+        :param max_val: the maximum value, ignored if ``None``;
+        :param increment: the increment for every :class:`FloatSpinEvent` event;
+        :param digits: number of representative digits for your floating point numbers;
+        :param agwStyle: one of the following bits:
 
          =============== =========== ==================================================
          Window Styles   Hex Value   Description
@@ -396,7 +386,7 @@ class FloatSpin(wx.PyControl):
          ``FS_RIGHT``            0x8 Horizontally align the underlying :class:`TextCtrl` on the right.
          =============== =========== ==================================================
 
-        :param `name`: the window name.
+        :param name: the window name.
 
         """
 
@@ -550,10 +540,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnDestroy(self, event):
-        """
-        Handles the ``wx.EVT_WINDOW_DESTROY`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_WINDOW_DESTROY`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`WindowDestroyEvent` event to be processed.
+        :param event: a :class:`WindowDestroyEvent` event to be processed.
 
         :note: This method tries to correctly handle the control destruction under MSW.
         """
@@ -569,8 +558,7 @@ class FloatSpin(wx.PyControl):
 
 
     def DoGetBestSize(self):
-        """
-        Gets the size which best suits the window: for a control, it would be the
+        """Gets the size which best suits the window: for a control, it would be the
         minimal size which doesn't truncate the control, for a panel - the same
         size as it would have after a call to `Fit()`.
         
@@ -639,10 +627,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnSpinMouseDown(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_DOWN`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_LEFT_DOWN`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
 
         :note: This method works on the underlying :class:`SpinButton`.
         """
@@ -662,10 +649,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnSpinMouseUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_LEFT_UP`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
 
         :note: This method works on the underlying :class:`SpinButton`.
         """
@@ -683,10 +669,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnSpinUp(self, event):
-        """
-        Handles the ``wx.EVT_SPIN_UP`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_SPIN_UP`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`SpinEvent` event to be processed.
+        :param event: a :class:`SpinEvent` event to be processed.
         """
 
         if self._ignore_spin_event:
@@ -708,10 +693,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnSpinDown(self, event):
-        """
-        Handles the ``wx.EVT_SPIN_DOWN`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_SPIN_DOWN`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`SpinEvent` event to be processed.
+        :param event: a :class:`SpinEvent` event to be processed.
         """
 
         if self._ignore_spin_event:
@@ -733,10 +717,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnTextEnter(self, event):
-        """
-        Handles the ``wx.EVT_TEXT_ENTER`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_TEXT_ENTER`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`KeyEvent` event to be processed.
+        :param event: a :class:`KeyEvent` event to be processed.
 
         :note: This method works on the underlying :class:`TextCtrl`.
         """
@@ -746,10 +729,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnKeyDown(self, event):
-        """
-        Handles the ``wx.EVT_KEYDOWN`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_KEYDOWN`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`KeyEvent` event to be processed.
+        :param event: a :class:`KeyEvent` event to be processed.
 
         :note: This method works on the underlying :class:`TextCtrl`.
         """
@@ -832,10 +814,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnMouseWheel(self, event):
-        """
-        Handles the ``wx.EVT_MOUSEWHEEL`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_MOUSEWHEEL`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`MouseEvent` event to be processed.
+        :param event: a :class:`MouseEvent` event to be processed.
         """
 
         modifier = FixedPoint(str(1.0), 20)
@@ -867,10 +848,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnSize(self, event):
-        """
-        Handles the ``wx.EVT_SIZE`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_SIZE`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`SizeEvent` event to be processed.
+        :param event: a :class:`SizeEvent` event to be processed.
 
         :note: This method resizes the text control and reposition the spin button when
          resized.
@@ -897,10 +877,9 @@ class FloatSpin(wx.PyControl):
 
 
     def ReplaceDoubleZero(self, strs):
-        """
-        Replaces the (somewhat) python ugly `+e000` with `+e00`.
+        """Replaces the (somewhat) python ugly `+e000` with `+e00`.
 
-        :param `strs`: a string (possibly) containing a `+e00` substring.
+        :param strs: a string (possibly) containing a `+e00` substring.
         """
 
         if self._textformat not in ["%g", "%e", "%E", "%G"]:
@@ -919,10 +898,9 @@ class FloatSpin(wx.PyControl):
 
 
     def SetValue(self, value):
-        """
-        Sets the :class:`FloatSpin` value.
+        """Sets the :class:`FloatSpin` value.
 
-        :param `value`: the new value.
+        :param value: the new value.
         """        
         if not self._textctrl or not self.InRange(value):
             return
@@ -976,12 +954,11 @@ class FloatSpin(wx.PyControl):
 
 
     def SetRangeDontClampValue(self, min_val, max_val):
-        """
-        Sets the allowed range.
+        """Sets the allowed range.
 
-        :param `min_val`: the minimum value for :class:`FloatSpin`. If it is ``None`` it is
+        :param min_val: the minimum value for :class:`FloatSpin`. If it is ``None`` it is
          ignored;
-        :param `max_val`: the maximum value for :class:`FloatSpin`. If it is ``None`` it is
+        :param max_val: the maximum value for :class:`FloatSpin`. If it is ``None`` it is
          ignored.
 
         :note: This method doesn't modify the current value.
@@ -998,12 +975,11 @@ class FloatSpin(wx.PyControl):
 
 
     def SetRange(self, min_val, max_val):
-        """
-        Sets the allowed range.
+        """Sets the allowed range.
 
-        :param `min_val`: the minimum value for :class:`FloatSpin`. If it is ``None`` it is
+        :param min_val: the minimum value for :class:`FloatSpin`. If it is ``None`` it is
          ignored;
-        :param `max_val`: the maximum value for :class:`FloatSpin`. If it is ``None`` it is
+        :param max_val: the maximum value for :class:`FloatSpin`. If it is ``None`` it is
          ignored.
 
         :note: This method doesn't modify the current value.
@@ -1029,11 +1005,10 @@ class FloatSpin(wx.PyControl):
 
 
     def ClampValue(self, var):
-        """
-        Clamps `var` between `_min` and `_max` depending if the range has
+        """Clamps `var` between `_min` and `_max` depending if the range has
         been specified.
 
-        :param `var`: the value to be clamped.
+        :param var: the value to be clamped.
         
         :return: A clamped copy of `var`.
         """
@@ -1051,10 +1026,9 @@ class FloatSpin(wx.PyControl):
 
 
     def SetIncrement(self, increment):
-        """
-        Sets the increment for every ``EVT_FLOATSPIN`` event.
+        """Sets the increment for every ``EVT_FLOATSPIN`` event.
 
-        :param `increment`: a floating point number specifying the :class:`FloatSpin` increment.
+        :param increment: a floating point number specifying the :class:`FloatSpin` increment.
         """
 
         if increment < 1./10.0**self._digits:
@@ -1071,10 +1045,9 @@ class FloatSpin(wx.PyControl):
 
 
     def SetDigits(self, digits=-1):
-        """
-        Sets the number of digits to show.
+        """Sets the number of digits to show.
 
-        :param `digits`: the number of digits to show. If `digits` < 0, :class:`FloatSpin`
+        :param digits: the number of digits to show. If `digits` < 0, :class:`FloatSpin`
          tries to calculate the best number of digits based on input values passed
          in the constructor.
         """
@@ -1098,10 +1071,9 @@ class FloatSpin(wx.PyControl):
 
 
     def SetFormat(self, fmt="%f"):
-        """
-        Set the string format to use.
+        """Set the string format to use.
 
-        :param `fmt`: the new string format to use. One of the following strings:
+        :param fmt: the new string format to use. One of the following strings:
 
          ====== =================================
          Format Description
@@ -1129,8 +1101,7 @@ class FloatSpin(wx.PyControl):
 
 
     def GetFormat(self):
-        """
-        Returns the string format in use.
+        """Returns the string format in use.
 
         :see: :meth:`~FloatSpin.SetFormat` for a list of valid string formats.
         """
@@ -1139,10 +1110,9 @@ class FloatSpin(wx.PyControl):
 
 
     def SetDefaultValue(self, defaultvalue):
-        """
-        Sets the :class:`FloatSpin` default value.
+        """Sets the :class:`FloatSpin` default value.
 
-        :param `defaultvalue`: a floating point value representing the new default
+        :param defaultvalue: a floating point value representing the new default
          value for :class:`FloatSpin`.
         """
 
@@ -1169,10 +1139,9 @@ class FloatSpin(wx.PyControl):
 
 
     def SetSnapToTicks(self, forceticks=True):
-        """
-        Force the value to always be divisible by the increment. Initially ``False``.
+        """Force the value to always be divisible by the increment. Initially ``False``.
 
-        :param `forceticks`: ``True`` to force the snap to ticks option, ``False`` otherwise.
+        :param forceticks: ``True`` to force the snap to ticks option, ``False`` otherwise.
         
         :note: This uses the default value as the basis, you will get strange results
          for very large differences between the current value and default value
@@ -1192,10 +1161,9 @@ class FloatSpin(wx.PyControl):
 
 
     def OnFocus(self, event):
-        """
-        Handles the ``wx.EVT_SET_FOCUS`` event for :class:`FloatSpin`.
+        """Handles the ``wx.EVT_SET_FOCUS`` event for :class:`FloatSpin`.
 
-        :param `event`: a :class:`FocusEvent` event to be processed.
+        :param event: a :class:`FocusEvent` event to be processed.
         """
 
         if self._textctrl:
@@ -1205,12 +1173,11 @@ class FloatSpin(wx.PyControl):
 
 
     def SyncSpinToText(self, send_event=True, force_valid=True):
-        """
-        Synchronize the underlying :class:`TextCtrl` with :class:`SpinButton`.
+        """Synchronize the underlying :class:`TextCtrl` with :class:`SpinButton`.
 
-        :param `send_event`: ``True`` to send a ``EVT_FLOATSPIN`` event, ``False``
+        :param send_event: ``True`` to send a ``EVT_FLOATSPIN`` event, ``False``
          otherwise;
-        :param `force_valid`: ``True`` to force a valid value (i.e. inside the
+        :param force_valid: ``True`` to force a valid value (i.e. inside the
          provided range), ``False`` otherwise.
         """
 
@@ -1250,10 +1217,9 @@ class FloatSpin(wx.PyControl):
 
 
     def SetFont(self, font=None):
-        """
-        Sets the underlying :class:`TextCtrl` font.
+        """Sets the underlying :class:`TextCtrl` font.
 
-        :param `font`: a valid instance of :class:`Font`.
+        :param font: a valid instance of :class:`Font`.
         """
 
         if font is None:
@@ -1275,8 +1241,7 @@ class FloatSpin(wx.PyControl):
 
 
     def GetMin(self):
-        """
-        Returns the minimum value for :class:`FloatSpin`. It can be a
+        """Returns the minimum value for :class:`FloatSpin`. It can be a
         number or ``None`` if no minimum is present.
         """
 
@@ -1284,8 +1249,7 @@ class FloatSpin(wx.PyControl):
 
 
     def GetMax(self):
-        """
-        Returns the maximum value for :class:`FloatSpin`. It can be a
+        """Returns the maximum value for :class:`FloatSpin`. It can be a
         number or ``None`` if no minimum is present.
         """
 
@@ -1299,10 +1263,9 @@ class FloatSpin(wx.PyControl):
 
 
     def InRange(self, value):
-        """
-        Returns whether a value is inside :class:`FloatSpin` range.
+        """Returns whether a value is inside :class:`FloatSpin` range.
 
-        :param `value`: the value to test.
+        :param value: the value to test.
         """
 
         if (not self.HasRange()):
@@ -1323,10 +1286,9 @@ class FloatSpin(wx.PyControl):
 
 
     def IsFinite(self, value):
-        """
-        Tries to determine if a value is finite or infinite/NaN.
+        """Tries to determine if a value is finite or infinite/NaN.
 
-        :param `value`: the value to test.
+        :param value: the value to test.
         """
 
         try:
@@ -1412,8 +1374,7 @@ DEFAULT_PRECISION = 2
 """ The default value for the number of decimal digits carried after the decimal point.  This only has effect at compile-time. """
 
 class FixedPoint(object):
-    """
-    FixedPoint objects support decimal arithmetic with a fixed number of
+    """FixedPoint objects support decimal arithmetic with a fixed number of
     digits (called the object's precision) after the decimal point.  The
     number of digits before the decimal point is variable & unbounded.
 
@@ -1489,11 +1450,10 @@ class FixedPoint(object):
     # self.n is a long; self.p is an int
 
     def __init__(self, value=0, precision=DEFAULT_PRECISION):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `value`: the initial value;
-        :param `precision`: must be an int >= 0, and defaults to ``DEFAULT_PRECISION``.
+        :param value: the initial value;
+        :param precision: must be an int >= 0, and defaults to ``DEFAULT_PRECISION``.
         """
         
         self.n = self.p = 0
@@ -1584,8 +1544,7 @@ class FixedPoint(object):
 
 
     def get_precision(self):
-        """
-        Return the precision of this :class:`FixedPoint`.
+        """Return the precision of this :class:`FixedPoint`.
 
         :note: The precision is the number of decimal digits carried after
          the decimal point, and is an int >= 0.
@@ -1595,10 +1554,9 @@ class FixedPoint(object):
 
 
     def set_precision(self, precision=DEFAULT_PRECISION):
-        """
-        Change the precision carried by this :class:`FixedPoint` to `precision`.
+        """Change the precision carried by this :class:`FixedPoint` to `precision`.
 
-        :param `precision`: must be an int >= 0, and defaults to
+        :param precision: must be an int >= 0, and defaults to
          ``DEFAULT_PRECISION``.
 
         :note: If `precision` is less than this :class:`FixedPoint`'s current precision,
@@ -1756,8 +1714,7 @@ class FixedPoint(object):
         return int(self.__long__())
 
     def frac(self):
-        """
-        Returns fractional portion as a :class:`FixedPoint`.
+        """Returns fractional portion as a :class:`FixedPoint`.
 
         :note: In :class:`FixedPoint`,
         
@@ -1892,8 +1849,7 @@ def _string2exact(s):
     return i, exp
 
 def get_all_keyboard_focusable_children(parent):
-    """
-    Get all keyboard focusable children of parent
+    """Get all keyboard focusable children of parent
     
     """
 
@@ -1914,8 +1870,7 @@ def get_all_keyboard_focusable_children(parent):
     return children
 
 def focus_next_keyboard_focusable_control(control):
-    """
-    Focus the next control in tab order that can gain focus.
+    """Focus the next control in tab order that can gain focus.
     
     If the shift key is held down, tab order is reversed.
     

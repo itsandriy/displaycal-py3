@@ -15,8 +15,7 @@ def float2dec(f, digits=10):
 
 
 def stripzeros(n):
-    """
-    Strip zeros and convert to decimal.
+    """Strip zeros and convert to decimal.
 
     Will always return the shortest decimal representation
     (1.0 becomes 1, 1.234567890 becomes 1.23456789).

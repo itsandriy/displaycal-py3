@@ -56,8 +56,7 @@ def escape(xml):
 class OrderedDictSimpleRepr(OrderedDict):
 
     def __repr__(self):
-        """
-        od.__repr__() <==> repr(od)
+        """od.__repr__() <==> repr(od)
         """
         l = []
         for k, v in self.items():

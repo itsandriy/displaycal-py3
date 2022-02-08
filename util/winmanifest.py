@@ -203,8 +203,7 @@ class File(_File):
         self.windowClasses = windowClasses or [] # TO-DO: implement
 
     def calc_hash(self, hashalg=None):
-        """
-        Calculate the hash of the file.
+        """Calculate the hash of the file.
         
         Will be called automatically from the constructor if the file exists 
         and hashalg is given (and supported), but may also be called manually 
@@ -300,8 +299,7 @@ class Manifest(object):
                  requestedExecutionLevel=None, uiAccess=None, 
                  dependentAssemblies=None, files=None, 
                  comInterfaceExternalProxyStubs=None):
-        """
-        Shortcut for self.dependentAssemblies.append(Manifest(*args, **kwargs))
+        """Shortcut for self.dependentAssemblies.append(Manifest(*args, **kwargs))
         """
         self.dependentAssemblies.append(Manifest(manifestVersion, 
                                         noInheritable, noInherit, type_, name, 
@@ -534,8 +532,7 @@ class Manifest(object):
         return []
 
     def getid(self, language=None, version=None):
-        """
-        Return an identification string which uniquely names a manifest.
+        """Return an identification string which uniquely names a manifest.
 
         This string is a combination of the manifest's processorArchitecture, 
         name, publicKeyToken, version and language.
@@ -565,8 +562,7 @@ class Manifest(object):
         return "_".join(id)
     
     def getlanguage(self, language=None, windowsversion=None):
-        """
-        Get and return the manifest's language as string.
+        """Get and return the manifest's language as string.
         
         Can be either language-culture e.g. 'en-us' or a string indicating 
         language neutrality, e.g. 'x-ww' on Windows XP or 'none' on Vista 
@@ -582,8 +578,7 @@ class Manifest(object):
         return language
     
     def getpolicyid(self, fuzzy=True, language=None, windowsversion=None):
-        """
-        Return an identification string which can be used to find a policy.
+        """Return an identification string which can be used to find a policy.
 
         This string is a combination of the manifest's processorArchitecture, 
         major and minor version, name, publicKeyToken and language.
@@ -632,8 +627,7 @@ class Manifest(object):
         return id
 
     def load_dom(self, domtree, initialize=True):
-        """
-        Load manifest from DOM tree.
+        """Load manifest from DOM tree.
         
         If initialize is True (default), reset existing attributes first.
         
@@ -757,8 +751,7 @@ class Manifest(object):
         self.load_dom(domtree, initialize)
     
     def same_id(self, manifest, skip_version_check=False):
-        """
-        Return a bool indicating if another manifest has the same identitiy.
+        """Return a bool indicating if another manifest has the same identitiy.
         
         This is done by comparing language, name, processorArchitecture, 
         publicKeyToken, type and version.

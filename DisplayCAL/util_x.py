@@ -5,8 +5,7 @@ import warnings
 
 
 def get_display(display_name=None):
-    """
-    Parse X display name and return (hostname, display number, screen number)
+    """Parse X display name and return (hostname, display number, screen number)
     """
     if not display_name:
         display_name = os.getenv("DISPLAY", ":0.0")

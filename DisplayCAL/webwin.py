@@ -101,8 +101,7 @@ window.onload = function() {
 
 class WebWinHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
-    """
-    Simple HTTP request handler with GET and HEAD commands.
+    """Simple HTTP request handler with GET and HEAD commands.
 
     """
 

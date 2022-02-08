@@ -41,8 +41,7 @@ from util_os import expanduseru, expandvarsu, getenvu, waccess
 
 
 def get_known_folder_path(folderid, user=True):
-    """
-    Get known folder path.
+    """Get known folder path.
 
     Uses GetKnownFolderPath API on Windows Vista and later, and XDG user dirs
     on Linux.

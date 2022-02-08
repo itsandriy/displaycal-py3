@@ -2984,8 +2984,7 @@ END_DATA""")
         return increments
 
     def tc_create(self, gray=False, multidim=False, single=False):
-        """
-		Create testchart using targen.
+        """Create testchart using targen.
 
 		Setting gray, multidim or single to True will ad those patches
 		in a separate step if any number of iterative patches are to be

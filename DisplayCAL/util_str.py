@@ -234,8 +234,7 @@ class StrList(list):
 
 
 def asciize(obj):
-    """
-    Turn several unicode chars into an ASCII representation.
+    """Turn several unicode chars into an ASCII representation.
 
     This function either takes a string or an exception as argument (when used
     as error handler for encode or decode).
@@ -253,8 +252,7 @@ codecs.register_error("asciize", asciize)
 
 
 def safe_asciize(obj):
-    """
-    Turn several unicode chars into an ASCII representation.
+    """Turn several unicode chars into an ASCII representation.
 
     This function either takes a string or an exception as argument (when used
     as error handler for encode or decode).
@@ -278,8 +276,7 @@ codecs.register_error("safe_asciize", safe_asciize)
 
 
 def escape(obj):
-    """
-    Turn unicode chars into escape codes.
+    """Turn unicode chars into escape codes.
 
     This function either takes a string or an exception as argument (when used
     as error handler for encode or decode).
@@ -301,8 +298,7 @@ def make_ascii_printable(text, subst=""):
 
 
 def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
-    """
-    Make sure unicode string is safe to use as filename.
+    """Make sure unicode string is safe to use as filename.
 
     I.e. turn characters that are invalid in the filesystem encoding into ASCII
     equivalents and replace characters that are invalid in filenames with
@@ -338,16 +334,14 @@ def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
 
 
 def normalencode(unistr, form="NFKD", encoding="ASCII", errors="ignore"):
-    """
-    Return encoded normal form of unicode string
+    """Return encoded normal form of unicode string
 
     """
     return unicodedata.normalize(form, unistr).encode(encoding, errors)
 
 
 def box(text, width=80, collapse=False):
-    """
-    Create a box around text (monospaced font required for display)
+    """Create a box around text (monospaced font required for display)
 
     """
     content_width = width - 4
@@ -367,8 +361,7 @@ def box(text, width=80, collapse=False):
 
 
 def center(text, width = None):
-    """
-    Center (mono-spaced) text.
+    """Center (mono-spaced) text.
 
     If no width is given, the longest line
     (after breaking at each newline) is used as max width.
@@ -434,8 +427,7 @@ def indent(text, prefix, predicate=None):
 
 
 def universal_newlines(txt):
-    """
-    Return txt with all new line formats converted to POSIX newlines.
+    """Return txt with all new line formats converted to POSIX newlines.
 
     """
     return txt.replace("\r\n", "\n").replace("\r", "\n")
@@ -457,8 +449,7 @@ def replace_control_chars(txt, replacement=" ", collapse=False):
 
 
 def safe_basestring(obj):
-    """
-    Return a unicode or string representation of obj
+    """Return a unicode or string representation of obj
 
     Return obj if isinstance(obj, basestring). Otherwise, return unicode(obj),
     string(obj), or repr(obj), whichever succeeds first.
@@ -538,8 +529,7 @@ def safe_str(obj, enc=fs_enc, errors="replace"):
 
 
 def strtr(txt, replacements):
-    """
-    String multi-replace, a bit like PHP's strtr.
+    """String multi-replace, a bit like PHP's strtr.
 
     replacements can be a dict, a list or a string.
     If list or string, all matches are replaced with the empty string ("").
@@ -557,8 +547,7 @@ def strtr(txt, replacements):
 
 
 def wrap(text, width = 70):
-    """
-    A word-wrap function that preserves existing line breaks and spaces.
+    """A word-wrap function that preserves existing line breaks and spaces.
 
     Expects that existing line breaks are posix newlines (\\n).
 

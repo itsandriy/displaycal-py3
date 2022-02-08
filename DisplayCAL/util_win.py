@@ -187,8 +187,7 @@ def enable_per_user_profiles(enable=True, display_no=0, devicekey=None):
 
 
 def get_display_devices(devicename):
-    """
-    Get all display devices of an output (there can be several)
+    """Get all display devices of an output (there can be several)
 
     Return value: list of display devices
 
@@ -209,8 +208,7 @@ def get_display_devices(devicename):
 
 
 def get_first_display_device(devicename, exception_cls=pywintypes.error):
-    """
-    Get the first display of device <devicename>.
+    """Get the first display of device <devicename>.
 
     """
     try:
@@ -220,8 +218,7 @@ def get_first_display_device(devicename, exception_cls=pywintypes.error):
 
 
 def get_active_display_device(devicename, devices=None):
-    """
-    Get active display device of an output (there can only be one per output)
+    """Get active display device of an output (there can only be one per output)
 
     Return value: display device object or None
 
@@ -240,8 +237,7 @@ def get_active_display_device(devicename, devices=None):
 
 
 def get_active_display_devices(attrname=None):
-    """
-    Return active display devices
+    """Return active display devices
 
     """
     devices = []
@@ -394,8 +390,7 @@ def per_user_profiles_isenabled(display_no=0, devicekey=None):
 
 def run_as_admin(cmd, args, close_process=True, async_=False,
                  wait_for_idle=False, show=True):
-    """
-    Run command with elevated privileges.
+    """Run command with elevated privileges.
 
     This is a wrapper around ShellExecuteEx.
 
@@ -408,8 +403,7 @@ def run_as_admin(cmd, args, close_process=True, async_=False,
 
 def shell_exec(filename, args, operation="open", close_process=True,
                async_=False, wait_for_idle=False, show=True):
-    """
-    Run command.
+    """Run command.
 
     This is a wrapper around ShellExecuteEx.
 

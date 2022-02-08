@@ -206,8 +206,7 @@ def add_keywords_to_cgats(cgats, keywords):
 
 
 def check_create_dir(path):
-    """
-    Try to create a directory and show an error message on failure.
+    """Try to create a directory and show an error message on failure.
     """
     if not os.path.exists(path):
         try:
@@ -222,8 +221,7 @@ def check_create_dir(path):
 
 def check_cal_isfile(cal=None, missing_msg=None, notfile_msg=None,
                      silent=False):
-    """
-    Check if a calibration file exists and show an error message if not.
+    """Check if a calibration file exists and show an error message if not.
     """
     if not silent:
         if not missing_msg:
@@ -235,8 +233,7 @@ def check_cal_isfile(cal=None, missing_msg=None, notfile_msg=None,
 
 def check_profile_isfile(profile_path=None, missing_msg=None,
                          notfile_msg=None, silent=False):
-    """
-    Check if a profile exists and show an error message if not.
+    """Check if a profile exists and show an error message if not.
     """
     if not silent:
         if not missing_msg:
@@ -250,8 +247,7 @@ def check_profile_isfile(profile_path=None, missing_msg=None,
 
 def check_file_isfile(filename, missing_msg=None, notfile_msg=None,
                       silent=False):
-    """
-    Check if a file exists and show an error message if not.
+    """Check if a file exists and show an error message if not.
     """
     if not os.path.exists(filename):
         if not silent:
@@ -269,8 +265,7 @@ def check_file_isfile(filename, missing_msg=None, notfile_msg=None,
 
 
 def check_set_argyll_bin(paths=None):
-    """
-    Check if Argyll binaries can be found, otherwise let the user choose.
+    """Check if Argyll binaries can be found, otherwise let the user choose.
     """
     if check_argyll_bin(paths):
         return True
@@ -897,8 +892,7 @@ def _applycal_bug_workaround(profile):
 
 
 def get_argyll_version(name, silent=False, paths=None):
-    """
-    Determine version of a certain Argyll utility.
+    """Determine version of a certain Argyll utility.
 
     """
     argyll_version_string = get_argyll_version_string(name, silent, paths)
@@ -963,8 +957,7 @@ def get_cfg_option_from_args(option_name, argmatch, args, whole=False):
 
 
 def get_options_from_args(dispcal_args=None, colprof_args=None):
-    """
-    Extract options used for dispcal and colprof from argument strings.
+    """Extract options used for dispcal and colprof from argument strings.
     """
     re_options_dispcal = [
         "[moupHVFE]",
@@ -1001,8 +994,7 @@ def get_options_from_args(dispcal_args=None, colprof_args=None):
     return options_dispcal, options_colprof
 
 def get_options_from_cprt(cprt):
-    """
-    Extract options used for dispcal and colprof from profile copyright.
+    """Extract options used for dispcal and colprof from profile copyright.
     """
     if not isinstance(cprt, str):
         if isinstance(cprt, (ICCP.TextDescriptionType,
@@ -1230,8 +1222,7 @@ def http_request(parent=None, domain=None, request_type="GET", path="",
 
 def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path,
                                               logfn=print):
-    """
-    Insert patches from first TI file after first patch of second TI,
+    """Insert patches from first TI file after first patch of second TI,
     ignoring RGB duplicates. Return second TI as CGATS instance.
 
     """
@@ -1273,8 +1264,7 @@ def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path,
 
 
 def make_argyll_compatible_path(path):
-    """
-    Make the path compatible with the Argyll utilities.
+    """Make the path compatible with the Argyll utilities.
 
     This is currently only effective under Windows to make sure that any
     unicode 'division' slashes in the profile name are replaced with
@@ -1616,8 +1606,7 @@ class Sudo(object):
         return str(self.sudo or "")
 
     def _expect_timeout(self, patterns, timeout=-1, child_timeout=1):
-        """
-        wexpect.spawn.expect with better timeout handling.
+        """wexpect.spawn.expect with better timeout handling.
 
         The default expect can block up to timeout seconds if the child is
         already dead. To prevent this, we run expect in a loop until a pattern
@@ -1652,8 +1641,7 @@ class Sudo(object):
             print(self.subprocess.before.strip().decode(enc, "replace"))
 
     def authenticate(self, args, title, parent=None):
-        """
-        Athenticate for a given command
+        """Athenticate for a given command
 
         The return value will be a tuple (auth_succesful, password).
 
@@ -1740,8 +1728,7 @@ class Sudo(object):
         return self.is_allowed(args, pwd), pwd
 
     def is_allowed(self, args=None, pwd=""):
-        """
-        Check if a command is allowed via sudo. Return either a string
+        """Check if a command is allowed via sudo. Return either a string
         listing allowed and forbidden commands, or the fully-qualified path of
         the command along with any arguments, or an error message in case the
         command is not allowed, or False if the password was not accepted.
@@ -1862,8 +1849,7 @@ class WPopen(sp.Popen):
 class Worker(WorkerBase):
 
     def __init__(self, owner=None):
-        """
-        Create and return a new worker instance.
+        """Create and return a new worker instance.
         """
         WorkerBase.__init__(self)
         self.owner = owner # owner should be a wxFrame or similar
@@ -2146,8 +2132,7 @@ class Worker(WorkerBase):
             args.append("-E")
 
     def authenticate(self, cmd, title=appname, parent=None):
-        """
-        Athenticate (using sudo) for a given command
+        """Athenticate (using sudo) for a given command
 
         The return value will either be True (authentication successful and
         command allowed), False (in case of the user cancelling the password
@@ -2206,8 +2191,7 @@ class Worker(WorkerBase):
                                  ambient_cdm2=5, content_rgb_space="DCI P3",
                                  hdr_chroma_compression=False, hdr_sat=0.5,
                                  hdr_hue=0.5, hdr_target_profile=None):
-        """
-        Apply BT.1886-like tone response to profile1 using profile2 blackpoint.
+        """Apply BT.1886-like tone response to profile1 using profile2 blackpoint.
 
         profile1 has to be a matrix profile
 
@@ -2386,8 +2370,7 @@ class Worker(WorkerBase):
 
     def instrument_can_use_ccxx(self, check_measurement_mode=True,
                                 instrument_name=None):
-        """
-        Return boolean whether the instrument in its current measurement mode
+        """Return boolean whether the instrument in its current measurement mode
         can use a CCMX or CCSS colorimeter correction
 
         """
@@ -3154,8 +3137,7 @@ END_DATA
             self.madtpg_restore_settings(False, fullscreen)
 
     def clear_argyll_info(self):
-        """
-        Clear Argyll CMS version, detected displays and instruments.
+        """Clear Argyll CMS version, detected displays and instruments.
         """
         self.argyll_bin_dir = None
         self.argyll_version = [0, 0, 0]
@@ -3171,16 +3153,14 @@ END_DATA
         self.reset_argyll_enum()
 
     def reset_argyll_enum(self):
-        """
-        Reset auto-detected (during display/instrument enumeration) properties
+        """Reset auto-detected (during display/instrument enumeration) properties
 
         """
         self.measurement_modes = {}
         self.argyll_virtual_display = None
 
     def clear_cmd_output(self):
-        """
-        Clear any output from the last run command.
+        """Clear any output from the last run command.
         """
         self.cmd = None
         self.cmdname = None
@@ -3776,8 +3756,7 @@ END_DATA
                 is_argyll_lut_format = format == "icc"
 
                 def clipVidRGB(RGB, black_hack=True):
-                    """
-                    Clip a value to the RGB Video range 16..235 RGB.
+                    """Clip a value to the RGB Video range 16..235 RGB.
 
                     Clip the incoming value RGB[] in place.
                     Return a bit mask of the channels that have/would clip,
@@ -4540,8 +4519,7 @@ END_DATA
     def enumerate_displays_and_ports(self, silent=False, check_lut_access=True,
                                      enumerate_ports=True,
                                      include_network_devices=True):
-        """
-        Enumerate the available displays and ports.
+        """Enumerate the available displays and ports.
 
         Also sets Argyll version number, availability of certain options
         like black point rate, and checks LUT access for each display.
@@ -4972,8 +4950,7 @@ END_DATA
                  silent=False, parent=None, asroot=False, log_output=True,
                  title=appname, shell=False, working_dir=None, dry_run=None,
                  sessionlogfile=None, use_pty=False):
-        """
-        Execute a command.
+        """Execute a command.
 
         Return value is either True (succeed), False (failed), None (canceled)
         or an exception.
@@ -6372,8 +6349,7 @@ while 1:
                                         smooth=True, rgb_space=None,
                                         logfile=None, filename=None,
                                         only_input_curves=False):
-        """
-        Generate a profile's B2A table by inverting the A2B table
+        """Generate a profile's B2A table by inverting the A2B table
         (default A2B1 or A2B0)
 
         It is also poosible to re-generate a B2A table by interpolating
@@ -8299,8 +8275,7 @@ usage: spotread [-options] [logfile]
 
     def _install_profile_argyll(self, profile_path, capture_output=False,
                                 skip_scripts=False, silent=False):
-        """
-        Install profile using dispwin.
+        """Install profile using dispwin.
 
         Return the profile path, an error or False
 
@@ -10099,8 +10074,7 @@ usage: spotread [-options] [logfile]
 
     def _create_matrix_profile(self, outname, profile=None, ptype="s",
                                omit=None, bpc=False, cat="Bradford"):
-        """
-        Create matrix profile from lookup through ti3
+        """Create matrix profile from lookup through ti3
 
         <outname>.ti3 has to exist.
         If <profile> is given, it has to be an ICCProfile instance, and the
@@ -10730,8 +10704,7 @@ usage: spotread [-options] [logfile]
                                    "to restore %s button states" % "/".join(buttons))
 
     def madtpg_show_osd(self, msg=None, leave_fullscreen=False):
-        """
-        Show madTPG OSD, optionally with message and leaving fullscreen
+        """Show madTPG OSD, optionally with message and leaving fullscreen
 
         """
         if self.madtpg.is_fullscreen() and leave_fullscreen:
@@ -10917,8 +10890,7 @@ usage: spotread [-options] [logfile]
         return result
 
     def ensure_patch_sequence(self, ti1, write=True):
-        """
-        Ensure correct patch sequence of TI1 file
+        """Ensure correct patch sequence of TI1 file
 
         Return either the changed CGATS object or the original path/TI1
 
@@ -11139,8 +11111,7 @@ usage: spotread [-options] [logfile]
 
     def prepare_colprof(self, profile_name=None, display_name=None,
                         display_manufacturer=None, tags=None):
-        """
-        Prepare a colprof commandline.
+        """Prepare a colprof commandline.
 
         All options are read from the user configuration.
         Profile name and display name can be ovverridden by passing the
@@ -11404,8 +11375,7 @@ usage: spotread [-options] [logfile]
         return cmd, args
 
     def prepare_dispcal(self, calibrate=True, verify=False, dry_run=False):
-        """
-        Prepare a dispcal commandline.
+        """Prepare a dispcal commandline.
 
         All options are read from the user configuration.
         You can choose if you want to calibrate and/or verify by passing
@@ -11569,8 +11539,7 @@ usage: spotread [-options] [logfile]
         return cmd, args
 
     def prepare_dispread(self, apply_calibration=True):
-        """
-        Prepare a dispread commandline.
+        """Prepare a dispread commandline.
 
         All options are read from the user configuration.
         You can choose if you want to apply the current calibration,
@@ -11763,8 +11732,7 @@ usage: spotread [-options] [logfile]
         return cmd, self.options_dispread + [inoutfile]
 
     def prepare_dispwin(self, cal=None, profile_path=None, install=True):
-        """
-        Prepare a dispwin commandline.
+        """Prepare a dispwin commandline.
 
         All options are read from the user configuration.
         If you pass in cal as True, it will try to load the current
@@ -11874,8 +11842,7 @@ usage: spotread [-options] [logfile]
         return cmd, args
 
     def prepare_targen(self):
-        """
-        Prepare a targen commandline.
+        """Prepare a targen commandline.
 
         All options are read from the user configuration.
 
@@ -12475,8 +12442,7 @@ usage: spotread [-options] [logfile]
               continue_next=False, stop_timers=True, interactive_frame="",
               pauseable=False, cancelable=True, show_remaining_time=True,
               fancy=True):
-        """
-        Start a worker process.
+        """Start a worker process.
         
         Also show a progress dialog while the process is running.
         
@@ -12712,8 +12678,7 @@ usage: spotread [-options] [logfile]
 
     def calculate_gamut(self, profile_path, intent="r", direction="f",
                         order="n", compare_standard_gamuts=True):
-        """
-        Calculate gamut, volume, and coverage % against sRGB and Adobe RGB.
+        """Calculate gamut, volume, and coverage % against sRGB and Adobe RGB.
 
         Return gamut volume (int, scaled to sRGB = 1.0) and
         coverage (dict) as tuple.
@@ -13032,8 +12997,7 @@ usage: spotread [-options] [logfile]
     def change_display_profile_cal_whitepoint(self, profile, x, y, outfilename,
                                               calibration_only=False,
                                               use_collink=False):
-        """
-        Change display profile (and calibration) whitepoint.
+        """Change display profile (and calibration) whitepoint.
 
         Do it in an colorimetrically accurate manner (as far as possible).
 
@@ -13380,8 +13344,7 @@ BEGIN_DATA
 
     def ti1_lookup_to_ti3(self, ti1, profile, function="f", pcs=None,
                           intent="r", white_patches=4, white_patches_total=True):
-        """
-        Read TI1 (filename or CGATS instance), lookup device->pcs values
+        """Read TI1 (filename or CGATS instance), lookup device->pcs values
         colorimetrically through profile using Argyll's xicclu
         utility and return TI3 (CGATS instance)
 
@@ -13671,8 +13634,7 @@ BEGIN_DATA
 
     def ti3_lookup_to_ti1(self, ti3, profile, fields=None, intent="r",
                           add_white_patches=4):
-        """
-        Read TI3 (filename or CGATS instance), lookup cie->device values
+        """Read TI3 (filename or CGATS instance), lookup cie->device values
         colorimetrically through profile using Argyll's xicclu
         utility and return TI1 and compatible TI3 (CGATS instances)
 
@@ -14329,8 +14291,7 @@ BEGIN_DATA
         return self.exec_cmd(cmd, args, skip_scripts=True)
 
     def wrapup(self, copy=True, remove=True, dst_path=None, ext_filter=None):
-        """
-        Wrap up - copy and/or clean temporary file(s).
+        """Wrap up - copy and/or clean temporary file(s).
 
         """
         if debug: print("[D] wrapup(copy=%s, remove=%s)" % (copy, remove))

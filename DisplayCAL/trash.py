@@ -58,8 +58,7 @@ class TrashcanUnavailableError(Exception):
 
 
 def trash(paths):
-    """
-    Move files and folders to the trash.
+    """Move files and folders to the trash.
 
     If a trashcan facility does not exist, do not touch the files.
     Return a list of successfully processed paths.

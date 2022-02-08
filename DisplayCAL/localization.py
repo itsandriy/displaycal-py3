@@ -14,8 +14,7 @@ from util_os import expanduseru
 
 
 def init(set_wx_locale=False):
-    """
-    Populate translation dict with found language strings and set locale.
+    """Populate translation dict with found language strings and set locale.
 
     If set_wx_locale is True, set locale also for wxPython.
 

@@ -28,8 +28,7 @@ def get_osascript_args_or_run(applescript, run=True):
 
 
 def mac_app_activate(delay=0, mac_app_name="Finder"):
-    """
-    Activate (show & bring to front) an application if it is running.
+    """Activate (show & bring to front) an application if it is running.
 
     """
     applescript = [
@@ -45,8 +44,7 @@ def mac_app_activate(delay=0, mac_app_name="Finder"):
 
 
 def mac_terminal_do_script(script=None, do=True):
-    """
-    Run a script in Terminal.
+    """Run a script in Terminal.
 
     """
     applescript = [
@@ -73,8 +71,7 @@ def mac_terminal_do_script(script=None, do=True):
 
 def mac_terminal_set_colors(background="black", cursor="gray", text="gray",
                             text_bold="gray", do=True):
-    """
-    Set Terminal colors.
+    """Set Terminal colors.
 
     """
     applescript = [
@@ -89,8 +86,7 @@ def mac_terminal_set_colors(background="black", cursor="gray", text="gray",
 
 
 def osascript(applescript):
-    """
-    Run AppleScript with the 'osascript' command
+    """Run AppleScript with the 'osascript' command
 
     Return osascript's exit code.
 
@@ -104,8 +100,7 @@ def osascript(applescript):
 
 
 def get_model_code(serial=None):
-    """
-    Given a mac serial number, return the model code
+    """Given a mac serial number, return the model code
 
     If serial is None, this mac's serial number is used.
 
@@ -125,8 +120,7 @@ def get_model_code(serial=None):
 
 
 def get_serial():
-    """
-    Return this mac's serial number
+    """Return this mac's serial number
 
     """
     try:
@@ -141,8 +135,7 @@ def get_serial():
 
 
 def get_model_id():
-    """
-    Return this mac's model id
+    """Return this mac's model id
 
     """
     try:
@@ -155,8 +148,7 @@ def get_model_id():
 
 
 def get_machine_attributes(model_id=None):
-    """
-    Given a mac model ID, return the machine attributes
+    """Given a mac model ID, return the machine attributes
 
     If model_code is None, this mac's model code is used.
 

@@ -10,8 +10,7 @@ from DisplayCAL import xrandr
 
 
 def get_display(display=None):
-    """
-    Parse $DISPLAY and return (hostname, display number, screen number)
+    """Parse $DISPLAY and return (hostname, display number, screen number)
     """
     display_parts = (display or os.getenv("DISPLAY", ":0.0")).split(":")
     hostname = display_parts[0]

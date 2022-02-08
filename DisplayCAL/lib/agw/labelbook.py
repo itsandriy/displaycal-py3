@@ -195,20 +195,18 @@ EVT_IMAGENOTEBOOK_PAGE_CLOSED = wx.PyEventBinder(wxEVT_IMAGENOTEBOOK_PAGE_CLOSED
 # ---------------------------------------------------------------------------- #
 
 class ImageNotebookEvent(wx.PyCommandEvent):
-    """
-    This events will be sent when a ``EVT_IMAGENOTEBOOK_PAGE_CHANGED``,
+    """This events will be sent when a ``EVT_IMAGENOTEBOOK_PAGE_CHANGED``,
     ``EVT_IMAGENOTEBOOK_PAGE_CHANGING``, ``EVT_IMAGENOTEBOOK_PAGE_CLOSING``,
     ``EVT_IMAGENOTEBOOK_PAGE_CLOSED`` is mapped in the parent.
     """
 
     def __init__(self, eventType, eventId=1, sel=-1, oldsel=-1):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `eventType`: the event type;
-        :param `eventId`: the event identifier;
-        :param `sel`: the current selection;
-        :param `oldsel`: the old selection.
+        :param eventType: the event type;
+        :param eventId: the event identifier;
+        :param sel: the current selection;
+        :param oldsel: the old selection.
         """
 
         wx.PyCommandEvent.__init__(self, eventType, eventId)
@@ -219,20 +217,18 @@ class ImageNotebookEvent(wx.PyCommandEvent):
 
 
     def SetSelection(self, s):
-        """
-        Sets the event selection.
+        """Sets the event selection.
 
-        :param `s`: an integer specifying the new selection.
+        :param s: an integer specifying the new selection.
         """
 
         self._sel = s
 
 
     def SetOldSelection(self, s):
-        """
-        Sets the event old selection.
+        """Sets the event old selection.
 
-        :param `s`: an integer specifying the old selection.
+        :param s: an integer specifying the old selection.
         """
 
         self._oldsel = s
@@ -251,8 +247,7 @@ class ImageNotebookEvent(wx.PyCommandEvent):
 
 
     def Veto(self):
-        """
-        Prevents the change announced by this event from happening.
+        """Prevents the change announced by this event from happening.
 
         :note: It is in general a good idea to notify the user about the reasons
          for vetoing the change because otherwise the applications behaviour (which
@@ -263,8 +258,7 @@ class ImageNotebookEvent(wx.PyCommandEvent):
 
 
     def Allow(self):
-        """
-        This is the opposite of L{Veto}: it explicitly allows the event to be processed.
+        """This is the opposite of L{Veto}: it explicitly allows the event to be processed.
         For most events it is not necessary to call this method as the events are
         allowed anyhow but some are forbidden by default (this will be mentioned
         in the corresponding event description).
@@ -274,8 +268,7 @@ class ImageNotebookEvent(wx.PyCommandEvent):
 
 
     def IsAllowed(self):
-        """
-        Returns ``True`` if the change is allowed (L{Veto} hasn't been called) or
+        """Returns ``True`` if the change is allowed (L{Veto} hasn't been called) or
         ``False`` otherwise (if it was).
         """
 
@@ -287,16 +280,15 @@ class ImageNotebookEvent(wx.PyCommandEvent):
 # ---------------------------------------------------------------------------- #
 
 class ImageInfo(object):
-    """
-    This class holds all the information (caption, image, etc...) belonging to a
+    """This class holds all the information (caption, image, etc...) belonging to a
     single tab in L{LabelBook}.
     """
     def __init__(self, strCaption="", imageIndex=-1):    
         """
         Default class constructor.
 
-        :param `strCaption`: the tab caption;
-        :param `imageIndex`: the tab image index based on the assigned (set)
+        :param strCaption: the tab caption;
+        :param imageIndex: the tab image index based on the assigned (set)
          `wx.ImageList` (if any).
         """
         
@@ -308,10 +300,9 @@ class ImageInfo(object):
 
 
     def SetCaption(self, value):
-        """
-        Sets the tab caption.
+        """Sets the tab caption.
 
-        :param `value`: the new tab caption.
+        :param value: the new tab caption.
         """
 
         self._strCaption = value
@@ -324,10 +315,9 @@ class ImageInfo(object):
 
 
     def SetPosition(self, value):
-        """
-        Sets the tab position.
+        """Sets the tab position.
 
-        :param `value`: the new tab position, an instance of `wx.Point`.
+        :param value: the new tab position, an instance of `wx.Point`.
         """
 
         self._pos = value
@@ -340,10 +330,9 @@ class ImageInfo(object):
 
 
     def SetSize(self, value):
-        """
-        Sets the tab size.
+        """Sets the tab size.
 
-        :param `value`:  the new tab size, an instance of `wx.Size`.
+        :param value:  the new tab size, an instance of `wx.Size`.
         """
 
         self._size = value
@@ -356,10 +345,9 @@ class ImageInfo(object):
 
 
     def SetImageIndex(self, value):
-        """
-        Sets the tab image index.
+        """Sets the tab image index.
 
-        :param `value`: an index into the image list..
+        :param value: an index into the image list..
         """
 
         self._ImageIndex = value
@@ -372,10 +360,9 @@ class ImageInfo(object):
 
 
     def SetTextRect(self, rect):
-        """
-        Sets the client rectangle available for the tab text.
+        """Sets the client rectangle available for the tab text.
 
-        :param `rect`: the tab text client rectangle, an instance of `wx.Rect`.
+        :param rect: the tab text client rectangle, an instance of `wx.Rect`.
         """
 
         self._captionRect = rect
@@ -392,22 +379,20 @@ class ImageInfo(object):
 # ---------------------------------------------------------------------------- #
 
 class ImageContainerBase(wx.Panel):
-    """
-    Base class for L{FlatImageBook} image container.
+    """Base class for L{FlatImageBook} image container.
     """
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0, agwStyle=0, name="ImageContainerBase"):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: parent window. Must not be ``None``;
-        :param `id`: window identifier. A value of -1 indicates a default value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: parent window. Must not be ``None``;
+        :param id: window identifier. A value of -1 indicates a default value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the underlying `wx.Panel` window style;
-        :param `agwStyle`: the AGW-specific window style. This can be a combination of the
+        :param style: the underlying `wx.Panel` window style;
+        :param agwStyle: the AGW-specific window style. This can be a combination of the
          following bits:
 
          =========================== =========== ==================================================
@@ -429,7 +414,7 @@ class ImageContainerBase(wx.Panel):
          ``INB_FIT_LABELTEXT``            0x2000 Will fit the tab area to the longest text (or text+image if you have images) in all the tabs.
          =========================== =========== ==================================================
 
-        :param `name`: the window name.         
+        :param name: the window name.
         """
         
         self._nIndex = -1
@@ -446,10 +431,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def HasAGWFlag(self, flag):
-        """
-        Tests for existance of flag in the style.
+        """Tests for existance of flag in the style.
 
-        :param `flag`: a window style. This can be a combination of the following bits:
+        :param flag: a window style. This can be a combination of the following bits:
 
          =========================== =========== ==================================================
          Window Styles               Hex Value   Description
@@ -477,10 +461,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def ClearFlag(self, flag):
-        """
-        Removes flag from the style.
+        """Removes flag from the style.
 
-        :param `flag`: a window style flag.
+        :param flag: a window style flag.
 
         :see: L{HasAGWFlag} for a list of possible window style flags.        
         """
@@ -492,10 +475,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def AssignImageList(self, imglist):
-        """
-        Assigns an image list to the L{ImageContainerBase}.
+        """Assigns an image list to the L{ImageContainerBase}.
 
-        :param `imglist`: an instance of `wx.ImageList`.
+        :param imglist: an instance of `wx.ImageList`.
         """
   
         if imglist and imglist.GetImageCount() != 0:
@@ -520,22 +502,20 @@ class ImageContainerBase(wx.Panel):
 
     
     def FixTextSize(self, dc, text, maxWidth):
-        """
-        Fixes the text, to fit `maxWidth` value. If the text length exceeds
+        """Fixes the text, to fit `maxWidth` value. If the text length exceeds
         `maxWidth` value this function truncates it and appends two dots at
         the end. ("Long Long Long Text" might become "Long Long...").
 
-        :param `dc`: an instance of `wx.DC`;
-        :param `text`: the text to fix/truncate;
-        :param `maxWidth`: the maximum allowed width for the text, in pixels.
+        :param dc: an instance of `wx.DC`;
+        :param text: the text to fix/truncate;
+        :param maxWidth: the maximum allowed width for the text, in pixels.
         """
 
         return ArtManager.Get().TruncateText(dc, text, maxWidth)
 
 
     def CanDoBottomStyle(self):
-        """
-        Allows the parent to examine the children type. Some implementation
+        """Allows the parent to examine the children type. Some implementation
         (such as L{LabelBook}), does not support top/bottom images, only left/right.
         """
         
@@ -543,12 +523,11 @@ class ImageContainerBase(wx.Panel):
     
         
     def AddPage(self, caption, selected=False, imgIdx=-1):
-        """
-        Adds a page to the container.
+        """Adds a page to the container.
 
-        :param `caption`: specifies the text for the new tab;
-        :param `selected`: specifies whether the page should be selected;
-        :param `imgIdx`: specifies the optional image index for the new tab.
+        :param caption: specifies the text for the new tab;
+        :param selected: specifies whether the page should be selected;
+        :param imgIdx: specifies the optional image index for the new tab.
         """
         
         self._pagesInfoVec.append(ImageInfo(caption, imgIdx))
@@ -559,13 +538,12 @@ class ImageContainerBase(wx.Panel):
 
 
     def InsertPage(self, page_idx, caption, selected=False, imgIdx=-1):
-        """
-        Inserts a page into the container at the specified position.
+        """Inserts a page into the container at the specified position.
 
-        :param `page_idx`: specifies the position for the new tab;
-        :param `caption`: specifies the text for the new tab;
-        :param `selected`: specifies whether the page should be selected;
-        :param `imgIdx`: specifies the optional image index for the new tab.
+        :param page_idx: specifies the position for the new tab;
+        :param caption: specifies the text for the new tab;
+        :param selected: specifies whether the page should be selected;
+        :param imgIdx: specifies the optional image index for the new tab.
         """
         
         self._pagesInfoVec.insert(page_idx, ImageInfo(caption, imgIdx))
@@ -576,11 +554,10 @@ class ImageContainerBase(wx.Panel):
 
 
     def SetPageImage(self, page, imgIdx):
-        """
-        Sets the image for the given page.
+        """Sets the image for the given page.
 
-        :param `page`: the index of the tab;
-        :param `imgIdx`: specifies the optional image index for the tab.
+        :param page: the index of the tab;
+        :param imgIdx: specifies the optional image index for the tab.
         """
 
         imgInfo = self._pagesInfoVec[page]
@@ -588,11 +565,10 @@ class ImageContainerBase(wx.Panel):
 
 
     def SetPageText(self, page, text):
-        """
-        Sets the tab caption for the given page.
+        """Sets the tab caption for the given page.
 
-        :param `page`: the index of the tab;
-        :param `text`: the new tab caption.
+        :param page: the index of the tab;
+        :param text: the new tab caption.
         """
 
         imgInfo = self._pagesInfoVec[page]
@@ -600,10 +576,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def GetPageImage(self, page):
-        """
-        Returns the image index for the given page.
+        """Returns the image index for the given page.
         
-        :param `page`: the index of the tab.
+        :param page: the index of the tab.
         """
 
         imgInfo = self._pagesInfoVec[page]
@@ -611,10 +586,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def GetPageText(self, page):
-        """
-        Returns the tab caption for the given page.
+        """Returns the tab caption for the given page.
         
-        :param `page`: the index of the tab.
+        :param page: the index of the tab.
         """
 
         imgInfo = self._pagesInfoVec[page]
@@ -629,10 +603,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def DoDeletePage(self, page):
-        """
-        Does the actual page deletion.
+        """Does the actual page deletion.
 
-        :param `page`: the index of the tab.
+        :param page: the index of the tab.
         """
 
         # Remove the page from the vector
@@ -662,10 +635,9 @@ class ImageContainerBase(wx.Panel):
 
             
     def OnSize(self, event):
-        """
-        Handles the ``wx.EVT_SIZE`` event for L{ImageContainerBase}.
+        """Handles the ``wx.EVT_SIZE`` event for L{ImageContainerBase}.
 
-        :param `event`: a `wx.SizeEvent` event to be processed.
+        :param event: a `wx.SizeEvent` event to be processed.
         """
 
         self.Refresh() # Call on paint
@@ -673,10 +645,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def OnEraseBackground(self, event):
-        """
-        Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{ImageContainerBase}.
+        """Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{ImageContainerBase}.
 
-        :param `event`: a `wx.EraseEvent` event to be processed.
+        :param event: a `wx.EraseEvent` event to be processed.
 
         :note: This method is intentionally empty to reduce flicker.        
         """
@@ -685,11 +656,10 @@ class ImageContainerBase(wx.Panel):
 
     
     def HitTest(self, pt):
-        """
-        Returns the index of the tab at the specified position or ``wx.NOT_FOUND``
+        """Returns the index of the tab at the specified position or ``wx.NOT_FOUND``
         if ``None``, plus the flag style of L{HitTest}.
 
-        :param `pt`: an instance of `wx.Point`, to test for hits.
+        :param pt: an instance of `wx.Point`, to test for hits.
 
         :return: The index of the tab at the specified position plus the hit test
          flag, which can be one of the following bits:
@@ -732,10 +702,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def PointOnSash(self, pt):
-        """
-        Tests whether pt is located on the sash.
+        """Tests whether pt is located on the sash.
 
-        :param `pt`: an instance of `wx.Point`, to test for hits.
+        :param pt: an instance of `wx.Point`, to test for hits.
         """
 
         # Check if we are on a the sash border
@@ -753,10 +722,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def OnMouseLeftDown(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_DOWN`` event for L{ImageContainerBase}.
+        """Handles the ``wx.EVT_LEFT_DOWN`` event for L{ImageContainerBase}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         newSelection = -1
@@ -790,10 +758,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def OnMouseLeaveWindow(self, event):
-        """
-        Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{ImageContainerBase}.
+        """Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{ImageContainerBase}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         bRepaint = self._nHoeveredImgIdx != -1
@@ -817,10 +784,9 @@ class ImageContainerBase(wx.Panel):
 
 
     def OnMouseLeftUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` event for L{ImageContainerBase}.
+        """Handles the ``wx.EVT_LEFT_UP`` event for L{ImageContainerBase}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         style = self.GetParent().GetAGWWindowStyleFlag()
@@ -870,10 +836,9 @@ class ImageContainerBase(wx.Panel):
             
 
     def OnMouseMove(self, event):
-        """
-        Handles the ``wx.EVT_MOTION`` event for L{ImageContainerBase}.
+        """Handles the ``wx.EVT_MOTION`` event for L{ImageContainerBase}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         style = self.GetParent().GetAGWWindowStyleFlag()
@@ -914,12 +879,11 @@ class ImageContainerBase(wx.Panel):
 
 
     def DrawPin(self, dc, rect, downPin):
-        """
-        Draw a pin button, that allows collapsing of the image panel.
+        """Draw a pin button, that allows collapsing of the image panel.
 
-        :param `dc`: an instance of `wx.DC`;
-        :param `rect`: the pin button client rectangle;
-        :param `downPin`: ``True`` if the pin button is facing downwards, ``False``
+        :param dc: an instance of `wx.DC`;
+        :param rect: the pin button client rectangle;
+        :param downPin: ``True`` if the pin button is facing downwards, ``False``
          if it is facing leftwards.
         """
 
@@ -969,23 +933,21 @@ class ImageContainerBase(wx.Panel):
 # ---------------------------------------------------------------------------- #
 
 class ImageContainer(ImageContainerBase):
-    """
-    Base class for L{FlatImageBook} image container.
+    """Base class for L{FlatImageBook} image container.
     """
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0, agwStyle=0, name="ImageContainer"):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: parent window. Must not be ``None``;
-        :param `id`: window identifier. A value of -1 indicates a default value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: parent window. Must not be ``None``;
+        :param id: window identifier. A value of -1 indicates a default value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the underlying `wx.Panel` window style;
-        :param `agwStyle`: the AGW-specific window style. This can be a combination of the
+        :param style: the underlying `wx.Panel` window style;
+        :param agwStyle: the AGW-specific window style. This can be a combination of the
          following bits:
 
          =========================== =========== ==================================================
@@ -1007,7 +969,7 @@ class ImageContainer(ImageContainerBase):
          ``INB_FIT_LABELTEXT``            0x2000 Will fit the tab area to the longest text (or text+image if you have images) in all the tabs.
          =========================== =========== ==================================================
 
-        :param `name`: the window name.         
+        :param name: the window name.
         """
 
         ImageContainerBase.__init__(self, parent, id, pos, size, style, agwStyle, name)
@@ -1022,10 +984,9 @@ class ImageContainer(ImageContainerBase):
 
 
     def OnSize(self, event):
-        """
-        Handles the ``wx.EVT_SIZE`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_SIZE`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.SizeEvent` event to be processed.
+        :param event: a `wx.SizeEvent` event to be processed.
         """
 
         ImageContainerBase.OnSize(self, event)
@@ -1033,10 +994,9 @@ class ImageContainer(ImageContainerBase):
         
 
     def OnMouseLeftDown(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_DOWN`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_LEFT_DOWN`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
         
         ImageContainerBase.OnMouseLeftDown(self, event)
@@ -1044,10 +1004,9 @@ class ImageContainer(ImageContainerBase):
             
 
     def OnMouseLeftUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_LEFT_UP`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         ImageContainerBase.OnMouseLeftUp(self, event)
@@ -1055,20 +1014,18 @@ class ImageContainer(ImageContainerBase):
 
 
     def OnEraseBackground(self, event):
-        """
-        Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.EraseEvent` event to be processed.
+        :param event: a `wx.EraseEvent` event to be processed.
         """
 
         ImageContainerBase.OnEraseBackground(self, event)
 
 
     def OnMouseMove(self, event):
-        """
-        Handles the ``wx.EVT_MOTION`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_MOTION`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         ImageContainerBase.OnMouseMove(self, event)
@@ -1076,10 +1033,9 @@ class ImageContainer(ImageContainerBase):
 
 
     def OnMouseLeaveWindow(self, event):
-        """
-        Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         ImageContainerBase.OnMouseLeaveWindow(self, event)
@@ -1087,8 +1043,7 @@ class ImageContainer(ImageContainerBase):
 
         
     def CanDoBottomStyle(self):
-        """
-        Allows the parent to examine the children type. Some implementation
+        """Allows the parent to examine the children type. Some implementation
         (such as L{LabelBook}), does not support top/bottom images, only left/right.
         """
 
@@ -1096,10 +1051,9 @@ class ImageContainer(ImageContainerBase):
 
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_PAINT`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.PaintEvent` event to be processed.
+        :param event: a `wx.PaintEvent` event to be processed.
         """
 
         dc = wx.BufferedPaintDC(self)
@@ -1345,17 +1299,16 @@ class LabelContainer(ImageContainerBase):
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0, agwStyle=0, name="LabelContainer"):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: parent window. Must not be ``None``;
-        :param `id`: window identifier. A value of -1 indicates a default value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: parent window. Must not be ``None``;
+        :param id: window identifier. A value of -1 indicates a default value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the underlying `wx.Panel` window style;
-        :param `agwStyle`: the AGW-specific window style. This can be a combination of the
+        :param style: the underlying `wx.Panel` window style;
+        :param agwStyle: the AGW-specific window style. This can be a combination of the
          following bits:
 
          =========================== =========== ==================================================
@@ -1377,7 +1330,7 @@ class LabelContainer(ImageContainerBase):
          ``INB_FIT_LABELTEXT``            0x2000 Will fit the tab area to the longest text (or text+image if you have images) in all the tabs.
          =========================== =========== ==================================================
 
-        :param `name`: the window name.         
+        :param name: the window name.
         """
 
         ImageContainerBase.__init__(self, parent, id, pos, size, style, agwStyle, name)
@@ -1397,10 +1350,9 @@ class LabelContainer(ImageContainerBase):
 
 
     def OnSize(self, event):
-        """
-        Handles the ``wx.EVT_SIZE`` event for L{LabelContainer}.
+        """Handles the ``wx.EVT_SIZE`` event for L{LabelContainer}.
 
-        :param `event`: a `wx.SizeEvent` event to be processed.
+        :param event: a `wx.SizeEvent` event to be processed.
         """
 
         ImageContainerBase.OnSize(self, event)
@@ -1408,10 +1360,9 @@ class LabelContainer(ImageContainerBase):
 
 
     def OnEraseBackground(self, event):
-        """
-        Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{LabelContainer}.
+        """Handles the ``wx.EVT_ERASE_BACKGROUND`` event for L{LabelContainer}.
 
-        :param `event`: a `wx.EraseEvent` event to be processed.
+        :param event: a `wx.EraseEvent` event to be processed.
         """
 
         ImageContainerBase.OnEraseBackground(self, event)        
@@ -1424,18 +1375,16 @@ class LabelContainer(ImageContainerBase):
 
 
     def SetTabAreaWidth(self, width):
-        """
-        Sets the width of the tab area.
+        """Sets the width of the tab area.
 
-        :param `width`: the width of the tab area, in pixels.
+        :param width: the width of the tab area, in pixels.
         """
 
         self._nTabAreaWidth = width
 
 
     def CanDoBottomStyle(self):
-        """
-        Allows the parent to examine the children type. Some implementation
+        """Allows the parent to examine the children type. Some implementation
         (such as L{LabelBook}), does not support top/bottom images, only left/right.
         """
 
@@ -1443,20 +1392,18 @@ class LabelContainer(ImageContainerBase):
 
 
     def SetBackgroundBitmap(self, bmp):
-        """
-        Sets the background bitmap for the control.
+        """Sets the background bitmap for the control.
 
-        :param `bmp`: a valid `wx.Bitmap` object.
+        :param bmp: a valid `wx.Bitmap` object.
         """
 
         self._skin = bmp
 
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` event for L{LabelContainer}.
+        """Handles the ``wx.EVT_PAINT`` event for L{LabelContainer}.
 
-        :param `event`: a `wx.PaintEvent` event to be processed.
+        :param event: a `wx.PaintEvent` event to be processed.
         """
         
         style = self.GetParent().GetAGWWindowStyleFlag()
@@ -1576,10 +1523,9 @@ class LabelContainer(ImageContainerBase):
         
 
     def DrawBackgroundBitmap(self, dc):
-        """
-        Draws a bitmap as the background of the control.
+        """Draws a bitmap as the background of the control.
 
-        :param `dc`: an instance of `wx.DC`.
+        :param dc: an instance of `wx.DC`.
         """
 
         clientRect = self.GetClientRect()
@@ -1615,10 +1561,9 @@ class LabelContainer(ImageContainerBase):
         
 
     def OnMouseLeftUp(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_UP`` event for L{LabelContainer}.
+        """Handles the ``wx.EVT_LEFT_UP`` event for L{LabelContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         if self.HasAGWFlag(INB_NO_RESIZE):
@@ -1651,10 +1596,9 @@ class LabelContainer(ImageContainerBase):
 
 
     def Resize(self, event):
-        """
-        Actually resizes the tab area.
+        """Actually resizes the tab area.
 
-        :param `event`: an instance of `wx.SizeEvent`.
+        :param event: an instance of `wx.SizeEvent`.
         """
 
         # Resize our size
@@ -1683,10 +1627,9 @@ class LabelContainer(ImageContainerBase):
 
 
     def OnMouseMove(self, event):
-        """
-        Handles the ``wx.EVT_MOTION`` event for L{LabelContainer}.
+        """Handles the ``wx.EVT_MOTION`` event for L{LabelContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         if self.HasAGWFlag(INB_NO_RESIZE):
@@ -1736,10 +1679,9 @@ class LabelContainer(ImageContainerBase):
         
 
     def OnMouseLeftDown(self, event):
-        """
-        Handles the ``wx.EVT_LEFT_DOWN`` event for L{LabelContainer}.
+        """Handles the ``wx.EVT_LEFT_DOWN`` event for L{LabelContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         if self.HasAGWFlag(INB_NO_RESIZE):
@@ -1773,10 +1715,9 @@ class LabelContainer(ImageContainerBase):
 
 
     def OnMouseLeaveWindow(self, event):
-        """
-        Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{LabelContainer}.
+        """Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{LabelContainer}.
 
-        :param `event`: a `wx.MouseEvent` event to be processed.
+        :param event: a `wx.MouseEvent` event to be processed.
         """
 
         if self.HasAGWFlag(INB_NO_RESIZE):
@@ -1790,11 +1731,10 @@ class LabelContainer(ImageContainerBase):
 
         
     def DrawRegularHover(self, dc, rect):
-        """
-        Draws a rounded rectangle around the current tab.
+        """Draws a rounded rectangle around the current tab.
 
-        :param `dc`: an instance of `wx.DC`;
-        :param `rect`: the current tab client rectangle.
+        :param dc: an instance of `wx.DC`;
+        :param rect: the current tab client rectangle.
         """
         
         # The hovered tab with default border
@@ -1834,13 +1774,12 @@ class LabelContainer(ImageContainerBase):
         
 
     def DrawWebHover(self, dc, caption, xCoord, yCoord):
-        """
-        Draws a web style hover effect (cursor set to hand & text is underlined).
+        """Draws a web style hover effect (cursor set to hand & text is underlined).
 
-        :param `dc`: an instance of `wx.DC`;
-        :param `caption`: the tab caption text;
-        :param `xCoord`: the x position of the tab caption;
-        :param `yCoord`: the y position of the tab caption.
+        :param dc: an instance of `wx.DC`;
+        :param caption: the tab caption text;
+        :param xCoord: the x position of the tab caption;
+        :param yCoord: the y position of the tab caption.
         """
 
         # Redraw the text with underlined font
@@ -1854,10 +1793,9 @@ class LabelContainer(ImageContainerBase):
 
 
     def SetColour(self, which, colour):
-        """
-        Sets a colour for a parameter.
+        """Sets a colour for a parameter.
 
-        :param `which`: can be one of the following parameters:
+        :param which: can be one of the following parameters:
 
          ================================== ======= ==================================
          Colour Key                          Value  Description
@@ -1870,17 +1808,16 @@ class LabelContainer(ImageContainerBase):
          ``INB_HILITE_TAB_COLOUR``              105 The tab caption highlight text colour
          ================================== ======= ==================================         
 
-        :param `colour`: a valid `wx.Colour` object.        
+        :param colour: a valid `wx.Colour` object.
         """
 
         self._coloursMap[which] = colour
 
 
     def GetColour(self, which):
-        """
-        Returns a colour for a parameter.
+        """Returns a colour for a parameter.
 
-        :param `which`: the colour key.
+        :param which: the colour key.
 
         :see: L{SetColour} for a list of valid colour keys.
         """
@@ -1910,19 +1847,18 @@ class LabelContainer(ImageContainerBase):
         
 
     def DrawLabel(self, dc, rect, text, bmp, imgInfo, orientationLeft, imgIdx, selected, hover):
-        """
-        Draws a label using the specified dc.
+        """Draws a label using the specified dc.
 
-        :param `dc`: an instance of `wx.DC`;
-        :param `rect`: the text client rectangle;
-        :param `text`: the actual text string;
-        :param `bmp`: a bitmap to be drawn next to the text;
-        :param `imgInfo`: an instance of L{ImageInfo};
-        :param `orientationLeft`: ``True`` if the book has the ``INB_RIGHT`` or ``INB_LEFT``
+        :param dc: an instance of `wx.DC`;
+        :param rect: the text client rectangle;
+        :param text: the actual text string;
+        :param bmp: a bitmap to be drawn next to the text;
+        :param imgInfo: an instance of L{ImageInfo};
+        :param orientationLeft: ``True`` if the book has the ``INB_RIGHT`` or ``INB_LEFT``
          style set;
-        :param `imgIdx`: the tab image index;
-        :param `selected`: ``True`` if the tab is selected, ``False`` otherwise;
-        :param `hover`: ``True`` if the tab is being hovered with the mouse, ``False`` otherwise.
+        :param imgIdx: the tab image index;
+        :param selected: ``True`` if the tab is selected, ``False`` otherwise;
+        :param hover: ``True`` if the tab is being hovered with the mouse, ``False`` otherwise.
         """
 
         dcsaver = DCSaver(dc)
@@ -2061,17 +1997,16 @@ class FlatBookBase(wx.Panel):
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0, agwStyle=0, name="FlatBookBase"):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: parent window. Must not be ``None``;
-        :param `id`: window identifier. A value of -1 indicates a default value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: parent window. Must not be ``None``;
+        :param id: window identifier. A value of -1 indicates a default value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the underlying `wx.Panel` window style;
-        :param `agwStyle`: the AGW-specific window style. This can be a combination of the
+        :param style: the underlying `wx.Panel` window style;
+        :param agwStyle: the AGW-specific window style. This can be a combination of the
          following bits:
 
          =========================== =========== ==================================================
@@ -2093,7 +2028,7 @@ class FlatBookBase(wx.Panel):
          ``INB_FIT_LABELTEXT``            0x2000 Will fit the tab area to the longest text (or text+image if you have images) in all the tabs.
          =========================== =========== ==================================================
 
-        :param `name`: the window name.         
+        :param name: the window name.
         """
         
         self._pages = None
@@ -2112,10 +2047,9 @@ class FlatBookBase(wx.Panel):
 
 
     def SetAGWWindowStyleFlag(self, agwStyle):
-        """
-        Sets the window style.
+        """Sets the window style.
 
-        :param `agwStyle`: can be a combination of the following bits:
+        :param agwStyle: can be a combination of the following bits:
 
          =========================== =========== ==================================================
          Window Styles               Hex Value   Description
@@ -2190,8 +2124,7 @@ class FlatBookBase(wx.Panel):
 
 
     def GetAGWWindowStyleFlag(self):
-        """
-        Returns the L{FlatBookBase} window style.
+        """Returns the L{FlatBookBase} window style.
 
         :see: L{SetAGWWindowStyleFlag} for a list of possible window style flags.
         """
@@ -2200,10 +2133,9 @@ class FlatBookBase(wx.Panel):
 
 
     def HasAGWFlag(self, flag):
-        """
-        Returns whether a flag is present in the L{FlatBookBase} style.
+        """Returns whether a flag is present in the L{FlatBookBase} style.
 
-        :param `flag`: one of the possible L{FlatBookBase} window styles.
+        :param flag: one of the possible L{FlatBookBase} window styles.
 
         :see: L{SetAGWWindowStyleFlag} for a list of possible window style flags.
         """
@@ -2214,13 +2146,12 @@ class FlatBookBase(wx.Panel):
 
 
     def AddPage(self, page, text, select=False, imageId=-1):
-        """
-        Adds a page to the book.
+        """Adds a page to the book.
 
-        :param `page`: specifies the new page;
-        :param `text`: specifies the text for the new page;
-        :param `select`: specifies whether the page should be selected;
-        :param `imageId`: specifies the optional image index for the new page.
+        :param page: specifies the new page;
+        :param text: specifies the text for the new page;
+        :param select: specifies whether the page should be selected;
+        :param imageId: specifies the optional image index for the new page.
         
         :note: The call to this function generates the page changing events.
         """
@@ -2243,14 +2174,13 @@ class FlatBookBase(wx.Panel):
 
 
     def InsertPage(self, page_idx, page, text, select=False, imageId=-1):
-        """
-        Inserts a page into the book at the specified position.
+        """Inserts a page into the book at the specified position.
 
-        :param `page_idx`: specifies the position for the new page;
-        :param `page`: specifies the new page;
-        :param `text`: specifies the text for the new page;
-        :param `select`: specifies whether the page should be selected;
-        :param `imageId`: specifies the optional image index for the new page.
+        :param page_idx: specifies the position for the new page;
+        :param page: specifies the new page;
+        :param text: specifies the text for the new page;
+        :param select: specifies whether the page should be selected;
+        :param imageId: specifies the optional image index for the new page.
         
         :note: The call to this function generates the page changing events.
         """
@@ -2273,10 +2203,9 @@ class FlatBookBase(wx.Panel):
 
 
     def DeletePage(self, page):
-        """
-        Deletes the specified page, and the associated window.
+        """Deletes the specified page, and the associated window.
 
-        :param `page`: an integer specifying the page to be deleted.
+        :param page: an integer specifying the page to be deleted.
         
         :note: The call to this function generates the page changing events.
         """
@@ -2323,10 +2252,9 @@ class FlatBookBase(wx.Panel):
 
 
     def RemovePage(self, page):
-        """
-        Deletes the specified page, without deleting the associated window.
+        """Deletes the specified page, without deleting the associated window.
 
-        :param `page`: an integer specifying the page to be removed.
+        :param page: an integer specifying the page to be removed.
         
         :note: The call to this function generates the page changing events.
         """
@@ -2424,11 +2352,10 @@ class FlatBookBase(wx.Panel):
 
 
     def SetSelection(self, page):
-        """
-        Changes the selection from currently visible/selected page to the page
+        """Changes the selection from currently visible/selected page to the page
         given by page.
 
-        :param `page`: an integer specifying the page to be selected.
+        :param page: an integer specifying the page to be selected.
 
         :note: The call to this function generates the page changing events.        
         """
@@ -2468,10 +2395,9 @@ class FlatBookBase(wx.Panel):
 
 
     def AssignImageList(self, imglist):
-        """
-        Assigns an image list to the control.
+        """Assigns an image list to the control.
 
-        :param `imglist`: an instance of `wx.ImageList`.
+        :param imglist: an instance of `wx.ImageList`.
         """
 
         self._pages.AssignImageList(imglist)
@@ -2490,10 +2416,9 @@ class FlatBookBase(wx.Panel):
 
 
     def DoSetSelection(self, window):
-        """
-        Select the window by the provided pointer.
+        """Select the window by the provided pointer.
 
-        :param `window`: an instance of `wx.Window`.
+        :param window: an instance of `wx.Window`.
         """
 
         curSel = self.GetSelection()
@@ -2542,7 +2467,7 @@ class FlatBookBase(wx.Panel):
         """ 
         Sets whether the page captions are bold or not.
         
-        :param `bold`: ``True`` or ``False``.
+        :param bold: ``True`` or ``False``.
         """
         
         self._fontBold = bold
@@ -2558,18 +2483,17 @@ class FlatBookBase(wx.Panel):
         """ 
         Sets the font size multiple for the page captions. 
         
-        :param `multiple`: The multiple to be applied to the system font to get the our font size.
+        :param multiple: The multiple to be applied to the system font to get the our font size.
         """
         
         self._fontSizeMultiple = multiple
     
 
     def SetPageImage(self, page, imageId):
-        """
-        Sets the image index for the given page.
+        """Sets the image index for the given page.
 
-        :param `page`: an integer specifying the page index;
-        :param `image`: an index into the image list.
+        :param page: an integer specifying the page index;
+        :param image: an index into the image list.
         """
 
         self._pages.SetPageImage(page, imageId)
@@ -2577,11 +2501,10 @@ class FlatBookBase(wx.Panel):
 
 
     def SetPageText(self, page, text):
-        """
-        Sets the text for the given page.
+        """Sets the text for the given page.
 
-        :param `page`: an integer specifying the page index;
-        :param `text`: the new tab label.
+        :param page: an integer specifying the page index;
+        :param text: the new tab label.
         """
 
         self._pages.SetPageText(page, text)
@@ -2589,30 +2512,27 @@ class FlatBookBase(wx.Panel):
 
 
     def GetPageText(self, page):
-        """
-        Returns the text for the given page.
+        """Returns the text for the given page.
 
-        :param `page`: an integer specifying the page index.
+        :param page: an integer specifying the page index.
         """
 
         return self._pages.GetPageText(page)
 
 
     def GetPageImage(self, page):
-        """
-        Returns the image index for the given page.
+        """Returns the image index for the given page.
 
-        :param `page`: an integer specifying the page index.
+        :param page: an integer specifying the page index.
         """
 
         return self._pages.GetPageImage(page)
 
 
     def GetPage(self, page):
-        """
-        Returns the window at the given page position.
+        """Returns the window at the given page position.
 
-        :param `page`: an integer specifying the page to be returned.
+        :param page: an integer specifying the page to be returned.
         """
 
         if page >= len(self._windows):
@@ -2631,10 +2551,9 @@ class FlatBookBase(wx.Panel):
 
 
     def AdvanceSelection(self, forward=True):
-        """
-        Cycles through the tabs.
+        """Cycles through the tabs.
 
-        :param `forward`: if ``True``, the selection is advanced in ascending order
+        :param forward: if ``True``, the selection is advanced in ascending order
          (to the right), otherwise the selection is advanced in descending order.
          
         :note: The call to this function generates the page changing events.
@@ -2656,10 +2575,9 @@ class FlatBookBase(wx.Panel):
 
 
     def ChangeSelection(self, page):
-        """
-        Changes the selection for the given page, returning the previous selection.
+        """Changes the selection for the given page, returning the previous selection.
 
-        :param `page`: an integer specifying the page to be selected.
+        :param page: an integer specifying the page to be selected.
 
         :note: The call to this function does not generate the page changing events.
         """
@@ -2685,8 +2603,7 @@ class FlatBookBase(wx.Panel):
 # ---------------------------------------------------------------------------- #
         
 class FlatImageBook(FlatBookBase):
-    """
-    Default implementation of the image book, it is like a `wx.Notebook`, except that
+    """Default implementation of the image book, it is like a `wx.Notebook`, except that
     images are used to control the different pages. This container is usually used
     for configuration dialogs etc.
     
@@ -2695,17 +2612,16 @@ class FlatImageBook(FlatBookBase):
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0, agwStyle=0, name="FlatImageBook"):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: parent window. Must not be ``None``;
-        :param `id`: window identifier. A value of -1 indicates a default value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: parent window. Must not be ``None``;
+        :param id: window identifier. A value of -1 indicates a default value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the underlying `wx.Panel` window style;
-        :param `agwStyle`: the AGW-specific window style. This can be a combination of the
+        :param style: the underlying `wx.Panel` window style;
+        :param agwStyle: the AGW-specific window style. This can be a combination of the
          following bits:
 
          =========================== =========== ==================================================
@@ -2727,7 +2643,7 @@ class FlatImageBook(FlatBookBase):
          ``INB_FIT_LABELTEXT``            0x2000 Will fit the tab area to the longest text (or text+image if you have images) in all the tabs.
          =========================== =========== ==================================================
 
-        :param `name`: the window name.         
+        :param name: the window name.
         """
         
         FlatBookBase.__init__(self, parent, id, pos, size, style, agwStyle, name)
@@ -2763,24 +2679,22 @@ class FlatImageBook(FlatBookBase):
 # ---------------------------------------------------------------------------- #
 
 class LabelBook(FlatBookBase):
-    """
-    An implementation of a notebook control - except that instead of having
+    """An implementation of a notebook control - except that instead of having
     tabs to show labels, it labels to the right or left (arranged horizontally).
     """
     
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0, agwStyle=0, name="LabelBook"):
-        """
-        Default class constructor.
+        """Default class constructor.
 
-        :param `parent`: parent window. Must not be ``None``;
-        :param `id`: window identifier. A value of -1 indicates a default value;
-        :param `pos`: the control position. A value of (-1, -1) indicates a default position,
+        :param parent: parent window. Must not be ``None``;
+        :param id: window identifier. A value of -1 indicates a default value;
+        :param pos: the control position. A value of (-1, -1) indicates a default position,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `size`: the control size. A value of (-1, -1) indicates a default size,
+        :param size: the control size. A value of (-1, -1) indicates a default size,
          chosen by either the windowing system or wxPython, depending on platform;
-        :param `style`: the underlying `wx.Panel` window style;
-        :param `agwStyle`: the AGW-specific window style. This can be a combination of the
+        :param style: the underlying `wx.Panel` window style;
+        :param agwStyle: the AGW-specific window style. This can be a combination of the
          following bits:
 
          =========================== =========== ==================================================
@@ -2802,7 +2716,7 @@ class LabelBook(FlatBookBase):
          ``INB_FIT_LABELTEXT``            0x2000 Will fit the tab area to the longest text (or text+image if you have images) in all the tabs.
          =========================== =========== ==================================================
 
-        :param `name`: the window name.         
+        :param name: the window name.
         """
         
         FlatBookBase.__init__(self, parent, id, pos, size, style, agwStyle, name)
@@ -2830,11 +2744,10 @@ class LabelBook(FlatBookBase):
 
 
     def SetColour(self, which, colour):
-        """
-        Sets the colour for the specified parameter.
+        """Sets the colour for the specified parameter.
 
-        :param `which`: the colour key;
-        :param `colour`: a valid `wx.Colour` instance.
+        :param which: the colour key;
+        :param colour: a valid `wx.Colour` instance.
 
         :see: L{LabelContainer.SetColour} for a list of valid colour keys.
         """
@@ -2843,10 +2756,9 @@ class LabelBook(FlatBookBase):
 
 
     def GetColour(self, which):
-        """
-        Returns the colour for the specified parameter.
+        """Returns the colour for the specified parameter.
 
-        :param `which`: the colour key.
+        :param which: the colour key.
 
         :see: L{LabelContainer.SetColour} for a list of valid colour keys.
         """
@@ -2855,10 +2767,9 @@ class LabelBook(FlatBookBase):
     
     
     def OnSize(self, event):
-        """
-        Handles the ``wx.EVT_SIZE`` event for L{LabelBook}.
+        """Handles the ``wx.EVT_SIZE`` event for L{LabelBook}.
 
-        :param `event`: a `wx.SizeEvent` event to be processed.
+        :param event: a `wx.SizeEvent` event to be processed.
         """
 
         self._pages.Refresh()

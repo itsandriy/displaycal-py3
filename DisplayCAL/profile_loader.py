@@ -1959,8 +1959,7 @@ class ProfileLoader(object):
         return title
 
     def _can_fix_profile_associations(self):
-        """
-		Check whether we can 'fix' profile associations or not.
+        """Check whether we can 'fix' profile associations or not.
 
 		'Fixing' means we assign the profile of the actual active child device
 		to the 1st child device so that applications using GetICMProfile get
@@ -2796,8 +2795,7 @@ class ProfileLoader(object):
         return os.path.isfile(displaycal_lockfile)
 
     def _is_other_running(self, enumerate_windows_and_processes=True):
-        """
-		Determine if other software that may be using the videoLUT is in use
+        """Determine if other software that may be using the videoLUT is in use
 		(e.g. madVR video playback, madTPG, other calibration software)
 
 		"""
@@ -3235,8 +3233,7 @@ def get_display_name_edid(device, moninfo=None, index=None,
 
 
 def get_profile_desc(profile_path, include_basename_if_different=True):
-    """
-	Return profile description or path if not available
+    """Return profile description or path if not available
 
 	"""
     if not profile_path:

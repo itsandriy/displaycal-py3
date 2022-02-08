@@ -45,8 +45,7 @@ else:
 
 class CoordinateType(list):
 
-    """
-    List of coordinates.
+    """List of coordinates.
 
     [(Y, x)] where Y is in the range 0..100 and x in the range 0..255
 
@@ -82,8 +81,7 @@ class CoordinateType(list):
 
     def get_transfer_function(self, best=True, slice=(0.05, 0.95),
                               outoffset=None):
-        """
-        Return transfer function name, exponent and match percentage
+        """Return transfer function name, exponent and match percentage
 
         """
         transfer_function = self._transfer_function.get((best, slice))
@@ -103,8 +101,7 @@ class CoordinateType(list):
         return match
 
     def set_trc(self, power=2.2, values=(), vmin=0, vmax=100):
-        """
-        Set the response to a certain function.
+        """Set the response to a certain function.
 
         Positive power, or -2.4 = sRGB, -3.0 = L*, -240 = SMPTE 240M,
         -601 = Rec. 601, -709 = Rec. 709 (Rec. 601 and 709 transfer functions are
@@ -445,8 +442,7 @@ class LUTCanvas(plot.PlotCanvas):
         return default
 
     def DrawPointLabel(self, dc, mDataDict):
-        """
-        Draw point labels.
+        """Draw point labels.
 
         dc - DC that will be passed
         mDataDict - Dictionary of data that you want to use for the pointLabel
@@ -937,8 +933,7 @@ class LUTFrame(BaseFrame):
         self.LoadProfile(cal_to_fake_profile(cal))
 
     def drop_handler(self, path):
-        """
-        Drag'n'drop handler for .cal/.icc/.icm files.
+        """Drag'n'drop handler for .cal/.icc/.icm files.
 
         """
         filename, ext = os.path.splitext(path)

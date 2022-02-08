@@ -425,8 +425,7 @@ def legacy_PCSLab_uInt16_to_dec(L_uInt16, a_uInt16, b_uInt16):
 
 
 def create_RGB_A2B_XYZ(input_curves, clut, logfn=print):
-    """
-    Create RGB device A2B from input curve XYZ values and cLUT
+    """Create RGB device A2B from input curve XYZ values and cLUT
 
     Note that input curves and cLUT should already be adapted to D50.
 
@@ -536,8 +535,7 @@ def create_RGB_A2B_XYZ(input_curves, clut, logfn=print):
 def create_synthetic_clut_profile(rgb_space, description, XYZbp=None,
                                   white_Y=1.0, clutres=9, entries=2049,
                                   cat="Bradford"):
-    """
-    Create a synthetic cLUT profile from a colorspace definition
+    """Create a synthetic cLUT profile from a colorspace definition
 
     """
     profile = ICCProfile()
@@ -669,8 +667,7 @@ def create_synthetic_smpte2084_clut_profile(rgb_space, description,
                                             worker=None,
                                             logfile=None,
                                             cat="Bradford"):
-    """
-    Create a synthetic cLUT profile with the SMPTE 2084 TRC from a colorspace
+    """Create a synthetic cLUT profile with the SMPTE 2084 TRC from a colorspace
     definition
 
     mode:  The gamut mapping mode when rolling off. Valid values:
@@ -733,8 +730,7 @@ def create_synthetic_hdr_clut_profile(hdr_format, rgb_space, description,
                                       worker=None,
                                       logfile=None,
                                       cat="Bradford"):
-    """
-    Create a synthetic HDR cLUT profile from a colorspace definition
+    """Create a synthetic HDR cLUT profile from a colorspace definition
 
     """
 
@@ -1775,8 +1771,7 @@ def create_synthetic_hlg_clut_profile(rgb_space, description,
                                       worker=None,
                                       logfile=None,
                                       cat="Bradford"):
-    """
-    Create a synthetic cLUT profile with the HLG TRC from a colorspace
+    """Create a synthetic cLUT profile with the HLG TRC from a colorspace
     definition
 
     mode:  The gamut mapping mode when rolling off. Valid values:
@@ -2257,8 +2252,7 @@ def get_display_profile(display_no=0, x_hostname=None, x_display=None,
 
 def _wcs_set_display_profile(devicekey, profile_name,
                              scope=WCS_PROFILE_MANAGEMENT_SCOPE["CURRENT_USER"]):
-    """
-    Set the current default WCS color profile for the given device.
+    """Set the current default WCS color profile for the given device.
 
     If the device is a display, this will also set its video card gamma ramps
     to linear* if the given profile is the display's current default profile
@@ -2291,8 +2285,7 @@ def _wcs_set_display_profile(devicekey, profile_name,
 
 def _wcs_unset_display_profile(devicekey, profile_name,
                                scope=WCS_PROFILE_MANAGEMENT_SCOPE["CURRENT_USER"]):
-    """
-    Unset the current default WCS color profile for the given device.
+    """Unset the current default WCS color profile for the given device.
 
     If the device is a display, this will also set its video card gamma ramps
     to linear* if the given profile is the display's current default profile
@@ -2388,8 +2381,7 @@ def _blend_blackpoint(row, bp_in, bp_out, wp=None, use_bpc=False,
 
 def _mp_apply(blocks, thread_abort_event, progress_queue, pcs, fn, args, D50,
               interp, rinterp, abortmessage="Aborted"):
-    """
-    Worker for applying function to cLUT
+    """Worker for applying function to cLUT
 
     This should be spawned as a multiprocessing process
 
@@ -2444,8 +2436,7 @@ def _mp_apply(blocks, thread_abort_event, progress_queue, pcs, fn, args, D50,
 def _mp_apply_black(blocks, thread_abort_event, progress_queue, pcs, bp, bp_out,
                     wp, use_bpc, weight, D50, interp, rinterp,
                     abortmessage="Aborted"):
-    """
-    Worker for applying black point compensation or offset
+    """Worker for applying black point compensation or offset
 
     This should be spawned as a multiprocessing process
 
@@ -2458,8 +2449,7 @@ def _mp_apply_black(blocks, thread_abort_event, progress_queue, pcs, bp, bp_out,
 
 def _mp_hdr_tonemap(HDR_XYZ, thread_abort_event, progress_queue, rgb_space,
                     maxv, sat, cat="Bradford"):
-    """
-    Worker for HDR tonemapping
+    """Worker for HDR tonemapping
 
     This should be spawned as a multiprocessing process
 
@@ -2563,8 +2553,7 @@ def hexrepr(bytestring, mapping=None):
 
 
 def dateTimeNumber(binaryString):
-    """
-    Byte
+    """Byte
     Offset Content                                     Encoded as...
     0..1   number of the year (actual year, e.g. 1994) uInt16Number
     2..3   number of the month (1-12)                  uInt16Number
@@ -2660,8 +2649,7 @@ def videoCardGamma(tagData, tagSignature):
 
 class CRInterpolation(object):
 
-    """
-    Catmull-Rom interpolation.
+    """Catmull-Rom interpolation.
     Curve passes through the points exactly, with neighbouring points influencing curvature.
     points[] should be at least 3 points long.
     """
@@ -2694,8 +2682,7 @@ class CRInterpolation(object):
 
 class ADict(dict):
 
-    """
-    Convenience class for dictionary key access via attributes.
+    """Convenience class for dictionary key access via attributes.
 
     Instead of writing aodict[key], you can also write aodict.key
 
@@ -2728,8 +2715,7 @@ class AODict(ADict, OrderedDict):
 
 class LazyLoadTagAODict(AODict):
 
-    """
-    Lazy-load (and parse) tag data on access
+    """Lazy-load (and parse) tag data on access
 
     """
 
@@ -2794,8 +2780,7 @@ class ICCProfileTag(object):
             self[name] = value
 
     def __repr__(self):
-        """
-        t.__repr__() <==> repr(t)
+        """t.__repr__() <==> repr(t)
         """
         if isinstance(self, OrderedDict):
             return OrderedDict.__repr__(self)
@@ -3131,8 +3116,7 @@ BEGIN_DATA
         return self._n or len(self.input[0])
 
     def invert(self):
-        """
-        Invert input and output tables.
+        """Invert input and output tables.
 
         """
         # Invert input/output 1d LUTs
@@ -3154,8 +3138,7 @@ BEGIN_DATA
                                    pcs=None, protect_gray_axis=True,
                                    protect_dark=False, protect_black=True,
                                    exclude=None):
-        """
-        Apply function to channel values of each cLUT row
+        """Apply function to channel values of each cLUT row
 
         """
         clutres = len(self.clut[0])
@@ -3195,8 +3178,7 @@ BEGIN_DATA
                     column[k] = channels[k][j]
 
     def clut_shift_columns(self, order=(1, 2, 0)):
-        """
-        Shift cLUT columns, altering slowest to fastest changing column
+        """Shift cLUT columns, altering slowest to fastest changing column
 
         """
         if len(self.input) != 3:
@@ -3671,8 +3653,7 @@ class CurveType(ICCProfileTag, list):
 
     def get_transfer_function(self, best=True, slice=(0.05, 0.95), black_Y=None,
                               outoffset=None):
-        """
-        Return transfer function name, exponent and match percentage
+        """Return transfer function name, exponent and match percentage
 
         """
         if len(self) == 1:
@@ -3788,8 +3769,7 @@ class CurveType(ICCProfileTag, list):
 
     def set_bt1886_trc(self, black_Y=0, outoffset=0.0, gamma=2.4,
                        gamma_type="B", size=None):
-        """
-        Set the response to the BT. 1886 curve
+        """Set the response to the BT. 1886 curve
 
         This response is special in that it depends on the actual black
         level of the display.
@@ -3818,8 +3798,7 @@ class CurveType(ICCProfileTag, list):
             self[i] = bt1886.apply(X, Y, Z)[1] * 65535.0
 
     def set_dicom_trc(self, black_cdm2=.05, white_cdm2=100, size=None):
-        """
-        Set the response to the DICOM Grayscale Standard Display Function
+        """Set the response to the DICOM Grayscale Standard Display Function
 
         This response is special in that it depends on the actual black
         and white level of the display.
@@ -3854,8 +3833,7 @@ class CurveType(ICCProfileTag, list):
 
     def set_hlg_trc(self, black_cdm2=0, white_cdm2=100, system_gamma=1.2,
                     ambient_cdm2=5, maxsignal=1.0, size=None):
-        """
-        Set the response to the Hybrid Log-Gamma (HLG) function
+        """Set the response to the Hybrid Log-Gamma (HLG) function
 
         This response is special in that it depends on the actual black
         and white level of the display, system gamma and ambient.
@@ -3898,8 +3876,7 @@ class CurveType(ICCProfileTag, list):
                           master_black_cdm2=0, master_white_cdm2=None,
                           use_alternate_master_white_clip=True,
                           rolloff=False, size=None):
-        """
-        Set the response to the SMPTE 2084 perceptual quantizer (PQ) function
+        """Set the response to the SMPTE 2084 perceptual quantizer (PQ) function
 
         This response is special in that it depends on the actual black
         and white level of the display.
@@ -3952,8 +3929,7 @@ class CurveType(ICCProfileTag, list):
             self.apply_bpc(black_cdm2 / white_cdm2)
 
     def set_trc(self, power=2.2, size=None, vmin=0, vmax=65535):
-        """
-        Set the response to a certain function.
+        """Set the response to a certain function.
 
         Positive power, or -2.4 = sRGB, -3.0 = L*, -240 = SMPTE 240M,
         -601 = Rec. 601, -709 = Rec. 709 (Rec. 601 and 709 transfer functions are
@@ -3978,14 +3954,12 @@ class CurveType(ICCProfileTag, list):
             self.append(vmin + power(float(i) / (size - 1)) * (vmax - vmin))
 
     def smooth_cr(self, length=64):
-        """
-        Smooth curves (Catmull-Rom).
+        """Smooth curves (Catmull-Rom).
         """
         raise NotImplementedError()
 
     def smooth_avg(self, passes=1, window=None):
-        """
-        Smooth curves (moving average).
+        """Smooth curves (moving average).
 
         passses   Number of passes
         window    Tuple or list containing weighting factors. Its length
@@ -4375,8 +4349,7 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict): # ICC v4
         return str(self).encode(sys.getdefaultencoding())
 
     def __unicode__(self):
-        """
-        Return tag as string.
+        """Return tag as string.
         """
         # TODO: Needs some work re locales
         # (currently if en-UK or en-US is not found, simply the first entry
@@ -4828,8 +4801,7 @@ class VideoCardGammaType(ICCProfileTag, ADict):
         return r_points, g_points, b_points, linear_points
 
     def printNormalizedValues(self, amount=None, digits=12):
-        """
-        Normalizes and prints all values in the vcgt (range of 0.0...1.0).
+        """Normalizes and prints all values in the vcgt (range of 0.0...1.0).
 
         For a 256-entry table with linear values from 0 to 65535:
         #   REF            C1             C2             C3
@@ -4896,8 +4868,7 @@ class VideoCardGammaFormulaType(VideoCardGammaType):
         return list(zip(*list(rgb.values())))
 
     def getTableType(self, entryCount=256, entrySize=2, quantizer=round):
-        """
-        Return gamma as table type.
+        """Return gamma as table type.
         """
         maxValue = math.pow(256, entrySize) - 1
         tagData = [self.tagData[:8],
@@ -4978,8 +4949,7 @@ class VideoCardGammaTableType(VideoCardGammaType):
         return values
 
     def getFormulaType(self):
-        """
-        Return formula representing gamma value at 50% input.
+        """Return formula representing gamma value at 50% input.
         """
         maxValue = math.pow(256, self.entrySize) - 1
         tagData = [self.tagData[:8],
@@ -5002,8 +4972,7 @@ class VideoCardGammaTableType(VideoCardGammaType):
         return VideoCardGammaFormulaType("".join(tagData), self.tagSignature)
 
     def quantize(self, bits=16, quantizer=round):
-        """
-        Quantize to n bits of precision.
+        """Quantize to n bits of precision.
 
         Note that when the quantize bits are not 8, 16, 32 or 64, double
         quantization will occur: First from the table precision bits according
@@ -5044,8 +5013,7 @@ class VideoCardGammaTableType(VideoCardGammaType):
         return resized
 
     def smooth_cr(self, length=64):
-        """
-        Smooth video LUT curves (Catmull-Rom).
+        """Smooth video LUT curves (Catmull-Rom).
         """
         resized = self.resized(length)
         for i in range(0, len(self.data)):
@@ -5055,8 +5023,7 @@ class VideoCardGammaTableType(VideoCardGammaType):
                 self.data[i][j] = interpolation(j * step)
 
     def smooth_avg(self, passes=1, window=None):
-        """
-        Smooth video LUT curves (moving average).
+        """Smooth video LUT curves (moving average).
 
         passses   Number of passes
         window    Tuple or list containing weighting factors. Its length
@@ -5139,8 +5106,7 @@ class WcsProfilesTagType(ICCProfileTag, ADict):
                 self[modelname] = it.root
 
     def get_vcgt(self, quantize=False, quantizer=round):
-        """
-        Return calibration information (if present) as VideoCardGammaType
+        """Return calibration information (if present) as VideoCardGammaType
 
         If quantize is set, a table quantized to <quantize> bits is returned.
 
@@ -5190,8 +5156,7 @@ class WcsProfilesTagType(ICCProfileTag, ADict):
 
 class XYZNumber(AODict):
 
-    """
-    Byte
+    """Byte
     Offset Content Encoded as...
     0..3   CIE X   s15Fixed16Number
     4..7   CIE Y   s15Fixed16Number
@@ -6089,8 +6054,7 @@ class ICCProfile(object):
         return self._tags
 
     def calculateID(self, setID=True):
-        """
-        Calculates, sets, and returns the profile's ID (checksum).
+        """Calculates, sets, and returns the profile's ID (checksum).
 
         Calling this function always recalculates the checksum on-the-fly,
         in contrast to just accessing the ID property.
@@ -6115,15 +6079,13 @@ class ICCProfile(object):
         return ID
 
     def close(self):
-        """
-        Closes the associated file object (if any).
+        """Closes the associated file object (if any).
         """
         if self._file and not self._file.closed:
             self._file.close()
 
     def convert_iccv4_tags_to_iccv2(self, version=2.4, undo_wtpt_chad=False):
-        """
-        Convert ICCv4 parametric curve tags to ICCv2-compatible curve tags
+        """Convert ICCv4 parametric curve tags to ICCv2-compatible curve tags
 
         If desired version after conversion is < 2.4 and undo_wtpt_chad is True,
         also set whitepoint to illuinant relative values, and remove any
@@ -6182,8 +6144,7 @@ class ICCProfile(object):
         return True
 
     def convert_iccv2_tags_to_iccv4(self):
-        """
-        Convert ICCv2 text description tags to ICCv4 multi-localized unicode
+        """Convert ICCv2 text description tags to ICCv4 multi-localized unicode
 
         Also sets whitepoint to D50, and stores illuminant-relative to D50
         matrix as chromatic adaptation tag.
@@ -6367,8 +6328,7 @@ class ICCProfile(object):
         return profile
 
     def set_wtpt(self, wXYZ, cat="Bradford"):
-        """
-        Set whitepoint, 'chad' tag (if >= v2.4 profile or CAT is not Bradford
+        """Set whitepoint, 'chad' tag (if >= v2.4 profile or CAT is not Bradford
         and wtpt is not D50)
         Add ArgyllCMS 'arts' tag
 
@@ -6488,8 +6448,7 @@ class ICCProfile(object):
         self.set_blackpoint(XYZbp)
 
     def set_dicom_trc(self, XYZbp, white_cdm2=100, size=1024):
-        """
-        Set the response to the DICOM Grayscale Standard Display Function
+        """Set the response to the DICOM Grayscale Standard Display Function
 
         This response is special in that it depends on the actual black
         and white level of the display.
@@ -6507,8 +6466,7 @@ class ICCProfile(object):
     def set_hlg_trc(self, XYZbp=(0, 0, 0), white_cdm2=100, system_gamma=1.2,
                     ambient_cdm2=5, maxsignal=1.0, size=1024,
                     blend_blackpoint=True):
-        """
-        Set the response to the Hybrid Log-Gamma (HLG) function
+        """Set the response to the Hybrid Log-Gamma (HLG) function
 
         This response is special in that it depends on the actual black
         and white level of the display, system gamma and ambient.
@@ -6532,8 +6490,7 @@ class ICCProfile(object):
                           master_black_cdm2=0, master_white_cdm2=10000,
                           use_alternate_master_white_clip=True,
                           rolloff=False, size=1024, blend_blackpoint=True):
-        """
-        Set the response to the SMPTE 2084 perceptual quantizer (PQ) function
+        """Set the response to the SMPTE 2084 perceptual quantizer (PQ) function
 
         This response is special in that it depends on the actual black
         and white level of the display.
@@ -6612,38 +6569,32 @@ class ICCProfile(object):
 
 
     def getCopyright(self):
-        """
-        Return profile copyright.
+        """Return profile copyright.
         """
         return str(self.tags.get("cprt", ""))
 
     def getDescription(self):
-        """
-        Return profile description.
+        """Return profile description.
         """
         return str(self.tags.get("desc", ""))
 
     def getDeviceManufacturerDescription(self):
-        """
-        Return device manufacturer description.
+        """Return device manufacturer description.
         """
         return str(self.tags.get("dmnd", ""))
 
     def getDeviceModelDescription(self):
-        """
-        Return device model description.
+        """Return device model description.
         """
         return str(self.tags.get("dmdd", ""))
 
     def getViewingConditionsDescription(self):
-        """
-        Return viewing conditions description.
+        """Return viewing conditions description.
         """
         return str(self.tags.get("vued", ""))
 
     def guess_cat(self, matrix=True):
-        """
-        Get or guess chromatic adaptation transform.
+        """Get or guess chromatic adaptation transform.
 
         If 'matrix' is True, and 'arts' tag is present, return actual matrix
         instead of name if no match to known matrices.
@@ -6658,8 +6609,7 @@ class ICCProfile(object):
             return self.tags.arts.get_cat() or (matrix and self.tags.arts)
 
     def isSame(self, profile, force_calculation=False):
-        """
-        Compare the ID of profiles.
+        """Compare the ID of profiles.
 
         Returns a boolean indicating if the profiles have the same ID.
 
@@ -6680,8 +6630,7 @@ class ICCProfile(object):
         return id1 == id2
 
     def load(self):
-        """
-        Loads the profile from the file object.
+        """Loads the profile from the file object.
 
         Normally, you don't need to call this method, since the ICCProfile
         class automatically loads the profile when necessary (load does
@@ -7161,8 +7110,7 @@ class ICCProfile(object):
                     return XYZbp
 
     def optimize(self, return_bytes_saved=False, update_ID=True):
-        """
-        Optimize the tag data so that shared tags are only recorded once.
+        """Optimize the tag data so that shared tags are only recorded once.
 
         Return whether or not optimization was performed (not necessarily
         indicative of a reduction in profile size).
@@ -7202,8 +7150,7 @@ class ICCProfile(object):
         self.__init__(profile)
 
     def set_edid_metadata(self, edid):
-        """
-        Sets metadata from EDID
+        """Sets metadata from EDID
 
         Key names follow the ICC meta Tag for Monitor Profiles specification
         http://www.oyranos.org/wiki/index.php?title=ICC_meta_Tag_for_Monitor_Profiles_0.1
@@ -7270,8 +7217,7 @@ class ICCProfile(object):
                     self.tags.meta["GAMUT_coverage(%s)" % key] = factor
 
     def write(self, stream_or_filename=None):
-        """
-        Write profile to stream.
+        """Write profile to stream.
 
         This will re-assemble the various profile parts (header,
         tag table and data) on-the-fly.

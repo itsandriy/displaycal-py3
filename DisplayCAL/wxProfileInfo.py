@@ -1513,8 +1513,7 @@ class ProfileInfoFrame(LUTFrame):
             setcfg("size.profile_info.h", h)
 
     def drop_handler(self, path):
-        """
-        Drag'n'drop handler for .cal/.icc/.icm files.
+        """Drag'n'drop handler for .cal/.icc/.icm files.
 
         """
         reset = (self.plot_mode_select.GetSelection() ==

@@ -13,8 +13,7 @@ import threading
 
 
 def cpu_count(limit_by_total_vmem=True):
-    """
-    Returns the number of CPUs in the system
+    """Returns the number of CPUs in the system
 
     If psutil is installed, the number of reported CPUs is limited according to
     total RAM by assuming 1 GB for each CPU + 1 GB for the system, unless
@@ -47,8 +46,7 @@ def cpu_count(limit_by_total_vmem=True):
 
 def pool_slice(func, data_in, args=(), kwds={}, num_workers=None,
                thread_abort=None, logfile=None, num_batches=1, progress=0):
-    """
-    Process data in slices using a pool of workers and return the results.
+    """Process data in slices using a pool of workers and return the results.
 
     The individual worker results are returned in the same order as the
     original input data, irrespective of the order in which the workers
@@ -219,8 +217,7 @@ class WorkerFunc(object):
 
 class Mapper(object):
 
-    """
-    Wrap 'func' with optional arguments.
+    """Wrap 'func' with optional arguments.
 
     To be used as function argument for Pool.map
 

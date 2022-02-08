@@ -77,8 +77,7 @@ class DisplayAdjustmentImageContainer(labelbook.ImageContainer):
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0, agwStyle=0, name="ImageContainer"):
-        """
-        Override default agw ImageContainer to use BackgroundColour and
+        """Override default agw ImageContainer to use BackgroundColour and
         ForegroundColour with no borders/labeltext and hilite image instead of
         hilite shading
         """
@@ -94,11 +93,10 @@ class DisplayAdjustmentImageContainer(labelbook.ImageContainer):
         self.stateimgs = imagelist
 
     def HitTest(self, pt):
-        """
-        Returns the index of the tab at the specified position or ``wx.NOT_FOUND``
+        """Returns the index of the tab at the specified position or ``wx.NOT_FOUND``
         if ``None``, plus the flag style of L{HitTest}.
 
-        :param `pt`: an instance of `wx.Point`, to test for hits.
+        :param pt: an instance of `wx.Point`, to test for hits.
 
         :return: The index of the tab at the specified position plus the hit test
          flag, which can be one of the following bits:
@@ -145,10 +143,9 @@ class DisplayAdjustmentImageContainer(labelbook.ImageContainer):
             return -1, IMG_NONE
 
     def OnPaint(self, event):
-        """
-        Handles the ``wx.EVT_PAINT`` event for L{ImageContainer}.
+        """Handles the ``wx.EVT_PAINT`` event for L{ImageContainer}.
 
-        :param `event`: a `wx.PaintEvent` event to be processed.
+        :param event: a `wx.PaintEvent` event to be processed.
         """
 
         dc = wx.BufferedPaintDC(self)
@@ -358,8 +355,7 @@ class DisplayAdjustmentFlatImageBook(labelbook.FlatImageBook):
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0, agwStyle=0, name="FlatImageBook"):
-        """
-        Override default agw ImageContainer to use BackgroundColour and
+        """Override default agw ImageContainer to use BackgroundColour and
         ForegroundColour with no borders/labeltext and hilite image instead of
         hilite shading
         """
@@ -371,10 +367,9 @@ class DisplayAdjustmentFlatImageBook(labelbook.FlatImageBook):
                                                agwStyle=self.GetAGWWindowStyleFlag())
 
     def SetAGWWindowStyleFlag(self, agwStyle):
-        """
-        Sets the window style.
+        """Sets the window style.
 
-        :param `agwStyle`: can be a combination of the following bits:
+        :param agwStyle: can be a combination of the following bits:
 
          =========================== =========== ==================================================
          Window Styles               Hex Value   Description

@@ -153,8 +153,7 @@ def convert_to_list_of_tuples(iterable):
 # and Python 2.6 compatibility
 
 class DisplaySide(object):
-    """
-    Generic class for describing which sides of a box are displayed.
+    """Generic class for describing which sides of a box are displayed.
 
     Used for fine-tuning the axis, ticks, and values of a graph.
 
@@ -205,8 +204,7 @@ class DisplaySide(object):
         return self.__str__()
 
     def __setattr__(self, name, value):
-        """
-        Override __setattr__ to implement some type checking and prevent
+        """Override __setattr__ to implement some type checking and prevent
         other attributes from being created.
         """
         if name not in self.valid_names:
@@ -247,8 +245,7 @@ class DisplaySide(object):
 # TODO: replace with wx.DCPenChanger/wx.DCBrushChanger, etc.
 #       Alternatively, replace those with this function...
 class TempStyle(object):
-    """
-    Decorator / Context Manager to revert pen or brush changes.
+    """Decorator / Context Manager to revert pen or brush changes.
 
     Will revert pen, brush, or both to their previous values after a method
     call or block finish.
@@ -374,8 +371,7 @@ class TempStyle(object):
 
 
 def scale_and_shift_point(x, y, scale=1, shift=0):
-    """
-    Creates a scaled and shifted 2x1 numpy array of [x, y] values.
+    """Creates a scaled and shifted 2x1 numpy array of [x, y] values.
 
     The shift value must be in the scaled units.
 
@@ -397,8 +393,7 @@ def scale_and_shift_point(x, y, scale=1, shift=0):
 
 
 def set_displayside(value):
-    """
-    Wrapper around :class:`~wx.lib.plot._DisplaySide` that allows for "overloaded" calls.
+    """Wrapper around :class:`~wx.lib.plot._DisplaySide` that allows for "overloaded" calls.
 
     If ``value`` is a boolean: all 4 sides are set to ``value``
 
@@ -834,8 +829,7 @@ class PlotGraphics:
 # Main window that you will want to import into your application.
 
 class PlotCanvas(wx.Panel):
-    """
-    Subclass of a wx.Panel which holds two scrollbars and the actual
+    """Subclass of a wx.Panel which holds two scrollbars and the actual
     plotting canvas (self.canvas). It allows for simple general plotting
     of data with zoom, labels, and automatic axis scaling."""
 
@@ -979,8 +973,7 @@ class PlotCanvas(wx.Panel):
 
     @property
     def tickPen(self):
-        """
-        The :class:`wx.Pen` used to draw the tick marks on the plot.
+        """The :class:`wx.Pen` used to draw the tick marks on the plot.
 
         :getter: Returns the :class:`wx.Pen` used for drawing the tick marks.
         :setter: Sets the :class:`wx.Pen` use for drawging the tick marks.
@@ -998,8 +991,7 @@ class PlotCanvas(wx.Panel):
 
     @property
     def tickLength(self):
-        """
-        The length of the tick marks on an axis.
+        """The length of the tick marks on an axis.
 
         :getter: Returns the length of the tick marks.
         :setter: Sets the length of the tick marks.
@@ -1315,8 +1307,7 @@ class PlotCanvas(wx.Panel):
 
     @property
     def enableTicks(self):
-        """
-        The current enableTicks value.
+        """The current enableTicks value.
 
         :getter: Returns the value of enableTicks.
         :setter: Sets the value of enableTicks.
@@ -1427,8 +1418,7 @@ class PlotCanvas(wx.Panel):
 
     @property
     def xSpec(self):
-        """
-        Defines the X axis type.
+        """Defines the X axis type.
 
         Default is 'auto'.
 
@@ -1463,8 +1453,7 @@ class PlotCanvas(wx.Panel):
 
     @property
     def ySpec(self):
-        """
-        Defines the Y axis type.
+        """Defines the Y axis type.
 
         Default is 'auto'.
 
@@ -2324,8 +2313,7 @@ class PlotCanvas(wx.Panel):
 
     def _drawAxesLabels(self, dc, graphics, lhsW, rhsW, bottomH, topH,
                         xLabelWH, yLabelWH):
-        """
-        Draws the axes labels
+        """Draws the axes labels
         """
         if self._ticksEnabled:
             # get the tick lengths so that labels don't overlap

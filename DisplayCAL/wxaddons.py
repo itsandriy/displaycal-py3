@@ -51,8 +51,7 @@ wx.Image.GammaCorrect = GammaCorrect
 
 
 def IsBW(self):
-    """
-    Check if image is grayscale in the most effective way possible.
+    """Check if image is grayscale in the most effective way possible.
 
     Note that this is a costly operation even though it returns as quickly as
     possible for non-grayscale images (i.e. when it encounters the first
@@ -125,8 +124,7 @@ wx.Window.SetMaxFontSize = SetMaxFontSize
 
 
 def RealCenterOnScreen(self, dir=wx.BOTH):
-    """
-    Center the window on the screen it is on, unlike CenterOnScreen which
+    """Center the window on the screen it is on, unlike CenterOnScreen which
     always centers on 1st screen.
 
     """
@@ -143,8 +141,7 @@ wx.TopLevelWindow.RealCenterOnScreen = RealCenterOnScreen
 
 
 def SetSaneGeometry(self, x=None, y=None, w=None, h=None):
-    """
-    Set a 'sane' window position and/or size (within visible screen area).
+    """Set a 'sane' window position and/or size (within visible screen area).
     """
     if not None in (x, y):
         # First, move to coordinates given
@@ -195,8 +192,7 @@ wx.Window.SetSaneGeometry = SetSaneGeometry
 
 
 def GridGetSelectedRowsFromSelection(self):
-    """
-    Return the number of fully selected rows.
+    """Return the number of fully selected rows.
 
     Unlike GetSelectedRows, include rows that have been selected
     by chosing individual cells.
@@ -219,8 +215,7 @@ wx.grid.Grid.GetSelectedRowsFromSelection = GridGetSelectedRowsFromSelection
 
 
 def GridGetSelectionRows(self):
-    """
-    Return the selected rows, even if not all cells in a row are selected.
+    """Return the selected rows, even if not all cells in a row are selected.
     """
     rows = []
     i = -1
@@ -241,8 +236,7 @@ wx.Window.IsSizer = IsSizer
 
 
 def gamma_encode(R, G, B, alpha=wx.ALPHA_OPAQUE):
-    """
-    (Re-)Encode R'G'B' colors with specific platform gamma.
+    """(Re-)Encode R'G'B' colors with specific platform gamma.
 
     R, G, B = color components in range 0..255
 
@@ -394,8 +388,7 @@ class BetterTimerEvent(wx.PyCommandEvent):
 
 class BetterTimer(wx.Timer):
 
-    """
-    A wx.Timer replacement.
+    """A wx.Timer replacement.
 
     Doing GUI updates using regular timers can be incredibly segfaulty under
     wxPython Phoenix when several timers run concurrently.
@@ -548,8 +541,7 @@ class ThreadedCallLater(ThreadedTimer):
 
 class BetterWindowDisabler(object):
 
-    """
-    Also disables child windows instead of only top level windows. This is
+    """Also disables child windows instead of only top level windows. This is
     actually needed under Mac OS X where disabling a top level window will
     not prevent interaction with its children.
 
@@ -665,8 +657,7 @@ class CustomGridCellEvent(CustomEvent):
 
 class PopupMenu(object):
 
-    """
-    A collection of menus that has a wx.MenuBar-like interface
+    """A collection of menus that has a wx.MenuBar-like interface
 
     """
 

@@ -100,8 +100,7 @@ class DummyLogger():
 class Log(object):
 
     def __call__(self, msg, fn=None):
-        """
-        Log a message.
+        """Log a message.
 
         Optionally use function 'fn' instead of logging.info.
 

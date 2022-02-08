@@ -24,8 +24,7 @@ def get_device_value_labels(color_rep=None):
 
 
 def rpad(value, width):
-    """
-    If value isn't a number, return a quoted string representation.
+    """If value isn't a number, return a quoted string representation.
     If value is greater or equal than 1e+16, return string in scientific
     notation.
     Otherwise, return string in decimal notation right-padded to given width
@@ -206,9 +205,7 @@ class CGATSValueError(CGATSError, ValueError):
 
 
 class CGATS(dict):
-
-    """
-    CGATS structure.
+    """CGATS structure.
 
     CGATS files are treated mostly as 'soup', so only basic checking is
     in place.
@@ -230,8 +227,7 @@ class CGATS(dict):
 
     def __init__(self, cgats=None, normalize_fields=False, file_identifier="CTI3",
                  emit_keywords=False, strict=False):
-        """
-        Return a CGATS instance.
+        """Return a CGATS instance.
 
         cgats can be a path, a string holding CGATS data, or a file object.
 
@@ -439,8 +435,7 @@ class CGATS(dict):
             return colorants
 
     def get_descriptor(self, localized=True):
-        """
-        Return CGATS description as unicode, based on metadata
+        """Return CGATS description as unicode, based on metadata
 
         If 'localized' is True (default), include localized technology
         description for CCSS files.
@@ -1567,8 +1562,7 @@ Transform {
 
     def query(self, query, query_value = None, get_value = False,
                 get_first = False):
-        """
-        Return CGATS object of items or values where query matches.
+        """Return CGATS object of items or values where query matches.
 
         Query can be a dict with key / value pairs, a tuple or a string.
         Return empty CGATS object if no matching items found.
@@ -1685,8 +1679,7 @@ Transform {
         return result
 
     def convert_XYZ_to_Lab(self):
-        """
-        Convert XYZ to D50 L*a*b* and add it as additional fields
+        """Convert XYZ to D50 L*a*b* and add it as additional fields
 
         """
         color_rep = (self.queryv1("COLOR_REP") or "").split("_")
@@ -1735,8 +1728,7 @@ Transform {
                 sample[label] = Lab[i]
 
     def fix_zero_measurements(self, warn_only=False, logfile=print):
-        """
-        Fix (or warn about) <= zero measurements
+        """Fix (or warn about) <= zero measurements
 
         If XYZ/Lab = 0, the sample gets removed. If only one component of
         XYZ/Lab is <= 0, it gets fudged so that the component is nonzero
@@ -1809,8 +1801,7 @@ Transform {
                 data.pop(sample)
 
     def fix_device_values_scaling(self, color_rep=None):
-        """
-        Attempt to fix device value scaling so that max = 100
+        """Attempt to fix device value scaling so that max = 100
 
         Return number of fixed DATA sections
 
@@ -1875,8 +1866,7 @@ Transform {
 
     def adapt(self, whitepoint_source=None, whitepoint_destination=None,
               cat="Bradford"):
-        """
-        Perform chromatic adaptation if possible (needs XYZ or LAB)
+        """Perform chromatic adaptation if possible (needs XYZ or LAB)
 
         Return number of affected DATA sections.
 
@@ -1910,8 +1900,7 @@ Transform {
         return n
 
     def apply_bpc(self, bp_out=(0, 0, 0), weight=False):
-        """
-        Apply black point compensation.
+        """Apply black point compensation.
 
         Scales XYZ so that black (RGB 0) = zero.
         Needs a CGATS structure with RGB and XYZ data and atleast one black and
@@ -2008,8 +1997,7 @@ Transform {
         return n
 
     def get_white_cie(self, colorspace=None):
-        """
-        Get the 'white' from the CIE values (if any).
+        """Get the 'white' from the CIE values (if any).
 
         """
         data_format = self.get_cie_data_format()
@@ -2064,8 +2052,7 @@ Transform {
                 return white
 
     def get_cie_data_format(self):
-        """
-        Check if DATA_FORMAT defines any CIE XYZ or LAB columns.
+        """Check if DATA_FORMAT defines any CIE XYZ or LAB columns.
 
         Return the DATA_FORMAT on success or None on failure.
 
@@ -2084,8 +2071,7 @@ Transform {
     pop = remove
 
     def write(self, stream_or_filename=None):
-        """
-        Write CGATS text to stream.
+        """Write CGATS text to stream.
 
         """
         if not stream_or_filename:

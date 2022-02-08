@@ -93,8 +93,7 @@ def icc_device_link_to_madvr(icc_device_link_filename, unity=False,
                              colorspace=None, hdr=None, logfile=sys.stdout,
                              convert_video_rgb_to_clut65=False,
                              append_linear_cal=True):
-    """
-    Convert ICC device link profile to madVR 256^3 3D LUT using interpolation
+    """Convert ICC device link profile to madVR 256^3 3D LUT using interpolation
 
     madvr 3D LUT will be written to:
     <device link filename without extension> + '.3dlut'
@@ -235,8 +234,7 @@ def icc_device_link_to_madvr(icc_device_link_filename, unity=False,
 
 
 def inet_pton(ip_string):
-    """
-    inet_pton(string) -> packed IP representation
+    """inet_pton(string) -> packed IP representation
 
     Convert an IP address in string format to the  packed
     binary format used in low-level network functions.
@@ -359,8 +357,7 @@ class H3DLUT(object):
 
     @property
     def source_colorspace(self):
-        """
-        Return the 3D LUT source colorspace slot and name as 2-tuple
+        """Return the 3D LUT source colorspace slot and name as 2-tuple
 
         """
         # Determine gamut slot only based on primaries (omit whitepoint)
@@ -385,8 +382,7 @@ class H3DLUT(object):
         return stream
 
     def write(self, stream_or_filename=None):
-        """
-        Write 3D LUT to stream or filename.
+        """Write 3D LUT to stream or filename.
 
         """
         stream = self._get_stream(stream_or_filename)
@@ -397,8 +393,7 @@ class H3DLUT(object):
             stream.close()
 
     def write_devicelink(self, stream_or_filename=None):
-        """
-        Write 3D LUT to ICC device link.
+        """Write 3D LUT to ICC device link.
 
         """
         stream = self._get_stream(stream_or_filename, ".icc")
@@ -477,8 +472,7 @@ class H3DLUT(object):
             stream.close()
 
     def write_tiff(self, stream_or_filename=None):
-        """
-        Write 3D LUT to TIFF file.
+        """Write 3D LUT to TIFF file.
 
         """
         stream = self._get_stream(stream_or_filename, ".tif")
@@ -606,8 +600,7 @@ class MadTPG(MadTPGBase):
         return getattr(self.mad, prefix + "_" + methodname)
 
     def add_connection_callback(self, callback, param, component):
-        """
-        Handles callbacks for added/closed connections to playback components
+        """Handles callbacks for added/closed connections to playback components
 
         Leave "component" empty to get notification about all components.
 
@@ -642,8 +635,7 @@ class MadTPG(MadTPGBase):
         return result and ramp
 
     def get_pattern_config(self):
-        """
-        Return the pattern config as 4-tuple
+        """Return the pattern config as 4-tuple
 
         Pattern area in percent        1-100
         Background level in percent    0-100
@@ -790,8 +782,7 @@ class MadTPG_Net(MadTPGBase):
         self._event_handlers[event_name].append(handler)
 
     def unbind(self, event_name, handler=None):
-        """
-        Unbind (remove) a handler from an event
+        """Unbind (remove) a handler from an event
 
         If handler is None, remove all handlers for the event.
 

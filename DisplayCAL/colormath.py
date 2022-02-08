@@ -35,8 +35,7 @@ SRGB_P = 12.92  # get_transfer_function_phi(0.055, 2.4)
 
 
 def specialpow(a, b, slope_limit=0):
-    """
-    Wrapper for power, Rec. 601/709, SMPTE 240M, sRGB and L* functions
+    """Wrapper for power, Rec. 601/709, SMPTE 240M, sRGB and L* functions
 
     Positive b = power, -2.4 = sRGB, -3.0 = L*, -240 = SMPTE 240M,
     -601 = Rec. 601, -709 = Rec. 709 (Rec. 601 and 709 transfer functions are
@@ -156,8 +155,7 @@ def DICOM(j, inverse=False):
 
 
 class HLG(object):
-    """
-    Hybrid Log Gamma (HLG) as defined in Rec BT.2100
+    """Hybrid Log Gamma (HLG) as defined in Rec BT.2100
     and BT.2390-4
 
     """
@@ -184,8 +182,7 @@ class HLG(object):
         return gamma
 
     def oetf(self, v, inverse=False):
-        """
-        Hybrid Log Gamma (HLG) OETF
+        """Hybrid Log Gamma (HLG) OETF
 
         Relative scene linear light to non-linear HLG signal, or inverse
 
@@ -213,8 +210,7 @@ class HLG(object):
         return v
 
     def eotf(self, RGB, inverse=False, apply_black_offset=True):
-        """
-        Hybrid Log Gamma (HLG) EOTF
+        """Hybrid Log Gamma (HLG) EOTF
 
         Non-linear HLG signal to display light, or inverse
 
@@ -238,8 +234,7 @@ class HLG(object):
 
 
     def ootf(self, RGB, inverse=False, apply_black_offset=True):
-        """
-        Hybrid Log Gamma (HLG) OOTF
+        """Hybrid Log Gamma (HLG) OOTF
 
         Relative scene linear light to display light, or inverse
 
@@ -397,8 +392,7 @@ def LMS_wp_adaption_matrix(whitepoint_source=None,
 
 def wp_adaption_matrix(whitepoint_source=None, whitepoint_destination=None,
                        cat="Bradford"):
-    """
-    Prepare a matrix to match the whitepoints in cone response doamin and
+    """Prepare a matrix to match the whitepoints in cone response doamin and
     transform back to XYZ
 
     """
@@ -428,8 +422,7 @@ wp_adaption_matrix.cache = {}
 
 def adapt(X, Y, Z, whitepoint_source=None, whitepoint_destination=None,
           cat="Bradford"):
-    """
-    Transform XYZ under source illuminant to XYZ under destination illuminant
+    """Transform XYZ under source illuminant to XYZ under destination illuminant
 
     """
     # chromatic adaption
@@ -442,8 +435,7 @@ def adapt(X, Y, Z, whitepoint_source=None, whitepoint_destination=None,
 
 def apply_bpc(X, Y, Z, bp_in=None, bp_out=None, wp_out="D50", weight=False,
               pin_chromaticity=False):
-    """
-    Apply black point compensation
+    """Apply black point compensation
 
     """
     if not bp_in:
@@ -505,8 +497,7 @@ def blend_ab(X, Y, Z, bp, wp, power=40.0, signscale=1):
 
 def blend_blackpoint(X, Y, Z, bp_in=None, bp_out=None, wp=None, power=40.0,
                      pin_chromaticity=False):
-    """
-    Blend to destination black as L approaches black, optionally compensating
+    """Blend to destination black as L approaches black, optionally compensating
     for input black first
 
     """
@@ -528,8 +519,7 @@ def blend_blackpoint(X, Y, Z, bp_in=None, bp_out=None, wp=None, power=40.0,
 
 
 def interp(x, xp, fp, left=None, right=None):
-    """
-    One-dimensional linear interpolation similar to numpy.interp
+    """One-dimensional linear interpolation similar to numpy.interp
 
     Values do NOT have to be monotonically increasing
     interp(0, [0, 0], [0, 1]) will return 0
@@ -581,8 +571,7 @@ def interp_fill(xp, fp, new_size, use_numpy=False):
 
 
 def smooth_avg(values, passes=1, window=None, protect=None):
-    """
-    Smooth values (moving average).
+    """Smooth values (moving average).
 
     passses   Number of passes
     window    Tuple or list containing weighting factors. Its length
@@ -618,8 +607,7 @@ def smooth_avg(values, passes=1, window=None, protect=None):
 
 
 def compute_bpc(bp_in, bp_out):
-    """
-    Black point compensation. Implemented as a linear scaling in XYZ.
+    """Black point compensation. Implemented as a linear scaling in XYZ.
 
     Black points should come relative to the white point. Fills and
     returns a matrix/offset element.
@@ -655,8 +643,7 @@ def compute_bpc(bp_in, bp_out):
 
 def delta(L1, a1, b1, L2, a2, b2, method="1976", p1=None, p2=None, p3=None,
           cie94_use_symmetric_chrominance=True):
-    """
-    Compute the delta of two samples
+    """Compute the delta of two samples
 
     CIE 1994 & CMC calculation code derived from formulas on
      www.brucelindbloom.com
@@ -827,8 +814,7 @@ def is_equal(values1, values2, quantizer=lambda v: round(v, 4)):
 def four_color_matrix(XrR, YrR, ZrR, XrG, YrG, ZrG, XrB, YrB, ZrB, XrW, YrW, ZrW,
                       XmR, YmR, ZmR, XmG, YmG, ZmG, XmB, YmB, ZmB, XmW, YmW, ZmW,
                       Y_correction=True):
-    """
-    Four-Color Matrix Method for Correction of Tristimulus Colorimeters
+    """Four-Color Matrix Method for Correction of Tristimulus Colorimeters
 
     Based on paper published in Proc., IS&T Fifth Color Imaging Conference,
     301-305 (1997) and IS&T Sixth Color Imaging Conference (1998).
@@ -908,8 +894,7 @@ def guess_cat(chad, whitepoint_source=None, whitepoint_destination=None):
 
 
 def CIEDCCT2xyY(T, scale=1.0):
-    """
-    Convert from CIE correlated daylight temperature to xyY.
+    """Convert from CIE correlated daylight temperature to xyY.
 
     T = temperature in Kelvin.
 
@@ -942,8 +927,7 @@ def CIEDCCT2xyY(T, scale=1.0):
 
 
 def CIEDCCT2XYZ(T, scale=1.0):
-    """
-    Convert from CIE correlated daylight temperature to XYZ.
+    """Convert from CIE correlated daylight temperature to XYZ.
 
     T = temperature in Kelvin.
 
@@ -1233,8 +1217,7 @@ def Lab2RGB(L, a, b, rgb_space=None, scale=1.0, round_=False, clamp=True,
 
 
 def Lab2XYZ(L, a, b, whitepoint=None, scale=1.0):
-    """
-    Convert from Lab to XYZ.
+    """Convert from Lab to XYZ.
 
     The input L value needs to be in the nominal range [0.0, 100.0] and
     other input values scaled accordingly.
@@ -1404,8 +1387,7 @@ def RGB2Lab(R, G, B, rgb_space=None, whitepoint=None, noadapt=False,
 
 
 def RGB2XYZ(R, G, B, rgb_space=None, scale=1.0, eotf=None):
-    """
-    Convert from RGB to XYZ.
+    """Convert from RGB to XYZ.
 
     Use optional RGB colorspace definition, which can be a named colorspace
     (e.g. "CIE RGB") or must be a tuple in the following format:
@@ -1604,8 +1586,7 @@ def rgb_to_xyz_matrix(rx, ry, gx, gy, bx, by, whitepoint=None, scale=1.0):
 
 def find_primaries_wp_xy_rgb_space_name(xy, rgb_space_names=None,
                                         digits=4):
-    """
-    Given primaries and whitepoint xy as list, find matching RGB space by
+    """Given primaries and whitepoint xy as list, find matching RGB space by
     comparing primaries and whitepoint (fuzzy match rounded to n digits) and
     return its name (or None if no match)
 
@@ -1641,8 +1622,7 @@ def get_rgb_space(rgb_space=None, scale=1.0):
 
 
 def get_rgb_space_primaries_wp_xy(rgb_space=None, digits=4):
-    """
-    Given RGB space, get primaries and whitepoint xy, optionally rounded to n
+    """Given RGB space, get primaries and whitepoint xy, optionally rounded to n
     digits (default 4)
 
     """
@@ -1717,8 +1697,7 @@ get_whitepoint.cache = {}
 
 
 def make_monotonically_increasing(iterable, passes=0, window=None):
-    """
-    Given an iterable or sequence, make the values strictly monotonically
+    """Given an iterable or sequence, make the values strictly monotonically
     increasing (no repeated successive values) by linear interpolation.
 
     If iterable is a dict, keep the keys of the original.
@@ -1835,8 +1814,7 @@ def xyY2RGB(x, y, Y, rgb_space=None, scale=1.0, round_=False, clamp=True):
 
 
 def xyY2XYZ(x, y, Y=1.0):
-    """
-    Convert from xyY to XYZ.
+    """Convert from xyY to XYZ.
 
     Based on formula from http://brucelindbloom.com/Eqn_xyY_to_XYZ.html
 
@@ -1854,8 +1832,7 @@ def xyY2XYZ(x, y, Y=1.0):
 
 
 def LERP(a,b,c):
-    """
-    LERP(a,b,c) = linear interpolation macro.
+    """LERP(a,b,c) = linear interpolation macro.
 
     Is 'a' when c == 0.0 and 'b' when c == 1.0
 
@@ -1864,8 +1841,7 @@ def LERP(a,b,c):
 
 
 def XYZ2CCT(X, Y, Z):
-    """
-    Convert from XYZ to correlated color temperature.
+    """Convert from XYZ to correlated color temperature.
 
     Derived from ANSI C implementation by Bruce Lindbloom
     http://brucelindbloom.com/Eqn_XYZ_to_T.html
@@ -2033,8 +2009,7 @@ def IPT2XYZ(I, P, T):
 
 
 def XYZ2Lab(X, Y, Z, whitepoint=None, scale=100):
-    """
-    Convert from XYZ to Lab.
+    """Convert from XYZ to Lab.
 
     The input Y value needs to be in the nominal range [0.0, scale] and
     other input values scaled accordingly.
@@ -2062,8 +2037,7 @@ def XYZ2Lab(X, Y, Z, whitepoint=None, scale=100):
 
 
 def XYZ2Lpt(X, Y, Z, whitepoint=None):
-    """
-    Convert from XYZ to Lpt
+    """Convert from XYZ to Lpt
 
     This is a modern update to L*a*b*, based on IPT space.
 
@@ -2104,8 +2078,7 @@ def XYZ2Lpt(X, Y, Z, whitepoint=None):
 
 
 def Lpt2XYZ(L, p, t, whitepoint=None, scale=1.0):
-    """
-    Convert from Lpt to XYZ
+    """Convert from Lpt to XYZ
 
     This is a modern update to L*a*b*, based on IPT space.
 
@@ -2197,8 +2170,7 @@ def XYZ2Luv(X, Y, Z, whitepoint=None):
 
 def XYZ2RGB(X, Y, Z, rgb_space=None, scale=1.0, round_=False, clamp=True,
             oetf=None):
-    """
-    Convert from XYZ to RGB.
+    """Convert from XYZ to RGB.
 
     Use optional RGB colorspace definition, which can be a named colorspace
     (e.g. "CIE RGB") or must be a tuple in the following format:
@@ -2265,8 +2237,7 @@ XYZ2RGB.interp = {}
 
 
 def XYZ2xyY(X, Y, Z, whitepoint=None):
-    """
-    Convert from XYZ to xyY.
+    """Convert from XYZ to xyY.
 
     Based on formula from http://brucelindbloom.com/Eqn_XYZ_to_xyY.html
 
@@ -2888,8 +2859,7 @@ class BT1886(object):
         self.apply_trc = apply_trc
 
     def apply(self, X, Y, Z):
-        """
-        Apply BT.1886 black offset and gamma curve to the XYZ out of the input profile.
+        """Apply BT.1886 black offset and gamma curve to the XYZ out of the input profile.
         Do this in the colorspace defined by the input profile matrix lookup,
         so it will be relative XYZ. We assume that BT.1886 does a Rec709 to gamma
         viewing adjustment, on top of any source profile transfer curve
@@ -2963,15 +2933,13 @@ class BT1886(object):
 
 class BT2390(object):
 
-    """
-    Roll-off for SMPTE 2084 (PQ) according to Report ITU-R BT.2390-2 HDR TV
+    """Roll-off for SMPTE 2084 (PQ) according to Report ITU-R BT.2390-2 HDR TV
 
     """
 
     def __init__(self, black_cdm2, white_cdm2, master_black_cdm2=0,
                  master_white_cdm2=10000, use_alternate_master_white_clip=True):
-        """
-        Master black and white level are used to tweak the roll-off and clip.
+        """Master black and white level are used to tweak the roll-off and clip.
 
         If use_alternate_master_white_clip is True, do not follow BT.2390 for
         the mastering white adjustment (allows to preserve more detail in
@@ -3027,8 +2995,7 @@ class BT2390(object):
 
     def apply(self, v, KS=None, maxi=None, maxci=None, mini=None,
               mmaxi=None, mmini=None, bpc=False, normalize=True):
-        """
-        Apply roll-off (E' in, E' out)
+        """Apply roll-off (E' in, E' out)
         maxci if < 1.0 applies alterante clip.
 
         """

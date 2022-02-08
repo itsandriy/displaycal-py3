@@ -78,8 +78,7 @@ class Tag(object):
 
     def html(self, title="Untitled", xhtml=False, embed=False, force=False,
              cache=True):
-        """
-        Convert X3D to HTML
+        """Convert X3D to HTML
 
         This will generate HTML5 by default unless you set xhtml=True.
 
@@ -624,8 +623,7 @@ def vrml2x3dom(vrml, worker=None):
 
 def vrmlfile2x3dfile(vrmlpath, x3dpath, html=True, embed=False, force=False,
                      cache=True, worker=None):
-    """
-    Convert VRML file located at vrmlpath to HTML and write to x3dpath
+    """Convert VRML file located at vrmlpath to HTML and write to x3dpath
 
     """
     filename, ext = os.path.splitext(vrmlpath)

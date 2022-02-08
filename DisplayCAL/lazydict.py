@@ -11,8 +11,7 @@ from util_str import safe_str
 
 
 def unquote(string, raise_exception=True):
-    """
-    Remove single or double quote at start and end of string and unescape
+    """Remove single or double quote at start and end of string and unescape
     escaped chars, YAML-style
 
     Unlike 'string'.strip("'"'"'), only removes the outermost quote pair.
@@ -48,8 +47,7 @@ def unescape(string):
 
 class LazyDict(dict):
 
-    """
-    Lazy dictionary with key -> value mappings.
+    """Lazy dictionary with key -> value mappings.
 
     The actual mappings are loaded from the source YAML file when they
     are accessed.
@@ -223,8 +221,7 @@ class LazyDict(dict):
 
 class LazyDict_JSON(LazyDict):
 
-    """
-    JSON lazy dictionary
+    """JSON lazy dictionary
 
     """
 
@@ -234,8 +231,7 @@ class LazyDict_JSON(LazyDict):
 
 class LazyDict_YAML_UltraLite(LazyDict):
 
-    """
-    'YAML Ultra Lite' lazy dictionary
+    """'YAML Ultra Lite' lazy dictionary
 
     YAML Ultra Lite is a restricted subset of YAML. It only supports the
     following notations:
@@ -261,8 +257,7 @@ class LazyDict_YAML_UltraLite(LazyDict):
         self.debug = debug
 
     def parse(self, fileobj):
-        """
-        Parse fileobj and update dict
+        """Parse fileobj and update dict
 
         """
         block = False
@@ -361,8 +356,7 @@ class LazyDict_YAML_UltraLite(LazyDict):
 
 class LazyDict_YAML_Lite(LazyDict_YAML_UltraLite):
 
-    """
-    'YAML Lite' lazy dictionary
+    """'YAML Lite' lazy dictionary
 
     YAML Lite is a restricted subset of YAML. It only supports the
     following notations:
@@ -387,8 +381,7 @@ class LazyDict_YAML_Lite(LazyDict_YAML_UltraLite):
     """
 
     def parse(self, fileobj):
-        """
-        Parse fileobj and update dict
+        """Parse fileobj and update dict
 
         """
         style = None

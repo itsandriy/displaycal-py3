@@ -15,8 +15,7 @@ from util_str import universal_newlines
 
 class EncodedWriter(object):
 
-    """
-    Decode data with data_encoding and encode it with file_encoding before
+    """Decode data with data_encoding and encode it with file_encoding before
     writing it to file_obj.
 
     Either data_encoding or file_encoding can be None.
@@ -42,13 +41,11 @@ class EncodedWriter(object):
 
 class Files():
 
-    """
-    Read and/or write from/to several files at once.
+    """Read and/or write from/to several files at once.
     """
 
     def __init__(self, files, mode="r"):
-        """
-        Return a Files object.
+        """Return a Files object.
 
         files must be a list or tuple of file objects or filenames
         (the mode parameter is only used in the latter case).
@@ -229,8 +226,7 @@ class LineCache():
 
 class StringIOu(StringIO):
 
-    """
-    StringIO which converts all new line formats in buf to POSIX newlines.
+    """StringIO which converts all new line formats in buf to POSIX newlines.
     """
 
     def __init__(self, buf=''):
@@ -239,8 +235,7 @@ class StringIOu(StringIO):
 
 class Tee(Files):
 
-    """
-    Write to a file and stdout.
+    """Write to a file and stdout.
     """
 
     def __init__(self, file_obj):

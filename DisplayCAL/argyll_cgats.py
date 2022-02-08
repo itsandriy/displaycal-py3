@@ -62,8 +62,7 @@ def add_options_to_ti3(ti3, options_dispcal=None, options_colprof=None):
 
 
 def cal_to_fake_profile(cal):
-    """
-    Create and return a 'fake' ICCProfile with just a vcgt tag.
+    """Create and return a 'fake' ICCProfile with just a vcgt tag.
 
     cal must refer to a valid Argyll CAL file and can be a CGATS instance
     or a filename.
@@ -85,8 +84,7 @@ def cal_to_fake_profile(cal):
 
 
 def cal_to_vcgt(cal, return_cgats=False):
-    """
-    Create a vcgt tag from calibration data.
+    """Create a vcgt tag from calibration data.
 
     cal must refer to a valid Argyll CAL file and can be a CGATS instance
     or a filename.
@@ -258,8 +256,7 @@ def extract_cal_from_profile(profile, out_cal_path=None,
 
 
 def extract_cal_from_ti3(ti3):
-    """
-    Extract and return the CAL section of a TI3.
+    """Extract and return the CAL section of a TI3.
 
     ti3 can be a file object or a string holding the data.
 
@@ -289,8 +286,7 @@ def extract_cal_from_ti3(ti3):
 
 
 def extract_fix_copy_cal(source_filename, target_filename=None):
-    """
-    Return the CAL section from a profile's embedded measurement data.
+    """Return the CAL section from a profile's embedded measurement data.
 
     Try to 'fix it' (add information needed to make the resulting .cal file
     'updateable') and optionally copy it to target_filename.
@@ -401,8 +397,7 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
 def extract_device_gray_primaries(ti3, gray=True, logfn=None,
                                   include_neutrals=False,
                                   neutrals_ab_threshold=0.1):
-    """
-    Extract gray or primaries into new TI3
+    """Extract gray or primaries into new TI3
 
     Return extracted ti3, extracted RGB to XYZ mapping and remaining RGB to XYZ
 
@@ -493,8 +488,7 @@ END_DATA""")[0]
 
 
 def ti3_to_ti1(ti3_data):
-    """
-    Create and return TI1 data converted from TI3.
+    """Create and return TI1 data converted from TI3.
 
     ti3_data can be a file object, a list of strings or a string holding the data.
 
@@ -548,8 +542,7 @@ def vcgt_to_cal(profile):
 
 
 def verify_cgats(cgats, required, ignore_unknown=True):
-    """
-    Verify and return a CGATS instance or None on failure.
+    """Verify and return a CGATS instance or None on failure.
 
     Verify if a CGATS instance has a section with all required fields.
     Return the section as CGATS instance on success, None on failure.
@@ -583,8 +576,7 @@ def verify_cgats(cgats, required, ignore_unknown=True):
                                   ", ".join(required))
 
 def verify_ti1_rgb_xyz(cgats):
-    """
-    Verify and return a CGATS instance or None on failure.
+    """Verify and return a CGATS instance or None on failure.
 
     Verify if a CGATS instance has a TI1 section with all required fields
     for RGB devices. Return the TI1 section as CGATS instance on success,

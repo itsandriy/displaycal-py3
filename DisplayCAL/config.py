@@ -475,8 +475,7 @@ def get_display_name(n=None, include_geometry=False):
 
 
 def split_display_name(display):
-    """
-    Split and return name part of display
+    """Split and return name part of display
 
     E.g.
     'LCD2690WUXi @ 0, 0, 1920x1200' -> 'LCD2690WUXi'
@@ -636,8 +635,7 @@ def get_default_dpi():
 
 
 def runtimeconfig(pyfile):
-    """
-    Configure remaining runtime options and return runtype.
+    """Configure remaining runtime options and return runtype.
 
     You need to pass in a path to the calling script (e.g. use the __file__
     attribute).
@@ -1255,8 +1253,7 @@ def _init_testcharts():
 
 
 def getcfg(name, fallback=True, raw=False, cfg=cfg):
-    """
-    Get and return an option value from the configuration.
+    """Get and return an option value from the configuration.
 
     If fallback evaluates to True and the option is not set,
     return its default value.
@@ -1383,8 +1380,7 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
 
 
 def hascfg(name, fallback=True, cfg=cfg):
-    """
-    Check if an option name exists in the configuration.
+    """Check if an option name exists in the configuration.
 
     Returns a boolean value.
     If fallback evaluates to True and the name does not exist,
@@ -1872,8 +1868,7 @@ def setcfg(name, value, cfg=cfg):
 
 def setcfg_cond(condition, name, value, set_if_backup_exists=False,
                 restore=True):
-    """
-    If <condition>, backup configuration option <name> if not yet backed up
+    """If <condition>, backup configuration option <name> if not yet backed up
     and set option to <value> if backup did not previously exist or
     set_if_backup_exists evaluates to True
 
