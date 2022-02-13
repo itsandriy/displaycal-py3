@@ -4,7 +4,7 @@ import wx
 import wx.xrc as xrc
 import wx.lib.filebrowsebutton as filebrowse
 try:
-    from wxwindows import FileBrowseBitmapButtonWithChoiceHistory as FileBrowseButtonWithHistory
+    from DisplayCAL.wxwindows import FileBrowseBitmapButtonWithChoiceHistory as FileBrowseButtonWithHistory
 except ImportError:
     FileBrowseButtonWithHistory = filebrowse.FileBrowseButtonWithHistory
 
@@ -17,7 +17,7 @@ class FileBrowseButtonXmlHandler(xrc.XmlResourceHandler):
         # Standard styles
         self.AddWindowStyles()
 
-    def CanHandle(self,node):
+    def CanHandle(self, node):
         return self.IsOfClass(node, self._class.__name__)
 
     # Process XML parameters and create the object
@@ -39,6 +39,7 @@ class FileBrowseButtonXmlHandler(xrc.XmlResourceHandler):
                         name=self.GetName())
         self.SetupWindow(w)
         return w
+
 
 class FileBrowseButtonWithHistoryXmlHandler(FileBrowseButtonXmlHandler):
 

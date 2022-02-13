@@ -12,7 +12,7 @@ import threading
 import time
 from urllib.parse import unquote
 
-from meta import name as appname, version as appversion
+from DisplayCAL.meta import name as appname, version as appversion
 
 
 WEBDISP_HTML = r"""<!DOCTYPE html>
@@ -100,9 +100,7 @@ window.onload = function() {
 
 
 class WebWinHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
-
     """Simple HTTP request handler with GET and HEAD commands.
-
     """
 
     server_version = appname + "-WebWinHTTP/" + appversion
@@ -111,7 +109,7 @@ class WebWinHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         """Serve a GET request."""
         s = self.send_head()
         if s:
-            self.wfile.write(s)
+            self.wfile.write(s.encode())
 
     def do_HEAD(self):
         """Serve a HEAD request."""
@@ -153,5 +151,5 @@ class WebWinHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 self.send_header("Content-Type", ctype)
                 self.end_headers()
                 return s
-            except:
+            except BaseException:
                 pass

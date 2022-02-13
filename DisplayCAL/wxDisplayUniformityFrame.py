@@ -1,6 +1,4 @@
 # -*- coding: UTF-8 -*-
-
-
 """
 Interactive display calibration UI
 
@@ -12,23 +10,21 @@ import os
 import re
 import sys
 
-from wxaddons import wx
+from DisplayCAL.wxaddons import wx
 
-from config import (getbitmap, getcfg, get_icon_bundle,
-                    get_display_number, get_display_rects, get_verified_path,
-                    setcfg)
-from log import get_file_logger
-from meta import name as appname, version as appversion
-from util_os import launch_file, waccess
-from wxaddons import CustomEvent
-from wxMeasureFrame import MeasureFrame
-from wxwindows import (BaseApp, BaseFrame, FlatShadedButton,
-                       numpad_keycodes, nav_keycodes, processing_keycodes,
-                       wx_Panel)
-import colormath
-import config
-import localization as lang
-import report
+from DisplayCAL.config import (getbitmap, getcfg, get_icon_bundle, get_display_number, get_display_rects,
+                               get_verified_path, setcfg)
+from DisplayCAL.log import get_file_logger
+from DisplayCAL.meta import name as appname, version as appversion
+from DisplayCAL.util_os import launch_file, waccess
+from DisplayCAL.wxaddons import CustomEvent
+from DisplayCAL.wxMeasureFrame import MeasureFrame
+from DisplayCAL.wxwindows import (BaseApp, BaseFrame, FlatShadedButton, numpad_keycodes, nav_keycodes,
+                                  processing_keycodes, wx_Panel)
+from DisplayCAL import colormath
+from DisplayCAL import config
+from DisplayCAL import localization as lang
+from DisplayCAL import report
 
 BGCOLOUR = wx.Colour(0x33, 0x33, 0x33)
 
@@ -335,10 +331,8 @@ class DisplayUniformityFrame(BaseFrame):
                     if result == wx.ID_OK:
                         path = dlg.GetPath()
                         if not waccess(path, os.W_OK):
-                            from worker import show_result_dialog
-                            show_result_dialog(Error(lang.getstr("error.access_denied.write",
-                                                                 path)),
-                                               self)
+                            from DisplayCAL.worker import show_result_dialog
+                            show_result_dialog(Error(lang.getstr("error.access_denied.write", path)), self)
                             return
                         save_path = os.path.splitext(path)[0] + ".html"
                         setcfg("last_filedialog_path", save_path)
@@ -357,7 +351,7 @@ class DisplayUniformityFrame(BaseFrame):
                                        "${LOCUS}": locus},
                                       getcfg("report.pack_js"), "uniformity")
                     except (IOError, OSError) as exception:
-                        from worker import show_result_dialog
+                        from DisplayCAL.worker import show_result_dialog
                         show_result_dialog(exception, self)
                     else:
                         launch_file(save_path)
@@ -429,18 +423,23 @@ class Event():
 if __name__ == "__main__":
     from _thread import start_new_thread
     from time import sleep
-    class Subprocess():
-        def send(self, bytes):
-            start_new_thread(test, (bytes,))
+
+    class Subprocess(object):
+        def send(self, bytes_):
+            start_new_thread(test, (bytes_,))
+
     class Worker(object):
         def __init__(self):
             self.subprocess = Subprocess()
             self.subprocess_abort = False
+
         def abort_subprocess(self):
             self.subprocess.send("Q")
-        def safe_send(self, bytes):
-            self.subprocess.send(bytes)
+
+        def safe_send(self, bytes_):
+            self.subprocess.send(bytes_)
             return True
+
     config.initcfg()
     lang.init()
     lang.update_defaults()
@@ -449,7 +448,8 @@ if __name__ == "__main__":
     app.TopWindow.worker = Worker()
     app.TopWindow.Show()
     i = 0
-    def test(bytes=None):
+
+    def test(bytes_=None):
         global i
         menu = r"""Place instrument on spot to be measured,
 and hit [A-Z] to read white and setup FWA compensation (keyed to letter)
@@ -457,9 +457,9 @@ and hit [A-Z] to read white and setup FWA compensation (keyed to letter)
 'r' to set reference, 's' to save spectrum,
 'h' to toggle high res., 'k' to do a calibration
 Hit ESC or Q to exit, any other key to take a reading:"""
-        if not bytes:
+        if not bytes_:
             txt = menu
-        elif bytes == " ":
+        elif bytes_ == " ":
             txt = [["""
  Result is XYZ: 115.629826 123.903717 122.761510, D50 Lab: 108.590836 -5.813746 -13.529075
                            CCT = 6104K (Delta E 7.848119)
@@ -960,7 +960,7 @@ Hit ESC or Q to exit, any other key to take a reading:"""]][app.TopWindow.index]
                 i += 1
             else:
                 i -= 3
-        elif bytes in ("Q", "q"):
+        elif bytes_ in ("Q", "q"):
             wx.CallAfter(app.TopWindow.Close)
             return
         else:

@@ -27,7 +27,7 @@ def eecolor_to_icc_devicelink(eecolor_3dlut_filename, unity=False):
         eecolor_3dlut_data = []
         with open(eecolor_3dlut_filename, "rb") as eecolor_3dlut:
             for line in eecolor_3dlut:
-                line = line.strip()
+                line = line.strip().decode()
                 if not line or line.startswith("#"):
                     continue
                 values = [float(v) for v in line.split()]

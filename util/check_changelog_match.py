@@ -11,7 +11,7 @@ from meta import domain
 
 tplpth = os.path.join(os.path.dirname(__file__), "..", "misc", "README.template.html")
 with open(tplpth, "r") as tpl:
-    readme = str(tpl.read(), "utf-8")
+    readme = tpl.read()
 
 chglog = re.search('<div id="(?:changelog|history)">'
                    '.+?<h2>.+?</h2>'

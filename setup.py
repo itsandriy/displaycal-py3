@@ -21,8 +21,8 @@ if sys.platform == "win32":
 
 sys.path.insert(0, "DisplayCAL")
 
-from util_os import fs_enc, which
-from util_str import strtr
+# from DisplayCAL.util_os import fs_enc, which
+# from DisplayCAL.util_str import strtr
 
 pypath = os.path.abspath(__file__)
 pydir = os.path.dirname(pypath)
@@ -62,7 +62,7 @@ def format_chglog(chglog, format="appstream"):
         tags = re.findall(r'<[^/][^>]+>', chglog)
         for tag in tags:
             tagname = tag.strip('<>').split()[0]
-            if not tagname in allowed_tags:
+            if tagname not in allowed_tags:
                 chglog = chglog.replace(tag, "")
                 chglog = chglog.replace("</" + tagname + ">", "")
         # Remove macOS and Windows specific items
@@ -247,7 +247,7 @@ def setup():
     if "bdist_standalone" in sys.argv[1:]:
         i = sys.argv.index("bdist_standalone")
         sys.argv = sys.argv[:i] + sys.argv[i + 1:]
-        if not bdist_cmd in sys.argv[1:i]:
+        if bdist_cmd not in sys.argv[1:i]:
             sys.argv.insert(i, bdist_cmd)
     elif "bdist_bbfreeze" in sys.argv[1:]:
         bdist_cmd = "bdist_bbfreeze"
@@ -305,6 +305,7 @@ def setup():
         )
     )
 
+    from DisplayCAL.util_os import which
     if os.path.isdir(os.path.join(pydir, ".git")) and (which("git") or which("git.exe")) and \
             (not sys.argv[1:] or (len(non_build_args) < len(sys.argv[1:]) and not help)):
         print("Trying to get git version information...")
@@ -371,7 +372,7 @@ def setup():
     global version, version_lin, version_mac
     global version_src, version_tuple, version_win
     global wx_minversion, appstream_id
-    from meta import (name, name_html, author, author_email, description,
+    from DisplayCAL.meta import (name, name_html, author, author_email, description,
                       lastmod, longdesc, domain, py_maxversion, py_minversion,
                       version, version_lin, version_mac,
                       version_src, version_tuple, version_win,
@@ -467,8 +468,8 @@ def setup():
         chglog = get_latest_chglog_entry(readme)
 
     if create_appdata:
-        from setup import get_scripts
-        import localization as lang
+        from DisplayCAL.setup import get_scripts
+        from DisplayCAL import localization as lang
         scripts = get_scripts()
         provides = ["<python2>%s</python2>" % name]
         for script, desc in scripts:
@@ -515,7 +516,7 @@ def setup():
     if bdist_pyi:
         i = sys.argv.index("bdist_pyi")
         sys.argv = sys.argv[:i] + sys.argv[i + 1:]
-        if not "build_ext" in sys.argv[1:i]:
+        if "build_ext" not in sys.argv[1:i]:
             sys.argv.insert(i, "build_ext")
         if "-F" in sys.argv[1:]:
             sys.argv.remove("-F")
@@ -675,7 +676,7 @@ def setup():
     if (not zeroinstall and not buildservice and
         not appdata and not bdist_appdmg and not bdist_pkg) or sys.argv[1:]:
         print(sys.argv[1:])
-        from setup import setup
+        from DisplayCAL.setup import setup
         setup()
 
     if dry_run or help:
@@ -815,7 +816,7 @@ def setup():
     if zeroinstall:
         from xml.dom import minidom
         # Create/update 0install feeds
-        from setup import get_data, get_scripts
+        from DisplayCAL.setup import get_data, get_scripts
         scripts = sorted((script2pywname(script), desc)
                          for script, desc in get_scripts())
         cmds = []
@@ -831,14 +832,17 @@ def setup():
         extract = "%s-%s" % (name, version)
         archive_name = extract + ".tar.gz"
         archive_path = os.path.join(pydir, "dist", archive_name)
-        p = subprocess.Popen(["0install", "digest", archive_path.encode(fs_enc), extract],
-                  stdout=subprocess.PIPE, cwd=pydir)
+        from DisplayCAL.util_os import fs_enc
+        p = subprocess.Popen(
+            ["0install", "digest", archive_path.encode(fs_enc), extract],
+            stdout=subprocess.PIPE, cwd=pydir
+        )
         stdout, stderr = p.communicate()
         print(stdout)
-        hash = re.search("(sha\d+\w+[=_][0-9a-f]+)", stdout.strip())
-        if not hash:
+        hash_ = re.search(r"(sha\d+\w+[=_][0-9a-f]+)", stdout.strip().decode())
+        if not hash_:
             raise SystemExit(p.wait())
-        hash = hash.groups()[0]
+        hash_ = hash_.groups()[0]
         for tmpl_name in ("7z.xml", "argyllcms.xml", name + ".xml",
                           name + "-linux.xml", name + "-mac.xml",
                           name + "-win32.xml", "numpy.xml", "SDL.xml",
@@ -923,8 +927,8 @@ def setup():
                             # Remove existing hashes
                             digest.removeAttribute(attrname)
                         archive = implementation.getElementsByTagName("archive")[0]
-                    implementation.setAttribute("id", hash)
-                    digest.setAttribute(*hash.split("="))
+                    implementation.setAttribute("id", hash_)
+                    digest.setAttribute(*hash_.split("="))
                     # Update archive
                     if stability == "stable":
                         folder = ""
@@ -1005,7 +1009,7 @@ def setup():
                     passphrase_path = os.path.join(pydir, "gpg", "passphrase.txt")
                     print("Signing", dist_path)
                     if os.path.isfile(passphrase_path):
-                        import wexpect
+                        from DisplayCAL import wexpect
                         with open(passphrase_path) as passphrase_file:
                             passphrase = passphrase_file.read().strip()
                         p = wexpect.spawn(zeropublish.encode(fs_enc), args + ["-x", dist_path.encode(fs_enc)])

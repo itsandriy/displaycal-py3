@@ -109,26 +109,26 @@ Zooming controls with mouse (when enabled):
 """
 
 import functools
-import  string as _string
-import  time as _time
-import  sys
-import  wx
+import string as _string
+import time as _time
+import sys
+import wx
 
 # Needs Numeric or numarray or NumPy
 try:
     import numpy as _Numeric
 except:
     try:
-        import numarray as _Numeric  #if numarray is used it is renamed Numeric
+        import numarray as _Numeric  # if numarray is used it is renamed Numeric
     except:
         try:
             import Numeric as _Numeric
         except:
-            msg= """
+            msg = """
             This module requires the Numeric/numarray or NumPy module,
             which could not be imported.  It probably is not installed
             (it's not part of the standard Python distribution). See the
-            Numeric Python site (http://numpy.scipy.org) for information on
+            Numeric Python site (https://numpy.scipy.org) for information on
             downloading source or binaries."""
             raise ImportError("Numeric,numarray or NumPy not found. \n" + msg)
 else:
@@ -138,7 +138,7 @@ else:
 np = _Numeric
 
 
-from wxfixes import get_dc_font_scale
+from DisplayCAL.wxfixes import get_dc_font_scale
 
 
 def convert_to_list_of_tuples(iterable):
@@ -148,7 +148,7 @@ def convert_to_list_of_tuples(iterable):
     return points
 
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # From wxPython Phoenix wx/lib/plot/utils.py with __nonzer__ fix
 # and Python 2.6 compatibility
 
@@ -280,7 +280,7 @@ class TempStyle(object):
 
        -- The Genie
     """
-    _valid_types = set(['both', 'pen', 'brush'])
+    _valid_types = {'both', 'pen', 'brush'}
     _err_str = (
         "No DC provided and unable to determine DC from context for function "
         "`{func_name}`. When `{cls_name}` is used as a decorator, the "
@@ -313,12 +313,12 @@ class TempStyle(object):
             func(instance, dc, *args, **kwargs)
             self._revert_items(dc)
 
-            #import copy                    # copy solves issue #1 above, but
-            #self.dc = copy.copy(dc)        # possibly causes issue #2.
+            # import copy                    # copy solves issue #1 above, but
+            # self.dc = copy.copy(dc)        # possibly causes issue #2.
 
-            #with self:
-            #    print('in with')
-            #    func(instance, dc, *args, **kwargs)
+            # with self:
+            #     print('in with')
+            #     func(instance, dc, *args, **kwargs)
 
         return wrapper
 
@@ -825,7 +825,7 @@ class PlotGraphics:
         return self.objects[item]
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Main window that you will want to import into your application.
 
 class PlotCanvas(wx.Panel):
@@ -2580,7 +2580,7 @@ class PlotPrintout(wx.Printout):
 
 #----------------------------------------------------------------------
 try:
-    from embeddedimage import PyEmbeddedImage
+    from DisplayCAL.embeddedimage import PyEmbeddedImage
 except ImportError:
     from wx.lib.embeddedimage import PyEmbeddedImage
 

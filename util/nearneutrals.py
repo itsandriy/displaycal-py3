@@ -13,11 +13,11 @@ def nearneutrals(res=17, step=2):
             v[j] += step
             if v[j] > 100:
                 break
-            if not v in grid:
+            if v not in grid:
                 grid.append(v)
             v = [i * inc + step] * 3
             v[j] -= step
-            if not v in grid:
+            if v not in grid:
                 grid.append(v)
     grid.sort()
     for line in grid:

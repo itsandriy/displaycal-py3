@@ -104,7 +104,7 @@ __all__ = ['ExceptionPexpect', 'EOF', 'TIMEOUT', 'spawn', 'run', 'which', 'split
            '__revision__']
 
 
-from meta import name as appname
+from DisplayCAL.meta import name as appname
 
 
 # Exception classes used by this module.
@@ -2043,7 +2043,7 @@ class Wtty:
             if getattr(sys, 'frozen', False) else os.path.join(os.path.dirname(sys.executable), 'python.exe'),
             ' '.join(pyargs),
             "import sys; sys.path = %s + sys.path;"
-            "args = %s; import wexpect;"
+            "args = %s; from DisplayCAL import wexpect;"
             "wexpect.ConsoleReader(wexpect.join_args(args), %i, %i, cp=%i, c=%s, r=%s, logdir=%r)" % (
                 ("%r" % spath).replace('"', r'\"'), ("%r" % args).replace('"', r'\"'), pid, tid, self.codepage,
                 self.columns, self.rows, logdir)

@@ -2,6 +2,7 @@
 
 import re
 
+
 def floatlist(alist):
     """ Convert all list items to floats (0.0 on error) """
     result = []

@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 
-import decimal
-Decimal = decimal.Decimal
+# import decimal
+# Decimal = decimal.Decimal
+from decimal import Decimal
 import os
 import traceback
 from time import strftime
 
-from debughelpers import Error
-from options import debug
-from ordereddict import OrderedDict
-from util_io import StringIOu as StringIO
-import CGATS
-import ICCProfile as ICCP
-import colormath
-import localization as lang
+from DisplayCAL.debughelpers import Error
+from DisplayCAL.options import debug
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.util_io import StringIOu as StringIO
+from DisplayCAL import CGATS
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import colormath
+from DisplayCAL import localization as lang
 
 cals = {}
 
@@ -102,12 +103,12 @@ def cal_to_vcgt(cal, return_cgats=False):
     data_format = cal.queryv1("DATA_FORMAT")
     if data_format:
         for field in required_fields:
-            if not field in list(data_format.values()):
+            if field not in list(data_format.values()):
                 if debug:
                     print("[D] Missing required field:", field)
                 return None
         for field in list(data_format.values()):
-            if not field in required_fields:
+            if field not in required_fields:
                 if debug:
                     print("[D] Unknown field:", field)
                 return None
@@ -138,7 +139,7 @@ def can_update_cal(path):
     except Exception as exception:
         print("Warning - os.stat('%s') failed: %s" % (path, exception))
         return False
-    if not path in cals or cals[path].mtime != calstat.st_mtime:
+    if path not in cals or cals[path].mtime != calstat.st_mtime:
         try:
             cal = CGATS.CGATS(path)
         except (IOError, CGATS.CGATSInvalidError,
@@ -148,7 +149,7 @@ def can_update_cal(path):
                 del cals[path]
             print("Warning - couldn't process CGATS file '%s': %s" % (path, exception))
         else:
-            if cal.queryv1("DEVICE_CLASS") == "DISPLAY" and not None in \
+            if cal.queryv1("DEVICE_CLASS") == "DISPLAY" and None not in \
                (cal.queryv1("TARGET_WHITE_XYZ"),
                 cal.queryv1("TARGET_GAMMA"),
                 cal.queryv1("BLACK_POINT_CORRECTION"),
@@ -177,8 +178,7 @@ def extract_cal_from_profile(profile, out_cal_path=None,
     if not cal:
         # Convert calibration information from embedded WCS profile
         # (if present) to VideCardFormulaType if the latter is not present
-        if (isinstance(profile.tags.get("MS00"), ICCP.WcsProfilesTagType) and
-            not "vcgt" in profile.tags):
+        if isinstance(profile.tags.get("MS00"), ICCP.WcsProfilesTagType) and "vcgt" not in profile.tags:
             profile.tags["vcgt"] = profile.tags["MS00"].get_vcgt()
 
         # Get the calibration from profile vcgt
@@ -292,7 +292,7 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
     'updateable') and optionally copy it to target_filename.
 
     """
-    from worker import get_options_from_profile
+    from DisplayCAL.worker import get_options_from_profile
     try:
         profile = ICCP.ICCProfile(source_filename)
     except (IOError, ICCP.ICCProfileInvalidError) as exception:
@@ -440,7 +440,7 @@ END_DATA""")[0]
             for prefix in ("RGB", "XYZ"):
                 for suffix in prefix:
                     key = "%s_%s" % (prefix, suffix)
-                    if not key in item:
+                    if key not in item:
                         raise Error(lang.getstr("error.testchart.missing_fields",
                                                 (ti3.filename, key)))
         RGB = (item["RGB_R"], item["RGB_G"], item["RGB_B"])
@@ -455,7 +455,7 @@ END_DATA""")[0]
                     # even if subsequent white readings may be higher)
                     XYZ = tuple(RGB_XYZ[RGB][i] + XYZ[i]
                                 for i in range(3))
-                    if not RGB in dupes:
+                    if RGB not in dupes:
                         dupes[RGB] = 1.0
                     dupes[RGB] += 1.0
                 elif RGB in subset:
@@ -470,12 +470,12 @@ END_DATA""")[0]
                                               item["XYZ_Y"],
                                               item["XYZ_Z"],
                                               whitepoint=white)[1:]))) and
-             not RGB in [(100.0, 100.0, 100.0),
+             RGB not in [(100.0, 100.0, 100.0),
                          (0.0, 0.0, 0.0)]) or
             RGB in subset):
             ti3_extracted.DATA.add_data(item)
             RGB_XYZ_extracted[RGB] = XYZ
-        elif not RGB in [(100.0, 100.0, 100.0),
+        elif RGB not in [(100.0, 100.0, 100.0),
                          (0.0, 0.0, 0.0)]:
             RGB_XYZ_remaining[RGB] = XYZ
     for RGB, count in dupes.items():
@@ -557,11 +557,11 @@ def verify_cgats(cgats, required, ignore_unknown=True):
         if cgats_1.queryv1("NUMBER_OF_SETS"):
             if cgats_1.queryv1("DATA_FORMAT"):
                 for field in required:
-                    if not field in list(cgats_1.queryv1("DATA_FORMAT").values()):
+                    if field not in list(cgats_1.queryv1("DATA_FORMAT").values()):
                         raise CGATS.CGATSKeyError("Missing required field: %s" % field)
                 if not ignore_unknown:
                     for field in list(cgats_1.queryv1("DATA_FORMAT").values()):
-                        if not field in required:
+                        if field not in required:
                             raise CGATS.CGATSError("Unknown field: %s" % field)
             else:
                 raise CGATS.CGATSInvalidError("Missing DATA_FORMAT")

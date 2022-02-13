@@ -25,10 +25,12 @@
 # I explicitly permit the knownpaths.py source code to be licensed by anyone
 # under the terms of the GNU GPL v3, as an alternative to the X11/MIT license.
 
-  # Python 2.6/2.7 compatibility
-import ctypes, sys
+# Python 2.6/2.7 compatibility
+import ctypes
+import sys
 from ctypes import windll, wintypes
 from uuid import UUID
+
 
 class GUID(ctypes.Structure):   # [1]
     _fields_ = [
@@ -42,9 +44,10 @@ class GUID(ctypes.Structure):   # [1]
         ctypes.Structure.__init__(self)
         self.Data1, self.Data2, self.Data3, self.Data4[0], self.Data4[1], rest = uuid_.fields
         for i in range(2, 8):
-            self.Data4[i] = rest>>(8 - i - 1)*8 & 0xff
+            self.Data4[i] = rest >> (8 - i - 1)*8 & 0xff
 
-class FOLDERID:     # [2]
+
+class FOLDERID(object):     # [2]
     AccountPictures         = UUID('{008ca0b1-55b4-4c56-b8a8-4de4b299d3be}')
     AdminTools              = UUID('{724EF170-A42D-4FEF-9F26-B60E846FBA4F}')
     ApplicationShortcuts    = UUID('{A3918781-E5F2-4890-B3D9-A7E54332328C}')
@@ -140,9 +143,11 @@ class FOLDERID:     # [2]
     VideosLibrary           = UUID('{491E922F-5643-4AF4-A7EB-4E7A138D8174}')
     Windows                 = UUID('{F38BF404-1D43-42F2-9305-67DE0B28FC23}')
 
-class UserHandle:   # [3]
+
+class UserHandle(object):   # [3]
     current = wintypes.HANDLE(0)
-    common  = wintypes.HANDLE(-1)
+    common = wintypes.HANDLE(-1)
+
 
 _CoTaskMemFree = windll.ole32.CoTaskMemFree     # [4]
 _CoTaskMemFree.restype= None
@@ -153,7 +158,10 @@ _SHGetKnownFolderPath.argtypes = [
     ctypes.POINTER(GUID), wintypes.DWORD, wintypes.HANDLE, ctypes.POINTER(ctypes.c_wchar_p)
 ] 
 
-class PathNotFoundException(Exception): pass
+
+class PathNotFoundException(Exception):
+    pass
+
 
 def get_path(folderid, user_handle=UserHandle.common):
     fid = GUID(folderid) 
@@ -164,6 +172,7 @@ def get_path(folderid, user_handle=UserHandle.common):
     path = pPath.value
     _CoTaskMemFree(pPath)
     return path
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2 or sys.argv[1] in ['-?', '/?']:

@@ -12,33 +12,31 @@ import time
 if sys.platform == "win32":
     import win32file
 
-import CGATS
-import ICCProfile as ICCP
-import colormath
-import config
-import imfile
-import localization as lang
-from argyll_RGB2XYZ import RGB2XYZ as argyll_RGB2XYZ, XYZ2RGB as argyll_XYZ2RGB
-from argyll_cgats import ti3_to_ti1, verify_cgats
-from config import (defaults, getbitmap, getcfg, geticon, get_current_profile,
-                    get_display_name, get_data_path, get_total_patches,
-                    get_verified_path, hascfg, profile_ext, setcfg, writecfg)
-from debughelpers import handle_error
-from meta import name as appname
-from options import debug, tc_use_alternate_preview, test, verbose
-from ordereddict import OrderedDict
-from util_io import StringIOu as StringIO
-from util_os import expanduseru, is_superuser, launch_file, waccess
-from worker import (Error, Worker, check_file_isfile, check_set_argyll_bin,
-                    get_argyll_util, get_current_profile_path,
-                    show_result_dialog)
-from wxaddons import CustomEvent, CustomGridCellEvent, wx
-from wxwindows import (BaseApp, BaseFrame, CustomGrid, ConfirmDialog,
-                       FileBrowseBitmapButtonWithChoiceHistory, FileDrop,
-                       InfoDialog, get_gradient_panel)
-from wxfixes import GenBitmapButton as BitmapButton
-import floatspin
-from wxMeasureFrame import get_default_size
+from DisplayCAL import CGATS
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import colormath
+from DisplayCAL import config
+from DisplayCAL import imfile
+from DisplayCAL import localization as lang
+from DisplayCAL.argyll_RGB2XYZ import RGB2XYZ as argyll_RGB2XYZ, XYZ2RGB as argyll_XYZ2RGB
+from DisplayCAL.argyll_cgats import ti3_to_ti1, verify_cgats
+from DisplayCAL.config import (defaults, getbitmap, getcfg, geticon, get_current_profile, get_display_name,
+                               get_data_path, get_total_patches, get_verified_path, hascfg, profile_ext, setcfg,
+                               writecfg)
+from DisplayCAL.debughelpers import handle_error
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import debug, tc_use_alternate_preview, test, verbose
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.util_io import StringIOu as StringIO
+from DisplayCAL.util_os import expanduseru, is_superuser, launch_file, waccess
+from DisplayCAL.worker import (Error, Worker, check_file_isfile, check_set_argyll_bin, get_argyll_util,
+                               get_current_profile_path, show_result_dialog)
+from DisplayCAL.wxaddons import CustomEvent, CustomGridCellEvent, wx
+from DisplayCAL.wxwindows import (BaseApp, BaseFrame, CustomGrid, ConfirmDialog,
+                                  FileBrowseBitmapButtonWithChoiceHistory, FileDrop, InfoDialog, get_gradient_panel)
+from DisplayCAL.wxfixes import GenBitmapButton as BitmapButton
+from DisplayCAL import floatspin
+from DisplayCAL.wxMeasureFrame import get_default_size
 
 
 def swap_dict_keys_values(mydict):

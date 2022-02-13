@@ -22,7 +22,8 @@ except AttributeError:
 import logging
 logger = logging.getLogger()
 
-class Structure:
+
+class Structure(object):
     def __init__(self):
         size = self._sizeInBytes = struct.calcsize(self._format_)
         self._fields_ = list(struct.unpack(self._format_, '\000' * size))
@@ -44,7 +45,7 @@ class Structure:
         try:
             return self.__dict__[name]
         except KeyError:
-            raise AttributeError, name
+            raise AttributeError(name)
 
     def __setattr__(self, name, value):
         if name in self._names_:
@@ -54,11 +55,13 @@ class Structure:
             self.__dict__[name] = value
 
     def tostring(self):
-        return apply(struct.pack, [self._format_,] + self._fields_)
+        args = [self._format_,] + self._fields_
+        return struct.pack(*args)
 
     def fromfile(self, file):
         data = file.read(self._sizeInBytes)
         self._fields_ = list(struct.unpack(self._format_, data))
+
 
 class ICONDIRHEADER(Structure):
     _names_ = "idReserved", "idType", "idCount"
@@ -151,9 +154,9 @@ def CopyIcons(dstpath, srcpath):
         for s in srcpath:
             e = os.path.splitext(s[0])[1]
             if e.lower() != '.ico':
-                raise ValueError, "multiple icons supported only from .ico files"
+                raise ValueError("multiple icons supported only from .ico files")
             if s[1] is not None:
-                raise ValueError, "index not allowed for .ico files"
+                raise ValueError("index not allowed for .ico files")
             srcs.append(s[0])
         return CopyIcons_FromIco(dstpath, srcs)
 

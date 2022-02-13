@@ -3,9 +3,10 @@
 import wx
 import wx.xrc as xrc
 try:
-    import floatspin
+    from DisplayCAL import floatspin
 except ImportError:
     import wx.lib.agw.floatspin as floatspin
+
 
 class FloatSpinCtrlXmlHandler(xrc.XmlResourceHandler):
 

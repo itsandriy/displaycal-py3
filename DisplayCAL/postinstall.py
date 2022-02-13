@@ -8,8 +8,8 @@ import shutil
 import sys
 import traceback
 
-from meta import name
-from util_os import relpath, safe_glob, which
+from DisplayCAL.meta import name
+from DisplayCAL.util_os import relpath, safe_glob, which
 
 recordfile_name = "INSTALLED_FILES"
 

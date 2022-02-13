@@ -7,8 +7,8 @@ import struct
 import time
 import zlib
 
-from meta import name as appname, version
-from util_str import safe_str
+from DisplayCAL.meta import name as appname, version
+from DisplayCAL.util_str import safe_str
 
 
 TIFF_TAG_TYPE_BYTE = 1

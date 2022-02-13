@@ -31,9 +31,9 @@ if sys.platform == "win32":
     except ImportError:
         win32api = None
 
-from config import pydir
-from util_os import dlopen, getenvu
-from util_str import safe_str
+from DisplayCAL.config import pydir
+from DisplayCAL.util_os import dlopen, getenvu
+from DisplayCAL.util_str import safe_str
 
 
 _ch = {}
@@ -73,7 +73,7 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
         if not getattr(sys, "frozen", False):
             # Use included pyglet
             lib_dir = os.path.join(os.path.dirname(__file__), "lib")
-            if not lib_dir in sys.path:
+            if lib_dir not in sys.path:
                 sys.path.insert(0, lib_dir)
         try:
             import pyglet
@@ -84,8 +84,7 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
                 except ValueError:
                     version.append(item)
             if version < [1, 2, 2]:
-                raise ImportError("pyglet version %s is too old" %
-                                  pyglet.version)
+                raise ImportError("pyglet version %s is too old" % pyglet.version)
             _lib = "pyglet"
         except ImportError:
             _lib = None
@@ -315,13 +314,13 @@ class _Sound(object):
                 elif self._lib == "wx":
                     self._snd = wx.Sound(self._filename)
 
-    def _get_ch(self):
+    @property
+    def _ch(self):
         return _ch.get((self._filename, self._loop))
 
-    def _set_ch(self, ch):
+    @_ch.setter
+    def _ch(self, ch):
         _ch[(self._filename, self._loop)] = ch
-
-    _ch = property(_get_ch, _set_ch)
 
     def _fade(self, fade_ms, fade_in, thread):
         volume = self.volume
@@ -339,7 +338,8 @@ class _Sound(object):
         if not self.volume:
             self.stop()
 
-    def _get_volume(self):
+    @property
+    def volume(self):
         volume = 1.0
         if self._snd:
             if self._lib == "pyo":
@@ -351,7 +351,8 @@ class _Sound(object):
                           128)
         return volume
 
-    def _set_volume(self, volume):
+    @volume.setter
+    def volume(self, volume):
         if self._snd and self._lib != "wx":
             if self._lib == "pyo":
                 self._snd.mul = volume
@@ -363,13 +364,13 @@ class _Sound(object):
             return True
         return False
 
-    def _get_snd(self):
+    @property
+    def _snd(self):
         return _snd.get((self._filename, self._loop))
 
-    def _set_snd(self, snd):
+    @_snd.setter
+    def _snd(self, snd):
         _snd[(self._filename, self._loop)] = snd
-
-    _snd = property(_get_snd, _set_snd)
 
     def fade(self, fade_ms, fade_in=None):
         """Fade in/out.
@@ -501,12 +502,10 @@ class _Sound(object):
         else:
             return False
 
-    volume = property(_get_volume, _set_volume)
-
 
 if __name__ == "__main__":
     import wx
-    from config import get_data_path
+    from DisplayCAL.config import get_data_path
     sound = Sound(get_data_path("theme/engine_hum_loop.wav"), True)
     app = wx.App(0)
     frame = wx.Frame(None, -1, "Test")

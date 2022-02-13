@@ -33,7 +33,7 @@ def find_potentially_unused_strings(filepath, keys):
     count = 0
     for key in sorted(ldict.keys()):
         merged[key.encode("UTF-8")] = ldict[key].encode("UTF-8")
-        if not key.startswith("*") and not key.startswith("!") and not key in keys:
+        if not key.startswith("*") and not key.startswith("!") and key not in keys:
             safe_print("Found potentially unused '%s' in '%s'" %
                        (key, os.path.basename(filepath)))
             count += 1
@@ -56,7 +56,7 @@ def main():
             else:
                 pattern = r'(?:getstr\(|(?:lstr|msg|msgid|msgstr|title)\s*=)\s*["\']([^"\']+)["\']'
             for match in re.findall(pattern, code):
-                if not match in keys:
+                if match not in keys:
                     keys[match.decode("UTF-8")] = 1
     safe_print(len(keys), "unique keys in py/pyw/xrc")
     usage_path = os.path.join(confighome, "localization_usage.json")

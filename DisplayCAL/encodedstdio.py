@@ -5,7 +5,7 @@ import locale
 import os
 import sys
 
-from encoding import get_encoding
+from DisplayCAL.encoding import get_encoding
 
 _codecs = {}
 _stdio = {}

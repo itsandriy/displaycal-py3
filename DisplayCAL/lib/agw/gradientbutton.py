@@ -84,6 +84,7 @@ import wx
 HOVER = 1
 CLICK = 2
 
+
 class GradientButtonEvent(wx.PyCommandEvent):
     """ Event sent from L{GradientButton} when the button is activated. """
     

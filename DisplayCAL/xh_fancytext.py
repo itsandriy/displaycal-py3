@@ -2,10 +2,12 @@
 
 import wx
 import wx.xrc as xrc
+
 try:
-    from wxwindows import BetterStaticFancyText as StaticFancyText
+    from DisplayCAL.wxwindows import BetterStaticFancyText as StaticFancyText
 except ImportError:
     from wx.lib.fancytext import StaticFancyText
+
 
 class StaticFancyTextCtrlXmlHandler(xrc.XmlResourceHandler):
 

@@ -358,7 +358,7 @@ class FloatSpin(wx.PyControl):
     _spinwidth = 0
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
-                 size=(95,-1), style=0, value=0.0, min_val=None, max_val=None,
+                 size=(130, -1), style=0, value=0.0, min_val=None, max_val=None,
                  increment=1.0, digits=-1, agwStyle=FS_LEFT,
                  name="FloatSpin"):
         """Default class constructor.
@@ -529,7 +529,7 @@ class FloatSpin(wx.PyControl):
 
         self.Bind(wx.EVT_SET_FOCUS, self.OnFocus)
 
-        if not "gtk3" in wx.PlatformInfo:
+        if "gtk3" not in wx.PlatformInfo:
             self.Bind(wx.EVT_SIZE, self.OnSize)
 
         if hasattr(self, "SetBestSize"):
@@ -625,7 +625,6 @@ class FloatSpin(wx.PyControl):
     def IsEnabled(self):
         return self._enabled
 
-
     def OnSpinMouseDown(self, event):
         """Handles the ``wx.EVT_LEFT_DOWN`` event for :class:`FloatSpin`.
 
@@ -636,11 +635,11 @@ class FloatSpin(wx.PyControl):
 
         modifier = FixedPoint(str(1.0), 20)
         if event.ShiftDown():
-            modifier = modifier*2.0
+            modifier = modifier * 2.0
         if event.ControlDown():
-            modifier = modifier*10.0
+            modifier = modifier * 10.0
         if event.AltDown():
-            modifier = modifier*100.0
+            modifier = modifier * 100.0
 
         self._spinmodifier = modifier
 
@@ -660,7 +659,7 @@ class FloatSpin(wx.PyControl):
             if "__WXMSW__" in wx.PlatformInfo:
                 self._textctrl.SetFocus()
                 self._textctrl.SelectAll()
-            elif not "__WXMAC__" in wx.PlatformInfo:
+            elif "__WXMAC__" not in wx.PlatformInfo:
                 self._textctrl.SetFocus()
                 self._textctrl.SetSelection(0, 0)
 
@@ -1371,7 +1370,9 @@ __version__ = 0, 0, 4
 # The default value for the number of decimal digits carried after the
 # decimal point.  This only has effect at compile-time.
 DEFAULT_PRECISION = 2
-""" The default value for the number of decimal digits carried after the decimal point.  This only has effect at compile-time. """
+# The default value for the number of decimal digits carried after the decimal point.
+# This only has effect at compile-time.
+
 
 class FixedPoint(object):
     """FixedPoint objects support decimal arithmetic with a fixed number of
@@ -1443,24 +1444,23 @@ class FixedPoint(object):
         1100000000000000000000000000000.00
         >>>
 
-
+    :param str value: The initial value.
+    :param precision: must be an int >= 0, and defaults to ``DEFAULT_PRECISION``.
     """
 
     # the exact value is self.n / 10**self.p;
     # self.n is a long; self.p is an int
 
-    def __init__(self, value=0, precision=DEFAULT_PRECISION):
-        """Default class constructor.
+    def __init__(self, value=None, precision=DEFAULT_PRECISION):
 
-        :param value: the initial value;
-        :param precision: must be an int >= 0, and defaults to ``DEFAULT_PRECISION``.
-        """
-        
+        if value is None:
+            value = 0
+
         self.n = self.p = 0
         self.set_precision(precision)
         p = self.p
 
-        if isinstance(value, type("42.3e5")):
+        if isinstance(value, str):
             n, exp = _string2exact(value)
             # exact value is n*10**exp = n*10**(exp+p)/10**p
             effective_exp = exp + p
@@ -1471,8 +1471,8 @@ class FixedPoint(object):
             self.n = n
             return
 
-        if isinstance(value, type(42)) or isinstance(value, type(42)):
-            self.n = int(value) * _tento(p)
+        if isinstance(value, int):
+            self.n = value * _tento(p)
             return
 
         if isinstance(value, FixedPoint):

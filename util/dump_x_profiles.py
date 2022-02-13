@@ -40,18 +40,16 @@ def main(display=None, display_no=0):
         print(exception)
     else:
         with open("XRROutputProperty._ICC_PROFILE.dump", "wb") as dump:
-            dump.write("".join(chr(i) for i in property))
+            dump.write("".join(chr(i) for i in property).encode())
             print("Created XRROutputProperty._ICC_PROFILE.dump")
     try:
-        atom = xrandr.get_atom("_ICC_PROFILE" + ("" if display_no == 0 else
-                                                 "_%s" % display_no),
-                               xrandr.XA_CARDINAL, x_hostname, x_display,
-                               x_screen)
+        atom = xrandr.get_atom("_ICC_PROFILE" + ("" if display_no == 0 else "_%s" % display_no),
+                               xrandr.XA_CARDINAL, x_hostname, x_display, x_screen)
     except ValueError:
         print(exception)
     else:
         with open("XAtom._ICC_PROFILE.dump", "wb") as dump:
-            dump.write("".join(chr(i) for i in atom))
+            dump.write("".join(chr(i) for i in atom).encode())
             print("Created XAtom._ICC_PROFILE.dump")
 
 

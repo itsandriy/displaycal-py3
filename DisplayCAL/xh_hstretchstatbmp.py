@@ -3,9 +3,10 @@
 import wx
 import wx.xrc as xrc
 try:
-    from wxwindows import HStretchStaticBitmap
+    from DisplayCAL.wxwindows import HStretchStaticBitmap
 except ImportError:
     HStretchStaticBitmap = wx.StaticBitmap
+
 
 class HStretchStaticBitmapXmlHandler(xrc.XmlResourceHandler):
 

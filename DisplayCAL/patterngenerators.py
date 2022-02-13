@@ -12,17 +12,17 @@ import select
 import struct
 import sys
 import threading
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.error
 import urllib.parse
 
-import localization as lang
-from network import get_network_addr
-from util_http import encode_multipart_formdata
-import webwin
+from DisplayCAL import localization as lang
+from DisplayCAL.network import get_network_addr
+from DisplayCAL.util_http import encode_multipart_formdata
+from DisplayCAL import webwin
 
 
 _lock = threading.RLock()
-
 
 
 def _eintr_retry(func, *args):
@@ -282,7 +282,7 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
 
     def bind(self, event_name, handler):
         """ Bind a handler to an event """
-        if not event_name in self._event_handlers:
+        if event_name not in self._event_handlers:
             self._event_handlers[event_name] = []
         self._event_handlers[event_name].append(handler)
 

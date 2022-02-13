@@ -1,9 +1,6 @@
 # -*- coding: UTF-8 -*-
-
-
 """
 Interactive display calibration UI
-
 """
 
 import os
@@ -14,31 +11,31 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     from platform import mac_ver
 
-from wxaddons import wx
-from lib.agw import labelbook
-from lib.agw.fmresources import *
-from lib.agw.pygauge import PyGauge
+from DisplayCAL.wxaddons import wx
+from DisplayCAL.lib.agw import labelbook
+from DisplayCAL.lib.agw.fmresources import *
+from DisplayCAL.lib.agw.pygauge import PyGauge
 
-from config import (get_data_path, get_default_dpi, get_icon_bundle, getbitmap,
-                    getcfg, geticon, setcfg)
-from config import enc
-from log import get_file_logger
-from meta import name as appname
-from options import debug
-from ordereddict import OrderedDict
-from util_list import intlist
-from util_str import wrap
-from wxwindows import (BaseApp, BaseFrame, FlatShadedButton, numpad_keycodes,
-                       nav_keycodes, processing_keycodes, wx_Panel)
-import audio
-import config
-import localization as lang
+from DisplayCAL.config import get_data_path, get_default_dpi, get_icon_bundle, getbitmap, getcfg, geticon, setcfg
+from DisplayCAL.config import enc
+from DisplayCAL.log import get_file_logger
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import debug
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.util_list import intlist
+from DisplayCAL.util_str import wrap
+from DisplayCAL.wxwindows import (BaseApp, BaseFrame, FlatShadedButton, numpad_keycodes, nav_keycodes,
+                                  processing_keycodes, wx_Panel)
+from DisplayCAL import audio
+from DisplayCAL import config
+from DisplayCAL import localization as lang
 
 BGCOLOUR = wx.Colour(0x33, 0x33, 0x33)
 BORDERCOLOUR = wx.Colour(0x22, 0x22, 0x22)
 FGCOLOUR = wx.Colour(0x99, 0x99, 0x99)
 
 CRT = True
+
 
 def get_panel(parent, size=wx.DefaultSize):
     scale = max(getcfg("app.dpi") / get_default_dpi(), 1.0)
@@ -53,7 +50,9 @@ def get_panel(parent, size=wx.DefaultSize):
         panel.SetBackgroundColour(BGCOLOUR)
     return panel
 
+
 get_panel.i = 0
+
 
 def get_xy_vt_dE(groups):
     x = float(groups[0])
@@ -1354,27 +1353,34 @@ class DisplayAdjustmentFrame(windowcls):
 if __name__ == "__main__":
     from _thread import start_new_thread
     from time import sleep
-    class Subprocess():
-        def send(self, bytes):
-            start_new_thread(test, (bytes,))
+
+    class Subprocess(object):
+        def send(self, bytes_):
+            start_new_thread(test, (bytes_,))
+
     class Worker(object):
         def __init__(self):
             self.subprocess = Subprocess()
-        def safe_send(self, bytes):
-            self.subprocess.send(bytes)
+
+        def safe_send(self, bytes_):
+            self.subprocess.send(bytes_)
             return True
+
     config.initcfg()
     lang.init()
     app = BaseApp(0)
+
     if "--crt" in sys.argv[1:]:
         setcfg("measurement_mode", "c")
     else:
         setcfg("measurement_mode", "l")
+
     app.TopWindow = DisplayAdjustmentFrame(start_timer=False)
     app.TopWindow.worker = Worker()
     app.TopWindow.Show()
     i = 0
-    def test(bytes=None):
+
+    def test(bytes_=None):
         global i
         # 0 = dispcal -v -yl
         # 1 = dispcal -v -yl -b130
@@ -1392,9 +1398,9 @@ Press 1 .. 7
 7) Continue on to calibration
 8) Exit
 """
-        if bytes == " ":
+        if bytes_ == " ":
             txt = "\n" + menu
-        elif bytes == "1":
+        elif bytes_ == "1":
             # Black level
             txt = [r"""Doing some initial measurements
 Black = XYZ   0.19   0.20   0.28
@@ -1436,7 +1442,7 @@ Adjust CRT brightness to get target level. Press space when done.
                    Adjust CRT brightness to get target level. Press space when done.
                       Target 1.28
                    / Current 1.28"""][i]
-        elif bytes == "2":
+        elif bytes_ == "2":
             # White point
             txt = [r"""Doing some initial measurements
 Red   = XYZ  81.08  39.18   2.41
@@ -1483,7 +1489,7 @@ Adjust R,G & B gain to desired white point. Press space when done.
                    Adjust R,G & B gain to get target x,y. Press space when done.
                       Target Br 130.00, x 0.3401 , y 0.3540
                    / Current Br 130.00, x 0.3401=, y 0.3540=  DE  0.0  R=  G= B="""][i]
-        elif bytes == "3":
+        elif bytes_ == "3":
             # White level
             txt = [r"""Doing some initial measurements
 White = XYZ 126.56 128.83 112.65
@@ -1515,7 +1521,7 @@ Adjust CRT Contrast or LCD Brightness to desired level. Press space when done.
                    Adjust CRT Contrast or LCD Brightness to get target level. Press space when done.
                       Target 130.00
                    / Current 130.00"""][i]
-        elif bytes == "4":
+        elif bytes_ == "4":
             # Black point
             txt = [r"""Doing some initial measurements
 Black = XYZ   0.19   0.21   0.29
@@ -1557,7 +1563,7 @@ Adjust R,G & B offsets to get target x,y. Press space when done.
                    Adjust R,G & B offsets to get target x,y. Press space when done.
                       Target Br 1.28, x 0.3401 , y 0.3540
                    / Current Br 1.28, x 0.3401=, y 0.3540=  DE  0.0  R=  G= B="""][i]
-        elif bytes == "5":
+        elif bytes_ == "5":
             # Check all
             txt = [r"""Doing check measurements
 Black = XYZ   0.19   0.20   0.29
@@ -1624,8 +1630,8 @@ Press 1 .. 7""",
                      Target black = x 0.3401, y 0.3540, Current = x 0.3401, y 0.3540, error =  0.00 DE
                    
                    Press 1 .. 7"""][i]
-        elif bytes == "7" or not bytes:
-            if bytes == "7":
+        elif bytes_ == "7" or not bytes_:
+            if bytes_ == "7":
                 if i < 4:
                     i += 1
                 else:
@@ -1673,7 +1679,7 @@ Target advertised gamma = 2.400000""",
                    Target advertised gamma = 2.400000"""][i] + r"""
 
 Display adjustment menu:""" + menu
-        elif bytes == "8":
+        elif bytes_ == "8":
             wx.CallAfter(app.TopWindow.Close)
             return
         else:

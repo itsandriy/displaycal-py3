@@ -33,7 +33,7 @@ if sys.platform == "win32":
         pass
 
 try:
-    import colord
+    from DisplayCAL import colord
 except ImportError:
     class Colord:
         Colord = None
@@ -42,35 +42,34 @@ except ImportError:
         def which(self, executable, paths=None):
             return None
     colord = Colord()
-import colormath
-import edid
-import imfile
-from colormath import NumberTuple
-from defaultpaths import iccprofiles, iccprofiles_home
-from encoding import get_encodings
-from options import test_input_curve_clipping
-from ordereddict import OrderedDict
-from util_decimal import float2dec
-from util_list import intlist
-from util_str import hexunescape
+from DisplayCAL import colormath
+from DisplayCAL import edid
+from DisplayCAL import imfile
+from DisplayCAL.colormath import NumberTuple
+from DisplayCAL.defaultpaths import iccprofiles, iccprofiles_home
+from DisplayCAL.encoding import get_encodings
+from DisplayCAL.options import test_input_curve_clipping
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.util_decimal import float2dec
+from DisplayCAL.util_list import intlist
+from DisplayCAL.util_str import hexunescape
 
 if sys.platform not in ("darwin", "win32"):
-    from defaultpaths import xdg_config_dirs, xdg_config_home
-    from edid import get_edid
-    from util_x import get_display
+    from DisplayCAL.defaultpaths import xdg_config_dirs, xdg_config_home
+    from DisplayCAL.edid import get_edid
+    from DisplayCAL.util_x import get_display
     try:
-        import xrandr
+        from DisplayCAL import xrandr
     except ImportError:
         xrandr = None
-    from util_os import dlopen, which
+    from DisplayCAL.util_os import dlopen, which
 elif sys.platform == "win32":
-    import util_win
+    from DisplayCAL import util_win
     if sys.getwindowsversion() < (6, ):
         # WCS only available under Vista and later
         mscms = None
     else:
-        from win_handles import (get_process_handles, get_handle_name,
-                                 get_handle_type)
+        from DisplayCAL.win_handles import get_process_handles, get_handle_name, get_handle_type
 
         mscms = util_win._get_mscms_windll()
 
@@ -79,7 +78,7 @@ elif sys.platform == "win32":
                       win_ver[2] >= "Version 1903")
 
 elif sys.platform == "darwin":
-    from util_mac import osascript
+    from DisplayCAL.util_mac import osascript
 
 
 # Gamut volumes in cubic colorspace units (L*a*b*) as reported by Argyll's
@@ -1203,7 +1202,7 @@ def create_synthetic_hdr_clut_profile(hdr_format, rgb_space, description,
                     prevperc = perc
 
     if hdr_format == "PQ" and tonemap:
-        from multiprocess import cpu_count, pool_slice
+        from DisplayCAL.multiprocess import cpu_count, pool_slice
 
         num_cpus = cpu_count()
         num_workers = num_cpus
@@ -1840,7 +1839,7 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
     else:
         # Fall back to XrandR name
         try:
-            import RealDisplaySizeMM as RDSMM
+            from DisplayCAL import RealDisplaySizeMM as RDSMM
         except ImportError as exception:
             warnings.warn(str(exception, enc), Warning)
             return
@@ -1970,7 +1969,7 @@ def _win10_1903_close_leaked_regkey_handles(devicekey):
                 print("Couldn't get name of handle 0x%x:" %
                            handle.HandleValue, exception)
                 handle_name = None
-            if debug and not handle.HandleValue in prev_handles:
+            if debug and handle.HandleValue not in prev_handles:
                 try:
                     handle_type = get_handle_type(handle)
                 except WindowsError as exception:
@@ -2059,7 +2058,7 @@ def get_display_profile(display_no=0, x_hostname=None, x_display=None,
     """ Return ICC Profile for display n or None """
     profile = None
     if sys.platform == "win32":
-        if not "win32api" in sys.modules:
+        if "win32api" not in sys.modules:
             raise ImportError("pywin32 not available")
         if not devicekey:
             # The ordering will work as long as Argyll continues using
@@ -2135,7 +2134,7 @@ def get_display_profile(display_no=0, x_hostname=None, x_display=None,
         else:
             options = ["_ICC_PROFILE"]
             try:
-                import RealDisplaySizeMM as RDSMM
+                from DisplayCAL import RealDisplaySizeMM as RDSMM
             except ImportError as exception:
                 warnings.warn(str(exception, enc), Warning)
                 display = get_display()
@@ -2185,7 +2184,7 @@ def get_display_profile(display_no=0, x_hostname=None, x_display=None,
                     return profile
                 # Try XrandR
                 if (xrandr and RDSMM and option == "_ICC_PROFILE" and
-                        not None in (x_hostname, x_display, x_screen)):
+                        None not in (x_hostname, x_display, x_screen)):
                     with xrandr.XDisplay(x_display_name) as display:
                         if debug:
                             print("Using XrandR")
@@ -2278,7 +2277,7 @@ def _wcs_set_display_profile(devicekey, profile_name,
     monkey = devicekey.split("\\")[-2:]
     current_user = scope == WCS_PROFILE_MANAGEMENT_SCOPE["CURRENT_USER"]
     profiles = _winreg_get_display_profiles(monkey, current_user)
-    if not profile_name in profiles:
+    if profile_name not in profiles:
         return False
     return True
 
@@ -2316,7 +2315,7 @@ def _wcs_unset_display_profile(devicekey, profile_name,
                 profile_name in profiles):
             # Check if profile is still associated
             profiles = _winreg_get_display_profiles(monkey, current_user)
-            if not profile_name in profiles:
+            if profile_name not in profiles:
                 # Successfully disassociated
                 return True
         raise util_win.get_windows_error(errcode)
@@ -2386,7 +2385,7 @@ def _mp_apply(blocks, thread_abort_event, progress_queue, pcs, fn, args, D50,
     This should be spawned as a multiprocessing process
 
     """
-    from debughelpers import Info
+    from DisplayCAL.debughelpers import Info
     for interp_tuple in (interp, rinterp):
         if interp_tuple:
             # Use numpy for speed
@@ -2976,7 +2975,7 @@ class LUT16Type(ICCProfileTag):
         if [round(v * 32768) for v in bp] != [round(v * 32768) for v in bp_out]:
             D50 = colormath.get_whitepoint("D50")
 
-            from multiprocess import pool_slice
+            from DisplayCAL.multiprocess import pool_slice
 
             if len(self.clut[0]) < 33:
                 num_workers = 1
@@ -3129,7 +3128,7 @@ BEGIN_DATA
                 xp = list(lut.keys())
                 fp = list(lut.values())
                 for i in range(len(entries)):
-                    if not i in lut:
+                    if i not in lut:
                         lut[i] = colormath.interp(i, xp, fp)
                 lut.sort()
                 channel[e] = list(lut.values())
@@ -4704,7 +4703,7 @@ class TextDescriptionType(ICCProfileTag, ADict): # ICC v2
         return str(self).encode(sys.getdefaultencoding())
 
     def __unicode__(self):
-        if not "Unicode" in self and len(str(self.ASCII)) < 67:
+        if "Unicode" not in self and len(str(self.ASCII)) < 67:
             # Do not use Macintosh description if ASCII length >= 67
             localizedTypes = ("Macintosh", "ASCII")
         else:
@@ -5642,9 +5641,9 @@ class ICCProfile(object):
                 if not profile:
                     raise ICCProfileInvalidError("Empty path given")
                 if (not os.path.isfile(profile) and
-                        not os.path.sep in profile and
+                        os.path.sep not in profile and
                         (not isinstance(os.path.altsep, str) or
-                         not os.path.altsep in profile)):
+                         os.path.altsep not in profile)):
                     for path in iccprofiles_home + [x for x in iccprofiles if x not in iccprofiles_home]:
                         if os.path.isdir(path):
                             for path, dirs, files in os.walk(path):
@@ -5659,8 +5658,7 @@ class ICCProfile(object):
                     # NOTE under Python 2.x Windows, st_ino is always zero!
                     # Use file path as well to work around.
                     # This has been addressed with Python 3
-                    key = (profile, stat.st_dev, stat.st_ino, stat.st_mtime,
-                           stat.st_size)
+                    key = (profile, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size)
                 else:
                     key = ()
             else:
@@ -5919,7 +5917,7 @@ class ICCProfile(object):
         # Keep tag table order
         for tagSignature in self.tags:
             tagTable[tagSignature] = tagSignature
-            if not tagSignature in tags:
+            if tagSignature not in tags:
                 tags.append(tagSignature)
         for tagSignature in tags:
             tag = AODict.__getitem__(self.tags, tagSignature)
@@ -6164,7 +6162,7 @@ class ICCProfile(object):
         wtpt = list(self.tags.wtpt.ir.values())
         # Set whitepoint tag to D50
         self.tags.wtpt = self.tags.wtpt.pcs
-        if not "chad" in self.tags:
+        if "chad" not in self.tags:
             # Set chromatic adaptation matrix
             self.tags["chad"] = chromaticAdaptionTag()
             wpam = colormath.wp_adaption_matrix(wtpt,
@@ -6239,7 +6237,7 @@ class ICCProfile(object):
         spec_prefixes = "DATA_,OPENICC_"
         prefixes = (profile.tags.meta.getvalue("prefix", "", None) or spec_prefixes).split(",")
         for prefix in spec_prefixes.split(","):
-            if not prefix in prefixes:
+            if prefix not in prefixes:
                 prefixes.append(prefix)
         profile.tags.meta["prefix"] = ",".join(prefixes)
         profile.tags.meta["OPENICC_automatic_generated"] = "1"
@@ -6360,7 +6358,7 @@ class ICCProfile(object):
         return not False in [channel + "TRC" in self.tags for channel in "rgb"]
 
     def set_blackpoint(self, XYZbp):
-        if not "chad" in self.tags:
+        if "chad" not in self.tags:
             cat = self.guess_cat() or "Bradford"
             XYZbp = colormath.adapt(*XYZbp,
                                     whitepoint_destination=list(self.tags.wtpt.ir.values()),
@@ -6794,7 +6792,7 @@ class ICCProfile(object):
             elif isinstance(tag, CurveType):
                 if len(tag) == 1:
                     value = ("%3.2f" % tag[0]).rstrip("0").rstrip(".")
-                    if not "." in value:
+                    if "." not in value:
                         value += ".0"
                     info[name] = "Gamma %s" % value
                 elif len(tag):
@@ -6836,7 +6834,7 @@ class ICCProfile(object):
                                     if country.strip("\0 "):
                                         country = "/" + country
                                     loc = "%s%s" % (language, country)
-                                    if not loc in elements:
+                                    if loc not in elements:
                                         elements[loc] = OrderedDict()
                                     elements[loc][subkey] = value
                     for loc, items in elements.items():
@@ -7061,7 +7059,7 @@ class ICCProfile(object):
 
     def get_rgb_space(self, relation="ir", gamma=None):
         tags = self.tags
-        if not "wtpt" in tags:
+        if "wtpt" not in tags:
             return False
         rgb_space = [gamma or [], list(getattr(tags.wtpt, relation).values())]
         for component in ("r", "g", "b"):
@@ -7082,7 +7080,7 @@ class ICCProfile(object):
     def get_chardata_bkpt(self, illuminant_relative=False):
         """ Get blackpoint from embedd characterization data ('targ' tag) """
         if isinstance(self.tags.get("targ"), Text):
-            import CGATS
+            from DisplayCAL import CGATS
             ti3 = CGATS.CGATS(self.tags.targ)
             if 0 in ti3:
                 black = ti3[0].queryi({"RGB_R": 0, "RGB_G": 0, "RGB_B": 0})
@@ -7158,12 +7156,12 @@ class ICCProfile(object):
         http://gitorious.org/colord/master/blobs/master/doc/metadata-spec.txt
 
         """
-        if not "meta" in self.tags:
+        if "meta" not in self.tags:
             self.tags.meta = DictType()
         spec_prefixes = "EDID_"
         prefixes = (self.tags.meta.getvalue("prefix", "", None) or spec_prefixes).split(",")
         for prefix in spec_prefixes.split(","):
-            if not prefix in prefixes:
+            if prefix not in prefixes:
                 prefixes.append(prefix)
         # OpenICC keys (some shared with GCM)
         self.tags.meta.update((("prefix", ",".join(prefixes)),
@@ -7200,12 +7198,12 @@ class ICCProfile(object):
     def set_gamut_metadata(self, gamut_volume=None, gamut_coverage=None):
         """ Sets gamut volume and coverage metadata keys """
         if gamut_volume or gamut_coverage:
-            if not "meta" in self.tags:
+            if "meta" not in self.tags:
                 self.tags.meta = DictType()
             # Update meta prefix
             prefixes = (self.tags.meta.getvalue("prefix", "", None) or
                         "GAMUT_").split(",")
-            if not "GAMUT_" in prefixes:
+            if "GAMUT_" not in prefixes:
                 prefixes.append("GAMUT_")
                 self.tags.meta["prefix"] = ",".join(prefixes)
             if gamut_volume:

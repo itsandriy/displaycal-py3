@@ -36,7 +36,7 @@ If you need support for Python 2 or Python 3.3 please use version 0.19.1
 from pychromecast import get_chromecasts
 from pychromecast.controllers import BaseController
 
-import localization as lang
+from DisplayCAL import localization as lang
 
 
 class ChromeCastPatternGeneratorController(BaseController):
@@ -121,7 +121,7 @@ class ChromeCastPatternGenerator(object):
 
 
 if __name__ == "__main__":
-    import config
+    from DisplayCAL import config
 
     config.initcfg()
     lang.init()

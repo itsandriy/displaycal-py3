@@ -3,19 +3,19 @@
 import os
 import sys
 
-from meta import name as appname
-from util_os import launch_file, make_win32_compatible_long_path, waccess
-import config
-import localization as lang
-import x3dom
+from DisplayCAL.meta import name as appname
+from DisplayCAL.util_os import launch_file, make_win32_compatible_long_path, waccess
+from DisplayCAL import config
+from DisplayCAL import localization as lang
+from DisplayCAL import x3dom
 
 gui = "wx" in sys.modules
 
 if gui:
-    from worker import Worker, show_result_dialog
-    from wxaddons import wx
-    from wxfixes import GenBitmapButton as BitmapButton
-    from wxwindows import BaseApp, BaseFrame, FileDrop
+    from DisplayCAL.worker import Worker, show_result_dialog
+    from DisplayCAL.wxaddons import wx
+    from DisplayCAL.wxfixes import GenBitmapButton as BitmapButton
+    from DisplayCAL.wxwindows import BaseApp, BaseFrame, FileDrop
 
 
     class VRML2X3DFrame(BaseFrame):
@@ -23,12 +23,9 @@ if gui:
         def __init__(self, html, embed, view, force, cache):
             BaseFrame.__init__(self, None, wx.ID_ANY,
                                lang.getstr("vrml_to_x3d_converter"),
-                               style=wx.DEFAULT_FRAME_STYLE & ~(wx.MAXIMIZE_BOX |
-                                                                wx.RESIZE_BORDER),
+                               style=wx.DEFAULT_FRAME_STYLE & ~(wx.MAXIMIZE_BOX | wx.RESIZE_BORDER),
                                name="vrml2x3dframe")
-            self.SetIcons(config.get_icon_bundle([256, 48, 32, 16],
-                                                 appname +
-                                                 "-VRML-to-X3D-converter"))
+            self.SetIcons(config.get_icon_bundle([256, 48, 32, 16], "%s-VRML-to-X3D-converter" % appname))
             self.Bind(wx.EVT_CLOSE, self.OnClose)
             self.cache = cache
             self.embed = embed

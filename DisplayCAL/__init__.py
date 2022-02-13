@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 try:
-    import __version__
+    from DisplayCAL import __version__
 except ImportError:
     __version__ = "0.0.0.0"
 else:

@@ -3,10 +3,12 @@
 import errno
 import os
 import socket
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 
-import localization as lang
-from util_str import safe_str
+from DisplayCAL import localization as lang
+from DisplayCAL.util_str import safe_str
 
 
 def get_network_addr():
@@ -38,7 +40,7 @@ def get_valid_host(hostname=None):
     hostnames = [hostname]
     if hostname.endswith(".local"):
         hostnames.insert(0, os.path.splitext(hostname)[0])
-    elif not "." in hostname:
+    elif "." not in hostname:
         hostnames.insert(0, hostname + ".local")
     while hostnames:
         hostname = hostnames.pop()

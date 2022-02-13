@@ -4,31 +4,30 @@ import math
 import os
 import sys
 
-from ICCProfile import ICCProfile
-from argyll_cgats import extract_device_gray_primaries
-from config import (enc, get_data_path, get_verified_path, getcfg, hascfg,
-                    profile_ext, setcfg)
-from debughelpers import Error
-from log import log
-from meta import name as appname
-from options import debug
-from ordereddict import OrderedDict
-from util_io import Files
-from util_os import waccess
-from util_str import safe_str
-from worker import Error, FilteredStream, LineBufferedStream, show_result_dialog
-import CGATS
-import ICCProfile as ICCP
-import colormath
-import config
-import localization as lang
-import worker
-from wxwindows import BaseApp, BaseFrame, ConfirmDialog, FileDrop, InfoDialog, wx
-from wxfixes import TempXmlResource
-from wxLUT3DFrame import LUT3DFrame
-import floatspin
-import xh_floatspin
-import xh_bitmapctrls
+from DisplayCAL.ICCProfile import ICCProfile
+from DisplayCAL.argyll_cgats import extract_device_gray_primaries
+from DisplayCAL.config import enc, get_data_path, get_verified_path, getcfg, hascfg, profile_ext, setcfg
+from DisplayCAL.debughelpers import Error
+from DisplayCAL.log import log
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import debug
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.util_io import Files
+from DisplayCAL.util_os import waccess
+from DisplayCAL.util_str import safe_str
+from DisplayCAL.worker import Error, FilteredStream, LineBufferedStream, show_result_dialog
+from DisplayCAL import CGATS
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import colormath
+from DisplayCAL import config
+from DisplayCAL import localization as lang
+from DisplayCAL import worker
+from DisplayCAL.wxwindows import BaseApp, BaseFrame, ConfirmDialog, FileDrop, InfoDialog, wx
+from DisplayCAL.wxfixes import TempXmlResource
+from DisplayCAL.wxLUT3DFrame import LUT3DFrame
+from DisplayCAL import floatspin
+from DisplayCAL import xh_floatspin
+from DisplayCAL import xh_bitmapctrls
 
 from wx import xrc
 

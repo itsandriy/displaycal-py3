@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 def is_nan(obj):
     """Return boolean indicating if obj is considered not a number.
     """
@@ -86,7 +85,7 @@ class OrderedDict(dict):
         return reversed(self._keys)
 
     def __setitem__(self, key, value):
-        if not key in self:
+        if key not in self:
             self._keys.append(key)
         dict.__setitem__(self, key, value)
 
@@ -152,7 +151,7 @@ class OrderedDict(dict):
                 iterable = self._keys[start:]
         else:
             iterable = self._keys
-        if not key in iterable:
+        if key not in iterable:
             raise KeyError(key)
         return iterable.index(key)
 
@@ -224,7 +223,7 @@ class OrderedDict(dict):
         self._keys.reverse()
 
     def setdefault(self, key, value=None):
-        if not key in self:
+        if key not in self:
             self[key] = value
         return self[key]
 

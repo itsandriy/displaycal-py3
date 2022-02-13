@@ -4,7 +4,7 @@ import locale
 import os
 import sys
 
-from encoding import get_encoding, get_encodings
+from DisplayCAL.encoding import get_encoding, get_encodings
 
 original_codepage = None
 
@@ -12,6 +12,7 @@ enc, fs_enc = get_encodings()
 
 
 _conwidth = None
+
 
 def _get_console_width():
     global _conwidth

@@ -3,7 +3,7 @@
 
 import re
 
-from util_str import strtr
+from DisplayCAL.util_str import strtr
 
 instruments = {
     # instrument names from Argyll source spectro/insttypes.c
@@ -583,13 +583,13 @@ vendors = [
     "Xrite"
 ]
 
-def get_canonical_instrument_name(instrument_name, replacements=None,
-                                  inverse=False):
+
+def get_canonical_instrument_name(instrument_name, replacements=None, inverse=False):
     replacements = replacements or {}
     if inverse:
-        replacements = dict(zip(iter(replacements.values()),
-                                 iter(replacements.keys())))
+        replacements = dict(zip(iter(replacements.values()), iter(replacements.keys())))
     return strtr(remove_vendor_names(instrument_name), replacements)
+
 
 def remove_vendor_names(txt):
     for vendor in vendors:

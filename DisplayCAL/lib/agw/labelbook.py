@@ -134,8 +134,8 @@ __docformat__ = "epytext"
 
 import wx
 
-from .artmanager import ArtManager, DCSaver
-from .fmresources import *
+from DisplayCAL.lib.agw.artmanager import ArtManager, DCSaver
+from DisplayCAL.lib.agw.fmresources import *
 
 # Check for the new method in 2.7 (not present in 2.6.3.3)
 if wx.VERSION_STRING < "2.7":

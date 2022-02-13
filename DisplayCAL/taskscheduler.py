@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Task Scheduler interface. Currently only implemented for Windows (Vista and up).
 The implementation is currently minimal and incomplete when it comes to
@@ -37,8 +36,6 @@ Create a new task to be run under the current user account at logon:
 
 """
 
-
-
 import codecs
 import os
 import subprocess as sp
@@ -48,12 +45,12 @@ import tempfile
 import pywintypes
 import winerror
 
-from meta import name as appname
-from ordereddict import OrderedDict
-from safe_print import enc
-from util_os import getenvu
-from util_str import indent, universal_newlines
-from util_win import run_as_admin
+from DisplayCAL.meta import name as appname
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.safe_print import enc
+from DisplayCAL.util_os import getenvu
+from DisplayCAL.util_str import indent, universal_newlines
+from DisplayCAL.util_win import run_as_admin
 
 
 RUNLEVEL_HIGHESTAVAILABLE = "HighestAvailable"
@@ -69,9 +66,9 @@ class _Dict2XML(OrderedDict):
 
     def __init__(self, *args, **kwargs):
         OrderedDict.__init__(self, *args, **kwargs)
-        if not "cls_name" in self:
+        if "cls_name" not in self:
             self["cls_name"] = self.__class__.__name__
-        if not "cls_attr" in self:
+        if "cls_attr" not in self:
             self["cls_attr"] = ""
 
     def __unicode__(self):
@@ -231,10 +228,8 @@ class TaskScheduler(object):
     def _ts(self):
         if not self.__ts:
             import pythoncom
-            from win32com.taskscheduler.taskscheduler import (CLSID_CTaskScheduler,
-                                                              IID_ITaskScheduler)
-            self.__ts = pythoncom.CoCreateInstance(CLSID_CTaskScheduler, None,
-                                                   pythoncom.CLSCTX_INPROC_SERVER,
+            from win32com.taskscheduler.taskscheduler import CLSID_CTaskScheduler, IID_ITaskScheduler
+            self.__ts = pythoncom.CoCreateInstance(CLSID_CTaskScheduler, None, pythoncom.CLSCTX_INPROC_SERVER,
                                                    IID_ITaskScheduler)
         return self.__ts
 

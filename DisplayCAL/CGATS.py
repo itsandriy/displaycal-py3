@@ -12,9 +12,9 @@ import re
 import os
 import sys
 
-import colormath
-from options import debug, verbose
-from util_io import GzipFileProper, StringIOu as StringIO
+from DisplayCAL import colormath
+from DisplayCAL.options import debug, verbose
+from DisplayCAL.util_io import GzipFileProper, StringIOu as StringIO
 
 
 def get_device_value_labels(color_rep=None):
@@ -214,8 +214,15 @@ class CGATS(dict):
 
     datetime = None
     filename = None
-    fileName = property(lambda self: self.filename,
-                        lambda self, filename: setattr(self, "filename", filename))
+
+    @property
+    def fileName(self):
+        return self.filename
+
+    @fileName.setter
+    def fileName(self, filename):
+        self.filename = filename
+
     key = None
     _lvl = 0
     _modified = False
@@ -238,6 +245,7 @@ class CGATS(dict):
         file_identifier is used as fallback if no file identifier is present
 
         """
+        super(CGATS, self).__init__()
 
         self.normalize_fields = normalize_fields
         self.file_identifier = file_identifier.strip()
@@ -356,7 +364,7 @@ class CGATS(dict):
                     if values[0] == 'Date:':
                         context.datetime = line
                     else:
-                        if len(values) == 2 and not '"' in values[0]:
+                        if len(values) == 2 and '"' not in values[0]:
                             key, value = values
                             if value != None:
                                 context = context.add_data({key: value.strip('"')})
@@ -458,7 +466,7 @@ class CGATS(dict):
                     else:
                         display = self.queryv1("DISPLAY")
                     if localized:
-                        import localization as lang
+                        from DisplayCAL import localization as lang
                         tech = str(tech)
                         tech = lang.getstr("display.tech." + tech, default=tech)
                         if display:
@@ -491,7 +499,7 @@ class CGATS(dict):
 
     def __setitem__(self, name, value):
         if (self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and
-            not name in self):
+            name not in self):
             self._keys.append(name)
         dict.__setitem__(self, name, value)
         self.setmodified()
@@ -588,13 +596,13 @@ class CGATS(dict):
             context = self.parent.parent
         else:
             context = self
-        if not 'KEYWORDS' in context:
+        if 'KEYWORDS' not in context:
             context['KEYWORDS'] = CGATS()
             context['KEYWORDS'].key = 'KEYWORDS'
             context['KEYWORDS'].parent = context
             context['KEYWORDS'].root = self.root
             context['KEYWORDS'].type = 'KEYWORDS'
-        if not keyword in list(context['KEYWORDS'].values()):
+        if keyword not in list(context['KEYWORDS'].values()):
             newkey = len(context['KEYWORDS'])
             while newkey in context['KEYWORDS']:
                 newkey += 1
@@ -1076,7 +1084,7 @@ class CGATS(dict):
                               "LCH(uv)", "Lab", "Luv", "Lu'v'", "RGB", "xyY",
                               "HSI", "HSL", "HSV", "ICtCp", "IPT", "Lpt"):
             raise ValueError("export_3d: Unknown colorspace %r" % colorspace)
-        import x3dom
+        from DisplayCAL import x3dom
         data = self.queryv1("DATA")
         if self.queryv1("ACCURATE_EXPECTED_VALUES") == "true":
             cat = "Bradford"
@@ -1717,7 +1725,7 @@ Transform {
         # Add entries to DATA_FORMAT
         Lab_data_format = ("LAB_L", "LAB_A", "LAB_B")
         for label in Lab_data_format:
-            if not label in list(data.parent.DATA_FORMAT.values()):
+            if label not in list(data.parent.DATA_FORMAT.values()):
                 data.parent.DATA_FORMAT.add_data((label, ))
 
         # Add L*a*b* to each sample

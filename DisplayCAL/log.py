@@ -12,12 +12,12 @@ import sys
 import warnings
 from time import localtime, strftime, time
 
-from meta import name as appname, script2pywname
-from multiprocess import mp
-from options import debug
-from util_io import StringIOu as StringIO
-from util_os import safe_glob
-from util_str import safe_str
+from DisplayCAL.meta import name as appname, script2pywname
+from DisplayCAL.multiprocess import mp
+from DisplayCAL.options import debug
+from DisplayCAL.util_io import StringIOu as StringIO
+from DisplayCAL.util_os import safe_glob
+from DisplayCAL.util_str import safe_str
 
 logging.raiseExceptions = 0
 logging._warnings_showwarning = warnings.showwarning
@@ -116,8 +116,8 @@ class Log(object):
         # imported at the point our showwarning() function calls log().
         # Check for presence of our wxfixes module and if it has an attribute
         # "wx", in which case wxPython has finished importing.
-        # wxfixes = sys.modules.get("%s.wxfixes" % appname)
-        wxfixes = sys.modules.get("wxfixes" )
+        wxfixes = sys.modules.get("%s.wxfixes" % appname)
+        # wxfixes = sys.modules.get("wxfixes")
         if (wxfixes and hasattr(wxfixes, "wx") and
                 mp.current_process().name == "MainProcess"):
             wx = wxfixes.wx

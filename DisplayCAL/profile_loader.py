@@ -10,10 +10,10 @@ import sys
 import threading
 import time
 
-from meta import VERSION, VERSION_BASE, name as appname, version, version_short
-import config
-from config import appbasename, confighome, getcfg, setcfg
-from options import debug, test, verbose
+from DisplayCAL.meta import VERSION, VERSION_BASE, name as appname, version, version_short
+from DisplayCAL import config
+from DisplayCAL.config import appbasename, confighome, getcfg, setcfg
+from DisplayCAL.options import debug, test, verbose
 
 if sys.platform == "win32":
     import errno
@@ -34,21 +34,21 @@ if sys.platform == "win32":
     import win32process
     import win32ts
 
-    from colord import device_id_from_edid
-    from colormath import smooth_avg
-    from config import (autostart, autostart_home, exe, exedir, get_data_path,
+    from DisplayCAL.colord import device_id_from_edid
+    from DisplayCAL.colormath import smooth_avg
+    from DisplayCAL.config import (autostart, autostart_home, exe, exedir, get_data_path,
                         get_default_dpi, get_icon_bundle, geticon, iccprofiles,
                         pydir, enc)
-    from debughelpers import Error, UnloggedError, handle_error
-    from edid import get_edid
-    from meta import domain
-    from ordereddict import OrderedDict
-    from systrayicon import Menu, MenuItem, SysTrayIcon
-    from util_list import natsort_key_factory
-    from util_os import (getenvu, is_superuser, islink, quote_args, readlink,
+    from DisplayCAL.debughelpers import Error, UnloggedError, handle_error
+    from DisplayCAL.edid import get_edid
+    from DisplayCAL.meta import domain
+    from DisplayCAL.ordereddict import OrderedDict
+    from DisplayCAL.systrayicon import Menu, MenuItem, SysTrayIcon
+    from DisplayCAL.util_list import natsort_key_factory
+    from DisplayCAL.util_os import (getenvu, is_superuser, islink, quote_args, readlink,
                          safe_glob, which)
-    from util_str import safe_asciize
-    from util_win import (DISPLAY_DEVICE_ACTIVE, MONITORINFOF_PRIMARY,
+    from DisplayCAL.util_str import safe_asciize
+    from DisplayCAL.util_win import (DISPLAY_DEVICE_ACTIVE, MONITORINFOF_PRIMARY,
                           USE_REGISTRY,
                           calibration_management_isenabled,
                           enable_per_user_profiles, get_active_display_device,
@@ -57,14 +57,14 @@ if sys.platform == "win32":
                           get_process_filename, get_real_display_devices_info,
                           get_windows_error, per_user_profiles_isenabled,
                           run_as_admin, win_ver)
-    from wxaddons import CustomGridCellEvent
-    from wxfixes import ThemedGenButton, set_bitmap_labels
-    from wxwindows import (BaseApp, BaseFrame, ConfirmDialog,
+    from DisplayCAL.wxaddons import CustomGridCellEvent
+    from DisplayCAL.wxfixes import ThemedGenButton, set_bitmap_labels
+    from DisplayCAL.wxwindows import (BaseApp, BaseFrame, ConfirmDialog,
                            CustomCellBoolRenderer, CustomGrid, InfoDialog,
                            TaskBarNotification, wx, show_result_dialog,
                            get_dialogs)
-    import ICCProfile as ICCP
-    import madvr
+    from DisplayCAL import ICCProfile as ICCP
+    from DisplayCAL import madvr
 
     if islink(exe):
         try:
@@ -826,7 +826,7 @@ if sys.platform == "win32":
                 id = profile.calculateID(False)
             else:
                 id = profile.ID
-            if not id in self.profile_info:
+            if id not in self.profile_info:
                 # Create profile info window and store in hash table
                 from wxProfileInfo import ProfileInfoFrame
                 self.profile_info[id] = ProfileInfoFrame(None, -1)
@@ -1097,7 +1097,7 @@ class ProfileLoader(object):
         self._fixed_profile_associations = set()
         self.__other_component = None, None, 0
         self.__apply_profiles = None
-        if (sys.platform == "win32" and not "--force" in sys.argv[1:] and
+        if (sys.platform == "win32" and "--force" not in sys.argv[1:] and
                 sys.getwindowsversion() >= (6, 1)):
             if calibration_management_isenabled():
                 # Incase calibration loading is handled by Windows 7 and
@@ -1774,8 +1774,8 @@ class ProfileLoader(object):
                         errortxt = ""
                     else:
                         errortxt = "\n".join(worker.errors).strip()
-                    if errortxt and ((not "using linear" in errortxt and
-                                      not "assuming linear" in errortxt) or
+                    if errortxt and (("using linear" not in errortxt and
+                                      "assuming linear" not in errortxt) or
                                      len(errortxt.split("\n")) > 1):
                         if "Failed to get the displays current ICC profile" in errortxt:
                             # Maybe just not configured
@@ -1835,7 +1835,7 @@ class ProfileLoader(object):
         errors = self.apply_profiles(event, index)
         if (errors and (config.getcfg("profile_loader.error.show_msg") or
                         "--error-dialog" in sys.argv[1:]) and
-                not "--silent" in sys.argv[1:]):
+                "--silent" not in sys.argv[1:]):
             from wxwindows import InfoDialog, wx
             dlg = InfoDialog(None, msg="\n".join(errors),
                              title=self.get_title(),
@@ -1961,23 +1961,23 @@ class ProfileLoader(object):
     def _can_fix_profile_associations(self):
         """Check whether we can 'fix' profile associations or not.
 
-		'Fixing' means we assign the profile of the actual active child device
-		to the 1st child device so that applications using GetICMProfile get
-		the correct profile (GetICMProfile always returns the profile of the
-		1st child device irrespective if this device is active or not. This is
-		a Windows bug).
+        'Fixing' means we assign the profile of the actual active child device
+        to the 1st child device so that applications using GetICMProfile get
+        the correct profile (GetICMProfile always returns the profile of the
+        1st child device irrespective if this device is active or not. This is
+        a Windows bug).
 
-		This only works if a child device is not attached to several adapters
-		(which is something that can happen due to the inexplicable mess that
-		is the Windows display enumeration API).
+        This only works if a child device is not attached to several adapters
+        (which is something that can happen due to the inexplicable mess that
+        is the Windows display enumeration API).
 
-		"""
+        """
         if not self.child_devices_count:
             for i, (display, edid,
                     moninfo, device) in enumerate(self.monitors):
                 child_devices = get_display_devices(moninfo["Device"])
                 for child_device in child_devices:
-                    if not child_device.DeviceKey in self.child_devices_count:
+                    if child_device.DeviceKey not in self.child_devices_count:
                         self.child_devices_count[child_device.DeviceKey] = 0
                     self.child_devices_count[child_device.DeviceKey] += 1
         return (bool(self.child_devices_count) and
@@ -2277,7 +2277,7 @@ class ProfileLoader(object):
                                 self.profiles[key] = ICCP.ICCProfile(profile_name)
                                 if (isinstance(self.profiles[key].tags.get("MS00"),
                                                ICCP.WcsProfilesTagType) and
-                                        not "vcgt" in self.profiles[key].tags):
+                                        "vcgt" not in self.profiles[key].tags):
                                     self.profiles[key].tags["vcgt"] = self.profiles[key].tags["MS00"].get_vcgt()
                                 self.profiles[key].tags.get("vcgt")
                             except Exception as exception:
@@ -2732,7 +2732,7 @@ class ProfileLoader(object):
                     print("Monitor %i 1st display description:" % i, display0)
             if (device0 and
                     (not device or device0.DeviceKey != device.DeviceKey) and
-                    not device0.DeviceKey in self.display_devices):
+                    device0.DeviceKey not in self.display_devices):
                 # Key may not exist if device was added after enumerating
                 # per-adapters devices
                 self.display_devices[device0.DeviceKey] = [display0, edid0,
@@ -2965,7 +2965,7 @@ class ProfileLoader(object):
             print("Releasing lock")
 
     def _check_madvr_reset_cal(self, madvr_instance):
-        if not madvr_instance in self._madvr_instances:
+        if madvr_instance not in self._madvr_instances:
             return
         # Check if madVR did reset the video card gamma tables.
         # If it didn't, assume we can keep preserving calibration state

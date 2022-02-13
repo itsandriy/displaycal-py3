@@ -3,6 +3,7 @@
 import sys
 import os
 
+
 if sys.platform == "win32":
     from win32com.shell import shell, shellcon
     import pythoncom
@@ -48,10 +49,12 @@ else:
     from urllib.parse import quote
     import shutil
 
-from util_os import getenvu, expanduseru
+from DisplayCAL.util_os import getenvu, expanduseru
+
 
 class TrashAborted(Exception):
     pass
+
 
 class TrashcanUnavailableError(Exception):
     pass

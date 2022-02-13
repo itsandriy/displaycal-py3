@@ -9,27 +9,25 @@ import tempfile
 
 import numpy
 
-from argyll_cgats import cal_to_fake_profile, vcgt_to_cal
-from config import (fs_enc, get_argyll_display_number, get_data_path,
-                    get_display_profile, get_display_rects, getcfg, geticon,
-                    get_verified_path, setcfg)
-from meta import name as appname
-from options import debug
-from ordereddict import OrderedDict
-from util_decimal import float2dec
-from util_os import waccess
-from worker import (Error, UnloggedError, UnloggedInfo, Worker, get_argyll_util,
-                    make_argyll_compatible_path, show_result_dialog)
-from wxaddons import get_platform_window_decoration_size, wx
-from wxMeasureFrame import MeasureFrame
-from wxwindows import (BaseApp, BaseFrame, BitmapBackgroundPanelText,
-                       CustomCheckBox, FileDrop, InfoDialog, TooltipWindow)
-from wxfixes import GenBitmapButton as BitmapButton, wx_Panel
-import colormath
-import config
-import wxenhancedplot as plot
-import localization as lang
-import ICCProfile as ICCP
+from DisplayCAL.argyll_cgats import cal_to_fake_profile, vcgt_to_cal
+from DisplayCAL.config import (fs_enc, get_argyll_display_number, get_data_path, get_display_profile, get_display_rects,
+                               getcfg, geticon, get_verified_path, setcfg)
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import debug
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.util_decimal import float2dec
+from DisplayCAL.util_os import waccess
+from DisplayCAL.worker import (Error, UnloggedError, UnloggedInfo, Worker, get_argyll_util, make_argyll_compatible_path,
+                               show_result_dialog)
+from DisplayCAL.wxaddons import get_platform_window_decoration_size, wx
+from DisplayCAL.wxMeasureFrame import MeasureFrame
+from DisplayCAL.wxwindows import (BaseApp, BaseFrame, BitmapBackgroundPanelText, CustomCheckBox, FileDrop, InfoDialog,
+                                  TooltipWindow)
+from DisplayCAL.wxfixes import GenBitmapButton as BitmapButton, wx_Panel
+from DisplayCAL import colormath, config
+from DisplayCAL import wxenhancedplot as plot
+from DisplayCAL import localization as lang
+from DisplayCAL import ICCProfile as ICCP
 
 BGCOLOUR = "#333333"
 FGCOLOUR = "#999999"
@@ -44,7 +42,6 @@ else:
 
 
 class CoordinateType(list):
-
     """List of coordinates.
 
     [(Y, x)] where Y is in the range 0..100 and x in the range 0..255
@@ -52,11 +49,11 @@ class CoordinateType(list):
     """
 
     def __init__(self, profile=None):
+        super(CoordinateType, self).__init__()
         self.profile = profile
         self._transfer_function = {}
 
-    def get_gamma(self, use_vmin_vmax=False, average=True, least_squares=False,
-                  slice=(0.01, 0.99)):
+    def get_gamma(self, use_vmin_vmax=False, average=True, least_squares=False, slice=(0.01, 0.99)):
         """ Return average or least squares gamma or a list of gamma values """
         if len(self):
             start = slice[0] * 100
@@ -288,7 +285,7 @@ class LUTCanvas(plot.PlotCanvas):
                 if not detect_increments:
                     linear_points.append([i, (i)])
                 for channel, color in enumerate(("red", "green", "blue")):
-                    if not channel in points:
+                    if channel not in points:
                         continue
                     vmin = float2dec(vcgt[color + "Min"] * axis_x)
                     v = float2dec(math.pow(step * i / 100.0, vcgt[color + "Gamma"]))
@@ -679,9 +676,9 @@ class LUTFrame(BaseFrame):
 
     def __init__(self, *args, **kwargs):
 
-        if len(args) < 3 and not "title" in kwargs:
+        if len(args) < 3 and "title" not in kwargs:
             kwargs["title"] = lang.getstr("calibration.lut_viewer.title")
-        if not "name" in kwargs:
+        if "name" not in kwargs:
             kwargs["name"] = "lut_viewer"
 
         BaseFrame.__init__(self, *args, **kwargs)
@@ -1078,7 +1075,7 @@ class LUTFrame(BaseFrame):
         if (getcfg("lut_viewer.show_actual_lut") and
                 (self.worker.argyll_version[0:3] > [1, 1, 0] or
                  (self.worker.argyll_version[0:3] == [1, 1, 0] and
-                  not "Beta" in self.worker.argyll_version_string)) and
+                  "Beta" not in self.worker.argyll_version_string)) and
                 not config.is_untethered_display()):
             tmp = self.worker.create_tempdir()
             if isinstance(tmp, Exception):
@@ -1559,7 +1556,7 @@ class LUTFrame(BaseFrame):
                                                            self.client.unique[2],
                                                            self.client.entryCount)
                 unique = list(self.client.unique.values())
-                if not 0 in unique and not "R=G=B" in colorants:
+                if 0 not in unique and "R=G=B" not in colorants:
                     unique = min(unique)
                     legend[-1] += ", %s %.1f%% (%i/%i)" % (lang.getstr("grayscale"),
                                                            unique /
@@ -1639,7 +1636,7 @@ class LUTFrame(BaseFrame):
                 # (if present) to VideCardFormulaType if the latter is not present
                 if (isinstance(self.profile.tags.get("MS00"),
                                ICCP.WcsProfilesTagType) and
-                        not "vcgt" in self.profile.tags):
+                        "vcgt" not in self.profile.tags):
                     vcgt = self.profile.tags["MS00"].get_vcgt()
                     if vcgt:
                         self.profile.tags["vcgt"] = vcgt
@@ -2050,7 +2047,7 @@ class LUTFrame(BaseFrame):
                     if identical:
                         #if value[0][1] is None:
                         vout = pointXY[1]
-                        if not "L*" in label and ("a*" in label or "b*" in label):
+                        if "L*" not in label and ("a*" in label or "b*" in label):
                             vout = -128 + vout / 100.0 * (255 + 255 / 256.0)
                         RGB = " ".join(["=".join(label),
                                         "%.2f" % vout])
@@ -2060,7 +2057,7 @@ class LUTFrame(BaseFrame):
                         RGB = " ".join([format[1] % (v, s) for v, s in
                                         [v for v in value if v[1] is not None]])
                     vin = pointXY[0]
-                    if not "L*" in label and ("a*" in label or "b*" in label):
+                    if "L*" not in label and ("a*" in label or "b*" in label):
                         vin = -128 + pointXY[0] / 100.0 * (255 + 255 / 256.0)
                     legend[0] = joiner.join([format[0] % vin, RGB])
                     if (self.plot_mode_select.GetStringSelection() == lang.getstr('[rgb]TRC') and
@@ -2115,7 +2112,7 @@ class LUTFrame(BaseFrame):
     def update_controls(self):
         self.show_actual_lut_cb.Enable((self.worker.argyll_version[0:3] > [1, 1, 0] or
                                         (self.worker.argyll_version[0:3] == [1, 1, 0] and
-                                         not "Beta" in self.worker.argyll_version_string)) and
+                                         "Beta" not in self.worker.argyll_version_string)) and
                                        not config.is_untethered_display())
         self.show_actual_lut_cb.SetValue(bool(getcfg("lut_viewer.show_actual_lut")) and
                                          not config.is_untethered_display())

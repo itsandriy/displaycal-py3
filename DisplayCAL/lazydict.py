@@ -5,9 +5,9 @@ import codecs
 import json
 import os
 
-from config import get_data_path
-from debughelpers import handle_error
-from util_str import safe_str
+from DisplayCAL.config import get_data_path
+from DisplayCAL.debughelpers import handle_error
+from DisplayCAL.util_str import safe_str
 
 
 def unquote(string, raise_exception=True):
@@ -591,7 +591,7 @@ def test():
     from io import StringIO
     from time import time
 
-    from jsondict import JSONDict
+    from DisplayCAL.jsondict import JSONDict
 
     # PyYAML
     import yaml

@@ -45,20 +45,24 @@ if sys.frozen == "windows_exe":
         softspace = 0
         _file = None
         _error = None
+
         def write(self, text, alert=sys._MessageBox, fname=sys.executable + '.log'):
             if self._file is None and self._error is None:
                 try:
                     self._file = open(fname, 'w')
-                except Exception, details:
+                except Exception as details:
                     self._error = details
             if self._file is not None:
                 self._file.write(text)
                 self._file.flush()
+
         def flush(self):
             if self._file is not None:
                 self._file.flush()
+
         def isatty(self):
             return False
+
     sys.stderr = Stderr()
     del sys._MessageBox
     del Stderr
@@ -66,14 +70,19 @@ if sys.frozen == "windows_exe":
     class Blackhole(object):
         encoding = None
         softspace = 0
+
         def write(self, text):
             pass
+
         def flush(self):
             pass
+
         def isatty(self):
             return False
+
     sys.stdout = Blackhole()
     del Blackhole
+
 del sys
 
 # Disable linecache.getline() which is called by

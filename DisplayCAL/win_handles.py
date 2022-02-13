@@ -4,7 +4,7 @@ from ctypes import wintypes
 import ctypes
 import os
 
-from win_structs import NTSTATUS, UNICODE_STRING
+from DisplayCAL.win_structs import NTSTATUS, UNICODE_STRING
 
 PVOID = ctypes.c_void_p
 PULONG = ctypes.POINTER(wintypes.ULONG)

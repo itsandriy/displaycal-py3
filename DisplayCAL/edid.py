@@ -8,6 +8,7 @@ import string
 import struct
 import sys
 import warnings
+
 if sys.platform == "win32":
     from threading import _MainThread, currentThread
     wmi = None
@@ -28,15 +29,15 @@ elif sys.platform == "darwin":
     import re
     import subprocess as sp
 
-import config
-from config import enc
-from log import log
-from util_str import make_ascii_printable, safe_str, strtr
+from DisplayCAL import config
+from DisplayCAL.config import enc
+from DisplayCAL.log import log
+from DisplayCAL.util_str import make_ascii_printable, safe_str, strtr
 if sys.platform == "win32":
-    import util_win
+    from DisplayCAL import util_win
 elif sys.platform != "darwin":
     try:
-        import RealDisplaySizeMM as RDSMM
+        from DisplayCAL import RealDisplaySizeMM as RDSMM
     except ImportError as exception:
         warnings.warn(str(exception), Warning)
         RDSMM = None
@@ -182,8 +183,7 @@ def get_edid(display_no=0, display_name=None, device=None):
         stdout, stderr = p.communicate()
         if stdout:
             for edid in [binascii.unhexlify(edid_hex) for edid_hex in
-                         re.findall('"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>',
-                                    stdout)]:
+                         re.findall('"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>', stdout.decode())]:
                 if edid and len(edid) >= 128:
                     parsed_edid = parse_edid(edid)
                     if parsed_edid.get("monitor_name",

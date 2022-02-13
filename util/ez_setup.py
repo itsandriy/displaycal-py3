@@ -268,16 +268,16 @@ def update_md5(filenames):
     import inspect
     srcfile = inspect.getsourcefile(sys.modules[__name__])
     with open(srcfile, 'rb') as f:
-        src = f.read()
+        src = f.read().decode()
 
-    match = re.search(r"\nmd5_data = {\n([^}]+)}", src.decode())
+    match = re.search(r"\nmd5_data = {\n([^}]+)}", src)
     if not match:
         print("Internal error!", file=sys.stderr)
         sys.exit(2)
 
     src = src[:match.start(1)] + repl + src[match.end(1):]
 
-    with open(srcfile,'w') as f:
+    with open(srcfile, 'w') as f:
         f.write(src)
 
 

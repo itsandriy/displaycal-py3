@@ -40,6 +40,7 @@ from collections import UserString
 from hashlib import md5, sha256
 from threading import currentThread
 from time import sleep, strftime, time
+
 if sys.platform == "darwin":
     from platform import mac_ver
     from _thread import start_new_thread
@@ -60,62 +61,53 @@ if sys.platform == "win32":
     import winerror
 
 # custom
-import CGATS
-import ICCProfile as ICCP
-import audio
-import colormath
-import config
-import defaultpaths
-import imfile
-import localization as lang
-import wexpect
-from argyll_cgats import (add_dispcal_options_to_cal, add_options_to_ti3,
-                          cal_to_fake_profile, cal_to_vcgt,
-                          extract_cal_from_profile, extract_cal_from_ti3,
-                          extract_device_gray_primaries, extract_fix_copy_cal,
-                          ti3_to_ti1, verify_cgats, verify_ti1_rgb_xyz)
-from argyll_instruments import (get_canonical_instrument_name,
-                                instruments as all_instruments)
-from argyll_names import (names as argyll_names, altnames as argyll_altnames,
-                          optional as argyll_optional, viewconds, intents,
-                          observers)
-from colormath import VidRGB_to_eeColor, eeColor_to_VidRGB
-from config import (autostart, autostart_home, script_ext, defaults, enc, exe,
-                    exedir, exe_ext, fs_enc, getcfg, geticon, get_data_path,
-                    get_total_patches, get_verified_path, isapp, isexe,
-                    is_ccxx_testchart, logdir, profile_ext, pydir, setcfg,
-                    setcfg_cond, split_display_name, writecfg, appbasename)
-from debughelpers import (Error, DownloadError, Info, UnloggedError,
-                          UnloggedInfo, UnloggedWarning, UntracedError, Warn,
-                          handle_error)
-from defaultpaths import (cache, get_known_folder_path, iccprofiles_home,
-                          iccprofiles_display_home, appdata)
-from edid import WMIError, get_edid
-from log import DummyLogger, LogFile, get_file_logger, log
-import madvr
-from meta import VERSION, VERSION_BASE, domain, name as appname, version
-from multiprocess import cpu_count, pool_slice
-from options import (always_fail_download, debug, eecolor65, experimental, test,
-                     test_badssl, test_require_sensor_cal, verbose)
-from ordereddict import OrderedDict
-from network import LoggingHTTPRedirectHandler, NoHTTPRedirectHandler
-from patterngenerators import (PrismaPatternGeneratorClient,
-                               ResolveLSPatternGeneratorServer,
-                               ResolveCMPatternGeneratorServer,
-                               WebWinHTTPPatternGeneratorServer)
-from trash import trash
-from util_decimal import stripzeros
-from util_http import encode_multipart_formdata
-from util_io import (EncodedWriter, Files, GzipFileProper, LineBufferedStream,
-                     LineCache, StringIOu as StringIO, TarFileProper)
-from util_list import intlist, natsort
+from DisplayCAL import CGATS
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import audio
+from DisplayCAL import colormath
+from DisplayCAL import config
+from DisplayCAL import defaultpaths
+from DisplayCAL import imfile
+from DisplayCAL import localization as lang
+from DisplayCAL import wexpect
+from DisplayCAL.argyll_cgats import (add_dispcal_options_to_cal, add_options_to_ti3, cal_to_fake_profile, cal_to_vcgt,
+                                     extract_cal_from_profile, extract_cal_from_ti3, extract_device_gray_primaries,
+                                     extract_fix_copy_cal, ti3_to_ti1, verify_cgats, verify_ti1_rgb_xyz)
+from DisplayCAL.argyll_instruments import get_canonical_instrument_name, instruments as all_instruments
+from DisplayCAL.argyll_names import (names as argyll_names, altnames as argyll_altnames, optional as argyll_optional,
+                                    viewconds, intents, observers)
+from DisplayCAL.colormath import VidRGB_to_eeColor, eeColor_to_VidRGB
+from DisplayCAL.config import (autostart, autostart_home, script_ext, defaults, enc, exe, exedir, exe_ext, fs_enc,
+                               getcfg, geticon, get_data_path, get_total_patches, get_verified_path, isapp, isexe,
+                               is_ccxx_testchart, logdir, profile_ext, pydir, setcfg, setcfg_cond, split_display_name,
+                               writecfg, appbasename)
+from DisplayCAL.debughelpers import (Error, DownloadError, Info, UnloggedError, UnloggedInfo, UnloggedWarning,
+                                     UntracedError, Warn, handle_error)
+from DisplayCAL.defaultpaths import cache, get_known_folder_path, iccprofiles_home, iccprofiles_display_home, appdata
+from DisplayCAL.edid import WMIError, get_edid
+from DisplayCAL.log import DummyLogger, LogFile, get_file_logger, log
+from DisplayCAL import madvr
+from DisplayCAL.meta import VERSION, VERSION_BASE, domain, name as appname, version
+from DisplayCAL.multiprocess import cpu_count, pool_slice
+from DisplayCAL.options import (always_fail_download, debug, eecolor65, experimental, test, test_badssl,
+                                test_require_sensor_cal, verbose)
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.network import LoggingHTTPRedirectHandler, NoHTTPRedirectHandler
+from DisplayCAL.patterngenerators import (PrismaPatternGeneratorClient, ResolveLSPatternGeneratorServer,
+                                          ResolveCMPatternGeneratorServer, WebWinHTTPPatternGeneratorServer)
+from DisplayCAL.trash import trash
+from DisplayCAL.util_decimal import stripzeros
+from DisplayCAL.util_http import encode_multipart_formdata
+from DisplayCAL.util_io import (EncodedWriter, Files, GzipFileProper, LineBufferedStream, LineCache,
+                                StringIOu as StringIO, TarFileProper)
+from DisplayCAL.util_list import intlist, natsort
+
 if sys.platform == "darwin":
-    from util_mac import (mac_app_activate, mac_terminal_do_script,
-                          mac_terminal_set_colors, osascript,
-                          get_machine_attributes, get_model_id)
+    from DisplayCAL.util_mac import (mac_app_activate, mac_terminal_do_script, mac_terminal_set_colors, osascript,
+                                     get_machine_attributes, get_model_id)
 elif sys.platform == "win32":
-    import util_win
-    from util_win import run_as_admin, shell_exec, win_ver
+    from DisplayCAL import util_win
+    from DisplayCAL.util_win import run_as_admin, shell_exec, win_ver
     try:
         import wmi
     except Exception as exception:
@@ -123,39 +115,37 @@ elif sys.platform == "win32":
         wmi = None
 else:
     # Linux
-    from defaultpaths import xdg_data_home
+    from DisplayCAL.defaultpaths import xdg_data_home
     try:
-        from util_dbus import (DBusObject, DBusException, BUSTYPE_SESSION,
+        from DisplayCAL.util_dbus import (DBusObject, DBusException, BUSTYPE_SESSION,
                                dbus_session, dbus_system)
     except ImportError:
         dbus_session = None
         dbus_system = None
-import colord
-from util_os import (dlopen, expanduseru, fname_ext, getenvu, is_superuser,
-                     launch_file, make_win32_compatible_long_path, mksfile,
-                     mkstemp_bypath, quote_args, safe_glob, which)
+from DisplayCAL import colord
+from DisplayCAL.util_os import (dlopen, expanduseru, fname_ext, getenvu, is_superuser, launch_file,
+                                make_win32_compatible_long_path, mksfile, mkstemp_bypath, quote_args, safe_glob, which)
+
 if sys.platform not in ("darwin", "win32"):
-    from util_os import getgroups
+    from DisplayCAL.util_os import getgroups
 if sys.platform == "win32" and sys.getwindowsversion() >= (6, ):
-    from util_os import win64_disable_file_system_redirection
-from util_str import (make_filename_safe, safe_basestring, safe_asciize,
-                      safe_str, strtr, universal_newlines)
-from worker_base import (MP_Xicclu, WorkerBase, Xicclu, _mp_generate_B2A_clut,
-                         _mp_xicclu,
-                         check_argyll_bin, get_argyll_util, get_argyll_utilname,
-                         get_argyll_version_string as
-                         base_get_argyll_version_string,
-                         parse_argyll_version_string, printcmdline)
-from wxaddons import BetterCallLater, BetterWindowDisabler, wx
-from wxwindows import (ConfirmDialog, HtmlInfoDialog, InfoDialog,
-                       ProgressDialog, SimpleTerminal, show_result_dialog)
-from wxDisplayAdjustmentFrame import DisplayAdjustmentFrame
-from wxDisplayUniformityFrame import DisplayUniformityFrame
-from wxUntetheredFrame import UntetheredFrame
+    from DisplayCAL.util_os import win64_disable_file_system_redirection
+
+from DisplayCAL.util_str import make_filename_safe, safe_basestring, safe_asciize, safe_str, strtr, universal_newlines
+from DisplayCAL.worker_base import (MP_Xicclu, WorkerBase, Xicclu, _mp_generate_B2A_clut, _mp_xicclu, check_argyll_bin,
+                                    get_argyll_util, get_argyll_utilname,
+                                    get_argyll_version_string as base_get_argyll_version_string,
+                                    parse_argyll_version_string, printcmdline)
+from DisplayCAL.wxaddons import BetterCallLater, BetterWindowDisabler, wx
+from DisplayCAL.wxwindows import (ConfirmDialog, HtmlInfoDialog, InfoDialog, ProgressDialog, SimpleTerminal,
+                                  show_result_dialog)
+from DisplayCAL.wxDisplayAdjustmentFrame import DisplayAdjustmentFrame
+from DisplayCAL.wxDisplayUniformityFrame import DisplayUniformityFrame
+from DisplayCAL.wxUntetheredFrame import UntetheredFrame
 RDSMM = None
 if sys.platform not in ("darwin", "win32"):
     try:
-        import RealDisplaySizeMM as RDSMM
+        from DisplayCAL import RealDisplaySizeMM as RDSMM
     except ImportError as exception:
         warnings.warn(exception, Warning)
 import wx.lib.delayedresult as delayedresult
@@ -917,8 +907,7 @@ def get_current_profile_path(include_display_profile=True,
             try:
                 profile = ICCP.ICCProfile(profile_path)
             except Exception as exception:
-                print("ICCP.ICCProfile(%r):" % profile_path,
-                           exception)
+                print("ICCP.ICCProfile(%r):" % profile_path, exception)
     elif include_display_profile:
         profile = config.get_display_profile()
         if profile and not profile.fileName and save_profile_if_no_path:
@@ -926,9 +915,7 @@ def get_current_profile_path(include_display_profile=True,
                 profile.calculateID()
             profile_cache_path = os.path.join(cache, "icc")
             if check_create_dir(profile_cache_path) is True:
-                profile.fileName = os.path.join(profile_cache_path,
-                                                "id=" + hexlify(profile.ID) +
-                                                profile_ext)
+                profile.fileName = os.path.join(profile_cache_path, "id=" + hexlify(profile.ID).decode() + profile_ext)
                 if not os.path.isfile(profile.fileName):
                     profile.write()
     if profile:
@@ -1024,7 +1011,7 @@ def get_options_from_cal(cal):
         cal = CGATS.CGATS(cal)
     if 0 in cal:
         cal = cal[0]
-    if not cal or not "ARGYLL_DISPCAL_ARGS" in cal or \
+    if not cal or "ARGYLL_DISPCAL_ARGS" not in cal or \
             not cal.ARGYLL_DISPCAL_ARGS:
         return [], []
     dispcal_args = cal.ARGYLL_DISPCAL_ARGS[0].decode("UTF-7", "replace")
@@ -1154,7 +1141,7 @@ def get_default_headers():
                             {"AMD64": "x86_64"}.get(machine, machine))
     else:
         # Linux
-        oscpu = "%s; %s" % (' '.join(distro.linux_distribution()), platform.machine())
+        oscpu = "%s; %s" % (' '.join([distro.id(), distro.version(), distro.codename()]), platform.machine())
     return {"User-Agent": "%s/%s (%s)" % (appname, version, oscpu),
             "Accept-Language": "%s,*;q=0.5" % lang.getcode()}
 
@@ -1246,7 +1233,7 @@ def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path,
     cgats1_data.vmaxlen = data.vmaxlen
     cgats1_datasets = []
     for i, dataset in cgats1_data.items():
-        if not str(dataset) in rgbdata:
+        if str(dataset) not in rgbdata:
             # Not a duplicate
             cgats1_datasets.append(dataset)
     if cgats1_datasets:
@@ -1344,17 +1331,17 @@ def set_argyll_bin(parent=None, silent=False, callafter=None, callafter_args=())
         dlg.Destroy()
         if dlg_result == wx.ID_OK:
             # Download Argyll CMS
-            from DisplayCAL import app_update_check
+            from DisplayCAL.display_cal import app_update_check
             app_update_check(parent, silent, argyll=True)
             return False
         elif dlg_result == wx.ID_CANCEL:
             if callafter:
                 callafter(*callafter_args)
             return False
-    defaultPath = os.path.join(*get_verified_path("argyll.dir",
-                                                  path=argyll_dir))
-    dlg = wx.DirDialog(parent, lang.getstr("dialog.set_argyll_bin"),
-                       defaultPath=defaultPath, style=wx.DD_DIR_MUST_EXIST)
+    defaultPath = os.path.join(*get_verified_path("argyll.dir", path=argyll_dir))
+    dlg = wx.DirDialog(
+        parent, lang.getstr("dialog.set_argyll_bin"), defaultPath=defaultPath, style=wx.DD_DIR_MUST_EXIST
+    )
     dlg.Center(wx.BOTH)
     result = False
     while not result:
@@ -1377,12 +1364,12 @@ def set_argyll_bin(parent=None, silent=False, callafter=None, callafter_args=())
                 not_found = []
                 for name in argyll_names:
                     if (not get_argyll_util(name, [path]) and
-                            not name in argyll_optional):
+                            name not in argyll_optional):
                         not_found.append((" " +
                                           lang.getstr("or") +
                                           " ").join([altname for altname in [altname + exe_ext
                                                                              for altname in
-                                                                             argyll_altnames[name]] if not "argyll" in altname]))
+                                                                             argyll_altnames[name]] if "argyll" not in altname]))
                 InfoDialog(parent, msg=path + "\n\n" +
                                        lang.getstr("argyll.dir.invalid",
                                                    ", ".join(not_found)),
@@ -1618,7 +1605,7 @@ class Sudo(object):
         if timeout == -1:
             timeout = self.subprocess.timeout
         patterns = list(patterns)
-        if not wexpect.TIMEOUT in patterns:
+        if wexpect.TIMEOUT not in patterns:
             patterns.append(wexpect.TIMEOUT)
         start = time()
         while True:
@@ -1852,7 +1839,8 @@ class Worker(WorkerBase):
         """Create and return a new worker instance.
         """
         WorkerBase.__init__(self)
-        self.owner = owner # owner should be a wxFrame or similar
+        self.send_buffer = None
+        self.owner = owner  # owner should be a wxFrame or similar
         if sys.platform == "win32":
             self.pty_encoding = "cp%i" % windll.kernel32.GetACP()
         else:
@@ -1985,9 +1973,9 @@ class Worker(WorkerBase):
             if getcfg("measurement_mode.adaptive"):
                 if ((self.argyll_version[0:3] > [1, 1, 0] or
                      (self.argyll_version[0:3] == [1, 1, 0] and
-                      not "Beta" in self.argyll_version_string and
-                      not "RC1" in self.argyll_version_string and
-                      not "RC2" in self.argyll_version_string)) and
+                      "Beta" not in self.argyll_version_string and
+                      "RC1" not in self.argyll_version_string and
+                      "RC2" not in self.argyll_version_string)) and
                         self.argyll_version[0:3] < [1, 5, 0] and
                         not get_arg("-V", args, True)):
                     # Adaptive measurement mode, Argyll >= 1.1.0 RC3
@@ -2007,7 +1995,7 @@ class Worker(WorkerBase):
         if display and not (get_arg("-dweb", args) or get_arg("-dmadvr", args)):
             if ((self.argyll_version <= [1, 0, 4] and not get_arg("-p", args)) or
                     (self.argyll_version > [1, 0, 4] and not get_arg("-P", args)) and
-                    not "-d%s" % self.argyll_virtual_display in args):
+                    "-d%s" % self.argyll_virtual_display not in args):
                 if ((config.get_display_name() == "Resolve" or
                      non_argyll_prisma) and
                         not ignore_display_name):
@@ -2237,8 +2225,7 @@ class Worker(WorkerBase):
         self.log("Output offset = %.2f%%" % (outoffset * 100))
         if hdr:
             odesc = profile1.getDescription()
-            desc = re.sub(r"\s*(?:color profile|primaries with "
-                          "\S+ transfer function)$", "", odesc)
+            desc = re.sub(r"\s*(?:color profile|primaries with \S+ transfer function)$", "", odesc)
             if smpte2084:
                 # SMPTE ST.2084 (PQ)
                 black_cdm2 = profile_black_cdm2 * (1 - outoffset)
@@ -2824,7 +2811,7 @@ BEGIN_DATA
 2 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
 3 6.2500 6.2500 6.2500 0.2132 0.2241 0.2443
 END_DATA
-""")
+""".encode())
         except Exception as exception:
             return exception
         setcfg("patterngenerator.use_video_levels", 0)
@@ -4270,7 +4257,7 @@ END_DATA
                                 cube_data.append(line)
                         # Write updated cube
                         with open(cube_filename, "wb") as cube_file:
-                            cube_file.write("".join(cube_data))
+                            cube_file.write("".join(cube_data).encode())
                 result2 = self.wrapup(not isinstance(result, UnloggedInfo) and
                                       result, dst_path=path,
                                       ext_filter=[".3dlut", ".cube",
@@ -4493,7 +4480,7 @@ END_DATA
         # Write 3DLUT
         lut_file = open(path, "wb")
         if format != "png":
-            lut_file.write(result)
+            lut_file.write(result.encode())
         else:
             im = imfile.Image(lut, output_bits)
             im.write(lut_file)
@@ -4511,7 +4498,8 @@ END_DATA
                                 # For eeColor and Full range RGB, unmap the
                                 # cLUT output maps from 1.0
                                 v *= RGBw[i]
-                            lut1d.write("%.6f\n" % v)
+                            n_v = "%.6f\n" % v
+                            lut1d.write(n_v.encode())
 
         if isinstance(result2, Exception):
             raise result2
@@ -4593,7 +4581,7 @@ END_DATA
                             # Rate of blending from neutral to black point.
                             defaults["calibration.black_point_rate.enabled"] = 1
                         if (self.argyll_version >= [1, 7] and
-                                not "Beta" in self.argyll_version_string):
+                                "Beta" not in self.argyll_version_string):
                             # Forced black point hack available
                             # (Argyll CMS 1.7)
                             defaults["calibration.black_point_hack"] = 1
@@ -4698,7 +4686,7 @@ END_DATA
                 inames.sort()
                 for iname in inames:
                     iname = get_canonical_instrument_name(iname)
-                    if not iname in instruments:
+                    if iname not in instruments:
                         instruments.append(iname)
             if verbose >= 1: print(lang.getstr("success"))
             if instruments != self.instruments:
@@ -4714,7 +4702,7 @@ END_DATA
                 if RDSMM:
                     # Sync with Argyll - needed under Linux to map EDID
                     RDSMM.enumerate_displays()
-                displays = [display for display in displays if not display in non_standard_display_args]
+                displays = [display for display in displays if display not in non_standard_display_args]
                 self.display_edid = []
                 self.display_manufacturers = []
                 self.display_names = []
@@ -4795,7 +4783,7 @@ END_DATA
                                 monitor = model_id
                                 # Override EDID
                                 edid["monitor_name"] = monitor
-                        if monitor and not monitor in "".join(desc):
+                        if monitor and monitor not in "".join(desc):
                             desc = [monitor]
                     else:
                         manufacturer = []
@@ -4988,13 +4976,13 @@ END_DATA
         self.cmd = cmd
         cmdname = os.path.splitext(os.path.basename(cmd))[0]
         self.cmdname = cmdname
-        if not "-?" in args and cmdname == get_argyll_utilname("dispwin"):
+        if "-?" not in args and cmdname == get_argyll_utilname("dispwin"):
             if "-I" in args or "-U" in args:
                 if "-Sl" in args or "-Sn" in args:
                     # Root is required if installing a profile to a system
                     # location
                     asroot = True
-            elif not ("-s" in args or self.calibration_loading_generally_supported):
+            elif "-s" not in args and not self.calibration_loading_generally_supported:
                 # Loading/clearing calibration not supported
                 # Don't actually do it, pretend we were successful
                 if "-V" in args:
@@ -5011,10 +4999,10 @@ END_DATA
                         get_argyll_utilname("targen"))
         # Run commands through wexpect.spawn instead of subprocess.Popen if
         # any of these conditions apply
-        use_pty = args and not "-?" in args and (use_pty or
+        use_pty = args and "-?" not in args and (use_pty or
                                                  cmdname in measure_cmds +
                                                  process_cmds)
-        self.measure_cmd = not "-?" in args and cmdname in measure_cmds
+        self.measure_cmd = "-?" not in args and cmdname in measure_cmds
         report_current_cal = (cmdname == get_argyll_utilname("dispcal") and
                               ("-r" in args or "-z" in args))
         if (self.measure_cmd and not dry_run and
@@ -5061,7 +5049,7 @@ END_DATA
                             continue
                     else:
                         iface_domain = bus_name.split(".")[1]
-                        if not iface_domain.upper() in desktop:
+                        if iface_domain.upper() not in desktop:
                             # Not current desktop environment
                             continue
                     object_path = "/" + bus_name.replace(".", "/")
@@ -5256,7 +5244,7 @@ BEGIN_DATA
                                 RGB = {}
                                 for j in range(3):
                                     for i in range(256):
-                                        if not i in RGB:
+                                        if i not in RGB:
                                             RGB[i] = []
                                         RGB[i].append(ramp[j][i] / 65535.0)
                                 # Get RGB from dictionary
@@ -5343,12 +5331,12 @@ BEGIN_DATA
                             cmdname == get_argyll_utilname("dispwin")):
                         # For madVR net-protocol pure python implementation
                         # we are now done
-                        if not "-s" in args:
+                        if "-s" not in args:
                             # Only disconnect if we didn't save calibration (as
                             # part of a follow-up measurement)
                             self.madtpg_disconnect(False)
                         return True
-                    if not "-V" in args and not use_3dlut_override:
+                    if "-V" not in args and not use_3dlut_override:
                         endis = "disable"
                     else:
                         endis = "enable"
@@ -5701,8 +5689,7 @@ while 1:
                         cmdfiles.write('echo -e "\\033[40;2;37m" && clear\n')
                     os.chmod(cmdfilename, 0o755)
                     os.chmod(allfilename, 0o755)
-                cmdfiles.write(" ".join(quote_args(cmdline)).replace(cmd,
-                                                                     cmdname).encode(enc, "safe_asciize") + "\n")
+                cmdfiles.write(" ".join(quote_args(cmdline)).replace(cmd, cmdname).encode(enc, "safe_asciize") + "\n".encode())
                 if sys.platform == "win32":
                     cmdfiles.write("set exitcode=%errorlevel%\n")
                     if cmdname in (get_argyll_utilname("dispcal"),
@@ -5729,18 +5716,17 @@ while 1:
                         # window automatically after a delay
                         script = mac_terminal_do_script() + \
                                  mac_terminal_set_colors(do=False) + \
-                                 ['-e', 'set shellscript to quoted form of '
-                                        '(POSIX path of (path to resource '
-                                        '"main.command"))', '-e', 'tell app '
-                                                                  '"Terminal"', '-e', 'do script shellscript '
-                                                                                      'in first window', '-e', 'delay 3', '-e',
+                                 ['-e',
+                                  'set shellscript to quoted form of '
+                                  '(POSIX path of (path to resource '
+                                  '"main.command"))', '-e',
+                                  'tell app "Terminal"', '-e', 'do script shellscript '
+                                  'in first window', '-e', 'delay 3', '-e',
                                   'activate', '-e', 'end tell', '-o']
                         # Part 1: "cmdfile"
-                        appfilename = os.path.join(working_dir,
-                                                   working_basename + "." +
-                                                   cmdname +
-                                                   ".app").encode(fs_enc)
-                        cmdargs = ['osacompile'] + script + [appfilename]
+                        appfilename = \
+                            os.path.join(working_dir, working_basename + "." + cmdname + ".app")
+                        cmdargs = ['osacompile'] + script + [appfilename.decode()]
                         p = sp.Popen(cmdargs, stdin=sp.PIPE, stdout=sp.PIPE,
                                      stderr=sp.PIPE)
                         p.communicate()
@@ -5750,18 +5736,14 @@ while 1:
                         appfilename = os.path.join(
                             working_dir,  working_basename + ".all.app")
                         cmdargs = ['osacompile'] + script + [appfilename]
-                        p = sp.Popen(cmdargs, stdin=sp.PIPE, stdout=sp.PIPE,
-                                     stderr=sp.PIPE)
+                        p = sp.Popen(cmdargs, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
                         p.communicate()
-                        shutil.copyfile(allfilename, appfilename +
-                                        "/Contents/Resources/main.command")
-                        os.chmod(appfilename +
-                                 "/Contents/Resources/main.command", 0o755)
+                        shutil.copyfile(allfilename, appfilename + "/Contents/Resources/main.command")
+                        os.chmod(appfilename + "/Contents/Resources/main.command", 0o755)
                         if last:
                             os.remove(allfilename)
             except Exception as exception:
-                self.log("Warning - error during shell script creation:",
-                         str(exception))
+                self.log("Warning - error during shell script creation:", str(exception))
         cmdline = [safe_str(arg, fs_enc) for arg in cmdline]
         working_dir = None if not working_dir else working_dir.encode(fs_enc)
         try:
@@ -5802,14 +5784,11 @@ while 1:
                         value = backup
                         del os.environ["ARGYLL_%s_BACKUP" % name]
                         if value:
-                            self.log("%s: Restoring ARGYLL_%s %s" % (appname,
-                                                                     name,
-                                                                     value))
+                            self.log("%s: Restoring ARGYLL_%s %s" % (appname, name, value))
                         elif "ARGYLL_%s" % name in os.environ:
                             del os.environ["ARGYLL_%s" % name]
                     elif "ARGYLL_%s" % name in os.environ:
-                        self.log("%s: ARGYLL_%s" % (appname, name),
-                                 os.getenv("ARGYLL_%s" % name))
+                        self.log("%s: ARGYLL_%s" % (appname, name), os.getenv("ARGYLL_%s" % name))
                     if value:
                         os.environ["ARGYLL_%s" % name] = value
             elif cmdname in (get_argyll_utilname("iccgamut"),
@@ -5959,7 +5938,7 @@ while 1:
                                 self.log(appname + ": caffeinate not found - "
                                                    "screensaver and display/system sleep "
                                                    "may still occur!")
-                        if debug >= 9 or (test and not "-?" in args):
+                        if debug >= 9 or (test and "-?" not in args):
                             self.subprocess.interact()
                     self.subprocess.logfile_read = logfiles
                     if self.measure_cmd:
@@ -6204,8 +6183,8 @@ while 1:
                     if "Calibrate failed with 'User hit Abort Key' (No device error)" in line:
                         break
                     if ((": Error" in line and
-                         not "failed with 'User Aborted'" in line and
-                         not "returned error code 1" in line) or
+                         "failed with 'User Aborted'" not in line and
+                         "returned error code 1" not in line) or
                             (line.startswith("Failed to") and
                              not "Failed to meet target" in line) or
                             ("Requested ambient light capability" in line and
@@ -7843,7 +7822,7 @@ usage: spotread [-options] [logfile]
                     self.log("Loading Prisma preset", presetname)
                     preset = self.patterngenerator.load_preset(presetname)
                     assigned_lut = preset["v"].get("cube", "")
-                    if not assigned_lut in assigned_luts:
+                    if assigned_lut not in assigned_luts:
                         assigned_luts[assigned_lut] = 0
                     assigned_luts[assigned_lut] += 1
                 # Only remove the currently assigned custom LUT if it's not
@@ -8489,7 +8468,7 @@ usage: spotread [-options] [logfile]
         if which("colormgr"):
             # Check if profile already exists in database
             try:
-                colord.get_object_path("icc-" + hexlify(profile.ID), "profile")
+                colord.get_object_path("icc-" + hexlify(profile.ID).decode(), "profile")
             except colord.CDObjectQueryError:
                 # Profile not in database
                 pass
@@ -8692,7 +8671,7 @@ usage: spotread [-options] [logfile]
             # If running in a thread, need to call pythoncom.CoInitialize
             pythoncom.CoInitialize()
 
-        import taskscheduler
+        from DisplayCAL import taskscheduler
         try:
             ts = taskscheduler.TaskScheduler()
         except Exception as exception:
@@ -8923,13 +8902,13 @@ usage: spotread [-options] [logfile]
         if not args:
             args = []
         cmd = get_argyll_util("ccxxmake")
-        if not "-I" in args:
+        if "-I" not in args:
             # Display manufacturer & name
             name = self.get_display_name(True)
             if name:
                 args.insert(0, "-I")
                 args.insert(1, name)
-            elif not "-T" in args:
+            elif "-T" not in args:
                 # Display technology
                 args.insert(0, "-T")
                 displaytech = ["LCD" if getcfg("measurement_mode") == "l" else "CRT"]
@@ -9479,9 +9458,9 @@ usage: spotread [-options] [logfile]
                 if profchanged and tables:
                     # Make sure we match Argyll colprof i.e. have a complete
                     # set of tables
-                    if not "A2B1" in profile.tags:
+                    if "A2B1" not in profile.tags:
                         profile.tags.A2B1 = profile.tags.A2B0
-                    if not "A2B2" in profile.tags:
+                    if "A2B2" not in profile.tags:
                         profile.tags.A2B2 = profile.tags.A2B0
 
                 if (profile.colorSpace == "RGB" and
@@ -9497,7 +9476,7 @@ usage: spotread [-options] [logfile]
                         except Exception as exception:
                             return exception
 
-                    if not "A2B1" in profile.tags:
+                    if "A2B1" not in profile.tags:
                         self.log("Generating A2B1 by copying A2B0")
                         profile.tags.A2B1 = profile.tags.A2B0
                     A2B1 = profile.tags.get("A2B1")
@@ -9664,7 +9643,7 @@ usage: spotread [-options] [logfile]
                             # tables, saturation table is still low quality.
                             # Assign perceptual table
                             profile.tags.B2A2 = profile.tags.B2A0
-                    if not "B2A2" in profile.tags:
+                    if "B2A2" not in profile.tags:
                         profile.tags.B2A2 = profile.tags.B2A0
                 apply_bpc = ((getcfg("profile.black_point_compensation") and
                               not "A2B0" in profile.tags) or
@@ -10328,7 +10307,7 @@ usage: spotread [-options] [logfile]
                 profile.tags.mmod = ICCP.ICCProfileTag(mmod, "mmod")
                 # Add new meta information based on EDID
                 profile.set_edid_metadata(edid)
-            elif not "meta" in profile.tags:
+            elif "meta" not in profile.tags:
                 # Make sure meta tag exists
                 profile.tags.meta = ICCP.DictType()
         if tags is True or (tags and "meta" in tags):
@@ -10374,16 +10353,16 @@ usage: spotread [-options] [logfile]
         if tags is True or (tags and "meta" in tags):
             prefixes = (profile.tags.meta.getvalue("prefix", "", None) or spec_prefixes).split(",")
             for prefix in spec_prefixes.split(","):
-                if not prefix in prefixes:
+                if prefix not in prefixes:
                     prefixes.append(prefix)
             profile.tags.meta["prefix"] = ",".join(prefixes)
         if (avg, peak, rms) != (None, ) * 3:
             # Make sure meta tag exists
-            if not "meta" in profile.tags:
+            if "meta" not in profile.tags:
                 profile.tags.meta = ICCP.DictType()
             # Update meta prefix
             prefixes = (profile.tags.meta.getvalue("prefix", "", None) or "ACCURACY_").split(",")
-            if not "ACCURACY_" in prefixes:
+            if "ACCURACY_" not in prefixes:
                 prefixes.append("ACCURACY_")
                 profile.tags.meta["prefix"] = ",".join(prefixes)
             # Add error info
@@ -10518,7 +10497,7 @@ usage: spotread [-options] [logfile]
                             B2A1.clut[-1].append(list(row))
             except Exception as exception:
                 return exception
-        if not "A2B2" in profile.tags and generate_perceptual_table:
+        if "A2B2" not in profile.tags and generate_perceptual_table:
             # Argyll always creates a complete set of A2B / B2A tables if
             # colprof -s (perceptual) or -S (perceptual and saturation) is used,
             # so we can assume that if A2B2 is not present then it is safe to
@@ -11003,7 +10982,7 @@ usage: spotread [-options] [logfile]
                 port=getcfg("webserver.portnumber"),
                 logfile=logfile)
         elif pgname.startswith("Chromecast "):
-            from chromecast_patterngenerator import ChromeCastPatternGenerator
+            from DisplayCAL.chromecast_patterngenerator import ChromeCastPatternGenerator
             self.patterngenerator = ChromeCastPatternGenerator(
                 name=self.get_display_name(),
                 logfile=logfile)
@@ -11430,12 +11409,9 @@ usage: spotread [-options] [logfile]
                 else:
                     rslt = extract_fix_copy_cal(cal, calcopy)
                     if isinstance(rslt, ICCP.ICCProfileInvalidError):
-                        return Error(lang.getstr("profile.invalid") +
-                                     "\n" + cal), None
+                        return Error(lang.getstr("profile.invalid") + "\n" + cal), None
                     elif isinstance(rslt, Exception):
-                        return Error(lang.getstr("cal_extraction_failed") +
-                                     "\n" + cal + "\n\n" +
-                                     str(str(rslt),  enc, "replace")), None
+                        return Error(lang.getstr("cal_extraction_failed") + "\n" + cal + "\n\n" + rslt), None
                     if not isinstance(rslt, list):
                         return None, None
                 if getcfg("profile.update"):
@@ -11577,7 +11553,7 @@ usage: spotread [-options] [logfile]
                 if ext.lower() != ".ti1":
                     ti3_lines = [line.strip() for line in ti3]
                     ti3.close()
-                    if not "CTI3" in ti3_lines:
+                    if "CTI3" not in ti3_lines:
                         return Error(lang.getstr("error.testchart.invalid",
                                                  getcfg("testchart.file"))), None
                     ti1 = open(inoutfile + ".ti1", "w")
@@ -11652,7 +11628,7 @@ usage: spotread [-options] [logfile]
                     ti3 = StringIO("")
                 ti3_lines = [line.strip() for line in ti3]
                 ti3.close()
-                if not "CTI3" in ti3_lines:
+                if "CTI3" not in ti3_lines:
                     return Error(lang.getstr("error.cal_extraction",
                                              (cal))), None
                 try:
@@ -11681,7 +11657,7 @@ usage: spotread [-options] [logfile]
         # have a number instead of explicit filename argument, e.g. -X1)
         dispcal_override_args = ("-F", "-H", "-I", "-P", "-V", "-X", "-d", "-c",
                                  "-p", "-y")
-        self.options_dispcal = [arg for arg in self.options_dispcal if not arg[:2] in dispcal_override_args]
+        self.options_dispcal = [arg for arg in self.options_dispcal if arg[:2] not in dispcal_override_args]
         # Only add the dispcal extra args which may override measurement features
         dispcal_extra_args = parse_argument_string(getcfg("extra_args.dispcal"))
         for i, arg in enumerate(dispcal_extra_args):
@@ -12247,26 +12223,26 @@ usage: spotread [-options] [logfile]
                                skip_scripts=True, silent=False)
         return result
 
-    def safe_send(self, bytes):
-        self.send_buffer = bytes
+    def safe_send(self, bytes_):
+        self.send_buffer = bytes_
         return True
 
-    def _safe_send(self, bytes, retry=3, obfuscate=False):
+    def _safe_send(self, bytes_, retry=3, obfuscate=False):
         """Safely send a keystroke to the current subprocess
         """
-        print('_safe_send.bytes:', bytes)
+        print('_safe_send.bytes_:', bytes_)
         for i in range(0, retry):
             if obfuscate:
                 logbytes = "***"
             else:
-                logbytes = bytes
+                logbytes = bytes_
             self.logger.info("Sending key(s) %r (%i)" % (logbytes, i + 1))
             try:
-                self.subprocess.send(bytes)
+                self.subprocess.send(bytes_.encode())
             except Exception as exception:
                 self.logger.exception("Exception: %s" % str(exception))
             else:
-                # if wrote == len(bytes):
+                # if wrote == len(bytes_):
                 return True
             sleep(.25)
         return False
@@ -12830,9 +12806,9 @@ usage: spotread [-options] [logfile]
                         tmpfilename = gzfilename
                     else:
                         with open(tmpfilename, "rb") as infile:
-                            vrml = infile.read()
+                            vrml = infile.read().decode()
                         with open(tmpfilename, "wb") as outfile:
-                            outfile.write(tweak_vrml(vrml))
+                            outfile.write(tweak_vrml(vrml).encode())
                     if filename.endswith(".wrl"):
                         filename = filename[:-4] + ".wrz"
                     else:
@@ -13206,7 +13182,7 @@ BEGIN_DATA
                 except (IOError, CGATS.CGATSError):
                     pass
                 else:
-                    if not 0 in cti3 or cti3[0].type.strip() != "CTI3":
+                    if 0 not in cti3 or cti3[0].type.strip() != "CTI3":
                         # Not Argyll measurement data
                         cti3 = None
             if not cti3:
@@ -13422,7 +13398,7 @@ BEGIN_DATA
             else:
                 wp = colormath.get_standard_illuminant("D65", scale=100)
             for label in list(data.parent.DATA_FORMAT.values()):
-                if not label in white:
+                if label not in white:
                     if label.upper() == 'LAB_L':
                         value = 100
                     elif label.upper() in ('LAB_A', 'LAB_B'):
@@ -13765,8 +13741,8 @@ BEGIN_DATA
                     raise ValueError('Unknown color representation ' + ocolor)
                 olabels = olabel.split()
                 # add device fields to DATA_FORMAT if not yet present
-                if not olabels[0] in list(ti3v.DATA_FORMAT.values()) and \
-                        not olabels[1] in list(ti3v.DATA_FORMAT.values()) and \
+                if olabels[0] not in list(ti3v.DATA_FORMAT.values()) and \
+                        olabels[1] not in list(ti3v.DATA_FORMAT.values()) and \
                         not olabels[2] in list(ti3v.DATA_FORMAT.values()) and \
                         (ocolor == 'RGB' or (ocolor == 'CMYK' and
                                              not olabels[3] in list(ti3v.DATA_FORMAT.values()))):
@@ -14193,7 +14169,7 @@ BEGIN_DATA
                     # in the file, 'name' will already be Unicode.
                     # Otherwise, it'll either be 7-bit ASCII or (legacy)
                     # cp437 encoding
-                    outname = str(name, "cp437")
+                    outname = name
                     outpath = os.path.join(outdir, os.path.normpath(outname))
                     if outname.endswith("/"):
                         if not os.path.isdir(outpath):
@@ -14213,12 +14189,13 @@ BEGIN_DATA
             # subprocesses that read the configuration will use the right
             # executables
             writecfg()
-            from DisplayCAL import check_donation
+            from DisplayCAL.display_cal import check_donation
             snapshot = VERSION > VERSION_BASE
-            self.owner.set_argyll_bin_handler(None, True,
-                                              self.owner.check_instrument_setup,
-                                              (check_donation, (self.owner,
-                                                                snapshot)))
+            self.owner.set_argyll_bin_handler(
+                None, True,
+                self.owner.check_instrument_setup,
+                (check_donation, (self.owner, snapshot))
+            )
         else:
             show_result_dialog(lang.getstr("error.no_files_extracted_from_archive",
                                            filename), self.owner)

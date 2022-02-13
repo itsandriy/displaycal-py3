@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 """
 Diverse color mathematical functions.
 
 Note:
+
 In most cases, unless otherwise stated RGB is R'G'B' (gamma-compressed)
 
 """
@@ -1592,8 +1592,7 @@ def find_primaries_wp_xy_rgb_space_name(xy, rgb_space_names=None,
 
     """
     for i, rgb_space_name in enumerate(rgb_space_names or iter(rgb_spaces.keys())):
-        if not rgb_space_names and rgb_space_name in ("ECI RGB", "ECI RGB v2",
-                                                      "SMPTE 240M", "sRGB"):
+        if not rgb_space_names and rgb_space_name in ("ECI RGB", "ECI RGB v2", "SMPTE 240M", "sRGB"):
             # Skip in favor of base color space (i.e. NTSC 1953, SMPTE-C and
             # Rec. 709)
             continue
@@ -1649,7 +1648,7 @@ def get_standard_illuminant(illuminant_name="D50",
         return get_standard_illuminant.cache[cachehash]
     illuminant = None
     for standard_name in priority:
-        if not standard_name in standard_illuminants:
+        if standard_name not in standard_illuminants:
             raise ValueError('Unrecognized standard "%s"' % standard_name)
         illuminant = standard_illuminants.get(standard_name).get(illuminant_name.upper(),
                                                                  None)
@@ -1679,13 +1678,11 @@ def get_whitepoint(whitepoint=None, scale=1.0, planckian=False):
         if planckian:
             whitepoint = planckianCT2XYZ(cct)
             if not whitepoint:
-                raise ValueError("Planckian color temperature %i out of range "
-                                 "(1667, 25000)" % cct)
+                raise ValueError("Planckian color temperature %s out of range (1667, 25000)" % cct)
         else:
             whitepoint = CIEDCCT2XYZ(cct)
             if not whitepoint:
-                raise ValueError("Daylight color temperature %i out of range "
-                                 "(2500, 25000)" % cct)
+                raise ValueError("Daylight color temperature %s out of range (2500, 25000)" % cct)
     if scale > 1.0 and whitepoint[1] == 100:
         scale = 1.0
     whitepoint = tuple(v * scale for v in whitepoint)
@@ -2218,7 +2215,7 @@ def XYZ2RGB(X, Y, Z, rgb_space=None, scale=1.0, round_=False, clamp=True,
             RGB[i] = oetf(v)
         elif isinstance(gamma, (list, tuple)):
             key = id(gamma)
-            if not key in XYZ2RGB.interp:
+            if key not in XYZ2RGB.interp:
                 ginterp = Interp(gamma, [n / float(len(gamma) - 1) for n in
                                          range(len(gamma))], use_numpy=True)
                 XYZ2RGB.interp[key] = ginterp
@@ -2768,7 +2765,7 @@ def xicc_tech_gamma(egamma, off, outoffset=0.0):
     sa[0] = 0.1
 
     if not powell(1, op, sa, 1e-6, 500, gam_fit, gf):
-        logging.warn("Computing effective gamma and input offset is inaccurate")
+        logging.warning("Computing effective gamma and input offset is inaccurate")
 
     return op[0]
 
@@ -2799,7 +2796,7 @@ class Interp(object):
         self.use_numpy = use_numpy
 
     def __call__(self, x):
-        if not x in self.lookup:
+        if x not in self.lookup:
             self.lookup[x] = self._interp(x)
         return self.lookup[x]
 
@@ -3495,7 +3492,7 @@ def debug_caches():
         for k, v in c.items():
             for kk, vv in c.items():
                 # Check for equality, not identity
-                if k != kk and v == vv and not kk in seen:
+                if k != kk and v == vv and kk not in seen:
                     count += 1
                     seen[kk] = True
         print(cache, len(c), "entries", max(count - 1, 0), "duplicates")
@@ -3506,7 +3503,6 @@ def debug_caches():
 
 if "--debug-caches" in sys.argv[1:]:
     import atexit
-
     atexit.register(debug_caches)
 
 

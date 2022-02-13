@@ -19,8 +19,8 @@ from win32com.shell import shell as win32com_shell
 from ctypes import POINTER, byref, sizeof, windll
 from ctypes.wintypes import HANDLE, DWORD, LPWSTR
 
-from util_os import quote_args
-from win_structs import UNICODE_STRING
+from DisplayCAL.util_os import quote_args
+from DisplayCAL.win_structs import UNICODE_STRING
 
 if not hasattr(ctypes, "c_bool"):
     # Python 2.5
@@ -102,6 +102,7 @@ def _get_mscms_windll():
     except WindowsError:
         return None
 
+
 _get_mscms_windll._windll = None
 
 
@@ -113,8 +114,7 @@ def calibration_management_isenabled():
     if False:
         # Using registry - NEVER
         # Also, does not work!
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                            r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ICM\Calibration") as key:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ICM\Calibration") as key:
             return bool(winreg.QueryValueEx(key, "CalibrationManagementEnabled")[0])
     else:
         # Using ctypes

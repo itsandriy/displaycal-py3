@@ -10,16 +10,14 @@ from io import StringIO
 from time import time
 
 # from safe_print import safe_print
-from util_str import universal_newlines
+from DisplayCAL.util_str import universal_newlines
 
 
 class EncodedWriter(object):
-
     """Decode data with data_encoding and encode it with file_encoding before
     writing it to file_obj.
 
     Either data_encoding or file_encoding can be None.
-
     """
 
     def __init__(self, file_obj, data_encoding=None, file_encoding=None, errors="replace"):
@@ -39,8 +37,7 @@ class EncodedWriter(object):
         self.file.write(data.decode())
 
 
-class Files():
-
+class Files(object):
     """Read and/or write from/to several files at once.
     """
 
@@ -103,8 +100,8 @@ class GzipFileProper(gzip.GzipFile):
     """
 
     def _write_gzip_header(self):
-        self.fileobj.write('\037\213')             # magic header
-        self.fileobj.write('\010')                 # compression method
+        self.fileobj.write('\037\213'.encode())             # magic header
+        self.fileobj.write('\010'.encode())                 # compression method
         fname = os.path.basename(self.name)
         if fname.endswith(".gz"):
             fname = fname[:-3]
@@ -115,10 +112,10 @@ class GzipFileProper(gzip.GzipFile):
         flags = 0
         if fname:
             flags = gzip.FNAME
-        self.fileobj.write(chr(flags))
+        self.fileobj.write(chr(flags).encode())
         gzip.write32u(self.fileobj, int(time()))
-        self.fileobj.write('\002')
-        self.fileobj.write('\377')
+        self.fileobj.write('\002'.encode())
+        self.fileobj.write('\377'.encode())
         if fname:
             if sys.platform == "win32":
                 # Windows is case insensitive by default (although it can be
@@ -126,7 +123,7 @@ class GzipFileProper(gzip.GzipFile):
                 # force the name to lowercase
                 fname = fname.lower()
             self.fileobj.write(fname.encode("ISO-8859-1", "replace")
-                               .replace("?", "_") + '\000')
+                               .replace("?".encode(), "_".encode()) + '\000'.encode())
 
     def __enter__(self):
         return self

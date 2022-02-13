@@ -30,6 +30,7 @@ elif sys.platform == "win32":
          CSIDL_COMMON_PROGRAMS, CSIDL_PROGRAM_FILES_COMMON,
          CSIDL_STARTUP, CSIDL_SYSTEM) = (26, 35, 24, 28, 40, 43, 2, 23, 7, 37)
         MAX_PATH = 260
+
         def SHGetSpecialFolderPath(hwndOwner, nFolder, create=0):
             """ ctypes wrapper around shell32.SHGetSpecialFolderPathW """
             buffer = ctypes.create_unicode_buffer('\0' * MAX_PATH)
@@ -37,7 +38,8 @@ elif sys.platform == "win32":
                                                           create)
             return buffer.value
 
-from util_os import expanduseru, expandvarsu, getenvu, waccess
+
+from DisplayCAL.util_os import expanduseru, expandvarsu, getenvu, waccess
 
 
 def get_known_folder_path(folderid, user=True):
@@ -57,7 +59,7 @@ def get_known_folder_path(folderid, user=True):
     folder_path = os.path.join(home, folderid)
     if sys.platform == "win32" and sys.getwindowsversion() >= (6, ):
         # Windows Vista or newer
-        import win_knownpaths
+        from DisplayCAL import win_knownpaths
         try:
             folder_path = win_knownpaths.get_path(getattr(win_knownpaths.FOLDERID, folderid),
                                                   getattr(win_knownpaths.UserHandle,
@@ -168,7 +170,7 @@ else:
         config_dirs = list(map(os.path.normpath,
                                getenvu("XDG_CONFIG_DIRS",
                                        config_dir_default).split(os.pathsep)))
-        if not config_dir_default in config_dirs:
+        if config_dir_default not in config_dirs:
             config_dirs.append(config_dir_default)
         data_home_default = expandvarsu("$HOME/.local/share")
         data_home = getenvu("XDG_DATA_HOME", data_home_default)
@@ -177,7 +179,7 @@ else:
                              getenvu("XDG_DATA_DIRS",
                                      data_dirs_default).split(os.pathsep)))
         data_dirs.extend(list(filter(lambda data_dir, data_dirs=data_dirs:
-                                     not data_dir in data_dirs,
+                                     data_dir not in data_dirs,
                                      data_dirs_default.split(os.pathsep))))
 
         @staticmethod
@@ -229,7 +231,7 @@ else:
         def config_file_parser(f):
             for line in f:
                 line = line.strip()
-                if line.startswith("#") or not "=" in line:
+                if line.startswith("#") or "=" not in line:
                     continue
                 yield tuple(s.strip() for s in line.split("=", 1))
 

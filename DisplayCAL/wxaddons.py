@@ -6,12 +6,12 @@ import sys
 import threading
 import types
 
-from colormath import specialpow
-from wxfixes import wx, GenButton, PlateButton, get_dialogs
+from DisplayCAL.colormath import specialpow
+from DisplayCAL.wxfixes import wx, GenButton, PlateButton, get_dialogs
 
 import wx.grid
-from lib.agw.gradientbutton import GradientButton
-import floatspin
+from DisplayCAL.lib.agw.gradientbutton import GradientButton
+from DisplayCAL import floatspin
 
 
 def AdjustMinMax(self, minvalue=0.0, maxvalue=1.0):
@@ -143,7 +143,7 @@ wx.TopLevelWindow.RealCenterOnScreen = RealCenterOnScreen
 def SetSaneGeometry(self, x=None, y=None, w=None, h=None):
     """Set a 'sane' window position and/or size (within visible screen area).
     """
-    if not None in (x, y):
+    if None not in (x, y):
         # First, move to coordinates given
         self.SetPosition((x, y))
     # Returns the first display's client area if the window
@@ -158,7 +158,7 @@ def SetSaneGeometry(self, x=None, y=None, w=None, h=None):
             safety_margin = 40
     else:
         safety_margin = 20
-    if not None in (w, h):
+    if None not in (w, h):
         # Set given size, but resize if needed to fit inside client area
         if hasattr(self, "MinClientSize"):
             min_w, min_h = self.MinClientSize
@@ -169,7 +169,7 @@ def SetSaneGeometry(self, x=None, y=None, w=None, h=None):
         self.ClientSize = (min(display_client_rect[2] - border_lr, max(w, min_w)),
                            min(display_client_rect[3] - border_tb -
                                safety_margin, max(h, min_h)))
-    if not None in (x, y):
+    if None not in (x, y):
         if (not display_client_rect.ContainsXY(x, y) or
                 not display_client_rect.ContainsRect((x, y,
                                                       self.Size[0], self.Size[1]))):

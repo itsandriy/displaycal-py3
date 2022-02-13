@@ -9,11 +9,15 @@
 ##
 ##  Ported to Python by Florian Schulze
 import functools
-import os, re, sys
+import os
+import re
+import sys
 
-# a multi-pattern parser
 
-class Pattern:
+class Pattern(object):
+    """a multi-pattern parser
+    """
+
     def __init__(self, expression, replacement, length):
         self.expression = expression
         self.replacement = replacement
@@ -22,11 +26,13 @@ class Pattern:
     def __str__(self):
         return "(" + self.expression + ")"
 
+
 class Patterns(list):
     def __str__(self):
         return '|'.join([str(e) for e in self])
 
-class ParseMaster:
+
+class ParseMaster(object):
     # constants
     EXPRESSION = 0
     REPLACEMENT = 1
@@ -36,7 +42,7 @@ class ParseMaster:
     INDEXED = re.compile(r"""^\$\d+$""", re.M)
     TRIM = re.compile(r"""(['"])\1\+(.*)\+\1\1$""", re.M)
     ESCAPE = re.compile(r"""\\.""", re.M)#g
-    #QUOTE = re.compile(r"""'""", re.M)
+    # QUOTE = re.compile(r"""'""", re.M)
     DELETED = re.compile("""\x01[^\x01]*\x01""", re.M)#g
 
     def __init__(self):
@@ -69,9 +75,9 @@ class ParseMaster:
         #  - add one because each pattern is itself a sub-expression
         length = len(ParseMaster.GROUPS.findall(self._internalEscape(str(expression)))) + 1
         # does the pattern deal with sub-expressions?
-        if (isinstance(replacement, str) and ParseMaster.SUB_REPLACE.match(replacement)):
+        if isinstance(replacement, str) and ParseMaster.SUB_REPLACE.match(replacement):
             # a simple lookup? (e.g. "$2")
-            if (ParseMaster.INDEXED.match(replacement)):
+            if ParseMaster.INDEXED.match(replacement):
                 # store the index (used for fast retrieval of matched strings)
                 replacement = int(replacement[1:]) - 1
             else: # a complicated lookup (e.g. "Hello $2 $1")

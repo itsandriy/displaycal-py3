@@ -7,7 +7,7 @@ import wx
 import io
 import random
 
-from .fmresources import *
+from DisplayCAL.lib.agw.fmresources import *
 
 # ---------------------------------------------------------------------------- #
 # Class DCSaver
@@ -486,7 +486,7 @@ class RendererMSOffice2007(RendererBase):
         
         # Define the rounded rectangle base on the given rect
         # we need an array of 9 points for it
-        regPts = [None]*9
+        regPts = [None] * 9
         
         regPts[0] = wx.Point(rect.x, rect.y + radius)
         regPts[1] = wx.Point(rect.x+radius, rect.y)
@@ -1091,7 +1091,7 @@ class ArtManager(wx.EvtHandler):
         :param input: a flag used to call the right method.
         """
 
-        if input is None or type(input) == type(False):
+        if input is None or isinstance(input, bool):
             self.DrawButtonTheme(dc, rect, theme, state, input)
         else:
             self.DrawButtonColour(dc, rect, theme, state, input)

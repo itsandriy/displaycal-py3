@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 DisplayCAL - display calibration and characterization powered by ArgyllCMS
 
@@ -26,21 +25,22 @@ import sys
 
 from io import StringIO
 import datetime
-import decimal
-Decimal = decimal.Decimal
+# import decimal
+# Decimal = decimal.Decimal
+from decimal import Decimal
 import json as json_module
 import math
 import os
 import platform
-if sys.platform == "darwin":
-    from platform import mac_ver
 import re
 import shutil
 import socket
 import subprocess as sp
 import threading
 import traceback
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import zipfile
 if sys.platform == "win32":
     import winreg
@@ -53,117 +53,109 @@ import webbrowser
 
 # Set no delay time to open the web page
 webbrowser.PROCESS_CREATION_DELAY = 0
+APP_IS_UPTODATE = True
 
 # Config
-import config
-from config import (appbasename, autostart, autostart_home, build,
-                    script_ext, defaults, enc,
-                    exe, exe_ext, fs_enc, getbitmap, geticon,
-                    get_ccxx_testchart, get_current_profile,
-                    get_display_profile, get_data_path, getcfg,
-                    get_total_patches,
-                    get_verified_path, hascfg, is_ccxx_testchart, is_profile,
-                    initcfg, isapp, isexe, profile_ext,
-                    pydir, resfiles, setcfg, setcfg_cond,
-                    writecfg)
+from DisplayCAL import config
+from DisplayCAL.config import (appbasename, autostart, autostart_home, build, script_ext, defaults, enc, exe, exe_ext,
+                              fs_enc, getbitmap, geticon, get_ccxx_testchart, get_current_profile, get_display_profile,
+                              get_data_path, getcfg, get_total_patches, get_verified_path, hascfg, is_ccxx_testchart,
+                              is_profile, initcfg, isapp, isexe, profile_ext, pydir, resfiles, setcfg, setcfg_cond,
+                              writecfg)
 
 # Custom modules
 
-import CGATS
-import ICCProfile as ICCP
-import audio
-import ccmx
-import colord
-import colormath
-import localization as lang
-import madvr
-import pyi_md5pickuphelper
-import report
+from DisplayCAL import CGATS
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import audio
+from DisplayCAL import ccmx
+from DisplayCAL import colord
+from DisplayCAL import colormath
+from DisplayCAL import localization as lang
+from DisplayCAL import madvr
+from DisplayCAL import pyi_md5pickuphelper
+from DisplayCAL import report
 if sys.platform == "win32":
-    import util_win
+    from DisplayCAL import util_win
 elif sys.platform == "darwin":
-    import util_mac
-import wexpect
-from argyll_cgats import (cal_to_fake_profile, can_update_cal,
-                          ti3_to_ti1, extract_cal_from_profile,
-                          verify_ti1_rgb_xyz)
-from argyll_instruments import (get_canonical_instrument_name, instruments)
-from argyll_names import viewconds
-from colormath import (CIEDCCT2xyY, planckianCT2xyY, xyY2CCT, XYZ2CCT, XYZ2Lab,
-                       XYZ2xyY)
-from debughelpers import ResourceError, getevtobjname, getevttype, handle_error
-from edid import pnpidcache, get_manufacturer_name
-from log import log, logbuffer
-from meta import (VERSION, VERSION_BASE, author, name as appname, domain,
-                  version, version_short, get_latest_chglog_entry)
-from options import (debug, force_skip_initial_instrument_detection, test,
-                     test_update, verbose)
-from ordereddict import OrderedDict
-from patterngenerators import WebWinHTTPPatternGeneratorServer
+    from DisplayCAL import util_mac
+from DisplayCAL import wexpect
+from DisplayCAL.argyll_cgats import (cal_to_fake_profile, can_update_cal, ti3_to_ti1, extract_cal_from_profile,
+                                     verify_ti1_rgb_xyz)
+from DisplayCAL.argyll_instruments import get_canonical_instrument_name, instruments
+from DisplayCAL.argyll_names import viewconds
+from DisplayCAL.colormath import CIEDCCT2xyY, planckianCT2xyY, xyY2CCT, XYZ2CCT, XYZ2Lab, XYZ2xyY
+from DisplayCAL.debughelpers import ResourceError, getevtobjname, getevttype, handle_error
+from DisplayCAL.edid import pnpidcache, get_manufacturer_name
+from DisplayCAL.log import log, logbuffer
+from DisplayCAL.meta import (VERSION, VERSION_BASE, author, name as appname, domain, version, version_short,
+                             get_latest_chglog_entry)
+from DisplayCAL.options import (debug, force_skip_initial_instrument_detection, test, test_update, verbose)
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.patterngenerators import WebWinHTTPPatternGeneratorServer
+
 try:
-    from chromecast_patterngenerator import ChromeCastPatternGenerator as CCPG
+    from DisplayCAL.chromecast_patterngenerator import ChromeCastPatternGenerator as CCPG
 except ImportError:
-    CCPG = None.__class__
-from trash import trash, TrashAborted, TrashcanUnavailableError
-from util_decimal import float2dec, stripzeros
-from util_io import LineCache, StringIOu, TarFileProper
-from util_list import index_fallback_ignorecase, intlist, natsort
-from util_os import (dlopen, expanduseru, get_program_file, getenvu,
-                     is_superuser, launch_file, listdir_re, safe_glob, waccess,
-                     which)
-from util_str import ellipsis, make_filename_safe, safe_str, strtr, universal_newlines, wrap
-import util_x
-from worker import (Error, Info, UnloggedError, UnloggedInfo, UnloggedWarning,
-                    Warn, Worker, check_create_dir, check_file_isfile,
-                    check_set_argyll_bin, check_ti3, check_ti3_criteria1,
-                    check_ti3_criteria2, get_arg, get_argyll_util,
-                    get_cfg_option_from_args, get_options_from_cal,
-                    get_argyll_version, get_current_profile_path,
-                    get_options_from_profile, get_options_from_ti3,
-                    make_argyll_compatible_path,
-                    parse_argument_string, set_argyll_bin, show_result_dialog,
-                    check_argyll_bin, http_request, FilteredStream,
-                    _applycal_bug_workaround)
-from wxLUT3DFrame import LUT3DFrame
+    from types import NoneType
+    CCPG = NoneType
+
+from DisplayCAL.trash import trash, TrashAborted, TrashcanUnavailableError
+from DisplayCAL.util_decimal import float2dec, stripzeros
+from DisplayCAL.util_io import LineCache, StringIOu, TarFileProper
+from DisplayCAL.util_list import index_fallback_ignorecase, intlist, natsort
+from DisplayCAL.util_os import (dlopen, expanduseru, get_program_file, getenvu, is_superuser, launch_file, listdir_re,
+                                safe_glob, waccess, which)
+from DisplayCAL.util_str import ellipsis, make_filename_safe, safe_str, strtr, universal_newlines, wrap
+from DisplayCAL import util_x
+from DisplayCAL.worker import (Error, Info, UnloggedError, UnloggedInfo, UnloggedWarning, Warn, Worker,
+                               check_create_dir, check_file_isfile, check_set_argyll_bin, check_ti3,
+                               check_ti3_criteria1, check_ti3_criteria2, get_arg, get_argyll_util,
+                               get_cfg_option_from_args, get_options_from_cal, get_argyll_version,
+                               get_current_profile_path, get_options_from_profile, get_options_from_ti3,
+                               make_argyll_compatible_path, parse_argument_string, set_argyll_bin, show_result_dialog,
+                               check_argyll_bin, http_request, FilteredStream, _applycal_bug_workaround)
+from DisplayCAL.wxLUT3DFrame import LUT3DFrame
+
 try:
-    from wxLUTViewer import LUTFrame
+    from DisplayCAL.wxLUTViewer import LUTFrame
 except ImportError:
     LUTFrame = None
-from wxMeasureFrame import MeasureFrame
+
+from DisplayCAL.wxMeasureFrame import MeasureFrame
+
 try:
-    from wxCCXXPlot import CCXXPlot
+    from DisplayCAL.wxCCXXPlot import CCXXPlot
 except ImportError:
     CCXXPlot = None
-from wxDisplayUniformityFrame import DisplayUniformityFrame
-from wxMeasureFrame import get_default_size
+
+from DisplayCAL.wxDisplayUniformityFrame import DisplayUniformityFrame
+from DisplayCAL.wxMeasureFrame import get_default_size
+
 try:
-    from wxProfileInfo import ProfileInfoFrame
+    from DisplayCAL.wxProfileInfo import ProfileInfoFrame
 except ImportError:
     ProfileInfoFrame = None
-from wxReportFrame import ReportFrame
-from wxSynthICCFrame import SynthICCFrame
-from wxTestchartEditor import TestchartEditor
-from wxVisualWhitepointEditor import VisualWhitepointEditor
-from wxaddons import (wx, BetterWindowDisabler, CustomEvent,
-                      CustomGridCellEvent, IdFactory, PopupMenu)
-from wxfixes import (ThemedGenButton, BitmapWithThemedButton,
-                     set_bitmap_labels, TempXmlResource, wx_Panel,
-                     PlateButton, get_bitmap_disabled, set_maxsize)
-from wxwindows import (AboutDialog, AuiBetterTabArt, BaseApp, BaseFrame,
-                       BetterStaticFancyText, BorderGradientButton,
-                       BitmapBackgroundPanel, BitmapBackgroundPanelText,
-                       ConfirmDialog, CustomGrid, CustomCellBoolRenderer,
-                       FileBrowseBitmapButtonWithChoiceHistory, FileDrop,
-                       FlatShadedButton, HtmlWindow, HyperLinkCtrl, InfoDialog,
-                       LogWindow, ProgressDialog, TabButton, TooltipWindow,
-                       get_gradient_panel, get_dialogs, AutocompleteComboBox)
-import floatspin
-import wxenhancedplot as plot
-import xh_fancytext
-import xh_filebrowsebutton
-import xh_floatspin
-import xh_hstretchstatbmp
-import xh_bitmapctrls
+
+from DisplayCAL.wxReportFrame import ReportFrame
+from DisplayCAL.wxSynthICCFrame import SynthICCFrame
+from DisplayCAL.wxTestchartEditor import TestchartEditor
+from DisplayCAL.wxVisualWhitepointEditor import VisualWhitepointEditor
+from DisplayCAL.wxaddons import wx, BetterWindowDisabler, CustomEvent, CustomGridCellEvent, IdFactory, PopupMenu
+from DisplayCAL.wxfixes import (ThemedGenButton, BitmapWithThemedButton, set_bitmap_labels, TempXmlResource, wx_Panel,
+                                PlateButton, get_bitmap_disabled, set_maxsize)
+from DisplayCAL.wxwindows import (AboutDialog, AuiBetterTabArt, BaseApp, BaseFrame, BetterStaticFancyText,
+                                  BorderGradientButton, BitmapBackgroundPanel, BitmapBackgroundPanelText, ConfirmDialog,
+                                  CustomGrid, CustomCellBoolRenderer, FileBrowseBitmapButtonWithChoiceHistory, FileDrop,
+                                  FlatShadedButton, HtmlWindow, HyperLinkCtrl, InfoDialog, LogWindow, ProgressDialog,
+                                  TabButton, TooltipWindow, get_gradient_panel, get_dialogs, AutocompleteComboBox)
+from DisplayCAL import floatspin
+from DisplayCAL import wxenhancedplot as plot
+from DisplayCAL import xh_fancytext
+from DisplayCAL import xh_filebrowsebutton
+from DisplayCAL import xh_floatspin
+from DisplayCAL import xh_hstretchstatbmp
+from DisplayCAL import xh_bitmapctrls
 
 # wxPython
 try:
@@ -175,6 +167,7 @@ try:
 except ImportError:
     # Fall back to wx.aui under ancient wxPython versions
     from wx import aui
+
 from wx import xrc
 from wx.lib import delayedresult, platebtn
 from wx.lib.art import flagart
@@ -197,7 +190,7 @@ def swap_dict_keys_values(mydict):
 def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
     """ Check for application update. Show an error dialog if a failure
     occurs. """
-    global app_is_uptodate
+    global APP_IS_UPTODATE
     if argyll:
         if test_update:
             argyll_version = [0, 0, 0]
@@ -244,7 +237,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
             return
         newversion_tuple = (0, 0, 0, 0)
     if not argyll:
-        app_is_uptodate = newversion_tuple <= curversion_tuple
+        APP_IS_UPTODATE = newversion_tuple <= curversion_tuple
     if newversion_tuple > curversion_tuple:
         # Get changelog
         resp = http_request(parent, domain, "GET", "/" + chglog_file,
@@ -289,9 +282,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
             wx.CallAfter(parent.set_argyll_bin_handler, True)
     elif not silent:
         print(lang.getstr("update_check.uptodate", "ArgyllCMS"))
-        wx.CallAfter(app_uptodate, parent,
-                     "ArgyllCMS" if not globals().get("app_is_uptodate")
-                     else appname)
+        wx.CallAfter(app_uptodate, parent, "ArgyllCMS" if not globals().get("APP_IS_UPTODATE") else appname)
     else:
         print(lang.getstr("update_check.uptodate", "ArgyllCMS"))
         # Check if we need to run instrument setup
@@ -1156,11 +1147,9 @@ class GamapFrame(BaseFrame):
                 v = None
             else:
                 src_viewcond = getcfg("gamap_src_viewcond")
-                if (event and
-                        ((src_viewcond in [None] + self.viewconds_out_nondisplay
-                          and profile.profileClass in ("mntr", "spac")) or
-                         (src_viewcond not in self.viewconds_out_nondisplay
-                          and profile.profileClass not in ("mntr", "spac")))):
+                if event \
+                   and ((src_viewcond in [None].extend(self.viewconds_out_nondisplay) and profile.profileClass in ("mntr", "spac")) \
+                   or (src_viewcond not in self.viewconds_out_nondisplay and profile.profileClass not in ("mntr", "spac"))):
                     # pre-select suitable viewing condition
                     if profile.profileClass == "prtr":
                         src_viewcond = "pp"
@@ -1327,11 +1316,12 @@ class GamapFrame(BaseFrame):
         self.viewconds_ab[None] = lang.getstr("none")
         self.viewconds_ba[lang.getstr("none")] = None
         self.viewconds_out_nondisplay = ["pp", "pe", "pc", "pcd", "ob", "cx"]
-        if False:
-            # NEVER - filter dest viewing conditions
-            self.viewconds_out_ignore = self.viewconds_out_nondisplay
-        else:
-            viewconds_out_ignore = []
+        # if False:
+        #     # NEVER - filter dest viewing conditions
+        #     self.viewconds_out_ignore = self.viewconds_out_nondisplay
+        # else:
+        viewconds_out_ignore = []
+
         for v in viewconds:
             if self.Parent and hasattr(self.Parent, "worker") and (
                     (v == "pc" and self.Parent.worker.argyll_version < [1, 1, 1]) or
@@ -1471,7 +1461,7 @@ class MainFrame(ReportFrame, BaseFrame):
             scrollrate_x = 0
         self.calpanel.SetScrollRate(scrollrate_x, 2)
         x, y = getcfg("position.x", False), getcfg("position.y", False)
-        if not None in (x, y):
+        if None not in (x, y):
             self.SetSaneGeometry(x, y)
         self.set_size(True, True)
         if None in (x, y):
@@ -2064,7 +2054,7 @@ class MainFrame(ReportFrame, BaseFrame):
         for testcharts in list(self.testchart_defaults.values()):
             for chart in list(testcharts.values()):
                 chart = lang.getstr(chart)
-                if not chart in self.default_testchart_names:
+                if chart not in self.default_testchart_names:
                     self.default_testchart_names.append(chart)
 
         items = [lang.getstr("testchart." + v) for v in
@@ -2208,7 +2198,7 @@ class MainFrame(ReportFrame, BaseFrame):
         USE_POPUP_MENU = False
         if USE_POPUP_MENU:
             with open(menu_xrc_path, "rb") as xrc_file:
-                xrc_xml = xrc_file.read()
+                xrc_xml = xrc_file.read().decode()
             xrc_xml = xrc_xml.replace('<object class="wxMenuBar" name="menu">', '')
             xrc_xml = xrc_xml.replace('</object>\n</resource>', '</resource>')
             res = xrc.XmlResource()
@@ -3459,14 +3449,14 @@ class MainFrame(ReportFrame, BaseFrame):
                 measurement_modes[instrument_type].append(lang.getstr(desc))
                 measurement_modes_ab[instrument_type].append(mode)
         if instrument_name == "K-10":
-            if not measurement_mode in measurement_modes_ab[instrument_type]:
+            if measurement_mode not in measurement_modes_ab[instrument_type]:
                 measurement_mode = "F"
         if instrument_features.get("projector_mode") and \
                 self.worker.argyll_version >= [1, 1, 0]:
             # Projector mode introduced in Argyll 1.1.0 Beta
             measurement_modes[instrument_type].append(lang.getstr("projector"))
             measurement_modes_ab[instrument_type].append("p")
-        if not measurement_mode in measurement_modes_ab[instrument_type]:
+        if measurement_mode not in measurement_modes_ab[instrument_type]:
             if measurement_modes_ab[instrument_type]:
                 measurement_mode = measurement_modes_ab[instrument_type][0]
             else:
@@ -3885,7 +3875,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.colorimeter_correction_info_btn.Enable(len(ccmx) > 1 and
                                                     bool(ccmx[1]))
         self.update_estimated_measurement_times()
-        if not observer in self.observers_ab:
+        if observer not in self.observers_ab:
             self.observer_ctrl.Enable()
         self.show_observer_ctrl()
         if malformed_ccxx:
@@ -4028,7 +4018,7 @@ class MainFrame(ReportFrame, BaseFrame):
             result = False
         if not isinstance(result, Exception) and result:
             filename, ext = os.path.splitext(cal)
-            if not cal in self.recent_cals:
+            if cal not in self.recent_cals:
                 self.recent_cals.append(cal)
                 recent_cals = []
                 for recent_cal in self.recent_cals:
@@ -4369,7 +4359,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def check_show_macos_bugs_warning(self, cal=True, profile=True):
         """ Warn about specific macOS bugs """
         if (sys.platform != "darwin" or
-                intlist(mac_ver()[0].split(".")) < [10, 8]):
+                intlist(platform.mac_ver()[0].split(".")) < [10, 8]):
             # We assume these macOS bugs exist since 10.8 "Mountain Lion"
             return
         result = None
@@ -5067,7 +5057,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def lut3d_update_controls(self):
         self.lut3d_create_cb.SetValue(bool(getcfg("3dlut.create")))
         lut3d_input_profile = getcfg("3dlut.input.profile")
-        if not lut3d_input_profile in list(self.input_profiles.values()):
+        if lut3d_input_profile not in list(self.input_profiles.values()):
             if (not lut3d_input_profile or
                     not os.path.isfile(lut3d_input_profile)):
                 lut3d_input_profile = defaults["3dlut.input.profile"]
@@ -5181,7 +5171,7 @@ class MainFrame(ReportFrame, BaseFrame):
         settings """
         sel = self.calibration_file_ctrl.GetSelection()
         cal = getcfg("calibration.file", False) or ""
-        if not cal in self.recent_cals:
+        if cal not in self.recent_cals:
             self.recent_cals.append(cal)
         # The case-sensitive index could fail because of
         # case insensitive file systems, e.g. if the
@@ -6482,13 +6472,13 @@ class MainFrame(ReportFrame, BaseFrame):
             return
         # Get meta prefix
         prefixes = (metadata.getvalue("prefix", "", None) or "CONNECTION_").split(",")
-        if not "CONNECTION_" in prefixes:
+        if "CONNECTION_" not in prefixes:
             prefixes.append("CONNECTION_")
         # Update meta
         panel = dlg.panel_ctrl.GetSelection()
         if panel > 0:
             metadata["SCREEN_surface"] = paneltypes[panel - 1]
-            if not "SCREEN_" in prefixes:
+            if "SCREEN_" not in prefixes:
                 prefixes.append("SCREEN_")
         # Update meta
         metadata["CONNECTION_type"] = connections[dlg.connection_ctrl.GetSelection()]
@@ -6496,7 +6486,7 @@ class MainFrame(ReportFrame, BaseFrame):
             if isinstance(ctrl, wx.TextCtrl) and ctrl.GetValue().strip():
                 metadata["OSD_settings_%s" %
                          re.sub("[ .]", "_", ctrl.Name)] = ctrl.GetValue().strip()
-            if not "OSD_" in prefixes:
+            if "OSD_" not in prefixes:
                 prefixes.append("OSD_")
         # Set meta prefix
         metadata["prefix"] = ",".join(prefixes)
@@ -7672,7 +7662,7 @@ class MainFrame(ReportFrame, BaseFrame):
         ti3_joined.LUMINANCE_XYZ_CDM2 = ti3_measured.LUMINANCE_XYZ_CDM2
         # add XYZ to DATA_FORMAT if not yet present
         labels_xyz = ("XYZ_X", "XYZ_Y", "XYZ_Z")
-        if not "XYZ_X" in list(ti3_joined.DATA_FORMAT.values()) and \
+        if "XYZ_X" not in list(ti3_joined.DATA_FORMAT.values()) and \
                 not "XYZ_Y" in list(ti3_joined.DATA_FORMAT.values()) and \
                 not "XYZ_Z" in list(ti3_joined.DATA_FORMAT.values()):
             ti3_joined.DATA_FORMAT.add_data(labels_xyz)
@@ -7737,7 +7727,7 @@ class MainFrame(ReportFrame, BaseFrame):
             if "XYZ_X" in list(data.DATA_FORMAT.values()) and \
                     "XYZ_Y" in list(data.DATA_FORMAT.values()) and \
                     "XYZ_Z" in list(data.DATA_FORMAT.values()):
-                if not "LAB_L" in list(data.DATA_FORMAT.values()) and \
+                if "LAB_L" not in list(data.DATA_FORMAT.values()) and \
                         not "LAB_A" in list(data.DATA_FORMAT.values()) and \
                         not "LAB_B" in list(data.DATA_FORMAT.values()):
                     # add Lab fields to DATA_FORMAT if not present
@@ -7814,7 +7804,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 reference_observer != defaults["observer"]):
                             reference_observer = self.observers_ab.get(reference_observer,
                                                                        reference_observer)
-                            if not reference_observer.lower() in ccmx.lower():
+                            if reference_observer.lower() not in ccmx.lower():
                                 ccmx += " \u2014 " + reference_observer
             else:
                 ccmx = "None"
@@ -7846,8 +7836,7 @@ class MainFrame(ReportFrame, BaseFrame):
                              "${DISPLAY}": display,
                              "${INSTRUMENT}": instrument,
                              "${CORRECTION_MATRIX}": ccmx,
-                             "${BLACKPOINT}": "%f %f %f" % (bkpt_measured if
-                                                            bkpt_measured else (-1, ) * 3),
+                             "${BLACKPOINT}": "%f %f %f" % (bkpt_measured if bkpt_measured else (-1.0, -1.0, -1.0)),
                              "${WHITEPOINT}": "%f %f %f" % wtpt_measured,
                              "${WHITEPOINT_NORMALIZED}": "%f %f %f" %
                                                          wtpt_measured_norm,
@@ -9169,7 +9158,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             pass
                         else:
                             lstr = lang.getstr("profile.self_check") + ":"
-                            if not lstr in extra:
+                            if lstr not in extra:
                                 extra.append(lstr)
                             extra.append(" %s %.2f" %
                                          (lang.getstr("profile.self_check.%s" %
@@ -9640,7 +9629,7 @@ class MainFrame(ReportFrame, BaseFrame):
         show = (not getattr(self, "show_profile_info", None) or
                 self.show_profile_info.GetValue())
         if show:
-            if not id in self.profile_info:
+            if id not in self.profile_info:
                 # Create profile info window and store in hash table
                 self.profile_info[id] = ProfileInfoFrame(None, -1)
                 self.profile_info[id].Unbind(wx.EVT_CLOSE)
@@ -10206,7 +10195,7 @@ class MainFrame(ReportFrame, BaseFrame):
             show_result_dialog(exception, self)
             return
 
-        if not 0 in cgats:
+        if 0 not in cgats:
             wx.Bell()
             return
 
@@ -11310,11 +11299,9 @@ class MainFrame(ReportFrame, BaseFrame):
                 if not pnpidcache:
                     # Populate pnpidcache
                     get_manufacturer_name("???")
-                manufacturers = dict([name, id] for id, name in
-                                     pnpidcache.items())
+                manufacturers = dict([name, id_] for id_, name in pnpidcache.items())
                 manufacturer_id = manufacturers.get(manufacturer)
-            if manufacturer_id and not re.search('\nMANUFACTURER_ID\s+".+?"\n',
-                                                 cgats):
+            if manufacturer_id and not re.search('\nMANUFACTURER_ID\s+".+?"\n', cgats):
                 # By default, CCMX/CCSS files don't contain manufacturer ID
                 cgats = re.sub('(\nDISPLAY\s+"[^"]*"\n)',
                                '\nMANUFACTURER_ID "%s"\\1' %
@@ -11640,7 +11627,7 @@ class MainFrame(ReportFrame, BaseFrame):
             # Important: Do not use parsed CGATS, order of keywords may be
             # different than raw data so MD5 will be different
             cgatsfile = open(path, "rb")
-            cgats = cgatsfile.read()
+            cgats = cgatsfile.read().decode()
             cgatsfile.close()
             originator = re.search('\nORIGINATOR\s+"Argyll', cgats)
             if not originator:
@@ -11969,8 +11956,7 @@ class MainFrame(ReportFrame, BaseFrame):
             print("   asroot:", asroot)
         return result, i1d3, spyd4, icd
 
-    def import_colorimeter_corrections_producer(self, result, i1d3, i1d3ccss,
-                                                spyd4, spyd4en, icd, oeminst,
+    def import_colorimeter_corrections_producer(self, result, i1d3, i1d3ccss, spyd4, spyd4en, icd, oeminst,
                                                 paths, auto, asroot, importers):
         """ Import colorimetercorrections from paths """
         if auto and not paths:
@@ -12091,8 +12077,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                                            asroot)
         return result, i1d3, spyd4, icd
 
-    def import_colorimeter_corrections_consumer(self, results, callafter=None,
-                                                callafter_args=()):
+    def import_colorimeter_corrections_consumer(self, results, callafter=None, callafter_args=()):
         result, i1d3, spyd4, icd = results
         if isinstance(result, Exception):
             show_result_dialog(result, self)
@@ -13216,7 +13201,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     return
             ti3_lines = [line.strip() for line in ti3]
             ti3.close()
-            if not "CAL" in ti3_lines:
+            if "CAL" not in ti3_lines:
                 dlg = ConfirmDialog(self,
                                     msg=lang.getstr("dialog.ti3_no_cal_info"),
                                     ok=lang.getstr("continue"),
@@ -13906,7 +13891,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def get_whitepoint_locus(self):
         n = self.whitepoint_colortemp_locus_ctrl.GetSelection()
-        if not n in self.whitepoint_colortemp_loci_ab:
+        if n not in self.whitepoint_colortemp_loci_ab:
             n = 0
         return str(self.whitepoint_colortemp_loci_ab[n])
 
@@ -14026,7 +14011,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 ti3_lines = [line.strip() for
                              line in StringIOu(profile.tags.get("CIED", "") or
                                                profile.tags.get("targ", ""))]
-                if not "CTI3" in ti3_lines:
+                if "CTI3" not in ti3_lines:
                     InfoDialog(self,
                                msg=lang.getstr("profile.no_embedded_ti3") +
                                    "\n" + path,
@@ -14224,14 +14209,17 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 ti1_1 = verify_ti1_rgb_xyz(ti1)
             except CGATS.CGATSError as exception:
-                msg = {CGATS.CGATSKeyError: lang.getstr("error.testchart.missing_fields",
-                                                        (path,
-                                                         "RGB_R, RGB_G, RGB_B, "
-                                                         " XYZ_X, XYZ_Y, XYZ_Z"))}.get(exception.__class__,
-                                                                                       lang.getstr("error.testchart.invalid",
-                                                                                                   path) +
-                                                                                       "\n" +
-                                                                                       lang.getstr(str(exception)))
+                msg = {
+                    CGATS.CGATSKeyError:
+                        lang.getstr(
+                            "error.testchart.missing_fields",
+                            (path, "RGB_R, RGB_G, RGB_B,  XYZ_X, XYZ_Y, XYZ_Z")
+                        )
+                }.get(
+                    exception.__class__,
+                    lang.getstr("error.testchart.invalid", path) + "\n" + lang.getstr(str(exception))
+                )
+
                 InfoDialog(self,
                            msg=msg,
                            ok=lang.getstr("ok"),
@@ -14580,7 +14568,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     setcfg("recent_cals", os.pathsep.join(recent_cals))
                     self.calibration_file_ctrl.Delete(sel)
                     cal = getcfg("calibration.file", False) or ""
-                    if not cal in self.recent_cals:
+                    if cal not in self.recent_cals:
                         self.recent_cals.append(cal)
                     # The case-sensitive index could fail because of
                     # case insensitive file systems, e.g. if the
@@ -14989,11 +14977,11 @@ class MainFrame(ReportFrame, BaseFrame):
                 elif 'HIRES_B2A "NO"' in ti3_lines:
                     setcfg("profile.b2a.hires", 0)
                 if 'SMOOTH_B2A "YES"' in ti3_lines:
-                    if not 'HIRES_B2A "NO"' in ti3_lines:
+                    if 'HIRES_B2A "NO"' not in ti3_lines:
                         setcfg("profile.b2a.hires", 1)
                     setcfg("profile.b2a.hires.smooth", 1)
                 elif 'SMOOTH_B2A "NO"' in ti3_lines:
-                    if not 'HIRES_B2A "YES"' in ti3_lines:
+                    if 'HIRES_B2A "YES"' not in ti3_lines:
                         setcfg("profile.b2a.hires", 0)
                     setcfg("profile.b2a.hires.smooth", 0)
                 if 'BEGIN_DATA_FORMAT' in ti3_lines:
@@ -15267,7 +15255,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     self.recent_cals.remove(self.recent_cals[sel])
                     self.calibration_file_ctrl.Delete(sel)
                     cal = getcfg("calibration.file", False) or ""
-                    if not cal in self.recent_cals:
+                    if cal not in self.recent_cals:
                         self.recent_cals.append(cal)
                     # The case-sensitive index could fail because of
                     # case insensitive file systems, e.g. if the
@@ -15343,7 +15331,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             continue
                         x, y, Y = XYZ2xyY(XYZ[0], XYZ[1], XYZ[2])
                         k = XYZ2CCT(XYZ[0], XYZ[1], XYZ[2])
-                        if not lang.getstr("whitepoint") in settings:
+                        if lang.getstr("whitepoint") not in settings:
                             setcfg("whitepoint.colortemp", None)
                             setcfg("whitepoint.x", round(x, 4))
                             setcfg("whitepoint.y", round(y, 4))
@@ -15831,7 +15819,7 @@ class MainFrame(ReportFrame, BaseFrame):
             event.Veto()
 
 
-if ((sys.platform == "darwin" and intlist(mac_ver()[0].split(".")) >= [10, 10]) or
+if ((sys.platform == "darwin" and intlist(platform.mac_ver()[0].split(".")) >= [10, 10]) or
         os.getenv("XDG_SESSION_TYPE") == "wayland"):
     # Use a wx.Dialog so we can use ShowModal() which seems to be the only way to
     # center the splash screen under Wayland.
@@ -15863,7 +15851,7 @@ class StartupFrame(start_cls):
                 # this event.
                 self.Bind(wx.EVT_WINDOW_CREATE, self.SetWindowShape)
             elif (sys.platform != "darwin" or
-                  intlist(mac_ver()[0].split(".")) < [10, 14]):
+                  intlist(platform.mac_ver()[0].split(".")) < [10, 14]):
                 # On wxMSW and wxMac the window has already been created.
                 self.SetWindowShape()
 
@@ -15924,7 +15912,7 @@ class StartupFrame(start_cls):
                                 self.splash_bmp.Size[1])
             extra_args = []
             if sys.platform == "darwin":
-                is_mavericks = intlist(mac_ver()[0].split(".")) >= [10, 9]
+                is_mavericks = intlist(platform.mac_ver()[0].split(".")) >= [10, 9]
                 if is_mavericks:
                     # Under 10.9 we can specify screen region as arguments
                     extra_args = ["-R%i,%i,%i,%i" % splashdimensions]
@@ -16100,7 +16088,7 @@ class StartupFrame(start_cls):
             if self.frame < len(self.zoom_scales):
                 wx.CallLater(1, self.startup)
             else:
-                wx.CallLater(1000 / 30.0, self.startup)
+                wx.CallLater(int(1000 / 30.0), self.startup)
             return
         # Give 20 seconds for display & instrument enumeration to run.
         # This should be plenty and will kill the subprocess in case it hangs.
@@ -16428,11 +16416,9 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
                         grid.SetCellValue(row, 6 + k, "%.4f" % value)
                         XYZ.append(value)
                     if cur is prev:
-                        dlg.update_row(row, RGB, XYZ, None, None,
-                                       prev_delta_to_sRGB)
+                        dlg.update_row(row, RGB, XYZ, None, None, prev_delta_to_sRGB)
                     else:
-                        dlg.update_row(row, RGB, XYZ, delta, sRGB_delta,
-                                       delta_to_sRGB)
+                        dlg.update_row(row, RGB, XYZ, delta, sRGB_delta, delta_to_sRGB)
         grid.EndBatch()
 
         grid.Bind(wx.EVT_KEY_DOWN, dlg.key_handler)

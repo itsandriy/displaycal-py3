@@ -8,7 +8,7 @@ import time
 import warnings
 from time import sleep
 
-from options import use_colord_gi
+from DisplayCAL.options import use_colord_gi
 
 try:
     # XXX D-Bus API is more complete currently
@@ -22,14 +22,14 @@ except ImportError:
 else:
     cancellable = Gio.Cancellable.new()
 
-from util_dbus import DBusObject, DBusException, BUSTYPE_SYSTEM
+from DisplayCAL.util_dbus import DBusObject, DBusException, BUSTYPE_SYSTEM
 
-from util_os import which
-from util_str import safe_str
-import localization as lang
+from DisplayCAL.util_os import which
+from DisplayCAL.util_str import safe_str
+from DisplayCAL import localization as lang
 
 if sys.platform not in ("darwin", "win32"):
-    from defaultpaths import xdg_data_home
+    from DisplayCAL.defaultpaths import xdg_data_home
 
     if not Colord:
         try:
@@ -45,7 +45,7 @@ CD_CLIENT_IMPORT_DAEMON_TIMEOUT = 5000  # ms
 
 if (not Colord or isinstance(Colord, DBusObject) or
         not hasattr(Colord, 'quirk_vendor_name')):
-    from config import get_data_path
+    from DisplayCAL.config import get_data_path
 
     # From colord/lib/colord/cd_quirk.c, cd_quirk_vendor_name
     quirk_cache = {
@@ -275,7 +275,7 @@ def install_profile(device_id, profile,
     if profile.ID == "\0" * 16:
         profile.calculateID()
         profile.fileName = None
-    profile_id = "icc-" + hexlify(profile.ID)
+    profile_id = "icc-" + hexlify(profile.ID).decode()
 
     # Write profile to destination
     profile_installdir = os.path.dirname(profile_installname)
@@ -306,7 +306,7 @@ def install_profile(device_id, profile,
         if not colormgr:
             raise CDError("colormgr helper program not found")
 
-        from worker import printcmdline
+        from DisplayCAL.worker import printcmdline
 
         cmd = str(colormgr)
 

@@ -5,8 +5,8 @@ import re
 import subprocess as sp
 from time import sleep
 
-from meta import name as appname
-from .options import verbose
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import verbose
 
 
 def get_osascript_args(applescript):
@@ -121,7 +121,6 @@ def get_model_code(serial=None):
 
 def get_serial():
     """Return this mac's serial number
-
     """
     try:
         p = sp.Popen(["ioreg", "-c", "IOPlatformExpertDevice", "-d", "2"],
@@ -129,22 +128,21 @@ def get_serial():
         output, errors = p.communicate()
     except:
         return None
-    match = re.search(r'"IOPlatformSerialNumber"\s*=\s*"([^"]*)"', output)
+    match = re.search(r'"IOPlatformSerialNumber"\s*=\s*"([^"]*)"', output.decode())
     if match:
         return match.group(1)
 
 
 def get_model_id():
     """Return this mac's model id
-
     """
     try:
         p = sp.Popen(["sysctl", "hw.model"], stdin=sp.PIPE, stdout=sp.PIPE,
                      stderr=sp.PIPE)
         output, errors = p.communicate()
-    except:
+    except BaseException:
         return None
-    return  "".join(output).split(None, 1)[-1].strip()
+    return "".join(output).split(None, 1)[-1].strip()
 
 
 def get_machine_attributes(model_id=None):
@@ -171,11 +169,11 @@ def get_machine_attributes(model_id=None):
         p = sp.Popen(["defaults", "read", filename, model_id],
                      stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
         output, errors = p.communicate()
-    except:
+    except Exception:
         return None
     attrs = {}
     for line in output.splitlines():
-        match = re.search(r'(\w+)\s*=\s*"?(.*?)"?\s*;', line)
+        match = re.search(r'(\w+)\s*=\s*"?(.*?)"?\s*;', line.decode)
         if match:
             # Need to double unescape backslashes
             attrs[match.group(1)] = match.group(2).decode("string_escape").decode("string_escape")

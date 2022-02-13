@@ -20,7 +20,7 @@ if sys.platform == "darwin":
     import posix
 
 # Python version check
-from meta import py_minversion, py_maxversion
+from DisplayCAL.meta import py_minversion, py_maxversion
 
 pyver = sys.version_info[:2]
 if pyver < py_minversion or pyver > py_maxversion:
@@ -32,16 +32,16 @@ if pyver < py_minversion or pyver > py_maxversion:
         )
     )
 
-from config import (autostart_home, confighome, datahome, enc, exe, exe_ext,
+from DisplayCAL.config import (autostart_home, confighome, datahome, enc, exe, exe_ext,
                     exedir, exename, get_data_path, getcfg, fs_enc, initcfg,
                     isapp, isexe, logdir, pydir, pyname, pypath, resfiles,
                     runtype, appbasename)
-from debughelpers import ResourceError, handle_error
-from log import log
-from meta import VERSION, VERSION_BASE, VERSION_STRING, build, name as appname
-from multiprocess import mp
-from options import debug, verbose
-from util_os import FileLock
+from DisplayCAL.debughelpers import ResourceError, handle_error
+from DisplayCAL.log import log
+from DisplayCAL.meta import VERSION, VERSION_BASE, VERSION_STRING, build, name as appname
+from DisplayCAL.multiprocess import mp
+from DisplayCAL.options import debug, verbose
+from DisplayCAL.util_os import FileLock
 if sys.platform == "win32":
     from util_win import win_ver
     import ctypes
@@ -74,10 +74,10 @@ def _main(module, name, applockfilename, probe_ports=True):
         print("Mac OS X %s %s" % (mac_ver()[0], mac_ver()[-1]))
     elif sys.platform == "win32":
         machine = platform.machine()
-        print(*[v for v in win_ver() if v] + ({"AMD64": "x86_64"}.get(machine, machine), ))
+        print(*[v for v in win_ver() if v] + [{"AMD64": "x86_64"}.get(machine, machine), ])
     else:
         # Linux
-        print(' '.join(distro.linux_distribution(full_distribution_name=False)), platform.machine())
+        print(' '.join([distro.id(), distro.version(), distro.codename()]), platform.machine())
     print("Python " + sys.version)
     cafile = os.getenv("SSL_CERT_FILE")
     if cafile:
@@ -94,7 +94,7 @@ def _main(module, name, applockfilename, probe_ports=True):
             print(exception)
         else:
             print("Faulthandler", getattr(faulthandler, "__version__", ""))
-    from wxaddons import wx
+    from DisplayCAL.wxaddons import wx
     if "phoenix" in wx.PlatformInfo:
         # py2exe helper so wx.xml gets picked up
         from wx import xml
@@ -135,7 +135,7 @@ def _main(module, name, applockfilename, probe_ports=True):
                 else:
                     lockfile = AppLock(lockfilename, "r", True, True)
                 if lockfile:
-                    if not lockfilename in lock2pids_ports:
+                    if lockfilename not in lock2pids_ports:
                         lock2pids_ports[lockfilename] = []
                     for ln, line in enumerate(lockfile.read().splitlines(), 1):
                         if ":" in line:
@@ -322,7 +322,7 @@ def _main(module, name, applockfilename, probe_ports=True):
                     break
             if incoming is not None:
                 # Other instance running?
-                import localization as lang
+                from DisplayCAL import localization as lang
                 lang.init()
                 if incoming == "ok":
                     # Successfully sent our request
@@ -353,7 +353,7 @@ def _main(module, name, applockfilename, probe_ports=True):
                 host = ""
             used_ports = [pid_port[1] for pids_ports in list(lock2pids_ports.values()) for pid_port in pids_ports]
             candidate_ports = [0]
-            if not defaultport in used_ports:
+            if defaultport not in used_ports:
                 candidate_ports.insert(0, defaultport)
             for port in candidate_ports:
                 try:
@@ -395,7 +395,7 @@ def _main(module, name, applockfilename, probe_ports=True):
         else:
             lock.write(port)
         atexit.register(lambda: print("Ran application exit handlers"))
-        from wxwindows import BaseApp
+        from DisplayCAL.wxwindows import BaseApp
         BaseApp.register_exitfunc(_exit, applockfilename, port)
         # Check for required resource files
         mod2res = {"3DLUT-maker": ["xrc/3dlut.xrc"],
@@ -408,7 +408,7 @@ def _main(module, name, applockfilename, probe_ports=True):
         for filename in mod2res.get(module, resfiles):
             path = get_data_path(os.path.sep.join(filename.split("/")))
             if not path or not os.path.isfile(path):
-                import localization as lang
+                from DisplayCAL import localization as lang
                 lang.init()
                 raise ResourceError(lang.getstr("resources.notfound.error") +
                                     "\n" + filename)
@@ -434,28 +434,25 @@ def _main(module, name, applockfilename, probe_ports=True):
                          % ";".join(script).encode(fs_enc)])
         # Initialize & run
         if module == "3DLUT-maker":
-            from wxLUT3DFrame import main
+            from DisplayCAL.wxLUT3DFrame import main
         elif module == "curve-viewer":
-            from wxLUTViewer import main
+            from DisplayCAL.wxLUTViewer import main
         elif module == "profile-info":
-            from wxProfileInfo import main
+            from DisplayCAL.wxProfileInfo import main
         elif module == "scripting-client":
-            from wxScriptingClient import main
+            from DisplayCAL.wxScriptingClient import main
         elif module == "synthprofile":
-            from wxSynthICCFrame import main
+            from DisplayCAL.wxSynthICCFrame import main
         elif module == "testchart-editor":
-            from wxTestchartEditor import main
+            from DisplayCAL.wxTestchartEditor import main
         elif module == "VRML-to-X3D-converter":
-            from wxVRML2X3D import main
+            from DisplayCAL.wxVRML2X3D import main
         elif module == "apply-profiles":
-            from profile_loader import main
+            from DisplayCAL.profile_loader import main
         else:
-            from DisplayCAL import main
-    # Run main after releasing lock
-    try:
+            from DisplayCAL.display_cal import main
+        # Run main after releasing lock
         main()
-    except TypeError:
-        main.main()
 
 
 def main(module=None):
@@ -480,7 +477,7 @@ def main(module=None):
 
 def _exit(lockfilename, oport):
     for process in mp.active_children():
-        if not "Manager" in process.name:
+        if "Manager" not in process.name:
             print("Terminating zombie process", process.name)
             process.terminate()
             print(process.name, "terminated")

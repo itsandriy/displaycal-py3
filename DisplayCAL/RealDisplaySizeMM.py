@@ -5,41 +5,41 @@ import platform
 import re
 import sys
 
-from util_dbus import DBusObject, DBusException, BUSTYPE_SESSION
-from util_x import get_display as _get_x_display
+from DisplayCAL.util_dbus import DBusObject, DBusException, BUSTYPE_SESSION
+from DisplayCAL.util_x import get_display as _get_x_display
 
 if sys.platform == "darwin":
     # Mac OS X has universal binaries in two flavors:
     # - i386 & PPC
     # - i386 & x86_64
     if platform.architecture()[0].startswith('64'):
-        from lib64.RealDisplaySizeMM import *
+        from DisplayCAL.lib64.RealDisplaySizeMM import *
     else:
-        from lib32.RealDisplaySizeMM import *
+        from DisplayCAL.lib32.RealDisplaySizeMM import *
 else:
     # Linux and Windows have separate files
     if platform.architecture()[0].startswith('64'):
         if sys.version_info[:2] == (3, 6):
-            from lib64.python36.RealDisplaySizeMM import *
+            from DisplayCAL.lib64.python36.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 7):
-            from lib64.python37.RealDisplaySizeMM import *
+            from DisplayCAL.lib64.python37.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 8):
-            from lib64.python38.RealDisplaySizeMM import *
+            from DisplayCAL.lib64.python38.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 9):
-            from lib64.python39.RealDisplaySizeMM import *
+            from DisplayCAL.lib64.python39.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 10):
-            from lib64.python310.RealDisplaySizeMM import *
+            from DisplayCAL.lib64.python310.RealDisplaySizeMM import *
     else:
         if sys.version_info[:2] == (3, 6):
-            from lib32.python36.RealDisplaySizeMM import *
+            from DisplayCAL.lib32.python36.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 7):
-            from lib32.python37.RealDisplaySizeMM import *
+            from DisplayCAL.lib32.python37.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 8):
-            from lib32.python38.RealDisplaySizeMM import *
+            from DisplayCAL.lib32.python38.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 9):
-            from lib32.python39.RealDisplaySizeMM import *
+            from DisplayCAL.lib32.python39.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 10):
-            from lib32.python310.RealDisplaySizeMM import *
+            from DisplayCAL.lib32.python310.RealDisplaySizeMM import *
 
 _displays = None
 
@@ -93,7 +93,7 @@ def get_display(display_no=0):
         enumerate_displays()
     # Translate from Argyll display index to enumerated display index
     # using the coordinates and dimensions
-    from config import getcfg, is_virtual_display
+    from DisplayCAL.config import getcfg, is_virtual_display
     if is_virtual_display(display_no):
         return
     try:

@@ -1,4 +1,4 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Name:        wxversion
 # Purpose:     Allows a wxPython program to search for alternate 
 #              installations of the wxPython packages and modify sys.path
@@ -13,7 +13,7 @@
 #
 # 2019-05      Updated to find Phoenix versions and never override first
 #              entry in sys.path (usually current dir) - fhoech
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 """
 If you have more than one version of wxPython installed this module
@@ -77,17 +77,23 @@ found at: http://wiki.wxpython.org/index.cgi/MultiVersionInstalls
 
 """
 
-import re, sys, os, glob, fnmatch
+import re
+import sys
+import os
+import glob
+import fnmatch
 
 
 _selected = None
+
+
 class VersionError(Exception):
     pass
+
 
 class AlreadyImportedError(VersionError):
     pass
 
-#----------------------------------------------------------------------
 
 def select(versions, optionsRequired=False):
     """Search for a wxPython installation that matches version.  If one
@@ -427,24 +433,21 @@ class _wxPackageInfo(object):
     
     def __eq__(self, other):
         return self.version == other.version and self.options == other.options
-        
-    
 
-#----------------------------------------------------------------------
 
 if __name__ == '__main__':
     import pprint
 
-    #ensureMinimal('2.5')
-    #pprint.pprint(sys.path)
-    #sys.exit()
-    
-    
+    # ensureMinimal('2.5')
+    # pprint.pprint(sys.path)
+    # sys.exit()
+
+
     def test(version, optionsRequired=False):
         # setup
         savepath = sys.path[:]
 
-        #test
+        # test
         select(version, optionsRequired)
         print("Asked for %s, (%s):\t got: %s" % (version, optionsRequired, sys.path[0]))
 
@@ -466,17 +469,17 @@ if __name__ == '__main__':
         sys.path = savepath[:]
         global _selected
         _selected = None
-        
-        
+
     # make some test dirs
-    names = ['wx-2.4-gtk-ansi',
-             'wx-2.5.2-gtk2-unicode',
-             'wx-2.5.3-gtk-ansi',
-             'wx-2.6-gtk2-unicode',
-             'wx-2.6-gtk2-ansi',
-             'wx-2.6-gtk-ansi',
-             'wx-2.7.1-gtk2-ansi',
-             ]
+    names = [
+        'wx-2.4-gtk-ansi',
+        'wx-2.5.2-gtk2-unicode',
+        'wx-2.5.3-gtk-ansi',
+        'wx-2.6-gtk2-unicode',
+        'wx-2.6-gtk2-ansi',
+        'wx-2.6-gtk-ansi',
+        'wx-2.7.1-gtk2-ansi',
+    ]
     for name in names:
         d = os.path.join('/tmp', name)
         os.mkdir(d)
@@ -484,7 +487,6 @@ if __name__ == '__main__':
 
     # setup sys.path to see those dirs
     sys.path.append('/tmp')
-    
 
     # now run some tests
     pprint.pprint( getInstalled())
@@ -506,9 +508,7 @@ if __name__ == '__main__':
     test(["2.6-unicode", "2.7-unicode"])
     test(["2.6", "2.7"])
     test(["2.6-unicode", "2.7-unicode"], optionsRequired=True)
-    
-    
-    
+
     # There isn't a unicode match for this one, but it will give the best
     # available 2.4.  Should it give an error instead?  I don't think so...
     test("2.4-unicode") 

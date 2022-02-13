@@ -5,30 +5,30 @@ import math
 import os
 import sys
 
-from config import get_data_path, initcfg, getcfg, geticon, hascfg, setcfg
-from meta import name as appname
-from util_str import strtr
-from worker import Error, get_current_profile_path, show_result_dialog
-import CGATS
-import ICCProfile as ICCP
-import config
-import localization as lang
-import worker
-from util_list import natsort_key_factory
-from wxTestchartEditor import TestchartEditor
-from wxwindows import BaseApp, BaseFrame, FileDrop, InfoDialog, wx
-from wxfixes import TempXmlResource
-import xh_fancytext
-import xh_filebrowsebutton
-import xh_hstretchstatbmp
-import xh_bitmapctrls
+from DisplayCAL.config import get_data_path, initcfg, getcfg, geticon, hascfg, setcfg
+from DisplayCAL.meta import name as appname
+from DisplayCAL.util_str import strtr
+from DisplayCAL.worker import Error, get_current_profile_path, show_result_dialog
+from DisplayCAL import CGATS
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import config
+from DisplayCAL import localization as lang
+from DisplayCAL import worker
+from DisplayCAL.util_list import natsort_key_factory
+from DisplayCAL.wxTestchartEditor import TestchartEditor
+from DisplayCAL.wxwindows import BaseApp, BaseFrame, FileDrop, InfoDialog, wx
+from DisplayCAL.wxfixes import TempXmlResource
+from DisplayCAL import xh_fancytext
+from DisplayCAL import xh_filebrowsebutton
+from DisplayCAL import xh_hstretchstatbmp
+from DisplayCAL import xh_bitmapctrls
 
 from wx import xrc
 
 
 class ReportFrame(BaseFrame):
-
-    """ Measurement report creation window """
+    """Measurement report creation window
+    """
 
     def __init__(self, parent=None):
         BaseFrame.__init__(self, parent, -1, lang.getstr("measurement_report"))
@@ -81,7 +81,7 @@ class ReportFrame(BaseFrame):
                     basenames = []
                     for path in standard_profiles:
                         basename = os.path.basename(path)
-                        if not basename in basenames:
+                        if basename not in basenames:
                             basenames.append(basename)
                             history.append(path)
                 else:
@@ -356,7 +356,7 @@ class ReportFrame(BaseFrame):
         if set_whitepoint_simulate_relative:
             setcfg("measurement_report.whitepoint.simulate",
                    int(not getattr(self, "chart_white", None) or
-                       not "RGB" in self.fields_ctrl.Items or
+                       "RGB" not in self.fields_ctrl.Items or
                        is_prtr_profile))
         setcfg("measurement_report.whitepoint.simulate.relative",
                int("LAB" in self.fields_ctrl.Items or is_prtr_profile))

@@ -59,7 +59,7 @@ def pool_slice(func, data_in, args=(), kwds={}, num_workers=None,
     percentage into the queue which is passed as the second argument to 'func'.
 
     """
-    from config import getcfg
+    from DisplayCAL.config import getcfg
 
     if num_workers is None:
         num_workers = cpu_count()
@@ -234,18 +234,21 @@ class Mapper(object):
 
 class NonDaemonicProcess(mp.Process):
 
-    daemon = property(lambda self: False, lambda self, daemonic: None)
+    @property
+    def daemon(self):
+        return False
+
+    @daemon.setter
+    def daemon(self, daemonic):
+        return
 
 
 class NonDaemonicPool(mp.pool.Pool):
-
     """ Pool that has non-daemonic workers """
-
     Process = NonDaemonicProcess
 
 
 class FakeManager(object):
-
     """ Fake manager """
 
     def Queue(self):
@@ -259,7 +262,6 @@ class FakeManager(object):
 
 
 class FakePool(object):
-
     """ Fake pool """
 
     def __init__(self, processes=None, initializer=None, initargs=(),

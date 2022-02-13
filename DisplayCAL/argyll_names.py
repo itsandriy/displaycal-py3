@@ -44,15 +44,17 @@ altnames = {"txt2ti3": ["logo2cgats"],
             "spyd2en": ["oeminst"],
             "spyd4en": ["oeminst"]}
 
+
 def add_prefixes_suffixes(name, altname):
     for prefix_suffix in prefixes_suffixes:
         altnames[name].append("%s-%s" % (altname, prefix_suffix))
         altnames[name].append("%s-%s" % (prefix_suffix, altname))
 
+
 # Automatically populate the alternative tool names with prefixed/suffixed
 # versions
 for name in names:
-    if not name in altnames:
+    if name not in altnames:
         altnames[name] = []
     _altnames = list(altnames[name])
     for altname in _altnames:

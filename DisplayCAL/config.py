@@ -13,30 +13,28 @@ import re
 import string
 import sys
 from time import gmtime, strftime, timezone
-from log import logger
+from DisplayCAL.log import logger
 
 if sys.platform == "win32":
     import winreg
 
-from argyll_names import observers, viewconds, intents, video_encodings
-from defaultpaths import appdata, commonappdata
+from DisplayCAL.argyll_names import observers, viewconds, intents, video_encodings
+from DisplayCAL.defaultpaths import appdata, commonappdata
 if sys.platform == "win32":
-    from defaultpaths import commonprogramfiles
+    from DisplayCAL.defaultpaths import commonprogramfiles
 elif sys.platform == "darwin":
-    from defaultpaths import library, library_home, prefs, prefs_home
+    from DisplayCAL.defaultpaths import library, library_home, prefs, prefs_home
 else:
-    from defaultpaths import (xdg_config_dir_default, xdg_config_home,
-                              xdg_data_home, xdg_data_home_default,
-                              xdg_data_dirs)
-from defaultpaths import (autostart, autostart_home, home, iccprofiles, iccprofiles_home)
-from meta import name as appname, build, lastmod, version
-from options import ascii, debug, verbose
-from safe_print import enc, fs_enc, original_codepage
-from util_io import StringIOu as StringIO
-from util_os import (expanduseru, expandvarsu, getenvu, is_superuser, listdir_re, which)
-from util_str import create_replace_function, strtr
-import colormath
-import encodedstdio
+    from DisplayCAL.defaultpaths import (xdg_config_dir_default, xdg_config_home, xdg_data_home, xdg_data_home_default,
+                                         xdg_data_dirs)
+from DisplayCAL.defaultpaths import (autostart, autostart_home, home, iccprofiles, iccprofiles_home)
+from DisplayCAL.meta import name as appname, build, lastmod, version
+from DisplayCAL.options import ascii, debug, verbose
+from DisplayCAL.safe_print import enc, fs_enc, original_codepage
+from DisplayCAL.util_io import StringIOu as StringIO
+from DisplayCAL.util_os import (expanduseru, expandvarsu, getenvu, is_superuser, listdir_re, which)
+from DisplayCAL.util_str import create_replace_function, strtr
+from DisplayCAL import colormath, encodedstdio
 
 
 # Runtime configuration
@@ -128,12 +126,12 @@ else:
         logdir = os.path.join(datahome, "logs")
         if appbasename != appname:
             datahome_default = os.path.join(xdg_data_home_default, appname)
-            if not datahome_default in data_dirs:
+            if datahome_default not in data_dirs:
                 data_dirs.append(datahome_default)
             data_dirs.extend(os.path.join(dir_, appname) for dir_ in xdg_data_dirs)
         data_dirs.append(datahome)
         datahome_default = os.path.join(xdg_data_home_default, appbasename)
-        if not datahome_default in data_dirs:
+        if datahome_default not in data_dirs:
             data_dirs.append(datahome_default)
         data_dirs.extend(os.path.join(dir_, appbasename) for dir_ in xdg_data_dirs)
         extra_data_dirs.extend(os.path.join(dir_, "argyllcms") for dir_ in xdg_data_dirs)
@@ -236,8 +234,8 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
     if not given).
 
     """
-    from wxaddons import wx
-    if not name in bitmaps:
+    from DisplayCAL.wxaddons import wx
+    if name not in bitmaps:
         parts = name.split("/")
         w = 16
         h = 16
@@ -438,7 +436,7 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
 
 def get_bitmap_as_icon(size, name, scale=True):
     """ Like geticon, but return a wx.Icon instance """
-    from wxaddons import wx
+    from DisplayCAL.wxaddons import wx
     icon = wx.EmptyIcon()
     if sys.platform == "darwin" and wx.VERSION >= (2, 9) and size > 128:
         # FIXME: wxMac 2.9 doesn't support icon sizes above 128
@@ -501,7 +499,7 @@ def get_display_number(display_no):
     """ Translate from Argyll display index to wx display index """
     if is_virtual_display(display_no):
         return 0
-    from wxaddons import wx
+    from DisplayCAL.wxaddons import wx
     try:
         display = getcfg("displays")[display_no]
     except IndexError:
@@ -521,7 +519,7 @@ def get_display_number(display_no):
 
 def get_display_rects():
     """ Return the Argyll enumerated display coordinates and sizes """
-    from wxaddons import wx
+    from DisplayCAL.wxaddons import wx
     display_rects = []
     for i, display in enumerate(getcfg("displays")):
         match = re.search("@ (-?\d+), (-?\d+), (\d+)x(\d+)", display)
@@ -532,7 +530,7 @@ def get_display_rects():
 
 def get_icon_bundle(sizes, name):
     """ Return a wx.IconBundle with given icon sizes """
-    from wxaddons import wx
+    from DisplayCAL.wxaddons import wx
     iconbundle = wx.IconBundle()
     if not sizes:
         # Assume ICO format
@@ -588,8 +586,7 @@ def get_data_path(relpath, rex=None):
         return None
     dirs = list(data_dirs)
     argyll_dir = (getcfg("argyll.dir") or
-                  os.path.dirname(os.path.realpath(which("dispcal" +
-                                                         exe_ext) or "")))
+                  os.path.dirname(os.path.realpath(which("dispcal" + exe_ext) or "")))
     if argyll_dir and os.path.isdir(os.path.join(argyll_dir, "..", "ref")):
         dirs.append(os.path.dirname(argyll_dir))
     dirs.extend(extra_data_dirs)
@@ -597,8 +594,7 @@ def get_data_path(relpath, rex=None):
     paths = []
     for dir_ in dirs:
         curpath = os.path.join(dir_, relpath)
-        if (dir_.endswith("/argyll") and (relpath + "/").startswith("ref/") and
-                not os.path.exists(curpath)):
+        if (dir_.endswith("/argyll") and (relpath + "/").startswith("ref/") and not os.path.exists(curpath)):
             # Work-around distribution-specific differences for location
             # of Argyll reference files
             # Fedora and Ubuntu: /usr/share/color/argyll/ref
@@ -617,7 +613,7 @@ def get_data_path(relpath, rex=None):
                     print("Error - directory '%s' listing failed: %s" % (curpath, exception))
                 else:
                     for filename in filelist:
-                        if not filename in intersection:
+                        if filename not in intersection:
                             intersection.append(filename)
                             paths.append(os.path.join(curpath, filename))
             else:
@@ -642,7 +638,7 @@ def runtimeconfig(pyfile):
 
     """
     # global safe_log
-    from log import setup_logging
+    from DisplayCAL.log import setup_logging
     setup_logging(logdir, pyname, pyext, confighome=confighome)
     if debug:
         print("[D] pydir:", pydir)
@@ -657,10 +653,9 @@ def runtimeconfig(pyfile):
     else:
         pydir_parent = os.path.dirname(pydir)
         if debug:
-            print("[D] dirname(os.path.abspath(sys.argv[0])):",
-                       os.path.dirname(os.path.abspath(sys.argv[0])))
+            print("[D] dirname(os.path.abspath(sys.argv[0])):", os.path.dirname(os.path.abspath(sys.argv[0])))
             print("[D] pydir parent:", pydir_parent)
-        if (os.path.dirname(os.path.abspath(sys.argv[0])) == pydir_parent and pydir_parent not in data_dirs):
+        if os.path.dirname(os.path.abspath(sys.argv[0])) == pydir_parent and pydir_parent not in data_dirs:
             # Add the parent directory of the package directory to our list
             # of data directories if it is the directory containing the
             # currently run script (e.g. when running from source)
@@ -668,7 +663,7 @@ def runtimeconfig(pyfile):
         runtype = pyext
     for dir_ in sys.path:
         if not isinstance(dir_, str):
-            dir_ = str(dir_, fs_enc)
+            dir_ = dir_.encode(fs_enc)
         dir_ = os.path.abspath(os.path.join(dir_, appname))
         if dir_ not in data_dirs and os.path.isdir(dir_):
             data_dirs.append(dir_)
@@ -688,8 +683,7 @@ def runtimeconfig(pyfile):
     if debug:
         print("[D] Data files search paths:\n[D]", "\n[D] ".join(data_dirs))
     defaults["calibration.file"] = get_data_path("presets/default.icc") or ""
-    defaults["measurement_report.chart"] = get_data_path(os.path.join("ref",
-                                                                      "verify_extended.ti1")) or ""
+    defaults["measurement_report.chart"] = get_data_path(os.path.join("ref", "verify_extended.ti1")) or ""
     return runtype
 
 
@@ -1300,8 +1294,7 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
                     value[1] = min(value[1], 1)
                     value[2] = min(value[2], 50)
                     value = ",".join([str(n) for n in value])
-            elif name == "profile.quality" and getcfg("profile.type") in ("g",
-                                                                          "G"):
+            elif name == "profile.quality" and getcfg("profile.type") in ("g", "G"):
                 # default to high quality for gamma + matrix
                 value = "h"
             elif name == "trc.type" and getcfg("trc") in valid_values["trc"]:
@@ -1312,20 +1305,16 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
                 value = None
             elif name == "copyright":
                 # Make sure DisplayCAL and Argyll version are up-to-date
-                pattern = re.compile("(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" %
-                                     appname, re.I)
+                pattern = re.compile("(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appname, re.I)
                 repl = create_replace_function("\\1%s", version)
                 value = re.sub(pattern, repl, value)
                 if appbasename != appname:
-                    pattern = re.compile("(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" %
-                                         appbasename, re.I)
+                    pattern = re.compile("(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appbasename, re.I)
                     repl = create_replace_function("\\1%s", version)
                     value = re.sub(pattern, repl, value)
-                pattern = re.compile("(Argyll(?:\s*CMS)?)((?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*",
-                                     re.I)
+                pattern = re.compile("(Argyll(?:\s*CMS)?)((?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*", re.I)
                 if defval.split()[-1] != "CMS":
-                    repl = create_replace_function("\\1\\2%s",
-                                                   defval.split()[-1])
+                    repl = create_replace_function("\\1\\2%s", defval.split()[-1])
                 else:
                     repl = "\\1"
                 value = re.sub(pattern, repl, value)
@@ -1345,11 +1334,10 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
                 print("Warning - unknown option:", name)
     if raw:
         return value
-    if (value and isinstance(value, str) and
-            name.endswith("file") and
-            name != "colorimeter_correction_matrix_file" and
-            (name != "testchart.file" or value != "auto") and
-            (not os.path.isabs(value) or not os.path.exists(value))):
+    if value and isinstance(value, str) and name.endswith("file") \
+       and name != "colorimeter_correction_matrix_file" and \
+       (name != "testchart.file" or value != "auto") and \
+       (not os.path.isabs(value) or not os.path.exists(value)):
         # colorimeter_correction_matrix_file is special because it's
         # not (only) a path
         if debug:
@@ -1403,7 +1391,7 @@ def get_current_profile(include_display_profile=False):
     """ Get the currently selected profile (if any) """
     path = getcfg("calibration.file", False)
     if path:
-        import ICCProfile as ICCP
+        from DisplayCAL import ICCProfile as ICCP
         try:
             profile = ICCP.ICCProfile(path, use_cache=True)
         except (IOError, ICCP.ICCProfileInvalidError) as exception:
@@ -1418,11 +1406,11 @@ def get_display_profile(display_no=None):
         display_no = max(getcfg("display.number") - 1, 0)
     if is_virtual_display(display_no):
         return None
-    import ICCProfile as ICCP
+    from DisplayCAL import ICCProfile as ICCP
     try:
         return ICCP.get_display_profile(display_no)
     except Exception as exception:
-        from log import log
+        from DisplayCAL.log import log
         print("ICCP.get_display_profile(%s):" % display_no, file=log)
 
 
@@ -1431,7 +1419,7 @@ standard_profiles = []
 
 def get_standard_profiles(paths_only=False):
     if not standard_profiles:
-        import ICCProfile as ICCP
+        from DisplayCAL import ICCProfile as ICCP
         # Reference profiles (Argyll + DisplayCAL)
         ref_icc = get_data_path("ref", "\.ic[cm]$") or []
         # Other profiles installed on the system
@@ -1575,7 +1563,7 @@ def get_verified_path(cfg_item_name, path=None):
 
 
 def is_ccxx_testchart(testchart=None):
-    """ Check wether the testchart is the default chart for CCMX/CCSS creation """
+    """ Check whether the testchart is the default chart for CCMX/CCSS creation """
     testchart = testchart or getcfg("testchart.file")
     return testchart == get_ccxx_testchart()
 
@@ -1584,7 +1572,7 @@ def is_profile(filename=None, include_display_profile=False):
     filename = filename or getcfg("calibration.file", False)
     if filename:
         if os.path.exists(filename):
-            import ICCProfile as ICCP
+            from DisplayCAL import ICCProfile as ICCP
             try:
                 profile = ICCP.ICCProfile(filename, use_cache=True)
             except (IOError, ICCP.ICCProfileInvalidError):
@@ -1711,14 +1699,14 @@ def set_default_app_dpi():
     global dpiset
     if not dpiset and not getcfg("app.dpi", False):
         # HighDPI support
-        from wxaddons import wx
+        from DisplayCAL.wxaddons import wx
         dpiset = True
         if sys.platform in ("darwin", "win32"):
             # Determine screen DPI
             dpi = wx.ScreenDC().GetPPI()[0]
         else:
             # Linux
-            from util_os import which
+            from DisplayCAL.util_os import which
             txt_scale = None
             # XDG_CURRENT_DESKTOP delimiter is colon (':')
             desktop = os.getenv("XDG_CURRENT_DESKTOP", "").split(":")
@@ -1749,7 +1737,7 @@ def get_hidpi_scaling_factor():
         return 1.0  # Handled via app DPI
     else:
         # Linux
-        from util_os import which
+        from DisplayCAL.util_os import which
         if which("xrdb"):
             import subprocess as sp
             p = sp.Popen(["xrdb", "-query"], stdin=sp.PIPE,
@@ -1757,6 +1745,7 @@ def get_hidpi_scaling_factor():
             # Format: 'Xft.dpi:        192'
             stdout, stderr = p.communicate()
             for line in stdout.splitlines():
+                line = line.decode()
                 if line.startswith("Xft.dpi:"):
                     split = line.split()
                     dpi = split[-1]
@@ -1783,11 +1772,11 @@ def get_hidpi_scaling_factor():
             # e.g. '1.5;2.0;'
             screen_scale_factors = os.getenv("QT_SCREEN_SCALE_FACTORS", "").split(";")
             if screen_scale_factors:
-                from wxaddons import wx
+                from DisplayCAL.wxaddons import wx
                 match = False
                 app = wx.GetApp()
                 if app:
-                    import RealDisplaySizeMM as RDSMM
+                    from DisplayCAL import RealDisplaySizeMM as RDSMM
                     if not RDSMM._displays:
                         RDSMM.enumerate_displays()
                     top = app.TopWindow
@@ -1799,7 +1788,7 @@ def get_hidpi_scaling_factor():
                         # Move to main window location (and thus screen)
                         x, y = (getcfg("position.x", False),
                                 getcfg("position.y", False))
-                        if not None in (x, y):
+                        if None not in (x, y):
                             top.SetSaneGeometry(x, y)
                         tmp = True
                     # Get wx display
@@ -1905,7 +1894,7 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
         cfgbasename = appbasename
     # Remove unknown options
     for name, val in cfg.items(configparser.DEFAULTSECT):
-        if not name in defaults:
+        if name not in defaults:
             print("Removing unknown option:", name)
             setcfg(name, None)
     if which == "user":

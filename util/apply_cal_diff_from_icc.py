@@ -257,7 +257,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
 
             for tagname in ("A2B0", "A2B1", "A2B2", "B2A0", "B2A1", "B2A2",
                             "rTRC", "gTRC", "bTRC"):
-                if not tagname in profile.tags:
+                if tagname not in profile.tags:
                     continue
                 print(tagname)
                 if profile.tags[tagname] in seen:
@@ -334,7 +334,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
             icgats += "END_DATA\n"
             ical_filename = icc_profile_filename + owtpt + ".%s.inverse.cal" % ogamma
             with open(ical_filename, "wb") as f:
-                f.write(icgats)
+                f.write(icgats.encode())
 
             result = worker.exec_cmd(get_argyll_util("applycal"),
                                      ["-v", ical_filename,
@@ -374,7 +374,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
                 cgats += "%.7f %.7f %.7f %.7f\n" % (i / cal_entry_max, R, G, B)
             cgats += "END_DATA\n"
             with open(icc_profile_filename + owtpt + ".%s.diff.cal" % ogamma, "wb") as f:
-                f.write(cgats)
+                f.write(cgats.encode())
 
             cgats_cal_interp = []
             for i in range(3):
@@ -394,7 +394,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
             cgats += "%.7f %.7f %.7f %.7f\n" % (i / cal_entry_max, R, G, B)
         cgats += "END_DATA\n"
         with open(icc_profile_filename + owtpt + ".%s.cal" % ogamma, "wb") as f:
-            f.write(cgats)
+            f.write(cgats.encode())
 
         # Add CAL as vcgt to profile
         out_profile.tags.vcgt = argyll_cgats.cal_to_vcgt(cgats)

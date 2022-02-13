@@ -8,14 +8,14 @@ import socket
 import string
 import urllib.request, urllib.error, urllib.parse
 
-from config import get_data_path
-from defaultpaths import cache as cachepath
-from meta import domain
-from options import verbose, debug
-from util_io import GzipFileProper
-from util_str import StrList, create_replace_function
-import colormath
-import localization as lang
+from DisplayCAL.config import get_data_path
+from DisplayCAL.defaultpaths import cache as cachepath
+from DisplayCAL.meta import domain
+from DisplayCAL.options import verbose, debug
+from DisplayCAL.util_io import GzipFileProper
+from DisplayCAL.util_str import StrList, create_replace_function
+from DisplayCAL import colormath
+from DisplayCAL import localization as lang
 
 
 class VRMLParseError(Exception):
@@ -587,7 +587,7 @@ def vrml2x3dom(vrml, worker=None):
                     attribute = _attrchk(attribute, token, tag, indent)
                     token = ""
             else:
-                if not token in tag.attributes:
+                if token not in tag.attributes:
                     tag.attributes[token] = StrList()
                 if not (c.strip() or tag.attributes[token]):
                     continue

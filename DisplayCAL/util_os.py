@@ -61,7 +61,7 @@ FILE_ATTRIBUTE_REPARSE_POINT = 1024
 IO_REPARSE_TAG_MOUNT_POINT = 0xA0000003  # Junction
 IO_REPARSE_TAG_SYMLINK = 0xA000000C
 
-from encoding import get_encodings
+from DisplayCAL.encoding import get_encodings
 
 fs_enc = get_encodings()[1]
 
@@ -243,10 +243,13 @@ def find_library(pattern, arch=None):
         stdout, stderr = p.communicate()
     except:
         return
+
     if not arch:
         try:
             p = sp.Popen(["file", "-L", sys.executable], stdout=sp.PIPE)
             file_stdout, file_stderr = p.communicate()
+            file_stdout = file_stdout.decode()
+            file_stderr = file_stderr.decode()
         except:
             pass
         else:
@@ -257,7 +260,8 @@ def find_library(pattern, arch=None):
             parts = file_stdout.split(",")
             if len(parts) > 1:
                 arch = parts[1].strip()
-    for line in stdout.splitlines():
+
+    for line in stdout.decode().splitlines():
         # libxyz.so (libc6,x86_64) => /lib64/libxyz.so.1
         parts = line.split("=>", 1)
         candidate = parts[0].split(None, 1)
@@ -288,7 +292,7 @@ def expanduseru(path):
             userhome = getenvu('HOME')
         elif 'USERPROFILE' in os.environ:
             userhome = getenvu('USERPROFILE')
-        elif not 'HOMEPATH' in os.environ:
+        elif 'HOMEPATH' not in os.environ:
             return path
         else:
             drive = getenvu('HOMEDRIVE', '')
@@ -413,7 +417,7 @@ def getenvu(name, default = None):
         return buffer.value
     var = os.getenv(name, default)
     if isinstance(var, str):
-        return var if isinstance(var, str) else str(var, fs_enc)
+        return var if isinstance(var, str) else var.encode(fs_enc)
 
 
 def getgroups(username=None, names_only=False):
@@ -471,8 +475,7 @@ def launch_file(filepath):
     elif sys.platform == "win32":
         # for win32, we could use os.startfile, but then we'd not be able
         # to return exitcode (does it matter?)
-        kwargs = {}
-        kwargs["startupinfo"] = sp.STARTUPINFO()
+        kwargs = {"startupinfo": sp.STARTUPINFO()}
         kwargs["startupinfo"].dwFlags |= sp.STARTF_USESHOWWINDOW
         kwargs["startupinfo"].wShowWindow = sp.SW_HIDE
         kwargs["shell"] = True
@@ -894,7 +897,7 @@ def whereis(names, bin=True, bin_paths=None, man=True, man_paths=None, src=True,
     p = sp.Popen(["whereis"] + args + names, stdout=sp.PIPE)
     stdout, stderr = p.communicate()
     result = {}
-    for line in stdout.strip().splitlines():
+    for line in stdout.decode().strip().splitlines():
         # $ whereis abc xyz
         # abc: /bin/abc
         # xyz: /bin/xyz /usr/bin/xyz

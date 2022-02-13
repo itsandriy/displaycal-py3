@@ -6,7 +6,7 @@ import shutil
 import sys
 import tempfile
 
-from meta import name as appname, wx_minversion
+from DisplayCAL.meta import name as appname, wx_minversion
 
 if os.getenv("GTK_CSD", "0") != "0":
     # Work-around double window decorations, see
@@ -15,11 +15,11 @@ if os.getenv("GTK_CSD", "0") != "0":
 
 # wxversion will be removed in Phoenix
 try:
-    import wxversion
+    from DisplayCAL import wxversion
 except ImportError:
     pass
 else:
-    if not getattr(sys, "frozen", False) and not "wx" in sys.modules:
+    if not getattr(sys, "frozen", False) and "wx" not in sys.modules:
         try:
             wxversion.select(["4.0", "3.0", "%i.%i.%i" % wx_minversion[:3]])
         except wxversion.VersionError:
@@ -45,8 +45,8 @@ from wx.lib.buttons import GenBitmapTextButton as _GenBitmapTextButton
 from wx.lib import platebtn
 from wx import xrc
 
-from colormath import convert_range
-from util_str import safe_str
+from DisplayCAL.colormath import convert_range
+from DisplayCAL.util_str import safe_str
 
 
 if not hasattr(wx.Window, "HasFocus"):
@@ -482,7 +482,7 @@ def BitmapButtonDisable(self):
     self.Enable(False)
 
 
-if not "phoenix" in wx.PlatformInfo:
+if "phoenix" not in wx.PlatformInfo:
     wx.BitmapButton.Enable = BitmapButtonEnable
     wx.BitmapButton.Disable = BitmapButtonDisable
 
@@ -631,22 +631,24 @@ if sys.platform == "darwin":
 
 wx.Window._SetToolTipString = wx.Window.SetToolTipString
 
+
 def SetToolTipString(self, string):
     """ Replacement for SetToolTipString which updates correctly """
     wx.Window.SetToolTip(self, None)
     wx.Window._SetToolTipString(self, string)
 
+
 wx.Window.SetToolTipString = SetToolTipString
 
 
 def _adjust_sizer_args_scaling_for_appdpi(*args, **kwargs):
-    from config import get_default_dpi, getcfg
+    from DisplayCAL.config import get_default_dpi, getcfg
     scale = getcfg("app.dpi") / get_default_dpi()
     if scale > 1:
         args = list(args)
         if kwargs.get("border"):
             kwargs["border"] = int(round(kwargs["border"] * scale))
-        elif not "border" in kwargs:
+        elif "border" not in kwargs:
             if (isinstance(args[0],
                            (tuple, wx.Size, wx.Sizer, wx.Window)) and
                     len(args) > 3 and args[3]):
@@ -698,7 +700,7 @@ class GridSizer(wx._GridSizer):
 
     def __init__(self, rows=0, cols=0, vgap=0, hgap=0):
         if vgap or hgap:
-            from config import get_default_dpi, getcfg
+            from DisplayCAL.config import get_default_dpi, getcfg
             scale = getcfg("app.dpi") / get_default_dpi()
             if scale > 1:
                 ##print vgap, hgap, '->',
@@ -718,16 +720,17 @@ class FlexGridSizer(wx._FlexGridSizer):
 
     def __init__(self, rows=0, cols=0, vgap=0, hgap=0):
         if vgap or hgap:
-            from config import get_default_dpi, getcfg
+            from DisplayCAL.config import get_default_dpi, getcfg
             scale = getcfg("app.dpi") / get_default_dpi()
             if scale > 1:
-                ##print vgap, hgap, '->',
+                # print vgap, hgap, '->',
                 vgap, hgap = [int(round(v * scale)) for v in (vgap, hgap)]
-            ##print vgap, hgap
+            # print vgap, hgap
         super(FlexGridSizer, self).__init__(rows, cols, vgap, hgap)
 
     Add = Sizer.__dict__["Add"]
     Insert = Sizer.__dict__["Insert"]
+
 
 wx.FlexGridSizer = FlexGridSizer
 
@@ -782,12 +785,12 @@ def get_dc_font_scale(dc):
     if isinstance(dc, wx.GCDC):
         pointsize = tuple(1.0 / scale for scale in dc.GetLogicalScale())
     if sys.platform in ("darwin", "win32") or (not isinstance(dc, wx.GCDC) and
-                                               not "gtk3" in wx.PlatformInfo):
+                                               "gtk3" not in wx.PlatformInfo):
         return sum(pointsize) / 2.0
     else:
         # On Linux, we need to correct the font size by a certain factor if
         # wx.GCDC is used, to make text the same size as if wx.GCDC weren't used
-        from config import get_default_dpi, getcfg, set_default_app_dpi
+        from DisplayCAL.config import get_default_dpi, getcfg, set_default_app_dpi
         set_default_app_dpi()
         scale = getcfg("app.dpi") / get_default_dpi()
     if wx.VERSION < (2, 9):
@@ -1143,7 +1146,7 @@ class GenButton(object):
             self.DrawFocusIndicator(dc, width, height)
 
 
-if not "gtk3" in wx.PlatformInfo:
+if "gtk3" not in wx.PlatformInfo:
     # GTK3 doesn't respect NO_BORDER in hovered state when using wx.BitmapButton
     _GenBitmapButton = wx.BitmapButton
 
@@ -1355,13 +1358,13 @@ class PlateButton(platebtn.PlateButton):
     _reallyenabled = True
 
     def __init__(self, *args, **kwargs):
-        from config import get_default_dpi, getcfg
+        from DisplayCAL.config import get_default_dpi, getcfg
         self.dpiscale = getcfg("app.dpi") / get_default_dpi()
         platebtn.PlateButton.__init__(self, *args, **kwargs)
         self._bmp["hilite"] = None
         if sys.platform == "darwin":
             # Use Sierra-like color scheme
-            from wxaddons import gamma_encode
+            from DisplayCAL.wxaddons import gamma_encode
             color = wx.Colour(*gamma_encode(0, 105, 217))
         else:
             color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
@@ -1566,7 +1569,7 @@ class TempXmlResource(object):
     _temp = None
 
     def __init__(self, xmlpath):
-        from config import get_default_dpi, getcfg
+        from DisplayCAL.config import get_default_dpi, getcfg
         scale = max(getcfg("app.dpi") / get_default_dpi(), 1)
         if scale > 1 or "gtk3" in wx.PlatformInfo:
             if not TempXmlResource._temp:
@@ -1600,13 +1603,13 @@ class TempXmlResource(object):
                 # Fix background color not working for panels under wxGTK3
                 if "gtk3" in wx.PlatformInfo:
                     xml = xml.replace('class="wxPanel"',
-                                      # 'class="wxPanel" subclass="DisplayCAL.wxfixes.wx_Panel"')
-                                      'class="wxPanel" subclass="wxfixes.wx_Panel"')
+                                      'class="wxPanel" subclass="DisplayCAL.wxfixes.wx_Panel"')
+                                      # 'class="wxPanel" subclass="wxfixes.wx_Panel"')
                 # Write modified XML
                 xmlpath = os.path.join(TempXmlResource._temp, os.path.basename(xmlpath))
                 with open(xmlpath, "wb") as xmlfile:
                     xmlfile.write(xml.encode())
-                from wxwindows import BaseApp
+                from DisplayCAL.wxwindows import BaseApp
                 BaseApp.register_exitfunc(self._cleanup)
         self.xmlpath = xmlpath
         self.res = xrc.XmlResource(xmlpath)

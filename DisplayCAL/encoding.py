@@ -6,6 +6,7 @@ import sys
 if sys.platform == "win32":
     from ctypes import windll
 
+
 def get_encoding(stream):
     """ Return stream encoding. """
     enc = None

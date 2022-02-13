@@ -9,31 +9,25 @@ import sys
 if sys.platform == "win32":
     import win32api
 
-from argyll_cgats import cal_to_fake_profile
-from argyll_names import video_encodings
-from config import (defaults, get_data_path, get_verified_path, getcfg,
-                    geticon, hascfg, profile_ext, setcfg)
-from meta import name as appname, version
-from options import debug
-from util_decimal import stripzeros
-from util_os import islink, readlink, safe_glob, waccess
-from util_str import strtr
-from worker import (Error, Info, UnloggedInfo, get_current_profile_path,
-                    show_result_dialog)
-import ICCProfile as ICCP
-import colormath
-import config
-import localization as lang
-import madvr
-import worker
-from worker import UnloggedWarning, check_set_argyll_bin, get_options_from_profile
-from wxwindows import (BaseApp, BaseFrame, ConfirmDialog, FileDrop, InfoDialog,
-                       wx)
-from wxfixes import TempXmlResource
-import floatspin
-import xh_filebrowsebutton
-import xh_floatspin
-import xh_bitmapctrls
+from DisplayCAL.argyll_cgats import cal_to_fake_profile
+from DisplayCAL.argyll_names import video_encodings
+from DisplayCAL.config import defaults, get_data_path, get_verified_path, getcfg, geticon, hascfg, profile_ext, setcfg
+from DisplayCAL.meta import name as appname, version
+from DisplayCAL.options import debug
+from DisplayCAL.util_decimal import stripzeros
+from DisplayCAL.util_os import islink, readlink, safe_glob, waccess
+from DisplayCAL.util_str import strtr
+from DisplayCAL.worker import Error, Info, UnloggedInfo, get_current_profile_path, show_result_dialog
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import colormath
+from DisplayCAL import config
+from DisplayCAL import localization as lang
+from DisplayCAL import madvr
+from DisplayCAL import worker
+from DisplayCAL.worker import UnloggedWarning, check_set_argyll_bin, get_options_from_profile
+from DisplayCAL.wxwindows import BaseApp, BaseFrame, ConfirmDialog, FileDrop, InfoDialog, wx
+from DisplayCAL.wxfixes import TempXmlResource
+from DisplayCAL import floatspin, xh_filebrowsebutton, xh_floatspin, xh_bitmapctrls
 
 from wx import xrc
 

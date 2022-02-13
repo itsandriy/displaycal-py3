@@ -493,12 +493,12 @@ disppath **get_displays() {
 
 #if defined(UNIX) && !defined(__APPLE__)
     int i, j, k;
-    int defsix = 0;		/* default screen index */
-    int dcount;			/* Number of screens */
+    int defsix = 0;     /* default screen index */
+    int dcount;         /* Number of screens */
     char *dname;
     char dnbuf[100];
     int evb = 0, erb = 0;
-    int majv, minv;			/* Version */
+    int majv, minv;     /* Version */
     Display *mydisplay;
     int ndisps = 0;
     XineramaScreenInfo *xai = NULL;
@@ -539,11 +539,11 @@ disppath **get_displays() {
      && XRRQueryExtension(mydisplay, &evb, &erb) != 0
      && XRRQueryVersion(mydisplay, &majv, &minv)
      && majv == 1 && minv >= 2) {
-        static void *xrr_found = NULL;	/* .so handle */
+        static void *xrr_found = NULL;  /* .so handle */
         static XRRScreenResources *(*_XRRGetScreenResourcesCurrent)
                                   (Display *dpy, Window window) = NULL;
         static RROutput (*_XRRGetOutputPrimary)(Display *dpy, Window window) = NULL;
-        int defsix;			/* Default Screen index */
+//        int defsix;         /* Default Screen index */
 
         if (XSetErrorHandler(null_error_handler) == 0) {
             debugrr("get_displays failed on XSetErrorHandler\n");
@@ -646,16 +646,16 @@ disppath **get_displays() {
 
                 if (has_primary) {
                     if (j == 0)
-                        xj = pix;			/* Start with crtc containing primary */
+                        xj = pix;           /* Start with crtc containing primary */
 
-                    else if (xj == pix)		/* We've up to primary that we've alread done */
-                        xj++;				/* Skip it */
+                    else if (xj == pix)     /* We've up to primary that we've alread done */
+                        xj++;               /* Skip it */
                 }
 
                 if ((crtci = XRRGetCrtcInfo(mydisplay, scrnres, scrnres->crtcs[xj])) == NULL) {
                     debugrr2((errout,"XRRGetCrtcInfo of Screen %d CRTC %d failed\n",i,xj));
                     if (has_primary && j == 0)
-                        xj = -1;			/* Start at beginning */
+                        xj = -1;            /* Start at beginning */
                     continue;
                 }
 
@@ -774,22 +774,22 @@ disppath **get_displays() {
                         return NULL;
                     }
 
-                    disps[ndisps]->screen = i;				/* X11 (virtual) Screen */
-                    disps[ndisps]->uscreen = jj;			/* Xinerama/Xrandr screen */
+                    disps[ndisps]->screen = i;              /* X11 (virtual) Screen */
+                    disps[ndisps]->uscreen = jj;            /* Xinerama/Xrandr screen */
                     disps[ndisps]->rscreen = jj;
                     disps[ndisps]->sx = crtci->x;
                     disps[ndisps]->sy = crtci->y;
                     disps[ndisps]->sw = crtci->width;
                     disps[ndisps]->sh = crtci->height;
-                    disps[ndisps]->crtc = scrnres->crtcs[xj];		/* XID of CRTC */
-                    disps[ndisps]->output = crtci->outputs[xk];		/* XID of output */
+                    disps[ndisps]->crtc = scrnres->crtcs[xj];       /* XID of CRTC */
+                    disps[ndisps]->output = crtci->outputs[xk];     /* XID of output */
 
                     sprintf(desc1,"Monitor %d, Output %s",ndisps+1,outi->name);
                     sprintf(desc2,"%s at %d, %d, width %d, height %d",desc1,
                         disps[ndisps]->sx, disps[ndisps]->sy, disps[ndisps]->sw, disps[ndisps]->sh);
 
                     /* If it is a clone */
-                    if (k > 0 & outi0 != NULL) {
+                    if ( (k > 0) & (outi0 != NULL) ) {
                         sprintf(desc1, "[ Clone of %s ]",outi0->name);
                         strcat(desc2, desc1);
                     }
@@ -847,10 +847,11 @@ disppath **get_displays() {
                     {
                         Atom edid_atom, ret_type;
                         int ret_format;
-                        long ret_len = 0, ret_togo;
+                        long ret_len = 0;
+                        unsigned long *ret_togo;
                         unsigned char *atomv = NULL;
                         int ii;
-                        char *keys[] = {		/* Possible keys that may be used */
+                        char *keys[] = {        /* Possible keys that may be used */
                             "EDID_DATA",
                             "EDID",
                             ""
@@ -893,21 +894,21 @@ disppath **get_displays() {
                         if (keys[ii][0] == '\000')
                             debugrr2((errout, "Failed to get EDID for display\n"));
                     }
-                    ndisps++;		/* Now it's number of displays */
+                    ndisps++;       /* Now it's number of displays */
 
                   next_output:;
                     if (outi != NULL && outi != outi0)
                         XRRFreeOutputInfo(outi);
                     if (has_primary && xj == pix && k == 0)
-                        xk = -1;			/* Go to first output */
+                        xk = -1;            /* Go to first output */
                 }
-              next_screen:;
+//              next_screen:;
                 if (outi0 != NULL)
                     XRRFreeOutputInfo(outi0);
                 XRRFreeCrtcInfo(crtci);
-                jj++;			/* Next Xinerama screen index */
+                jj++;               /* Next Xinerama screen index */
                 if (has_primary && j == 0)
-                    xj = -1;			/* Go to first screen */
+                    xj = -1;        /* Go to first screen */
             }
             XRRFreeScreenResources(scrnres);
         }
@@ -916,7 +917,7 @@ disppath **get_displays() {
     }
 #endif /* randr >= V 1.2 */
 
-    if (disps == NULL) {	/* Use Older style identification */
+    if (disps == NULL) {    /* Use Older style identification */
 
         if (XSetErrorHandler(null_error_handler) == 0) {
             debugrr("get_displays failed on XSetErrorHandler\n");
@@ -1075,7 +1076,8 @@ disppath **get_displays() {
 
         /* Put the default Screen the top of the list */
         if (xai == NULL) {
-            int defsix = DefaultScreen(mydisplay);
+//            int defsix = DefaultScreen(mydisplay);
+            defsix = DefaultScreen(mydisplay);
             disppath *tdispp;
             tdispp = disps[defsix];
             disps[defsix] = disps[0];

@@ -23,15 +23,15 @@ if sys.platform == "win32":
 if sys.platform == "win32":
     import win32api
 
-import ICCProfile as ICCP
-import colormath
-import cubeiterator as ci
-import localization as lang
-import worker_base
-from imfile import tiff_get_header
-from meta import name as appname, version
-from network import get_network_addr, get_valid_host
-from ordereddict import OrderedDict
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import colormath
+from DisplayCAL import cubeiterator as ci
+from DisplayCAL import localization as lang
+from DisplayCAL import worker_base
+from DisplayCAL.imfile import tiff_get_header
+from DisplayCAL.meta import name as appname, version
+from DisplayCAL.network import get_network_addr, get_valid_host
+from DisplayCAL.ordereddict import OrderedDict
 
 
 CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.POINTER(None),
@@ -664,7 +664,7 @@ class MadTPG(MadTPGBase):
 
     def show_rgb(self, r, g, b, bgr=None, bgg=None, bgb=None):
         """ Shows a specific RGB color test pattern """
-        if not None in (bgr, bgg, bgb):
+        if None not in (bgr, bgg, bgb):
             return self.mad.madVR_ShowRGBEx(r, g, b, bgr, bgg, bgb)
         else:
             return self.mad.madVR_ShowRGB(r, g, b)
@@ -777,7 +777,7 @@ class MadTPG_Net(MadTPGBase):
 
     def bind(self, event_name, handler):
         """ Bind a handler to an event """
-        if not event_name in self._event_handlers:
+        if event_name not in self._event_handlers:
             self._event_handlers[event_name] = []
         self._event_handlers[event_name].append(handler)
 
@@ -963,7 +963,7 @@ class MadTPG_Net(MadTPGBase):
                     if self.debug:
                         safe_print("MadTPG_Net: Received %s from %s:%s: %r" %
                                    (cast, addr[0], addr[1], data))
-                    if not addr in self._casts:
+                    if addr not in self._casts:
                         for c_port in self.server_ports:
                             if (addr[0], c_port) in self._client_sockets:
                                 if self.debug:
@@ -1372,7 +1372,8 @@ class MadTPG_Net(MadTPGBase):
                                                   "replace").strip().split("\t")))
             cfg = RawConfigParser()
             cfg.optionxform = str
-            cfg.readfp(io)
+            # cfg.readfp(io)
+            cfg.read_file(io)
             params = OrderedDict(cfg.items("Default"))
             # Convert version strings to tuples with integers
             for param in ("mvr", "exe"):
@@ -1592,7 +1593,7 @@ class MadTPG_Net_Sender(object):
             if len(args) > 5:
                 bgb = args[5]
             rgb = r, g, b
-            if not None in (bgr, bgg, bgb):
+            if None not in (bgr, bgg, bgb):
                 self.command += "Ex"
                 rgb += (bgr, bgg, bgb)
             if None in (r, g, b):
@@ -1605,7 +1606,7 @@ class MadTPG_Net_Sender(object):
 
 
 if __name__ == "__main__":
-    import config
+    from DisplayCAL import config
     config.initcfg()
     lang.init()
     if sys.platform == "win32":

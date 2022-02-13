@@ -18,24 +18,21 @@ import traceback
 if sys.platform == "win32":
     import win32api
 
-from argyll_names import (names as argyll_names, altnames as argyll_altnames,
-                          optional as argyll_optional)
-from colormath import (VidRGB_to_eeColor, VidRGB_to_cLUT65, cLUT65_to_VidRGB,
-                       eeColor_to_VidRGB)
-from config import exe_ext, fs_enc, get_data_path, getcfg, profile_ext
-from debughelpers import (Error, Info, UnloggedError, UnloggedInfo,
-                          UnloggedWarning, Warn)
-from log import LogFile
-from meta import name as appname
-from multiprocess import mp, pool_slice
-from options import debug, verbose
-from util_os import getenvu, quote_args, which
-from util_str import make_filename_safe, safe_basestring, safe_str
-import CGATS
-import colormath
-import config
-import ICCProfile as ICCP
-import localization as lang
+from DisplayCAL.argyll_names import names as argyll_names, altnames as argyll_altnames, optional as argyll_optional
+from DisplayCAL.colormath import VidRGB_to_eeColor, VidRGB_to_cLUT65, cLUT65_to_VidRGB, eeColor_to_VidRGB
+from DisplayCAL.config import exe_ext, fs_enc, get_data_path, getcfg, profile_ext
+from DisplayCAL.debughelpers import Error, Info, UnloggedError, UnloggedInfo, UnloggedWarning, Warn
+from DisplayCAL.log import LogFile
+from DisplayCAL.meta import name as appname
+from DisplayCAL.multiprocess import mp, pool_slice
+from DisplayCAL.options import debug, verbose
+from DisplayCAL.util_os import getenvu, quote_args, which
+from DisplayCAL.util_str import make_filename_safe, safe_basestring, safe_str
+from DisplayCAL import CGATS
+from DisplayCAL import colormath
+from DisplayCAL import config
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import localization as lang
 
 
 def _mp_xicclu(chunk, thread_abort_event, progress_queue, profile_filename,
@@ -252,7 +249,7 @@ def get_argyll_util(name, paths=None):
         else:
             print("Info:", "|".join(argyll_altnames[name]), "not found in", os.pathsep.join(paths))
     if exe:
-        if not cache_key in argyll_utils:
+        if cache_key not in argyll_utils:
             argyll_utils[cache_key] = {}
         argyll_utils[cache_key][name] = exe
     return exe
@@ -711,7 +708,7 @@ class Xicclu(WorkerBase):
                     elif self.sessionlogfile:
                         self.sessionlogfile.write(line)
                     continue
-                elif not "->" in line:
+                elif "->" not in line:
                     if self.sessionlogfile and line:
                         self.sessionlogfile.write(line)
                     continue

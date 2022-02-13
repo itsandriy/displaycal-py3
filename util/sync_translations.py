@@ -40,10 +40,10 @@ def langmerge(infilename1, infilename2, outfilename):
     added = []
     same = []
     for key, value in dictin2.items():
-        if not key in dictin1:
+        if key not in dictin1:
             dictin1[key] = value
             added.append(key.encode("UTF-8"))
-            if not "*" + key in dictin1:
+            if "*" + key not in dictin1:
                 safe_print("Added: '%s' '%s'" % (key, value))
         #elif dictin1[key] == value and not key.startswith("*") and not key.startswith("!") and value.strip():
         #same.append(key.encode("UTF-8"))
@@ -110,7 +110,7 @@ def langmerge(infilename1, infilename2, outfilename):
 
     for key in natsort(dictin1.keys(), False):
         if key not in dictin2 and not key.startswith("*") and dictin1[key]:
-            if not "ORPHANED KEY-VALUE PAIRS" in merged:
+            if "ORPHANED KEY-VALUE PAIRS" not in merged:
                 merged["ORPHANED KEY-VALUE PAIRS"] = "Note to translators: Key-value pairs below this point are no longer used. You may consider removing them."
             merged[key] = dictin1[key]
             safe_print("Orphan: '%s' '%s'" % (key, dictin1[key]))

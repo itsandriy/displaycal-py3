@@ -3,12 +3,12 @@
 import sys
 import traceback
 
-import config
-from config import fs_enc
-from log import logbuffer
-from meta import name as appname, wx_recversion
-from options import debug
-from util_str import box
+from DisplayCAL import config
+from DisplayCAL.config import fs_enc
+from DisplayCAL.log import logbuffer
+from DisplayCAL.meta import name as appname, wx_recversion
+from DisplayCAL.options import debug
+from DisplayCAL.util_str import box
 
 wxEventTypes = {}
 
@@ -28,7 +28,7 @@ def getevtobjname(event, window=None):
 def getevttype(event):
     """ Get and return the event object's type. """
     if not wxEventTypes:
-        from wxaddons import wx
+        from DisplayCAL.wxaddons import wx
         try:
             for name in dir(wx):
                 if name.find("EVT_") == 0:
@@ -66,7 +66,7 @@ def handle_error(error, parent=None, silent=False, tb=True):
         print(box(msg))
     if not silent:
         try:
-            from wxaddons import wx
+            from DisplayCAL.wxaddons import wx
             if wx.VERSION < wx_recversion:
                 msg += ("\n\nWARNING: Your version of wxPython (%s) is outdated "
                         "and no longer supported. You should consider updating "

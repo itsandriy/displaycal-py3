@@ -125,13 +125,13 @@ def create_rendering_intent_test_profile(filename, add_fallback_matrix=True,
         p.tags.rTRC = srgb_icc.tags.rTRC
         p.tags.gTRC = srgb_icc.tags.gTRC
         p.tags.bTRC = srgb_icc.tags.bTRC
-        if False:  # NEVER
-            # Don't really need this...?
-            t = specialpow(1 / 3.0, -2.4)
-            for i, v in enumerate(p.tags.gTRC[1:], 1):
-                v /= 65535.0
-                p.tags.rTRC[i] = p.tags.gTRC[i] = max(convert_range(v, t, 1, 0, 1), 0) * 65535
-                p.tags.bTRC[i] = min(convert_range(v, 0, t, 0, 1), 1) * 65535
+        # if False:  # NEVER
+        #     # Don't really need this...?
+        #     t = specialpow(1 / 3.0, -2.4)
+        #     for i, v in enumerate(p.tags.gTRC[1:], 1):
+        #         v /= 65535.0
+        #         p.tags.rTRC[i] = p.tags.gTRC[i] = max(convert_range(v, t, 1, 0, 1), 0) * 65535
+        #         p.tags.bTRC[i] = min(convert_range(v, 0, t, 0, 1), 1) * 65535
         p.tags.rXYZ = ICCP.XYZType()  # Map red to black
         p.tags.gXYZ = ICCP.XYZType()  # Map green to black
         p.tags.bXYZ = srgb_icc.tags.wtpt.pcs  # Map blue to white

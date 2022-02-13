@@ -6,11 +6,11 @@ import os
 import re
 import sys
 
-from config import data_dirs, defaults, getcfg, storage
-from debughelpers import handle_error
-from lazydict import LazyDict_YAML_UltraLite
-from options import debug_localization as debug
-from util_os import expanduseru
+from DisplayCAL.config import data_dirs, defaults, getcfg, storage
+from DisplayCAL.debughelpers import handle_error
+from DisplayCAL.lazydict import LazyDict_YAML_UltraLite
+from DisplayCAL.options import debug_localization as debug
+from DisplayCAL.util_os import expanduseru
 
 
 def init(set_wx_locale=False):
@@ -65,10 +65,10 @@ def update_defaults():
 def getcode():
     """ Get language code from config """
     lcode = getcfg("lang")
-    if not lcode in ldict:
+    if lcode not in ldict:
         # fall back to default
         lcode = defaults["lang"]
-    if not lcode in ldict:
+    if lcode not in ldict:
         # fall back to english
         lcode = "en"
     return lcode
@@ -78,13 +78,13 @@ def getstr(id_str, strvars=None, lcode=None, default=None):
     """ Get a translated string from the dictionary """
     if not lcode:
         lcode = getcode()
-    if not lcode in ldict or not id_str in ldict[lcode]:
+    if lcode not in ldict or id_str not in ldict[lcode]:
         # fall back to english
         lcode = "en"
     if lcode in ldict and id_str in ldict[lcode]:
         lstr = ldict[lcode][id_str]
         if debug:
-            if not id_str in usage or not isinstance(usage[id_str], int):
+            if id_str not in usage or not isinstance(usage[id_str], int):
                 usage[id_str] = 1
             else:
                 usage[id_str] += 1
@@ -111,7 +111,7 @@ def getstr(id_str, strvars=None, lcode=None, default=None):
         return lstr
     else:
         if (debug and id_str and not isinstance(id_str, str) and
-                not " " in id_str):
+                " " not in id_str):
             usage[id_str] = 0
         return default or id_str
 
@@ -123,7 +123,7 @@ def gettext(text):
             catalog[lstr] = {}
             catalog[lstr].id_str = id_str
     lcode = getcode()
-    if catalog and text in catalog and not lcode in catalog[text]:
+    if catalog and text in catalog and lcode not in catalog[text]:
         catalog[text][lcode] = ldict[lcode].get(catalog[text].id_str, text)
     return catalog.get(text, {}).get(lcode, text)
 
@@ -134,8 +134,8 @@ catalog = {}
 
 if debug:
     import atexit
-    from config import confighome
-    from jsondict import JSONDict
+    from DisplayCAL.config import confighome
+    from DisplayCAL.jsondict import JSONDict
 
     usage = JSONDict()
     usage_path = os.path.join(confighome, "localization_usage.json")

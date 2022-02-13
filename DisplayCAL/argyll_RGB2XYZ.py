@@ -2,7 +2,7 @@
 
 import math
 
-import colormath
+from DisplayCAL import colormath
 
 # from xcolorants.c
 icx_ink_table = {
@@ -72,7 +72,6 @@ s = {
     }
 }
 
-s["Ynorm"] = 0.0
 for e in range(3):
     s["Ynorm"] += icx_ink_table[s["iix"][e]][0][1]
 s["Ynorm"] = 1.0 / s["Ynorm"]

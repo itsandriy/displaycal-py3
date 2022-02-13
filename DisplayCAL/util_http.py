@@ -6,6 +6,7 @@ import http.client
 import mimetypes
 import uuid
 
+
 def post_multipart(host, selector, fields, files, charset="UTF-8"):
     """Post fields and files to an http host as multipart/form-data.
     fields is a sequence of (name, value) elements for regular form fields.
@@ -21,6 +22,7 @@ def post_multipart(host, selector, fields, files, charset="UTF-8"):
     h.send(body)
     resp = h.getresponse()
     return resp.read()
+
 
 def encode_multipart_formdata(fields, files, charset="UTF-8"):
     """fields is a sequence of (name, value) elements for regular form fields.
@@ -47,6 +49,7 @@ def encode_multipart_formdata(fields, files, charset="UTF-8"):
     body = CRLF.join(L)
     content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
     return content_type, body
+
 
 def get_content_type(filename):
     return mimetypes.guess_type(filename)[0] or 'application/octet-stream'

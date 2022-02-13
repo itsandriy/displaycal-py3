@@ -7,25 +7,23 @@ import sys
 import time
 import warnings
 
-import config
-import localization as lang
-from config import (defaults, enc, getcfg, geticon, get_argyll_display_number,
-                    get_default_dpi, get_display_number,
-                    get_display_rects, scale_adjustment_factor, setcfg,
-                    writecfg)
-from debughelpers import handle_error
-from meta import name as appname
-from options import debug
-from util_list import floatlist, strlist
-from wxaddons import wx
-from wxwindows import (BaseApp, BitmapBackgroundPanel, ConfirmDialog, InfoDialog,
-                       InvincibleFrame)
-from wxfixes import GenBitmapButton as BitmapButton
+from DisplayCAL import config
+from DisplayCAL import localization as lang
+from DisplayCAL.config import (defaults, enc, getcfg, geticon, get_argyll_display_number, get_default_dpi,
+                               get_display_number, get_display_rects, scale_adjustment_factor, setcfg, writecfg)
+from DisplayCAL.debughelpers import handle_error
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import debug
+from DisplayCAL.util_list import floatlist, strlist
+from DisplayCAL.wxaddons import wx
+from DisplayCAL.wxwindows import BaseApp, BitmapBackgroundPanel, ConfirmDialog, InfoDialog, InvincibleFrame
+from DisplayCAL.wxfixes import GenBitmapButton as BitmapButton
 try:
-    import RealDisplaySizeMM as RDSMM
+    from DisplayCAL import RealDisplaySizeMM as RDSMM
 except ImportError as exception:
     RDSMM = None
     warnings.warn(str(exception), Warning)
+
 
 def get_default_size():
     """Get and return the default size for the window in pixels.

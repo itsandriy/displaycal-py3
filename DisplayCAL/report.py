@@ -7,10 +7,10 @@ import re
 import shutil
 import sys
 
-from config import get_data_path, initcfg
-from meta import version_short
-import jspacker
-import localization as lang
+from DisplayCAL.config import get_data_path, initcfg
+from DisplayCAL.meta import version_short
+from DisplayCAL import jspacker
+from DisplayCAL import localization as lang
 
 
 def create(report_path, placeholders2data, pack=True, templatename="report"):
@@ -51,13 +51,9 @@ def create(report_path, placeholders2data, pack=True, templatename="report"):
             if pack:
                 packer = jspacker.JavaScriptPacker()
                 js = packer.pack(js, 62, True).strip()
-            report_html = report_html.replace('src="%s">' % include,
-                                              ">/*<![CDATA[*/\n" +
-                                              js +
-                                              "\n/*]]>*/")
+            report_html = report_html.replace('src="%s">' % include, ">/*<![CDATA[*/\n" + js + "\n/*]]>*/")
         else:
-            report_html = report_html.replace('@import "%s";' % include,
-                                              f.read().strip())
+            report_html = report_html.replace('@import "%s";' % include, f.read().strip())
         f.close()
 
     # write report

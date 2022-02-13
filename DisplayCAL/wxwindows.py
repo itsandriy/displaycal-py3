@@ -21,44 +21,39 @@ import warnings
 import xml.parsers.expat
 import zipfile
 
-import demjson_compat as demjson
+from DisplayCAL import demjson_compat as demjson
 
-import ICCProfile as ICCP
-import audio
-import config
-from config import (defaults, getbitmap, getcfg, geticon, get_data_path,
-                    get_default_dpi, get_verified_path, hascfg, pyname, setcfg,
-                    confighome, appbasename, logdir, set_default_app_dpi)
-from debughelpers import (Error, DownloadError, Info, UnloggedError,
-                          UnloggedInfo, UnloggedWarning, Warn, getevtobjname,
-                          getevttype, handle_error)
-from log import log as log_
-from meta import name as appname
-from options import debug
-from ordereddict import OrderedDict
-from network import ScriptingClientSocket, get_network_addr
-from util_io import StringIOu as StringIO
-from util_os import get_program_file, launch_file, waccess
-from util_str import box, safe_str, wrap
-from util_xml import dict2xml
-from wxaddons import (CustomEvent, FileDrop as _FileDrop, gamma_encode,
-                      get_parent_frame, get_platform_window_decoration_size, wx,
-                      BetterWindowDisabler, BetterTimer, EVT_BETTERTIMER)
-from wexpect import split_command_line
-from wxfixes import (GenBitmapButton, GenButton, GTKMenuItemGetFixedLabel,
-                     PlateButton, ThemedGenButton, adjust_font_size_for_gcdc,
-                     get_bitmap_disabled, get_dc_font_size, get_gcdc_font_size,
-                     platebtn, set_bitmap_labels, wx_Panel, get_dialogs,
-                     set_maxsize)
-from lib.agw import labelbook, pygauge
-from lib.agw.gradientbutton import GradientButton, CLICK, HOVER
-from lib.agw.fourwaysplitter import (_TOLERANCE, FLAG_CHANGED, FLAG_PRESSED,
-                                     NOWHERE, FourWaySplitter,
-                                     FourWaySplitterEvent)
-import localization as lang
-import util_str
+from DisplayCAL import ICCProfile as ICCP
+from DisplayCAL import audio
+from DisplayCAL import config
+from DisplayCAL.config import (defaults, getbitmap, getcfg, geticon, get_data_path, get_default_dpi, get_verified_path,
+                               hascfg, pyname, setcfg, confighome, appbasename, logdir, set_default_app_dpi)
+from DisplayCAL.debughelpers import (Error, DownloadError, Info, UnloggedError, UnloggedInfo, UnloggedWarning, Warn,
+                                     getevtobjname, getevttype, handle_error)
+from DisplayCAL.log import log as log_
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import debug
+from DisplayCAL.ordereddict import OrderedDict
+from DisplayCAL.network import ScriptingClientSocket, get_network_addr
+from DisplayCAL.util_io import StringIOu as StringIO
+from DisplayCAL.util_os import get_program_file, launch_file, waccess
+from DisplayCAL.util_str import box, safe_str, wrap
+from DisplayCAL.util_xml import dict2xml
+from DisplayCAL.wxaddons import (CustomEvent, FileDrop as _FileDrop, gamma_encode, get_parent_frame,
+                                 get_platform_window_decoration_size, wx, BetterWindowDisabler, BetterTimer,
+                                 EVT_BETTERTIMER)
+from DisplayCAL.wexpect import split_command_line
+from DisplayCAL.wxfixes import (GenBitmapButton, GenButton, GTKMenuItemGetFixedLabel, PlateButton, ThemedGenButton,
+                                adjust_font_size_for_gcdc, get_bitmap_disabled, get_dc_font_size, get_gcdc_font_size,
+                                platebtn, set_bitmap_labels, wx_Panel, get_dialogs, set_maxsize)
+from DisplayCAL.lib.agw import labelbook, pygauge
+from DisplayCAL.lib.agw.gradientbutton import GradientButton, CLICK, HOVER
+from DisplayCAL.lib.agw.fourwaysplitter import (_TOLERANCE, FLAG_CHANGED, FLAG_PRESSED, NOWHERE, FourWaySplitter,
+                                                FourWaySplitterEvent)
+from DisplayCAL import localization as lang
+from DisplayCAL import util_str
+from DisplayCAL import floatspin
 
-import floatspin
 try:
     from wx.lib.agw import aui
     from wx.lib.agw.aui import AuiDefaultTabArt
@@ -74,7 +69,7 @@ import wx.html
 taskbar = None
 if sys.platform == "win32" and sys.getwindowsversion() >= (6, 1):
     try:
-        import taskbar
+        from DisplayCAL import taskbar
     except Exception as exception:
         print(exception)
 
@@ -1107,11 +1102,11 @@ class BaseFrame(wx.Frame):
                             child.TopLevelParent is win and
                             child.IsShownOnScreen() and child.IsEnabled()):
                         if format != "plain":
-                            if not "buttons" in response:
+                            if "buttons" not in response:
                                 response["buttons"] = []
                             response["buttons"].append(child.Label)
                         else:
-                            if not "buttons" in response:
+                            if "buttons" not in response:
                                 response.append("buttons")
                             response.append(demjson.encode(child.Label))
             elif win.__class__ is wx.Dialog:
@@ -1430,7 +1425,7 @@ class BaseFrame(wx.Frame):
                             i != menu_pos_label):
                         continue
                     if (responseformats[conn] != "plain" and
-                            not label in menulabels):
+                            label not in menulabels):
                         menuitems = []
                         menulabels.append(label)
                         menus.append({"label": label, "position": i,
@@ -1893,7 +1888,7 @@ class BaseFrame(wx.Frame):
         if menubar:
             for menu, label in menubar.GetMenus():
                 menu_pos = menubar.FindMenu(label)
-                if not menu in self._menulabels:
+                if menu not in self._menulabels:
                     # Backup un-translated label
                     self._menulabels[menu] = label
                 menubar.SetMenuLabel(menu_pos, "&" + lang.getstr(
@@ -1909,7 +1904,7 @@ class BaseFrame(wx.Frame):
             if isinstance(child, (wx.StaticText, wx.Control,
                                   BetterStaticFancyText,
                                   BitmapBackgroundPanelText)):
-                if not child in self._ctrllabels:
+                if child not in self._ctrllabels:
                     # Backup un-translated label
                     label = self._ctrllabels[child] = child.Label
                 else:
@@ -1933,7 +1928,7 @@ class BaseFrame(wx.Frame):
                             translated += '\n&#160;'
                     child.Label = translated
                 if child.ToolTip:
-                    if not child in self._tooltipstrings:
+                    if child not in self._tooltipstrings:
                         # Backup un-translated tooltip
                         tooltipstr = self._tooltipstrings[child] = child.ToolTip.Tip
                     else:
@@ -1953,7 +1948,7 @@ class BaseFrame(wx.Frame):
     def setup_menu_language(self, menu):
         if not hasattr(self, "_menuitems"):
             self._menuitems = {}
-        if not menu in self._menuitems:
+        if menu not in self._menuitems:
             # Backup un-translated labels
             try:
                 self._menuitems[menu] = [(item, item.Label) for item in
@@ -2467,7 +2462,7 @@ class HtmlWindow(wx.html.HtmlWindow):
         """ Set displayed page with system default colors """
         html = str(source)
         bgcolor, text, linkcolor, vlinkcolor = get_html_colors()
-        if not "<body" in html:
+        if "<body" not in html:
             html = "<body>%s</body>" % html
         html = re.sub(r"<body[^>]*",
                       '<body bgcolor="%s" text="%s" link="%s" alink="%s" vlink="%s"' %
@@ -2860,7 +2855,7 @@ class FileBrowseBitmapButtonWithChoiceHistory(filebrowse.FileBrowseButtonWithHis
                 if index > -1:
                     self.history.pop(index)
                     self.textControl.Delete(index)
-        if not value in self.history:
+        if value not in self.history:
             self.history.append(value)
             self.textControl.Append(self.GetName(value))
         self.setupControl(self.history.index(value))
@@ -3178,8 +3173,13 @@ class FlatShadedButton(GradientButton):
 
         gc.DrawText(label, pos_x + bw + shadowOffset, (height-th)/2-.5+shadowOffset)
 
-    BitmapLabel = property(lambda self: self._bitmap,
-                           lambda self, bitmap: self.SetBitmap(bitmap))
+    @property
+    def BitmapLabel(self):
+        return self._bitmap
+
+    @BitmapLabel.setter
+    def BitmapLabel(self, bitmap):
+        self.SetBitmap(bitmap)
 
     def Enable(self, enable=True):
         if enable:
@@ -4297,8 +4297,7 @@ class CustomCellRenderer(wx.grid.PyGridCellRenderer):
             else:
                 textcolor = grid.GetCellTextColour(row, col)
             focus = grid.Parent.FindFocus()
-            if not focus or grid not in (focus, focus.GetParent(),
-                                         focus.GetGrandParent()):
+            if not focus or grid not in (focus, focus.GetParent(), focus.GetGrandParent()):
                 if mavericks or sys.platform == "darwin" or "gtk3" in wx.PlatformInfo:
                     # Use Mavericks-like color scheme
                     color = wx.Colour(202, 202, 202)
@@ -6233,7 +6232,7 @@ class SimpleTerminal(InvincibleFrame):
 class TabButton(PlateButton):
 
     def __init__(self, *args, **kwargs):
-        from config import get_default_dpi, getcfg
+        from DisplayCAL.config import get_default_dpi, getcfg
         self.dpiscale = max(getcfg("app.dpi") / get_default_dpi(), 1.0)
         PlateButton.__init__(self, *args, **kwargs)
         self.Unbind(wx.EVT_PAINT)
@@ -6639,7 +6638,7 @@ class TooltipWindow(InvincibleFrame):
         self.sizer2 = wx.BoxSizer(wx.VERTICAL)
         self.sizer1.Add(self.sizer2)
 
-        if not "<" in msg and wrap:
+        if "<" not in msg and wrap:
             msg = util_str.wrap(msg, wrap)
         msg = msg.splitlines()
         for i, line in enumerate(msg):
@@ -6677,7 +6676,7 @@ class TooltipWindow(InvincibleFrame):
             # tab char, extra spacing needed
             tabwidth = tabcount * col.GetTextExtent("\t")[0]
             col.Label = label
-            if not "<" in label:
+            if "<" not in label:
                 col.MinSize = maxlinewidth + tabwidth + margin * 2, -1
             self.sizer3.Add(col, flag=wx.LEFT, border=margin)
 

@@ -15,7 +15,7 @@ if sys.platform not in ("darwin", "win32"):
     if not USE_GI:
         import dbus
         from dbus.mainloop import glib
-    from util_xml import XMLDict
+    from DisplayCAL.util_xml import XMLDict
 
     if USE_GI:
         dbus_session = Gio.bus_get_sync(Gio.BusType.SESSION, None)
@@ -31,7 +31,7 @@ if sys.platform not in ("darwin", "win32"):
         DBusException = dbus.exceptions.DBusException
 
 
-from util_str import safe_str
+from DisplayCAL.util_str import safe_str
 
 
 BUSTYPE_SESSION = 1
@@ -63,7 +63,7 @@ class DBusObjectInterfaceMethod(object):
                 value.append(arg)
             args = ["(%s)" % format_string]
             args.extend(value)
-        if not "timeout" in kwargs:
+        if "timeout" not in kwargs:
             kwargs["timeout"] = 500
         return getattr(self._iface, self._method_name)(*args, **kwargs)
 

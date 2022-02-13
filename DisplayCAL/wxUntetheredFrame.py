@@ -1,9 +1,6 @@
 # -*- coding: UTF-8 -*-
-
-
 """
 Interactive display calibration UI
-
 """
 
 import math
@@ -12,21 +9,18 @@ import re
 import sys
 import time
 
-from wxaddons import wx
-
-from config import (getbitmap, getcfg, geticon, get_data_path, get_icon_bundle,
-                    setcfg)
-from log import get_file_logger
-from meta import name as appname
-from options import debug, test, verbose
-from wxwindows import (BaseApp, BaseFrame, BitmapBackgroundPanel, CustomCheckBox,
-                       CustomGrid, FlatShadedButton, numpad_keycodes,
-                       nav_keycodes, processing_keycodes, wx_Panel)
-import CGATS
-import audio
-import colormath
-import config
-import localization as lang
+from DisplayCAL.wxaddons import wx
+from DisplayCAL.config import getbitmap, getcfg, geticon, get_data_path, get_icon_bundle, setcfg
+from DisplayCAL.log import get_file_logger
+from DisplayCAL.meta import name as appname
+from DisplayCAL.options import debug, test, verbose
+from DisplayCAL.wxwindows import (BaseApp, BaseFrame, BitmapBackgroundPanel, CustomCheckBox, CustomGrid,
+                                  FlatShadedButton, numpad_keycodes, nav_keycodes, processing_keycodes, wx_Panel)
+from DisplayCAL import CGATS
+from DisplayCAL import audio
+from DisplayCAL import colormath
+from DisplayCAL import config
+from DisplayCAL import localization as lang
 
 BGCOLOUR = wx.Colour(0x33, 0x33, 0x33)
 FGCOLOUR = wx.Colour(0x99, 0x99, 0x99)
@@ -702,12 +696,14 @@ if __name__ == "__main__":
     from _thread import start_new_thread
     from time import sleep
     import random
-    from util_io import Files
-    import ICCProfile as ICCP
-    import worker
+    from DisplayCAL.util_io import Files
+    from DisplayCAL import ICCProfile as ICCP
+    from DisplayCAL import worker
+
     class Subprocess():
-        def send(self, bytes):
-            start_new_thread(test, (bytes,))
+        def send(self, bytes_):
+            start_new_thread(test, (bytes_,))
+
     class Worker(worker.Worker):
         def __init__(self):
             worker.Worker.__init__(self)
@@ -718,12 +714,15 @@ if __name__ == "__main__":
             self.is_ambient_measuring = False
             self.subprocess = Subprocess()
             self.subprocess_abort = False
+
         def abort_subprocess(self):
             self.safe_send("Q")
-        def safe_send(self, bytes):
-            print("*** Sending %r" % bytes)
-            self.subprocess.send(bytes)
+
+        def safe_send(self, bytes_):
+            print("*** Sending %r" % bytes_)
+            self.subprocess.send(bytes_)
             return True
+
     config.initcfg()
     print("untethered.min_delta", getcfg("untethered.min_delta"))
     print("untethered.min_delta.lightness", getcfg("untethered.min_delta.lightness"))
@@ -753,17 +752,18 @@ END_DATA
     app.TopWindow.worker.progress_wnd = app.TopWindow
     app.TopWindow.Show()
     files = Files([app.TopWindow.worker, app.TopWindow])
-    def test(bytes=None):
-        print("*** Received %r" % bytes)
+
+    def test(bytes_=None):
+        print("*** Received %r" % bytes_)
         menu = r"""Place instrument on spot to be measured,
 and hit [A-Z] to read white and setup FWA compensation (keyed to letter)
 [a-z] to read and make FWA compensated reading from keyed reference
 'r' to set reference, 's' to save spectrum,
 'h' to toggle high res., 'k' to do a calibration
 Hit ESC or Q to exit, any other key to take a reading:"""
-        if not bytes:
+        if not bytes_:
             txt = menu
-        elif bytes == " ":
+        elif bytes_ == " ":
             i = app.TopWindow.index
             row = app.TopWindow.cgats[0].DATA[i]
             txt = ["""
@@ -774,9 +774,7 @@ and hit [A-Z] to read white and setup FWA compensation (keyed to letter)
 [a-z] to read and make FWA compensated reading from keyed reference
 'r' to set reference, 's' to save spectrum,
 'h' to toggle high res., 'k' to do a calibration
-Hit ESC or Q to exit, any other key to take a reading:""" % (row.XYZ_X,
-                                                             row.XYZ_Y,
-                                                             row.XYZ_Z),
+Hit ESC or Q to exit, any other key to take a reading:""" % (row.XYZ_X, row.XYZ_Y, row.XYZ_Z),
                    """"
 Result is XYZ: %.6f %.6f %.6f
 
@@ -784,10 +782,8 @@ Spot read needs a calibration before continuing
 Place cap on the instrument, or place on a dark surface,
 or place on the white calibration reference,
 and then hit any key to continue,
-or hit Esc or Q to abort:""" % (row.XYZ_X,
-                                 row.XYZ_Y,
-                                 row.XYZ_Z)][random.choice([0, 1])]
-        elif bytes in ("Q", "q"):
+or hit Esc or Q to abort:""" % (row.XYZ_X, row.XYZ_Y, row.XYZ_Z)][random.choice([0, 1])]
+        elif bytes_ in ("Q", "q"):
             wx.CallAfter(app.TopWindow.Close)
             return
         else:

@@ -9,6 +9,7 @@ try:
     libx11 = cdll.LoadLibrary(libx11pth)
 except OSError:
     raise ImportError("Couldn't load libX11")
+
 libxrandrpth = util.find_library("Xrandr")
 if not libxrandrpth:
     raise ImportError("Couldn't find libXrandr")
@@ -20,17 +21,18 @@ except OSError:
 import os
 import sys
 
-from options import debug
+from DisplayCAL.options import debug
 
 XA_CARDINAL = 6
 XA_INTEGER = 19
 
 Atom = c_ulong
 
+
 class Display(Structure):
     __slots__ = []
+    _fields_ = [('_opaque_struct', c_int)]
 
-Display._fields_ = [('_opaque_struct', c_int)]
 
 try:
     libx11.XInternAtom.restype = Atom

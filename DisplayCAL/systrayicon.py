@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Drop-In replacement for wx.TaskBarIcon
 
@@ -16,8 +15,8 @@ import win32con
 import win32gui
 import winerror
 
-from options import debug, verbose
-from wxaddons import wx, IdFactory
+from DisplayCAL.options import debug, verbose
+from DisplayCAL.wxaddons import wx, IdFactory
 
 
 class Menu(wx.EvtHandler):

@@ -2,7 +2,7 @@
 
 import demjson_compat
 
-from lazydict import LazyDict
+from DisplayCAL.lazydict import LazyDict
 
 
 class JSONDict(LazyDict):

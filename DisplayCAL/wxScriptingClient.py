@@ -8,15 +8,15 @@ import socket
 import sys
 import threading
 
-from config import confighome, getcfg, geticon, initcfg, setcfg, writecfg
-from meta import name as appname
-from util_str import safe_str, universal_newlines
-from wexpect import split_command_line
-from wxaddons import wx
-from wxfixes import GenBitmapButton
-from wxwindows import BaseApp, SimpleTerminal, numpad_keycodes
-import config
-import localization as lang
+from DisplayCAL.config import confighome, getcfg, geticon, initcfg, setcfg, writecfg
+from DisplayCAL.meta import name as appname
+from DisplayCAL.util_str import safe_str, universal_newlines
+from DisplayCAL.wexpect import split_command_line
+from DisplayCAL.wxaddons import wx
+from DisplayCAL.wxfixes import GenBitmapButton
+from DisplayCAL.wxwindows import BaseApp, SimpleTerminal, numpad_keycodes
+from DisplayCAL import config
+from DisplayCAL import localization as lang
 
 import wx.lib.delayedresult as delayedresult
 
@@ -31,25 +31,20 @@ class ScriptingClientFrame(SimpleTerminal):
         SimpleTerminal.__init__(self, None, wx.ID_ANY,
                                 lang.getstr("scripting-client"),
                                 start_timer=False,
-                                pos=(getcfg("position.scripting.x"),
-                                     getcfg("position.scripting.y")),
-                                size=(getcfg("size.scripting.w"),
-                                      getcfg("size.scripting.h")),
+                                pos=(getcfg("position.scripting.x"), getcfg("position.scripting.y")),
+                                size=(getcfg("size.scripting.w"), getcfg("size.scripting.h")),
                                 consolestyle=wx.TE_CHARWRAP | wx.TE_MULTILINE |
                                              wx.TE_PROCESS_ENTER | wx.TE_RICH |
                                              wx.VSCROLL | wx.NO_BORDER,
                                 show=False, name="scriptingframe")
-        self.SetIcons(config.get_icon_bundle([256, 48, 32, 16],
-                                             appname + "-scripting-client"))
+        self.SetIcons(config.get_icon_bundle([256, 48, 32, 16], appname + "-scripting-client"))
         self.console.SetForegroundColour("#EEEEEE")
         self.console.SetDefaultStyle(wx.TextAttr("#EEEEEE"))
 
         self.busy = False
         self.commands = []
         self.history = []
-        self.historyfilename = os.path.join(confighome,
-                                            config.appbasename +
-                                            "-scripting-client.history")
+        self.historyfilename = os.path.join(confighome, "%s-scripting-client.history" % config.appbasename)
         if os.path.isfile(self.historyfilename):
             try:
                 with open(self.historyfilename) as historyfile:

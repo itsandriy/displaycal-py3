@@ -48,7 +48,8 @@ class PyEmbeddedImage(object):
 
     def GetData(self):
         if self.isBase64:
-            data = b64decode(self.data)
+            data = b64decode(self.data).decode()
+        # TODO: what is ``data`` if self.isBase64 is False
         return data
 
     def GetIcon(self):

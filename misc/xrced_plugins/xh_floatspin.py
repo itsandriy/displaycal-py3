@@ -5,7 +5,8 @@ import wx.xrc as xrc
 try:
     import wx.lib.agw.floatspin as floatspin
 except ImportError:
-    import floatspin
+    from DisplayCAL import floatspin
+
 
 class FloatSpinCtrlXmlHandler(xrc.XmlResourceHandler):
 
@@ -19,7 +20,7 @@ class FloatSpinCtrlXmlHandler(xrc.XmlResourceHandler):
         self.AddStyle('FS_CENTRE', floatspin.FS_CENTRE)
         self.AddStyle('FS_READONLY', floatspin.FS_READONLY)
 
-    def CanHandle(self,node):
+    def CanHandle(self, node):
         return self.IsOfClass(node, 'FloatSpin')
 
     # Process XML parameters and create the object

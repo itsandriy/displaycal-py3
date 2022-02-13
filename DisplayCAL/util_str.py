@@ -13,7 +13,7 @@ if sys.platform == "win32":
     import pywintypes
     env_errors = env_errors + (pywintypes.error, pywintypes.com_error)
 
-from encoding import get_encodings
+from DisplayCAL.encoding import get_encodings
 
 fs_enc = get_encodings()[1]
 
@@ -28,150 +28,150 @@ control_chars = "".join([chr(i) for i in list(range(0, 9)) + list(range(14, 32))
 # Contains only chars that are not normalizable
 safesubst = {
     # Latin-1 supplement
-     "\u00a2": "c", # Cent sign
-     "\u00a3": "GBP", # Pound sign
-     "\u00a5": "JPY", # Yen sign
-     "\u00a9": "(C)", # U+00A9 copyright sign
-     "\u00ac": "!", # Not sign
-     "\u00ae": "(R)", # U+00AE registered sign
-     "\u00b0": "deg", # Degree symbol
-     "\u00b1": "+-",
-     "\u00c4": "Ae", # Capital letter A with diaresis (Umlaut)
-     "\u00c5": "Aa", # Capital letter A with ring above
-     "\u00c6": "AE",
-     "\u00d6": "Oe", # Capital letter O with diaresis (Umlaut)
-     "\u00dc": "Ue", # Capital letter U with diaresis (Umlaut)
-     "\u00d7": "x", # U+00D7 multiplication sign
-     "\u00df": "ss",
-     "\u00e4": "ae", # Small letter a with diaresis (Umlaut)
-     "\u00e5": "aa", # Small letter a with ring above
-     "\u00e6": "ae",
-     "\u00f6": "oe", # Small letter o with diaresis (Umlaut)
-     "\u00fc": "ue", # Small letter u with diaresis (Umlaut)
-     # Latin extended A
-     "\u0152": "OE",
-     "\u0153": "oe",
-     # General punctuation
-     "\u2010": "-",
-     "\u2011": "-",
-     "\u2012": "-",
-     "\u2013": "-", # U+2013 en dash
-     "\u2014": "--", # U+2014 em dash
-     "\u2015": "---", # U+2015 horizontal bar
-     "\u2018": "'",
-     "\u2019": "'",
-     "\u201a": ",",
-     "\u201b": "'",
-     "\u201c": "''",
-     "\u201d": "''",
-     "\u201e": ",,",
-     "\u201f": "''",
-     "\u2032": "'",
-     "\u2033": "''",
-     "\u2034": "'''",
-     "\u2035": "'",
-     "\u2036": "''",
-     "\u2037": "'''",
-     "\u2053": "~",
-     # Superscripts and subscripts
-     "\u207b": "-",  # Superscript minus
-     "\u208b": "-",  # Subscript minus
-     # Currency symbols
-     "\u20a1": "CRC",  # Costa Rica 'Colon'
-     "\u20a6": "NGN",  # Nigeria 'Naira'
-     "\u20a9": "KRW",  # South Korea 'Won'
-     "\u20aa": "ILS",  # Isreael 'Sheqel'
-     "\u20ab": "VND",  # Vietnam 'Dong'
-     "\u20ac": "EUR",
-     "\u20ad": "LAK",  # Laos 'Kip'
-     "\u20ae": "MNT",  # Mongolia 'Tugrik'
-     "\u20b2": "PYG",  # Paraguay 'Guarani'
-     "\u20b4": "UAH",  # Ukraine 'Hryvnja'
-     "\u20b5": "GHS",  # Ghana 'Cedi'
-     "\u20b8": "KZT",  # Kasachstan 'Tenge'
-     "\u20b9": "INR",  # Indian 'Rupee'
-     "\u20ba": "TRY",  # Turkey 'Lira'
-     "\u20bc": "AZN",  # Aserbaidchan 'Manat'
-     "\u20bd": "RUB",  # Russia 'Ruble'
-     "\u20be": "GEL",  # Georgia 'Lari'
-     # Letter-like symbols
-     "\u2117": "(P)",
-     # Mathematical operators
-     "\u2212": "-",  # U+2212 minus sign
-     "\u2260": "!=",
-     # Enclosed alphanumerics
-     "\u2460": "(1)",
-     "\u2461": "(2)",
-     "\u2462": "(3)",
-     "\u2463": "(4)",
-     "\u2464": "(5)",
-     "\u2465": "(6)",
-     "\u2466": "(7)",
-     "\u2467": "(8)",
-     "\u2468": "(9)",
-     "\u2469": "(10)",
-     "\u246a": "(11)",
-     "\u246b": "(12)",
-     "\u246c": "(13)",
-     "\u246d": "(14)",
-     "\u246e": "(15)",
-     "\u246f": "(16)",
-     "\u2470": "(17)",
-     "\u2471": "(18)",
-     "\u2472": "(19)",
-     "\u2473": "(20)",
-     "\u24eb": "(11)",
-     "\u24ec": "(12)",
-     "\u24ed": "(13)",
-     "\u24ee": "(14)",
-     "\u24ef": "(15)",
-     "\u24f0": "(16)",
-     "\u24f1": "(17)",
-     "\u24f2": "(18)",
-     "\u24f3": "(19)",
-     "\u24f4": "(20)",
-     "\u24f5": "(1)",
-     "\u24f6": "(2)",
-     "\u24f7": "(3)",
-     "\u24f8": "(4)",
-     "\u24f9": "(5)",
-     "\u24fa": "(6)",
-     "\u24fb": "(7)",
-     "\u24fc": "(8)",
-     "\u24fd": "(9)",
-     "\u24fe": "(10)",
-     "\u24ff": "(0)",
-     # Dingbats
-     "\u2776": "(1)",
-     "\u2777": "(2)",
-     "\u2778": "(3)",
-     "\u2779": "(4)",
-     "\u277a": "(5)",
-     "\u277b": "(6)",
-     "\u277c": "(7)",
-     "\u277d": "(8)",
-     "\u277e": "(9)",
-     "\u277f": "(10)",
-     "\u2780": "(1)",
-     "\u2781": "(2)",
-     "\u2782": "(3)",
-     "\u2783": "(4)",
-     "\u2784": "(5)",
-     "\u2785": "(6)",
-     "\u2786": "(7)",
-     "\u2787": "(8)",
-     "\u2788": "(9)",
-     "\u2789": "(10)",
-     "\u278a": "(1)",
-     "\u278b": "(2)",
-     "\u278c": "(3)",
-     "\u278d": "(4)",
-     "\u278e": "(5)",
-     "\u278f": "(6)",
-     "\u2790": "(7)",
-     "\u2791": "(8)",
-     "\u2792": "(9)",
-     "\u2793": "(10)",
+    "\u00a2": "c",  # Cent sign
+    "\u00a3": "GBP",  # Pound sign
+    "\u00a5": "JPY",  # Yen sign
+    "\u00a9": "(C)",  # U+00A9 copyright sign
+    "\u00ac": "!",  # Not sign
+    "\u00ae": "(R)",  # U+00AE registered sign
+    "\u00b0": "deg",  # Degree symbol
+    "\u00b1": "+-",
+    "\u00c4": "Ae",  # Capital letter A with diaresis (Umlaut)
+    "\u00c5": "Aa",  # Capital letter A with ring above
+    "\u00c6": "AE",
+    "\u00d6": "Oe",  # Capital letter O with diaresis (Umlaut)
+    "\u00dc": "Ue",  # Capital letter U with diaresis (Umlaut)
+    "\u00d7": "x",  # U+00D7 multiplication sign
+    "\u00df": "ss",
+    "\u00e4": "ae",  # Small letter a with diaresis (Umlaut)
+    "\u00e5": "aa",  # Small letter a with ring above
+    "\u00e6": "ae",
+    "\u00f6": "oe",  # Small letter o with diaresis (Umlaut)
+    "\u00fc": "ue",  # Small letter u with diaresis (Umlaut)
+    # Latin extended A
+    "\u0152": "OE",
+    "\u0153": "oe",
+    # General punctuation
+    "\u2010": "-",
+    "\u2011": "-",
+    "\u2012": "-",
+    "\u2013": "-",  # U+2013 en dash
+    "\u2014": "--",  # U+2014 em dash
+    "\u2015": "---",  # U+2015 horizontal bar
+    "\u2018": "'",
+    "\u2019": "'",
+    "\u201a": ",",
+    "\u201b": "'",
+    "\u201c": "''",
+    "\u201d": "''",
+    "\u201e": ",,",
+    "\u201f": "''",
+    "\u2032": "'",
+    "\u2033": "''",
+    "\u2034": "'''",
+    "\u2035": "'",
+    "\u2036": "''",
+    "\u2037": "'''",
+    "\u2053": "~",
+    # Superscripts and subscripts
+    "\u207b": "-",  # Superscript minus
+    "\u208b": "-",  # Subscript minus
+    # Currency symbols
+    "\u20a1": "CRC",  # Costa Rica 'Colon'
+    "\u20a6": "NGN",  # Nigeria 'Naira'
+    "\u20a9": "KRW",  # South Korea 'Won'
+    "\u20aa": "ILS",  # Isreael 'Sheqel'
+    "\u20ab": "VND",  # Vietnam 'Dong'
+    "\u20ac": "EUR",
+    "\u20ad": "LAK",  # Laos 'Kip'
+    "\u20ae": "MNT",  # Mongolia 'Tugrik'
+    "\u20b2": "PYG",  # Paraguay 'Guarani'
+    "\u20b4": "UAH",  # Ukraine 'Hryvnja'
+    "\u20b5": "GHS",  # Ghana 'Cedi'
+    "\u20b8": "KZT",  # Kasachstan 'Tenge'
+    "\u20b9": "INR",  # Indian 'Rupee'
+    "\u20ba": "TRY",  # Turkey 'Lira'
+    "\u20bc": "AZN",  # Aserbaidchan 'Manat'
+    "\u20bd": "RUB",  # Russia 'Ruble'
+    "\u20be": "GEL",  # Georgia 'Lari'
+    # Letter-like symbols
+    "\u2117": "(P)",
+    # Mathematical operators
+    "\u2212": "-",  # U+2212 minus sign
+    "\u2260": "!=",
+    # Enclosed alphanumerics
+    "\u2460": "(1)",
+    "\u2461": "(2)",
+    "\u2462": "(3)",
+    "\u2463": "(4)",
+    "\u2464": "(5)",
+    "\u2465": "(6)",
+    "\u2466": "(7)",
+    "\u2467": "(8)",
+    "\u2468": "(9)",
+    "\u2469": "(10)",
+    "\u246a": "(11)",
+    "\u246b": "(12)",
+    "\u246c": "(13)",
+    "\u246d": "(14)",
+    "\u246e": "(15)",
+    "\u246f": "(16)",
+    "\u2470": "(17)",
+    "\u2471": "(18)",
+    "\u2472": "(19)",
+    "\u2473": "(20)",
+    "\u24eb": "(11)",
+    "\u24ec": "(12)",
+    "\u24ed": "(13)",
+    "\u24ee": "(14)",
+    "\u24ef": "(15)",
+    "\u24f0": "(16)",
+    "\u24f1": "(17)",
+    "\u24f2": "(18)",
+    "\u24f3": "(19)",
+    "\u24f4": "(20)",
+    "\u24f5": "(1)",
+    "\u24f6": "(2)",
+    "\u24f7": "(3)",
+    "\u24f8": "(4)",
+    "\u24f9": "(5)",
+    "\u24fa": "(6)",
+    "\u24fb": "(7)",
+    "\u24fc": "(8)",
+    "\u24fd": "(9)",
+    "\u24fe": "(10)",
+    "\u24ff": "(0)",
+    # Dingbats
+    "\u2776": "(1)",
+    "\u2777": "(2)",
+    "\u2778": "(3)",
+    "\u2779": "(4)",
+    "\u277a": "(5)",
+    "\u277b": "(6)",
+    "\u277c": "(7)",
+    "\u277d": "(8)",
+    "\u277e": "(9)",
+    "\u277f": "(10)",
+    "\u2780": "(1)",
+    "\u2781": "(2)",
+    "\u2782": "(3)",
+    "\u2783": "(4)",
+    "\u2784": "(5)",
+    "\u2785": "(6)",
+    "\u2786": "(7)",
+    "\u2787": "(8)",
+    "\u2788": "(9)",
+    "\u2789": "(10)",
+    "\u278a": "(1)",
+    "\u278b": "(2)",
+    "\u278c": "(3)",
+    "\u278d": "(4)",
+    "\u278e": "(5)",
+    "\u278f": "(6)",
+    "\u2790": "(7)",
+    "\u2791": "(8)",
+    "\u2792": "(9)",
+    "\u2793": "(10)",
 }
 
 # Extended character substitution - can NOT be used for filenames
@@ -179,39 +179,40 @@ safesubst = {
 subst = dict(safesubst)
 subst.update({
     # Latin-1 supplement
-              "\u00a6": "|",
-              "\u00ab": "<<",
-              "\u00bb": ">>",
-              "\u00bc": "1/4",
-              "\u00bd": "1/2",
-              "\u00be": "3/4",
-              "\u00f7": ":",
-              # General punctuation
-              "\u201c": "\x22",
-              "\u201d": "\x22",
-              "\u201f": "\x22",
-              "\u2033": "\x22",
-              "\u2036": "\x22",
-              "\u2039": "<",
-              "\u203a": ">",
-              "\u203d": "!?",
-              "\u2044": "/",
-              # Number forms
-              "\u2153": "1/3",
-              "\u2154": "2/3",
-              "\u215b": "1/8",
-              "\u215c": "3/8",
-              "\u215d": "5/8",
-              "\u215e": "7/8",
-              # Arrows
-              "\u2190": "<-",
-              "\u2192": "->",
-              "\u2194": "<->",
-              # Mathematical operators
-              "\u226a": "<<",
-              "\u226b": ">>",
-              "\u2264": "<=",
-              "\u2265": "=>",})
+    "\u00a6": "|",
+    "\u00ab": "<<",
+    "\u00bb": ">>",
+    "\u00bc": "1/4",
+    "\u00bd": "1/2",
+    "\u00be": "3/4",
+    "\u00f7": ":",
+    # General punctuation
+    "\u201c": "\x22",
+    "\u201d": "\x22",
+    "\u201f": "\x22",
+    "\u2033": "\x22",
+    "\u2036": "\x22",
+    "\u2039": "<",
+    "\u203a": ">",
+    "\u203d": "!?",
+    "\u2044": "/",
+    # Number forms
+    "\u2153": "1/3",
+    "\u2154": "2/3",
+    "\u215b": "1/8",
+    "\u215c": "3/8",
+    "\u215d": "5/8",
+    "\u215e": "7/8",
+    # Arrows
+    "\u2190": "<-",
+    "\u2192": "->",
+    "\u2194": "<->",
+    # Mathematical operators
+    "\u226a": "<<",
+    "\u226b": ">>",
+    "\u2264": "<=",
+    "\u2265": "=>",
+})
 
 
 class StrList(list):
@@ -248,6 +249,7 @@ def asciize(obj):
     else:
         return obj.encode("ASCII", "asciize")
 
+
 codecs.register_error("asciize", asciize)
 
 
@@ -272,6 +274,7 @@ def safe_asciize(obj):
     else:
         return obj.encode("ASCII", "safe_asciize")
 
+
 codecs.register_error("safe_asciize", safe_asciize)
 
 
@@ -290,6 +293,8 @@ def escape(obj):
     else:
         return obj.encode("ASCII", "escape")
 
+
+# TODO: convert this to a decorator
 codecs.register_error("escape", escape)
 
 
