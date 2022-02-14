@@ -12,7 +12,6 @@ def is_nan(obj):
 
 
 class OrderedDict(dict):
-
     """Simple ordered dictionary.
 
     Compatible with Python 3's OrderedDict, though performance is inferior

@@ -99,9 +99,9 @@ class GzipFileProper(gzip.GzipFile):
     See RFC 1952 GZIP File Format Specification	version 4.3
     """
 
-    def _write_gzip_header(self):
-        self.fileobj.write('\037\213'.encode())             # magic header
-        self.fileobj.write('\010'.encode())                 # compression method
+    def _write_gzip_header(self, compresslevel):
+        self.fileobj.write(b'\037\213')             # magic header
+        self.fileobj.write(b'\010')                 # compression method
         fname = os.path.basename(self.name)
         if fname.endswith(".gz"):
             fname = fname[:-3]
@@ -114,16 +114,15 @@ class GzipFileProper(gzip.GzipFile):
             flags = gzip.FNAME
         self.fileobj.write(chr(flags).encode())
         gzip.write32u(self.fileobj, int(time()))
-        self.fileobj.write('\002'.encode())
-        self.fileobj.write('\377'.encode())
+        self.fileobj.write(b'\002')
+        self.fileobj.write(b'\377')
         if fname:
             if sys.platform == "win32":
                 # Windows is case insensitive by default (although it can be
                 # set to case sensitive), so according to the GZIP spec, we
                 # force the name to lowercase
                 fname = fname.lower()
-            self.fileobj.write(fname.encode("ISO-8859-1", "replace")
-                               .replace("?".encode(), "_".encode()) + '\000'.encode())
+            self.fileobj.write(fname.encode("ISO-8859-1", "replace") .replace("?".encode(), "_".encode()) + b'\000')
 
     def __enter__(self):
         return self

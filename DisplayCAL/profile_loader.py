@@ -43,6 +43,7 @@ if sys.platform == "win32":
     from DisplayCAL.edid import get_edid
     from DisplayCAL.meta import domain
     from DisplayCAL.ordereddict import OrderedDict
+    # from collections import OrderedDict
     from DisplayCAL.systrayicon import Menu, MenuItem, SysTrayIcon
     from DisplayCAL.util_list import natsort_key_factory
     from DisplayCAL.util_os import (getenvu, is_superuser, islink, quote_args, readlink,

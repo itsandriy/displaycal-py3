@@ -34,6 +34,7 @@ from DisplayCAL.log import log as log_
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.network import ScriptingClientSocket, get_network_addr
 from DisplayCAL.util_io import StringIOu as StringIO
 from DisplayCAL.util_os import get_program_file, launch_file, waccess

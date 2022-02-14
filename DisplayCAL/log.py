@@ -132,6 +132,7 @@ class Log(object):
     def write(self, msg):
         self(msg.rstrip())
 
+
 log = Log()
 
 
@@ -140,10 +141,11 @@ class LogFile(object):
 
     def __init__(self, filename, logdir, when="never", backupCount=0):
         self.filename = filename
-        self._logger = get_file_logger(md5(safe_str(filename,
-                                                    "UTF-8")).hexdigest(),
-                                       when=when, backupCount=backupCount,
-                                       logdir=logdir, filename=filename)
+        self._logger = get_file_logger(
+            md5(filename.encode()).hexdigest(),
+            when=when, backupCount=backupCount,
+            logdir=logdir, filename=filename
+        )
 
     def close(self):
         for handler in reversed(self._logger.handlers):
@@ -190,6 +192,7 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
 
     """
     global _logdir
+    global logger
     if logdir is None:
         logdir = _logdir
     logger = logging.getLogger(name)
@@ -197,8 +200,7 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
         filename = name
     mode = "a"
     if confighome:
-        # Use different logfile name (append number) for each additional
-        # instance
+        # Use different logfile name (append number) for each additional instance
         is_main_process = mp.current_process().name == "MainProcess"
         if os.path.basename(confighome).lower() == "dispcalgui":
             lockbasename = filename.replace(appname, "dispcalGUI")
@@ -239,9 +241,7 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
                         if mtimes:
                             filename = mtimes[sorted(mtimes.keys())[0]]
         if is_main_process:
-            for lockfilepath in safe_glob(os.path.join(confighome,
-                                                       lockbasename +
-                                                       ".mp-worker-*.lock")):
+            for lockfilepath in safe_glob(os.path.join(confighome, lockbasename + ".mp-worker-*.lock")):
                 try:
                     os.remove(lockfilepath)
                 except:
@@ -250,12 +250,9 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
             # Running as child from multiprocessing under Windows
             lockbasename += ".mp-worker-"
             process_num = 1
-            while os.path.isfile(os.path.join(confighome,
-                                              lockbasename + "%i.lock" %
-                                              process_num)):
+            while os.path.isfile(os.path.join(confighome, lockbasename + "%i.lock" % process_num)):
                 process_num += 1
-            lockfilepath = os.path.join(confighome,
-                                        lockbasename + "%i.lock" % process_num)
+            lockfilepath = os.path.join(confighome, lockbasename + "%i.lock" % process_num)
             try:
                 with open(lockfilepath, "w") as lockfile:
                     pass
@@ -314,8 +311,8 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
                     try:
                         os.remove(logbackup)
                     except Exception as exception:
-                        print("Warning - logfile backup '%s' could not "
-                              "be removed during rollover: %s" % (logbackup, exception))
+                        print("Warning - logfile backup '%s' could not be removed during rollover: %s" %
+                              (logbackup, exception))
                 try:
                     os.rename(logfile, logbackup)
                 except Exception as exception:
@@ -349,9 +346,7 @@ def get_file_logger(name, level=loglevel, when="midnight", backupCount=5,
     if os.path.exists(logdir):
         try:
             if when != "never":
-                filehandler = logging.handlers.TimedRotatingFileHandler(logfile,
-                                                                        when=when,
-                                                                        backupCount=backupCount)
+                filehandler = logging.handlers.TimedRotatingFileHandler(logfile, when=when, backupCount=backupCount)
             else:
                 filehandler = logging.FileHandler(logfile, mode)
             fileformatter = logging.Formatter("%(asctime)s %(message)s")

@@ -137,15 +137,14 @@ def get_edid(display_no=0, display_name=None, device=None):
             # But do we care? Probably not, as older Windows' API isn't likely
             # gonna change.
             driver = "\\".join(device.DeviceID.split("\\")[-2:])
-            subkey = "\\".join(["SYSTEM", "CurrentControlSet", "Enum",
-                                "DISPLAY", id])
+            subkey = "\\".join(["SYSTEM", "CurrentControlSet", "Enum", "DISPLAY", id])
             try:
                 key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey)
             except WindowsError:
                 # Registry error
                 print("Windows registry error: Key",
-                           "\\".join(["HKEY_LOCAL_MACHINE", subkey]),
-                           "does not exist.")
+                      "\\".join(["HKEY_LOCAL_MACHINE", subkey]),
+                      "does not exist.")
                 return {}
             numsubkeys, numvalues, mtime = winreg.QueryInfoKey(key)
             for i in range(numsubkeys):

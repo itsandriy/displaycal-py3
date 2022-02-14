@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # stdlib
-
+import codecs
 from binascii import hexlify
 import atexit
 import ctypes
@@ -92,6 +92,7 @@ from DisplayCAL.multiprocess import cpu_count, pool_slice
 from DisplayCAL.options import (always_fail_download, debug, eecolor65, experimental, test, test_badssl,
                                 test_require_sensor_cal, verbose)
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.network import LoggingHTTPRedirectHandler, NoHTTPRedirectHandler
 from DisplayCAL.patterngenerators import (PrismaPatternGeneratorClient, ResolveLSPatternGeneratorServer,
                                           ResolveCMPatternGeneratorServer, WebWinHTTPPatternGeneratorServer)
@@ -1014,7 +1015,7 @@ def get_options_from_cal(cal):
     if not cal or "ARGYLL_DISPCAL_ARGS" not in cal or \
             not cal.ARGYLL_DISPCAL_ARGS:
         return [], []
-    dispcal_args = cal.ARGYLL_DISPCAL_ARGS[0].decode("UTF-7", "replace")
+    dispcal_args = cal.ARGYLL_DISPCAL_ARGS[0]
     return get_options_from_args(dispcal_args)
 
 
@@ -1031,12 +1032,10 @@ def get_options_from_profile(profile):
         ti3 = CGATS.CGATS(profile.tags.targ)
         if 1 in ti3 and "ARGYLL_DISPCAL_ARGS" in ti3[1] and \
                 ti3[1].ARGYLL_DISPCAL_ARGS:
-            dispcal_args = ti3[1].ARGYLL_DISPCAL_ARGS[0].decode("UTF-7",
-                                                                "replace")
+            dispcal_args = ti3[1].ARGYLL_DISPCAL_ARGS[0]
         if 0 in ti3 and "ARGYLL_COLPROF_ARGS" in ti3[0] and \
                 ti3[0].ARGYLL_COLPROF_ARGS:
-            colprof_args = ti3[0].ARGYLL_COLPROF_ARGS[0].decode("UTF-7",
-                                                                "replace")
+            colprof_args = ti3[0].ARGYLL_COLPROF_ARGS[0]
     if not dispcal_args and "cprt" in profile.tags:
         dispcal_args = get_options_from_cprt(profile.getCopyright())[0]
     if not colprof_args and "cprt" in profile.tags:
@@ -1053,12 +1052,10 @@ def get_options_from_ti3(ti3):
     colprof_args = None
     if 1 in ti3 and "ARGYLL_DISPCAL_ARGS" in ti3[1] and \
             ti3[1].ARGYLL_DISPCAL_ARGS:
-        dispcal_args = ti3[1].ARGYLL_DISPCAL_ARGS[0].decode("UTF-7",
-                                                            "replace")
+        dispcal_args = ti3[1].ARGYLL_DISPCAL_ARGS[0]
     if 0 in ti3 and "ARGYLL_COLPROF_ARGS" in ti3[0] and \
             ti3[0].ARGYLL_COLPROF_ARGS:
-        colprof_args = ti3[0].ARGYLL_COLPROF_ARGS[0].decode("UTF-7",
-                                                            "replace")
+        colprof_args = ti3[0].ARGYLL_COLPROF_ARGS[0]
     return get_options_from_args(dispcal_args, colprof_args)
 
 
@@ -2429,13 +2426,16 @@ class Worker(WorkerBase):
 
     @property
     def pwd(self):
-        return self._pwdstr[10:].ljust(int(math.ceil(len(self._pwdstr[10:]) / 4.0) * 4),
-                                       "=").decode("base64").decode("UTF-8")
+        return codecs.decode(
+            self._pwdstr[10:].ljust(int(math.ceil(len(self._pwdstr[10:]) / 4.0) * 4), "=").encode(),
+            "base64"
+        )
 
     @pwd.setter
     def pwd(self, pwd):
-        self._pwdstr = "/tmp/%s%s" % (md5(getpass.getuser()).hexdigest().encode("base64")[:5],
-                                      pwd.encode("UTF-8").encode("base64").rstrip("=\n"))
+        encoded_user_name = codecs.encode(md5(getpass.getuser().encode()).hexdigest().encode(), "base64")[:5]
+        encoded_pwd = codecs.encode(pwd.encode(), "base64").decode().rstrip("=\n")
+        self._pwdstr = "/tmp/%s%s" % (encoded_user_name, encoded_pwd)
 
     def get_argyll_instrument_conf(self, what=None):
         """ Check for Argyll CMS udev rules/hotplug scripts """
@@ -3219,10 +3219,13 @@ END_DATA
             input_profname = os.path.splitext(os.path.basename(getcfg("3dlut.input.profile")))[0]
         else:
             input_profname = ""
-        lut3d_path = ".".join([_f for _f in [profile_save_path, input_profname,
-                                             "%X" % (zlib.crc32("-".join(lut3d))
-                                                     & 0xFFFFFFFF),
-                                             lut3d_ext] if _f])
+        lut3d_path = ".".join(
+            [_f for _f in [profile_save_path,
+                           input_profname,
+                           "%X" % (zlib.crc32("-".join(lut3d).encode()) & 0xFFFFFFFF),
+                           lut3d_ext]
+             if _f]
+        )
         if not include_input_profile or not os.path.isfile(lut3d_path):
             # 3D LUT filename with plain options before extension - DCG 2.9.0.8+
             enc_in = lut3d[3][1:]
@@ -10007,10 +10010,9 @@ usage: spotread [-options] [logfile]
 
         profile.tags.A2B0.profile = profile
 
-        ### Add black back in
-        ##black_XYZ_D50 = colormath.adapt(*black_XYZ, whitepoint_source=white_XYZ,
-        ##								cat=cat)
-        ##profile.tags.A2B0.apply_black_offset(black_XYZ_D50)
+        # # Add black back in
+        # black_XYZ_D50 = colormath.adapt(*black_XYZ, whitepoint_source=white_XYZ, cat=cat)
+        # profile.tags.A2B0.apply_black_offset(black_XYZ_D50)
 
         return profile
 
@@ -10035,8 +10037,7 @@ usage: spotread [-options] [logfile]
             X, Y, Z = RGB_XYZ[(R, G, B)]
             if XYZbp != (0, 0, 0) and not bpc:
                 # Adjust for black offset
-                X, Y, Z = colormath.blend_blackpoint(X, Y, Z, XYZbp, (0, 0, 0),
-                                                     XYZwp)
+                X, Y, Z = colormath.blend_blackpoint(X, Y, Z, XYZbp, (0, 0, 0), XYZwp)
             xy.append(colormath.XYZ2xyY(*(v / 100 for v in (X, Y, Z)))[:2])
         self.log("Using chromatic adaptation transform matrix:", cat)
         mtx = ICCP.ICCProfile.from_chromaticities(xy[0][0], xy[0][1],
@@ -10270,8 +10271,8 @@ usage: spotread [-options] [logfile]
         if ti3:
             # Embed original TI3
             profile.tags.targ = profile.tags.DevD = profile.tags.CIED = ICCP.TextType(
-                "text\0\0\0\0" + str(ti3) + "\0",
-                "targ")
+                b"text\0\0\0\0" + ti3 + b"\0", b"targ"
+            )
         if chrm:
             # Add ChromaticityType tag
             profile.tags.chrm = chrm
@@ -12230,7 +12231,6 @@ usage: spotread [-options] [logfile]
     def _safe_send(self, bytes_, retry=3, obfuscate=False):
         """Safely send a keystroke to the current subprocess
         """
-        print('_safe_send.bytes_:', bytes_)
         for i in range(0, retry):
             if obfuscate:
                 logbytes = "***"

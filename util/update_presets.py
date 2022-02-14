@@ -31,7 +31,7 @@ def update_preset(name):
     prof = ICCP.ICCProfile(pth)
     if prof.tags.targ != ti3:
         print("Updating 'targ'...")
-        prof.tags.targ = ICCP.TextType("text\0\0\0\0%s\0" % ti3, "targ")
+        prof.tags.targ = ICCP.TextType(b"text\0\0\0\0%s\0" % ti3, b"targ")
     options_dispcal, options_colprof = worker.get_options_from_profile(prof)
     trc_a2b = {"240": -240, "709": -709, "l": -3, "s": -2.4}
     t_a2b = {"t": colormath.CIEDCCT2XYZ, "T": colormath.planckianCT2XYZ}

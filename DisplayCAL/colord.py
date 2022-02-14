@@ -139,9 +139,8 @@ def device_connect(client, device_id):
     return device
 
 
-def device_id_from_edid(edid, quirk=False, use_serial_32=True,
-                        truncate_edid_strings=False,
-                        omit_manufacturer=False, query=False):
+def device_id_from_edid(edid, quirk=False, use_serial_32=True, truncate_edid_strings=False, omit_manufacturer=False,
+                        query=False):
     """ Assemble device key from EDID """
     # https://github.com/hughsie/colord/blob/master/doc/device-and-profile-naming-spec.txt
     # Should match device ID returned by gcm_session_get_output_id in
@@ -154,8 +153,7 @@ def device_id_from_edid(edid, quirk=False, use_serial_32=True,
         elif (sys.platform not in ("darwin", "win32") and query and
               isinstance(Colord, DBusObject)):
             try:
-                device = Device(find("device-by-property", ["OutputEdidMd5",
-                                                            edid["hash"]]))
+                device = Device(find("device-by-property", ["OutputEdidMd5", edid["hash"]]))
                 device_id = device.properties.get("DeviceId")
             except CDError as exception:
                 warnings.warn(safe_str(exception), Warning)

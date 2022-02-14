@@ -995,10 +995,13 @@ class CGATS(dict):
                 context = self.add_data(self.file_identifier)  # create root element
                 context = context.add_data(data, key)
             else:
-                raise CGATSTypeError('Invalid data type for %s (expected str '
-                                     'or unicode without line endings, got %s)'
-                                     % (self.type, type(data)))
+                raise CGATSTypeError(
+                    'Invalid data type for %s '
+                    '(expected str or unicode without line endings, got %s)' % (self.type, type(data)))
         elif self.type == 'SECTION':
+            if isinstance(data, bytes):
+                data = data.decode()
+
             if isinstance(data, str):
                 if isinstance(key, int):
                     # accept only integer keys.
@@ -1008,8 +1011,10 @@ class CGATS(dict):
                     key = len(self)
                 self[key] = data
             else:
-                raise CGATSTypeError('Invalid data type for %s (expected str'
-                    'or unicode, got %s)' % (self.type, type(data)))
+                raise CGATSTypeError(
+                    'Invalid data type for %s '
+                    '(expected str or unicode, got %s)' % (self.type, type(data))
+                )
         elif self.type in ('DATA_FORMAT', 'KEYWORDS') or \
             (self.parent and self.parent.type == 'ROOT'):
             if isinstance(data, (dict, list, tuple)):

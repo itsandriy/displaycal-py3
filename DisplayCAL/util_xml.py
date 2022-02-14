@@ -6,6 +6,7 @@ except ImportError:
     pass
 
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 
 
 def dict2xml(d, elementname="element", pretty=True, allow_attributes=True,

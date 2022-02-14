@@ -92,6 +92,7 @@ from DisplayCAL.meta import (VERSION, VERSION_BASE, author, name as appname, dom
                              get_latest_chglog_entry)
 from DisplayCAL.options import (debug, force_skip_initial_instrument_detection, test, test_update, verbose)
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.patterngenerators import WebWinHTTPPatternGeneratorServer
 
 try:
@@ -880,9 +881,16 @@ def upload_colorimeter_correction(parent=None, params=None):
     # Check for duplicate
     resp = http_request(parent, "colorimetercorrections." + domain, "GET", path,
                         # Remove CREATED date for calculating hash
-                        {"get": True, "hash": md5(re.sub('\nCREATED\s+".+?"\n', "\n\n",
-                                                         safe_str(params['cgats'],
-                                                                  "UTF-8")).strip()).hexdigest()},
+                        {
+                            "get": True,
+                            "hash": md5(
+                                re.sub(
+                                    '\nCREATED\s+".+?"\n',
+                                    "\n\n",
+                                    safe_str(params['cgats'], "UTF-8")
+                                ).strip()
+                            ).hexdigest()
+                        },
                         silent=True)
     if resp and resp.read().strip().startswith("CC"):
         wx.CallAfter(InfoDialog, parent,
@@ -12717,9 +12725,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             if isinstance(tmp_working_dir, Exception):
                                 show_result_dialog(tmp_working_dir, self)
                                 return
-                            profile.tags.targ = ICCP.TextType("text\0\0\0\0" +
-                                                              str(ti3) + "\0",
-                                                              "targ")
+                            profile.tags.targ = ICCP.TextType(b"text\0\0\0\0" + ti3 + b"\0", b"targ")
                             profile.tags.DevD = profile.tags.CIED = profile.tags.targ
                             tmp_path = os.path.join(tmp_working_dir,
                                                     os.path.basename(path))
@@ -13472,10 +13478,7 @@ class MainFrame(ReportFrame, BaseFrame):
         # CRC32
         if "%crc32" in profile_name:
             if edid.get("edid"):
-                profile_name = profile_name.replace("%crc32",
-                                                    "%X" %
-                                                    (crc32(edid["edid"])
-                                                     & 0xFFFFFFFF))
+                profile_name = profile_name.replace("%crc32", "%X" % (crc32(edid["edid"].encode()) & 0xFFFFFFFF))
             else:
                 profile_name = profile_name.replace("%crc32", "\0")
 

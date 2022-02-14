@@ -589,7 +589,7 @@ def smooth_avg(values, passes=1, window=None, protect=None):
         for j, v in enumerate(values):
             tmpwindow = window
             if not protect or j not in protect:
-                while j > 0 and j < len(values) - 1 and len(tmpwindow) >= 3:
+                while 0 < j < len(values) - 1 and len(tmpwindow) >= 3:
                     tl = (len(tmpwindow) - 1) / 2
                     # print j, tl, tmpwindow
                     if tl > 0 and j - tl >= 0 and j + tl <= len(values) - 1:

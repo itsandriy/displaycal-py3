@@ -27,6 +27,7 @@ from DisplayCAL.debughelpers import handle_error
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug, tc_use_alternate_preview, test, verbose
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.util_io import StringIOu as StringIO
 from DisplayCAL.util_os import expanduseru, is_superuser, launch_file, waccess
 from DisplayCAL.worker import (Error, Worker, check_file_isfile, check_set_argyll_bin, get_argyll_util,

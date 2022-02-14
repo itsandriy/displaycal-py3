@@ -47,6 +47,7 @@ import winerror
 
 from DisplayCAL.meta import name as appname
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.safe_print import enc
 from DisplayCAL.util_os import getenvu
 from DisplayCAL.util_str import indent, universal_newlines

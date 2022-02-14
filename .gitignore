@@ -5,3 +5,4 @@
 /MANIFEST.in
 /VERSION
 __pycache__/
+/.pytest_cache/

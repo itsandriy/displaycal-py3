@@ -14,6 +14,7 @@ from DisplayCAL.config import (defaults, fs_enc, get_argyll_display_number, get_
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.util_io import GzipFileProper
 from DisplayCAL.util_list import intlist
 from DisplayCAL.util_os import launch_file, make_win32_compatible_long_path, waccess

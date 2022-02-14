@@ -12,6 +12,7 @@ from DisplayCAL.log import log
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.util_io import Files
 from DisplayCAL.util_os import waccess
 from DisplayCAL.util_str import safe_str

@@ -22,6 +22,7 @@ from DisplayCAL.log import get_file_logger
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.util_list import intlist
 from DisplayCAL.util_str import wrap
 from DisplayCAL.wxwindows import (BaseApp, BaseFrame, FlatShadedButton, numpad_keycodes, nav_keycodes,

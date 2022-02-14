@@ -32,18 +32,19 @@ from DisplayCAL.imfile import tiff_get_header
 from DisplayCAL.meta import name as appname, version
 from DisplayCAL.network import get_network_addr, get_valid_host
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 
 
 CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.POINTER(None),
                             ctypes.c_char_p, ctypes.c_ulong, ctypes.c_ulonglong,
                             ctypes.c_char_p, ctypes.c_ulonglong, ctypes.c_bool)
 
-H3D_HEADER = ("3DLT\x01\x00\x00\x00DisplayCAL\x00\x00\x00\x00\x00\x00\x00\x00"
-              "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00"
-              "\x00\x00\x00\x00\x00\x08\x00\x00\x00\x08\x00\x00\x00\x08\x00\x00"
-              "\x00\x00\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00"
-              "\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-              "\x06\x00\x00\x00\x06")
+H3D_HEADER = (b"3DLT\x01\x00\x00\x00DisplayCAL\x00\x00\x00\x00\x00\x00\x00\x00"
+              b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 \x00"
+              b"\x00\x00\x00\x00\x00\x08\x00\x00\x00\x08\x00\x00\x00\x08\x00\x00"
+              b"\x00\x00\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00"
+              b"\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+              b"\x06\x00\x00\x00\x06")
 
 
 min_version = (0, 88, 20, 0)
@@ -399,11 +400,11 @@ class H3DLUT(object):
         stream = self._get_stream(stream_or_filename, ".icc")
 
         link = ICCP.ICCProfile()
-        link.connectionColorSpace = "RGB"
-        link.profileClass = "link"
+        link.connectionColorSpace = b"RGB"
+        link.profileClass = b"link"
         link.tags.desc = ICCP.TextDescriptionType()
         link.tags.desc.ASCII = os.path.splitext(os.path.basename(stream.name))[0]
-        link.tags.cprt = ICCP.TextType("text\0\0\0\0No copyright", "cprt")
+        link.tags.cprt = ICCP.TextType(b"text\0\0\0\0No copyright", b"cprt")
 
         input_grid_steps = 2 ** self.inputBitDepth[0]  # Assume equal bitdepth for R, G, B
         if input_grid_steps > 255:
@@ -1316,7 +1317,7 @@ class MadTPG_Net(MadTPGBase):
             return None, blob
         crc = struct.unpack("<I", blob[8:12])[0]
         # Check CRC
-        check = crc32(blob[:8]) & 0xFFFFFFFF
+        check = crc32(blob[:8].encode()) & 0xFFFFFFFF
         if check != crc:
             raise ValueError("MadTPG_Net: Invalid madVR packet: CRC check "
                              "failed: Expected %i, got %i" % (crc, check))
@@ -1464,8 +1465,8 @@ class MadTPG_Net(MadTPGBase):
         data += struct.pack("<i", len(params))  # sizeOfParams
         data += params
         datalen = len(data)
-        packet = magic + struct.pack("<i", datalen)
-        packet += struct.pack("<I", crc32(packet) & 0xFFFFFFFF)
+        packet = magic + struct.pack("<i", datalen).decode()
+        packet += struct.pack("<I", crc32(packet.encode()) & 0xFFFFFFFF)
         packet += data
         if self.debug > 1:
             with _lock:

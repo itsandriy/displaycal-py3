@@ -331,7 +331,7 @@ class Image(object):
         ihdr.append("\0")
         ihdr = "".join(ihdr)
         stream.write(ihdr)
-        stream.write(struct.pack(">I", zlib.crc32(ihdr) & 0xFFFFFFFF))
+        stream.write(struct.pack(">I", zlib.crc32(ihdr.encode()) & 0xFFFFFFFF))
         # IDAT image data chunk type
         imgdata = []
         for i, scanline in enumerate(self.data):
@@ -351,11 +351,11 @@ class Image(object):
         idat.append(imgdata)
         idat = "".join(idat)
         stream.write(idat)
-        stream.write(struct.pack(">I", zlib.crc32(idat) & 0xFFFFFFFF))
+        stream.write(struct.pack(">I", zlib.crc32(idat.encode()) & 0xFFFFFFFF))
         # IEND chunk
         stream.write("\0" * 4)
         stream.write("IEND")
-        stream.write(struct.pack(">I", zlib.crc32("IEND") & 0xFFFFFFFF))
+        stream.write(struct.pack(">I", zlib.crc32("IEND".encode()) & 0xFFFFFFFF))
 
     def _write_tiff(self, stream, dimensions=None):
         # Very helpful: http://www.fileformat.info/format/tiff/corion.htm

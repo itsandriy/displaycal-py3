@@ -15,6 +15,7 @@ from DisplayCAL.config import (fs_enc, get_argyll_display_number, get_data_path,
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.ordereddict import OrderedDict
+# from collections import OrderedDict
 from DisplayCAL.util_decimal import float2dec
 from DisplayCAL.util_os import waccess
 from DisplayCAL.worker import (Error, UnloggedError, UnloggedInfo, Worker, get_argyll_util, make_argyll_compatible_path,
