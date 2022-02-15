@@ -11,7 +11,7 @@
                 <size>-1,6</size>
                 <bg>#66CC00</bg>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+              <flag>wxEXPAND</flag>
             </object>
             <object class="sizeritem">
               <object class="wxPanel" name="headerpanel">
@@ -101,7 +101,7 @@
                 </object>
                 <bg>#0e59a9</bg>
               </object>
-              <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+              <flag>wxEXPAND</flag>
             </object>
             <object class="sizeritem">
               <object class="wxPanel" name="tabpanel">
@@ -444,7 +444,7 @@
                               <border>4</border>
                             </object>
                           </object>
-                          <flag>wxALIGN_CENTRE_VERTICAL|wxTOP</flag>
+                          <flag>wxTOP</flag>
                           <border>8</border>
                         </object>
                         <object class="sizeritem">
@@ -480,7 +480,7 @@
                               <border>8</border>
                             </object>
                           </object>
-                          <flag>wxALIGN_CENTRE_VERTICAL|wxTOP</flag>
+                          <flag>wxTOP</flag>
                           <border>8</border>
                         </object>
                         <object class="sizeritem">
@@ -554,7 +554,7 @@
                             </object>
                             <orient>wxHORIZONTAL</orient>
                           </object>
-                          <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+                          <flag>wxEXPAND</flag>
                         </object>
                         <object class="sizeritem">
                           <object class="wxPanel" name="display_instrument_info_panel">
