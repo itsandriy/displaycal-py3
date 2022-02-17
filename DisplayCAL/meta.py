@@ -52,7 +52,7 @@ wx_minversion = (2, 8, 11)
 wx_recversion = (4, 1, 1)
 
 
-def get_latest_chglog_entry(readme):
+def get_latest_changelog_entry(readme):
     """Get changelog entry for latest version from ReadMe HTML
     """
     chglog = re.search(r'<div id="(?:changelog|history)">'

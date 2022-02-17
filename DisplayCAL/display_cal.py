@@ -4,17 +4,17 @@ DisplayCAL - display calibration and characterization powered by ArgyllCMS
 
 Copyright (C) 2008, 2009 Florian Hoech
 
-This program is free software; you can redistribute it and/or modify it 
-under the terms of the GNU General Public License as published by the 
-Free Software Foundation; either version 3 of the License, or (at your 
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 3 of the License, or (at your
 option) any later version.
 
-This program is distributed in the hope that it will be useful, but 
-WITHOUT ANY WARRANTY; without even the implied warranty of 
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 General Public License for more details.
 
-You should have received a copy of the GNU General Public License along 
+You should have received a copy of the GNU General Public License along
 with this program; if not, see <http://www.gnu.org/licenses/>
 """
 
@@ -89,7 +89,7 @@ from DisplayCAL.debughelpers import ResourceError, getevtobjname, getevttype, ha
 from DisplayCAL.edid import pnpidcache, get_manufacturer_name
 from DisplayCAL.log import log, logbuffer
 from DisplayCAL.meta import (VERSION, VERSION_BASE, author, name as appname, domain, version, version_short,
-                             get_latest_chglog_entry)
+                             get_latest_changelog_entry)
 from DisplayCAL.options import (debug, force_skip_initial_instrument_detection, test, test_update, verbose)
 from DisplayCAL.ordereddict import OrderedDict
 # from collections import OrderedDict
@@ -248,7 +248,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
             if argyll:
                 chglog = readme
             else:
-                chglog = get_latest_chglog_entry(readme)
+                chglog = get_latest_changelog_entry(readme)
                 if chglog:
                     chglog = """<!DOCTYPE html>
 <html>
