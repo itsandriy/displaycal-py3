@@ -282,7 +282,7 @@ class CGATS(dict):
                 # Replace 1.#IND00 with NaN
                 raw_line = raw_line.replace("1.#IND00", "NaN")
                 # strip control chars and leading/trailing whitespace
-                line = re.sub('[^\x09\x20-\x7E\x80-\xFF]', '',
+                line = re.sub(r'[^\x09\x20-\x7E\x80-\xFF]', '',
                                 raw_line.strip())
                 if '#' in line or '"' in line:
                     # Deal with comments and quotes
@@ -366,7 +366,7 @@ class CGATS(dict):
                     else:
                         if len(values) == 2 and '"' not in values[0]:
                             key, value = values
-                            if value != None:
+                            if value is not None:
                                 context = context.add_data({key: value.strip('"')})
                             else:
                                 context = context.add_data({key: ''})
@@ -376,7 +376,7 @@ class CGATS(dict):
                                                      context.type or "CGATS",
                                                      self.filename or self))
                 elif values and values[0] not in ('Comment:', 'Date:') and \
-                     len(line) >= 3 and not re.search("[^ 0-9A-Za-z/.]", line):
+                     len(line) >= 3 and not re.search(r"[^ 0-9A-Za-z/.]", line):
                     context = self.add_data(line)
             if 0 in self and self[0].get("NORMALIZED_TO_Y_100") == "NO":
                 # Always normalize to Y = 100
@@ -607,7 +607,7 @@ class CGATS(dict):
             while newkey in context['KEYWORDS']:
                 newkey += 1
             context['KEYWORDS'][newkey] = keyword
-        if value != None:
+        if value is not None:
             context[keyword] = value
 
     def add_section(self, key, value):
@@ -790,7 +790,7 @@ class CGATS(dict):
                     if valueslist:
                         values = valueslist.pop(0)
                         checkerboard.append(values)
-        if (shift and checkerboard[-1][:3] == [100, 100, 100]):
+        if shift and checkerboard[-1][:3] == [100, 100, 100]:
             # Move white patch to front
             if debug:
                 print("INFO - moving white to front")
@@ -1614,7 +1614,7 @@ Transform {
                             current_query_value = query[query_key]
                         else:
                             current_query_value = query_value
-                        if current_query_value != None:
+                        if current_query_value is not None:
                             if item[query_key] != current_query_value:
                                 break
                         if get_value:
@@ -1626,7 +1626,7 @@ Transform {
                 if match_count == len(query):
                     if not get_value:
                         result_n = item
-                    if result_n != None:
+                    if result_n is not None:
                         if get_first:
                             if get_value and isinstance(result_n, dict) and \
                                len(result_n) == 1:

@@ -464,7 +464,7 @@ def get_display_name(n=None, include_geometry=False):
     if n is None:
         n = getcfg("display.number") - 1
     displays = getcfg("displays")
-    if n >= 0 and n < len(displays):
+    if 0 <= n < len(displays):
         if include_geometry:
             return displays[n]
         else:
@@ -522,7 +522,7 @@ def get_display_rects():
     from DisplayCAL.wxaddons import wx
     display_rects = []
     for i, display in enumerate(getcfg("displays")):
-        match = re.search("@ (-?\d+), (-?\d+), (\d+)x(\d+)", display)
+        match = re.search(r"@ (-?\d+), (-?\d+), (\d+)x(\d+)", display)
         if match:
             display_rects.append(wx.Rect(*[int(item) for item in match.groups()]))
     return display_rects
@@ -550,7 +550,7 @@ def get_instrument_name():
     """ Return name of currently configured instrument """
     n = getcfg("comport.number") - 1
     instrument_names = getcfg("instruments")
-    if n >= 0 and n < len(instrument_names):
+    if 0 <= n < len(instrument_names):
         return instrument_names[n]
     return ""
 
@@ -594,7 +594,7 @@ def get_data_path(relpath, rex=None):
     paths = []
     for dir_ in dirs:
         curpath = os.path.join(dir_, relpath)
-        if (dir_.endswith("/argyll") and (relpath + "/").startswith("ref/") and not os.path.exists(curpath)):
+        if dir_.endswith("/argyll") and (relpath + "/").startswith("ref/") and not os.path.exists(curpath):
             # Work-around distribution-specific differences for location
             # of Argyll reference files
             # Fedora and Ubuntu: /usr/share/color/argyll/ref
@@ -1270,8 +1270,7 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
             # Check for invalid types and return default if wrong type
             if raw:
                 pass
-            elif (name != "trc" or value not in valid_values["trc"]) and \
-                    hasdef and deftype in (Decimal, int, float):
+            elif (name != "trc" or value not in valid_values["trc"]) and hasdef and deftype in (Decimal, int, float):
                 try:
                     value = deftype(value)
                 except ValueError:
@@ -1305,14 +1304,14 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
                 value = None
             elif name == "copyright":
                 # Make sure DisplayCAL and Argyll version are up-to-date
-                pattern = re.compile("(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appname, re.I)
+                pattern = re.compile(r"(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appname, re.I)
                 repl = create_replace_function("\\1%s", version)
                 value = re.sub(pattern, repl, value)
                 if appbasename != appname:
-                    pattern = re.compile("(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appbasename, re.I)
+                    pattern = re.compile(r"(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appbasename, re.I)
                     repl = create_replace_function("\\1%s", version)
                     value = re.sub(pattern, repl, value)
-                pattern = re.compile("(Argyll(?:\s*CMS)?)((?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*", re.I)
+                pattern = re.compile(r"(Argyll(?:\s*CMS)?)((?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*", re.I)
                 if defval.split()[-1] != "CMS":
                     repl = create_replace_function("\\1\\2%s", defval.split()[-1])
                 else:
@@ -1424,7 +1423,7 @@ def get_standard_profiles(paths_only=False):
         ref_icc = get_data_path("ref", "\.ic[cm]$") or []
         # Other profiles installed on the system
         other_icc = []
-        rex = re.compile("\.ic[cm]$", re.IGNORECASE)
+        rex = re.compile(r"\.ic[cm]$", re.IGNORECASE)
         for icc_dir in set(iccprofiles + iccprofiles_home):
             for dirpath, dirnames, basenames in os.walk(icc_dir):
                 for basename in filter(rex.search, basenames):

@@ -10,7 +10,7 @@ if not getattr(sys, "frozen", False):
     import re
     for pth in sys.path:
         if (os.path.basename(pth).startswith("protobuf-") and
-                re.match("sha\d+(?:new)?", os.path.basename(os.path.dirname(pth)))):
+                re.match(r"sha\d+(?:new)?", os.path.basename(os.path.dirname(pth)))):
             if "google" in sys.modules:
                 del sys.modules["google"]
             try:

@@ -211,7 +211,7 @@ class Task(_Dict2XML):
 
     def write_xml(self, xmlfilename):
         with open(xmlfilename, "wb") as xmlfile:
-            xmlfile.write(codecs.BOM_UTF16_LE + str(self))
+            xmlfile.write(codecs.BOM_UTF16_LE + str(self).encode())
 
     def __str__(self):
         return universal_newlines("""<?xml version="1.0" encoding="UTF-16"?>

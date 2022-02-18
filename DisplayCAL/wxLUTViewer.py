@@ -62,7 +62,7 @@ class CoordinateType(list):
             values = []
             for i, (y, x) in enumerate(self):
                 n = colormath.XYZ2Lab(0, y, 0)[0]
-                if n >= start and n <= end:
+                if start <= n <= end:
                     values.append((x / 255.0 * 100, y))
         else:
             # Identity
@@ -665,8 +665,7 @@ class LUTCanvas(plot.PlotCanvas):
 
     def zoom(self, direction=1):
         _zoomfactor = .025 * direction
-        if (self._zoomfactor + _zoomfactor > 0 and
-                self._zoomfactor + _zoomfactor <= 5):
+        if (0 < self._zoomfactor + _zoomfactor <= 5):
             self._zoomfactor += _zoomfactor
             self._set_center()
             self.erase_pointlabel()
@@ -1862,7 +1861,7 @@ class LUTFrame(BaseFrame):
             self.cbox_sizer.Layout()
         if hasattr(self, "box_sizer"):
             self.box_sizer.Layout()
-        if self.client.last_PointLabel != None:
+        if self.client.last_PointLabel is not None:
             self.client._drawPointLabel(self.client.last_PointLabel) #erase old
             self.client.last_PointLabel = None
         channels = OrderedDict()

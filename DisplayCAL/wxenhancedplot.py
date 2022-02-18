@@ -496,13 +496,13 @@ class PolyPoints:
     def getLegend(self):
         return self.attributes['legend']
 
-    def getClosestPoint(self, pntXY, pointScaled= True):
+    def getClosestPoint(self, pntXY, pointScaled=True):
         """Returns the index of closest point on the curve, pointXY, scaledXY, distance
             x, y in user coords
             if pointScaled == True based on screen coords
             if pointScaled == False based on user coords
         """
-        if pointScaled == True:
+        if pointScaled is True:
             #Using screen coords
             p = self.scaled
             pxy = self.currentScale * _Numeric.array(pntXY)+ self.currentShift
@@ -1101,7 +1101,7 @@ class PlotCanvas(wx.Panel):
                 
     def Printout(self, paper=None):
         """Print current plot."""
-        if paper != None:
+        if paper is not None:
             self.print_data.SetPaperId(paper)
         pdd = wx.PrintDialogData(self.print_data)
         printer = wx.Printer(pdd)
@@ -1752,7 +1752,7 @@ class PlotCanvas(wx.Panel):
         """
         self.last_PointLabel = None   #reset maker
         x,y = Center
-        if self.last_draw != None:
+        if self.last_draw is not None:
             (graphics, xAxis, yAxis) = self.last_draw
             w = (xAxis[1] - xAxis[0]) * Ratio[0]
             h = (yAxis[1] - yAxis[0]) * Ratio[1]
@@ -1794,16 +1794,16 @@ class PlotCanvas(wx.Panel):
             if pointScaled == True based on screen coords
             if pointScaled == False based on user coords
         """
-        #closest points on screen based on screen scaling (pointScaled= True)
-        #list [curveNumber, index, pointXY, scaledXY, distance] for each curve
+        # closest points on screen based on screen scaling (pointScaled= True)
+        # list [curveNumber, index, pointXY, scaledXY, distance] for each curve
         closestPts= self.GetClosestPoints(pntXY, pointScaled)
-        if closestPts == []:
-            return []  #no graph present
-        #find one with least distance
+        if not closestPts:
+            return []  # no graph present
+        # find one with least distance
         dists = [c[-1] for c in closestPts]
-        mdist = min(dists)  #Min dist
-        i = dists.index(mdist)  #index for min dist
-        return closestPts[i]  #this is the closest point on closest curve
+        mdist = min(dists)  # Min dist
+        i = dists.index(mdist)  # index for min dist
+        return closestPts[i]  # this is the closest point on closest curve
     
     GetClosetPoint = GetClosestPoint
 
@@ -1819,7 +1819,7 @@ class PlotCanvas(wx.Panel):
             This function can be called from parent window with onClick,
             onMotion events etc.            
         """
-        if self.last_PointLabel != None:
+        if self.last_PointLabel is not None:
             #compare pointXY
             if _Numeric.sometrue(mDataDict["pointXY"] != self.last_PointLabel["pointXY"]):
                 #closest changed
@@ -1861,14 +1861,14 @@ class PlotCanvas(wx.Panel):
 
     def OnMouseLeftUp(self, event):
         if self._zoomEnabled:
-            if self._hasDragged == True:
+            if self._hasDragged:
                 self._drawRubberBand(self._zoomCorner1, self._zoomCorner2) # remove old
                 self._zoomCorner2[0], self._zoomCorner2[1]= self._getXY(event)
                 self._hasDragged = False  # reset flag
                 minX, minY= _Numeric.minimum( self._zoomCorner1, self._zoomCorner2)
                 maxX, maxY= _Numeric.maximum( self._zoomCorner1, self._zoomCorner2)
                 self.last_PointLabel = None        #reset pointLabel
-                if self.last_draw != None:
+                if self.last_draw is not None:
                     self._Draw(self.last_draw[0], xAxis = (minX,maxX), yAxis = (minY,maxY), dc = None)
             #else: # A box has not been drawn, zoom in on a point
             ## this interfered with the double click, so I've disables it.
@@ -1893,7 +1893,7 @@ class PlotCanvas(wx.Panel):
 
     def OnPaint(self, event):
         # All that is needed here is to draw the buffer to screen
-        if self.last_PointLabel != None:
+        if self.last_PointLabel is not None:
             self._drawPointLabel(self.last_PointLabel) #erase old
             self.last_PointLabel = None
         dc = wx.BufferedPaintDC(self.canvas, self._Buffer)
@@ -1926,7 +1926,7 @@ class PlotCanvas(wx.Panel):
 
     def OnLeave(self, event):
         """Used to erase pointLabel when mouse outside window"""
-        if self.last_PointLabel != None:
+        if self.last_PointLabel is not None:
             self._drawPointLabel(self.last_PointLabel) #erase old
             self.last_PointLabel = None
 
@@ -1966,7 +1966,7 @@ class PlotCanvas(wx.Panel):
      
     def _printDraw(self, printDC):
         """Used for printing."""
-        if self.last_draw != None:
+        if self.last_draw is not None:
             graphics, xSpec, ySpec= self.last_draw
             self._Draw(graphics,xSpec,ySpec,printDC)
 
@@ -2056,8 +2056,8 @@ class PlotCanvas(wx.Panel):
     def _legendWH(self, dc, graphics):
         """Returns the size in screen units for legend box"""
         txtExt = (0, 0)
-        if self._legendEnabled != True:
-            legendBoxWH= symExt= txtExt
+        if not self._legendEnabled:
+            legendBoxWH = symExt = txtExt
         else:
             # find max symbol size
             symExt= graphics.getSymExtent(self.printerScale)
@@ -2845,25 +2845,25 @@ class TestFrame(wx.Frame):
         dc.DrawText(s, sx , sy+1)
         # -----------
 
-    def OnMouseLeftDown(self,event):
-        s= "Left Mouse Down at Point: (%.4f, %.4f)" % self.client._getXY(event)
+    def OnMouseLeftDown(self, event):
+        s = "Left Mouse Down at Point: (%.4f, %.4f)" % self.client._getXY(event)
         self.SetStatusText(s)
-        event.Skip()            #allows plotCanvas OnMouseLeftDown to be called
+        event.Skip()  # allows plotCanvas OnMouseLeftDown to be called
 
     def OnMotion(self, event):
-        #show closest point (when enbled)
-        if self.client.GetEnablePointLabel() == True:
-            #make up dict with info for the pointLabel
-            #I've decided to mark the closest point on the closest curve
-            dlst= self.client.GetClosestPoint( self.client._getXY(event), pointScaled= True)
-            if dlst != []:    #returns [] if none
+        # show closest point (when enbled)
+        if self.client.GetEnablePointLabel():
+            # make up dict with info for the pointLabel
+            # I've decided to mark the closest point on the closest curve
+            dlst = self.client.GetClosestPoint(self.client._getXY(event), pointScaled=True)
+            if dlst:    # returns [] if none
                 curveNum, legend, pIndex, pointXY, scaledXY, distance = dlst
-                #make up dictionary to pass to my user function (see DrawPointLabel) 
-                mDataDict= {"curveNum":curveNum, "legend":legend, "pIndex":pIndex,\
-                            "pointXY":pointXY, "scaledXY":scaledXY}
-                #pass dict to update the pointLabel
+                # make up dictionary to pass to my user function (see DrawPointLabel)
+                mDataDict = {"curveNum": curveNum, "legend": legend, "pIndex": pIndex,
+                            "pointXY": pointXY, "scaledXY": scaledXY}
+                # pass dict to update the pointLabel
                 self.client.UpdatePointLabel(mDataDict)
-        event.Skip()           #go to next handler
+        event.Skip()  # go to next handler
 
     def OnFilePageSetup(self, event):
         self.client.PageSetup()
@@ -2938,7 +2938,7 @@ class TestFrame(wx.Frame):
         self.client.Clear()
         
     def OnPlotScale(self, event):
-        if self.client.last_draw != None:
+        if self.client.last_draw is not None:
             graphics, xAxis, yAxis= self.client.last_draw
             self.client.Draw(graphics,(1,3.05),(0,1))
 

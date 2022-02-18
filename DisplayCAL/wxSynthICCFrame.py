@@ -203,7 +203,7 @@ class SynthICCFrame(BaseFrame):
                 increment = min_inc
             self.black_luminance_ctrl.SetIncrement(increment)
             fmt = "%%.%if" % self.black_luminance_ctrl.GetDigits()
-            if fmt % v > fmt % 0 and fmt % v < fmt % increment:
+            if fmt % 0 < fmt % v < fmt % increment:
                 if event:
                     v = increment
                 else:

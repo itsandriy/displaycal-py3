@@ -308,8 +308,7 @@ class _Sound(object):
                     self._ch = pyglet.media.Player()
                     self._snd = snd
                 elif self._lib == "SDL":
-                    rw = sdl.SDL_RWFromFile(safe_str(self._filename, "UTF-8"),
-                                            "rb")
+                    rw = sdl.SDL_RWFromFile(safe_str(self._filename, "UTF-8"), "rb")
                     self._snd = self._server.Mix_LoadWAV_RW(rw, 1)
                 elif self._lib == "wx":
                     self._snd = wx.Sound(self._filename)

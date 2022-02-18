@@ -224,8 +224,7 @@ def create_app_symlinks(dist_dir, scripts):
         has_tool_script = os.path.exists(toolscript)
         if not has_tool_script:
             # Don't symlink, apps won't be able to run in parallel!
-            shutil.copy(os.path.join(dist_dir, maincontents_rel, 'MacOS',
-                                     appname), toolscript)
+            shutil.copy(os.path.join(dist_dir, maincontents_rel, 'MacOS', appname), toolscript)
         toolcontents = os.path.join(toolapp, "Contents")
         os.makedirs(toolcontents)
         subdirs = ["Frameworks", "Resources"]
@@ -235,28 +234,20 @@ def create_app_symlinks(dist_dir, scripts):
         for entry in os.listdir(os.path.join(dist_dir, maincontents_rel)):
             if entry in subdirs:
                 os.makedirs(os.path.join(toolcontents, entry))
-                for subentry in os.listdir(os.path.join(dist_dir,
-                                                        maincontents_rel,
-                                                        entry)):
-                    src = os.path.join(dist_dir, maincontents_rel,
-                                       entry, subentry)
+                for subentry in os.listdir(os.path.join(dist_dir, maincontents_rel, entry)):
+                    src = os.path.join(dist_dir, maincontents_rel, entry, subentry)
                     tgt = os.path.join(toolcontents, entry, subentry)
                     if subentry == "main.py":
                         # py2app
                         with open(src, "rb") as main_in:
                             py = main_in.read()
-                        py = py.replace("main()",
-                                        "main(%r)" %
-                                        script[len(name) + 1:])
+                        py = py.replace("main()", "main(%r)" % script[len(name) + 1:])
                         with open(tgt, "wb") as main_out:
-                            main_out.write(py)
+                            main_out.write(py.encode())
                         continue
                     if subentry == name + ".icns":
-                        shutil.copy(os.path.join(pydir, "theme",
-                                                 "icons",
-                                                 "%s.icns" % script),
-                                    os.path.join(toolcontents, entry,
-                                                 "%s.icns" % script))
+                        shutil.copy(os.path.join(pydir, "theme", "icons", "%s.icns" % script),
+                                    os.path.join(toolcontents, entry, "%s.icns" % script))
                         continue
                     if subentry == script:
                         # PyInstaller
@@ -270,7 +261,7 @@ def create_app_symlinks(dist_dir, scripts):
                                               entry), "r", "UTF-8") as info_in:
                     infoxml = info_in.read()
                 # CFBundleName / CFBundleDisplayName
-                infoxml = re.sub("(Name</key>\s*<string>)%s" % name,
+                infoxml = re.sub(r"(Name</key>\s*<string>)%s" % name,
                                  lambda match: match.group(1) +
                                                toolname, infoxml)
                 # CFBundleIdentifier
@@ -280,7 +271,7 @@ def create_app_symlinks(dist_dir, scripts):
                 infoxml = infoxml.replace("%s.icns</string>" % name,
                                           "%s.icns</string>" % script)
                 # CFBundleExecutable
-                infoxml = re.sub("(Executable</key>\s*<string>)%s" % name,
+                infoxml = re.sub(r"(Executable</key>\s*<string>)%s" % name,
                                  lambda match: match.group(1) +
                                                script, infoxml)
                 with codecs.open(os.path.join(toolcontents, entry), "w",

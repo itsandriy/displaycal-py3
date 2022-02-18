@@ -2504,7 +2504,7 @@ def _mp_hdr_tonemap(HDR_XYZ, thread_abort_event, progress_queue, rgb_space,
 
 def hexrepr(bytestring, mapping=None):
     hexrepr = b"0x%s" % binascii.hexlify(bytestring).upper()
-    ascii = re.sub(b"[^\x20-\x7e]", b"", bytestring).decode() #.encode("ASCII", "replace")
+    ascii = re.sub(b"[^\x20-\x7e]", b"", bytestring).decode()  #.encode("ASCII", "replace")
     if ascii == bytestring:
         hexrepr += " '%s'" % ascii
         if mapping:
@@ -2643,11 +2643,9 @@ class CRInterpolation(object):
 
 
 class ADict(dict):
-
     """Convenience class for dictionary key access via attributes.
 
     Instead of writing aodict[key], you can also write aodict.key
-
     """
 
     def __init__(self, *args, **kwargs):
@@ -2862,6 +2860,7 @@ class Colorant(object):
 class Geometry(ADict):
 
     def __init__(self, binaryString):
+        super(Geometry, self).__init__()
         self.type = uInt32Number(binaryString)
         self.description = geometry[self.type]
 
@@ -2869,6 +2868,7 @@ class Geometry(ADict):
 class Illuminant(ADict):
 
     def __init__(self, binaryString):
+        super(Illuminant, self).__init__()
         self.type = uInt32Number(binaryString)
         self.description = illuminants[self.type]
 
@@ -3005,7 +3005,7 @@ class LUT16Type(ICCProfileTag):
         else:
             stream = stream_or_filename
         with stream:
-            stream.write("""CTI3
+            stream.write(b"""CTI3
 DEVICE_CLASS "DISPLAY"
 COLOR_REP "RGB_XYZ"
 BEGIN_DATA_FORMAT
@@ -3017,18 +3017,17 @@ BEGIN_DATA
             block = 0
             i = 1
             if (self.tagSignature and
-                    self.tagSignature.startswith("B2A")):
+                    self.tagSignature.startswith(b"B2A")):
                 interp = []
                 for input in self.input:
-                    interp.append(colormath.Interp(input, list(range(len(input))),
-                                                   use_numpy=True))
+                    interp.append(colormath.Interp(input, list(range(len(input))), use_numpy=True))
             for a in range(clutres):
                 for b in range(clutres):
                     for c in range(clutres):
                         R, G, B = [v / (clutres - 1.0) * 100
                                    for v in (a, b, c)]
                         if (self.tagSignature and
-                                self.tagSignature.startswith("B2A")):
+                                self.tagSignature.startswith(b"B2A")):
                             linear_rgb = [interp[i](v) /
                                           (len(interp[i].xp) - 1.0) *
                                           (1 + (32767 / 32768.0)) * 100
@@ -3038,11 +3037,11 @@ BEGIN_DATA
                         else:
                             X, Y, Z = [v / 32768.0 * 100
                                        for v in self.clut[block][c]]
-                        stream.write("%i %7.3f %7.3f %7.3f %10.6f %10.6f %10.6f\n" %
+                        stream.write(b"%i %7.3f %7.3f %7.3f %10.6f %10.6f %10.6f\n" %
                                      (i, R, G, B, X, Y, Z))
                         i += 1
                     block += 1
-            stream.write("END_DATA\n")
+            stream.write(b"END_DATA\n")
 
     @property
     def clut_grid_steps(self):
@@ -3093,13 +3092,18 @@ BEGIN_DATA
                 lut.sort()
                 channel[e] = list(lut.values())
 
-    def clut_row_apply_per_channel(self, indexes, fn, fnargs=(), fnkwargs={},
+    def clut_row_apply_per_channel(self, indexes, fn, fnargs=None, fnkwargs=None,
                                    pcs=None, protect_gray_axis=True,
                                    protect_dark=False, protect_black=True,
                                    exclude=None):
         """Apply function to channel values of each cLUT row
-
         """
+        if fnargs is None:
+            fnargs = ()
+
+        if fnkwargs is None:
+            fnkwargs = {}
+
         clutres = len(self.clut[0])
         block = -1
         for i, row in enumerate(self.clut):
@@ -3266,11 +3270,10 @@ BEGIN_DATA
                             smooth = 0.5
                         for j, c in enumerate((x, y)):
                             # Omit corners and perpendicular axis
-                            if c > 0 and c < clutres - 1:
+                            if 0 < c < clutres - 1:
                                 for n in (-1, 1):
                                     yi, xi = (y, y + n)[j], (x + n, x)[j]
-                                    if (xi > -1 and yi > -1 and
-                                            xi < clutres and yi < clutres):
+                                    if -1 < xi < clutres and yi > -1 and yi < clutres:
                                         RGBn = grid[yi][xi]
                                         if debug == 2:
                                             if (i < clutres - 1 or
@@ -3290,8 +3293,7 @@ BEGIN_DATA
                             for n in (-1, 1):
                                 for yi, xi in [((y, y + n)[j], (x + n, x)[j]),
                                                (y - n, (x + n, x - n)[j])]:
-                                    if (xi > -1 and yi > -1 and
-                                            xi < clutres and yi < clutres):
+                                    if -1 < xi < clutres and yi > -1 and yi < clutres:
                                         RGBn = grid[yi][xi]
                                         if yi != y and xi != x:
                                             smooth = 1 / 3.0
@@ -3592,7 +3594,7 @@ class CurveType(ICCProfileTag, list):
             values = []
             for i, y in enumerate(self):
                 n = colormath.XYZ2Lab(0, y / 65535.0 * 100, 0)[0]
-                if n >= start and n <= end:
+                if start <= n <= end:
                     values.append((i / (len(self) - 1.0) * 65535.0, y))
         else:
             maxv = len(self) - 1.0
@@ -3689,12 +3691,12 @@ class CurveType(ICCProfileTag, list):
                 start = slice[0] * len(self)
                 end = slice[1] * len(self)
                 for i, n in enumerate(otrc):
-                    ##n = colormath.XYZ2Lab(0, n / 65535.0 * 100, 0)[0]
-                    if i >= start and i <= end:
+                    # n = colormath.XYZ2Lab(0, n / 65535.0 * 100, 0)[0]
+                    if start <= i <= end:
                         n = colormath.get_gamma([(i / (len(self) - 1.0) * 65535.0, n)], 65535.0, vmin, vmax, False)
                         if n:
                             n = n[0]
-                            ##n2 = colormath.XYZ2Lab(0, trc[i] / 65535.0 * 100, 0)[0]
+                            # n2 = colormath.XYZ2Lab(0, trc[i] / 65535.0 * 100, 0)[0]
                             n2 = colormath.get_gamma([(i / (len(self) - 1.0) * 65535.0, trc[i])], 65535.0, vmin, vmax, False)
                             if n2 and n2[0]:
                                 n2 = n2[0]
@@ -4559,9 +4561,9 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
                         if debug:
                             print("ASSUMED UTF-16 Big Endian")
                         unicodeDescription = str(unicodeDescription, "utf-16-be", errors="replace")
-                unicodeDescription = unicodeDescription.strip(b"\0\n\r ")
+                unicodeDescription = unicodeDescription.strip("\0\n\r ")
                 if unicodeDescription:
-                    if unicodeDescription.find(b"\0") < 0:
+                    if unicodeDescription.find("\0") < 0:
                         self.Unicode = unicodeDescription
                     else:
                         print("Error (non-critical): could not decode "
@@ -4579,22 +4581,20 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
             macDescriptionLength = ord(tagData[macOffset + 2])
             if macDescriptionLength:
                 try:
-                    macDescription = str(tagData[macOffset + 3 : macOffset + 3 + macDescriptionLength],
+                    macDescription = str(tagData[macOffset + 3: macOffset + 3 + macDescriptionLength],
                                          "mac-" + encodings["mac"][self.macScriptCode],
-                                         errors="replace").strip(b"\0\n\r ")
+                                         errors="replace").strip("\0\n\r ")
                     if macDescription:
                         self.Macintosh = macDescription
                 except KeyError:
-                    print("KeyError (non-critical): could not "
-                          "decode '%s' Macintosh part (unsupported "
-                          "encoding %s)" % (tagData[:4], self.macScriptCode))
+                    print("KeyError (non-critical): could not decode '%s' Macintosh part (unsupported encoding %s)" %
+                          (tagData[:4], self.macScriptCode))
                 except LookupError:
-                    print("LookupError (non-critical): could not "
-                          "decode '%s' Macintosh part (unsupported "
-                          "encoding '%s')" % (tagData[:4], encodings["mac"][self.macScriptCode]))
+                    print("LookupError (non-critical): could not decode '%s' "
+                          "Macintosh part (unsupported encoding '%s')" %
+                          (tagData[:4], encodings["mac"][self.macScriptCode]))
                 except UnicodeDecodeError:
-                    print("UnicodeDecodeError (non-critical): could not "
-                          "decode '%s' Macintosh part" % tagData[:4])
+                    print("UnicodeDecodeError (non-critical): could not decode '%s' Macintosh part" % tagData[:4])
 
     @property
     def tagData(self):
@@ -5551,7 +5551,7 @@ class ICCProfile(object):
     """Returns a new ICCProfile object.
 
     Optionally initialized with a string containing binary profile data or
-    a filename, or a file-like object. Also if the 'load' keyword argument
+    a filename, or a file-like object. Also, if the 'load' keyword argument
     is False (default True), only the header will be read initially and
     loading of the tags will be deferred to when they are accessed the
     first time.
@@ -5561,45 +5561,45 @@ class ICCProfile(object):
 
     def __new__(cls, profile=None, load=True, use_cache=False):
         key = None
+        # the content of the profile should be passed as bytes in Python 3.
         if isinstance(profile, str):
-            if profile.find("\0") < 0 and not profile.startswith("<"):
-                # Filename
-                if not profile:
-                    raise ICCProfileInvalidError("Empty path given")
-                if (not os.path.isfile(profile) and
-                        os.path.sep not in profile and
-                        (not isinstance(os.path.altsep, str) or
-                         os.path.altsep not in profile)):
-                    for path in iccprofiles_home + [x for x in iccprofiles if x not in iccprofiles_home]:
-                        if os.path.isdir(path):
-                            for path, dirs, files in os.walk(path):
-                                path = os.path.join(path, profile)
-                                if os.path.isfile(path):
-                                    profile = path
-                                    break
-                            if profile == path:
+            # Filename
+            if not profile:
+                raise ICCProfileInvalidError("Empty path given")
+
+            import pathlib
+            p = pathlib.Path(profile)
+
+            if not p.is_file() and not p.is_absolute():
+                search_paths = list(set(iccprofiles_home + iccprofiles))
+                found_profile = False
+                while search_paths and not found_profile:
+                    search_path = pathlib.Path(search_paths.pop(0))
+                    if search_path.is_dir():  # only look in to directories
+                        for entry in search_path.glob(profile):
+                            if entry.is_file():
+                                profile = str(entry)  # TODO: update this to stay a Path instance after migration to
+                                found_profile = True  #       pathlib is completed
                                 break
-                if use_cache:
-                    stat = os.stat(profile)
-                    # NOTE under Python 2.x Windows, st_ino is always zero!
-                    # Use file path as well to work around.
-                    # This has been addressed with Python 3
-                    key = (profile, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size)
-                else:
-                    key = ()
-            else:
-                # Binary string
-                if use_cache:
-                    key = md5(profile).hexdigest()
 
             if use_cache:
-                chk = _iccprofilecache.get(key)
-                if chk:
-                    return chk
+                stat = os.stat(profile)
+                key = (profile, stat.st_dev, stat.st_ino, stat.st_mtime, stat.st_size)
+            else:
+                key = ()
+        elif isinstance(profile, bytes):
+            # Binary string
+            if use_cache:
+                key = md5(profile).hexdigest()
 
-            if isinstance(key, tuple):
-                # Filename
-                profile = open(profile, "rb")
+        if use_cache:
+            chk = _iccprofilecache.get(key)
+            if chk:
+                return chk
+
+        if isinstance(key, tuple):
+            # Filename
+            profile = open(profile, "rb")
 
         self = super(ICCProfile, cls).__new__(cls)
 
@@ -5622,9 +5622,9 @@ class ICCProfile(object):
         self.size = 0
 
         if profile is not None:
-            if isinstance(profile, str):
+            if isinstance(profile, bytes):
                 # Binary string
-                data = profile.encode()
+                data = profile
                 self.is_loaded = True
             else:
                 # File object

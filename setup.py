@@ -214,7 +214,7 @@ def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
         "PY_MAXVERSION": ".".join(str(n) for n in py_maxversion),
         "PY_MINVERSION": ".".join(str(n) for n in py_minversion),
         "VERSION": version,
-        "VERSION_SHORT": re.sub("(?:\.0){1,2}$", "", version),
+        "VERSION_SHORT": re.sub(r"(?:\.0){1,2}$", "", version),
         "URL": "https://%s/" % domain.lower(),
         "HTTPURL": "http://%s/" % domain.lower(),  # For share counts...
         "WX_MINVERSION": ".".join(str(n) for n in wx_minversion),
@@ -1042,7 +1042,7 @@ def setup():
                                            ("0install-cache-manager", "0install Cache Manager")]:
                 if script.endswith("-apply-profiles"):
                     continue
-                desc = re.sub("^%s " % name, "", desc).strip()
+                desc = re.sub(r"^%s " % name, "", desc).strip()
                 if script == "0install-launcher":
                     bundlename = name
                 else:
@@ -1054,7 +1054,7 @@ def setup():
                                       "EXECUTABLE": script,
                                       "ID": ".".join(reversed(domain.split("."))) + "." + script})
                 if script.startswith(name):
-                    run = "0launch%s -- %s" % (re.sub("^%s" % name, " --command=run", script), feeduri)
+                    run = "0launch%s -- %s" % (re.sub(r"^%s" % name, " --command=run", script), feeduri)
                 else:
                     run = {"0install-launcher": "0launch --gui " + feeduri,
                            "0install-cache-manager": "0store manage"}.get(script)

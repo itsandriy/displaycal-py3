@@ -276,8 +276,11 @@ def run(command, timeout=-1, withexitstatus=False, events=None, extra_args=None,
         return child_result
 
 
-def spawn(command, args=[], timeout=30, maxread=2000, searchwindowsize=None, logfile=None, cwd=None, env=None,
+def spawn(command, args=None, timeout=30, maxread=2000, searchwindowsize=None, logfile=None, cwd=None, env=None,
           codepage=None, columns=None, rows=None):
+    if args is None:
+        args = []
+
     log('=' * 80)
     log('Buffer size: %s' % maxread)
     if searchwindowsize:
@@ -298,120 +301,120 @@ def spawn(command, args=[], timeout=30, maxread=2000, searchwindowsize=None, log
 
 
 class spawn_unix (object):
+    """This is the main class interface for Pexpect. Use this class to start and control child applications.
 
-    """This is the main class interface for Pexpect. Use this class to start
-    and control child applications. """
+    The command parameter may be a string that
+    includes a command and any arguments to the command. For example::
+
+        child = pexpect.spawn('/usr/bin/ftp')
+        child = pexpect.spawn('/usr/bin/ssh user@example.com')
+        child = pexpect.spawn('ls -latr /tmp')
+
+    You may also construct it with a list of arguments like so::
+
+        child = pexpect.spawn('/usr/bin/ftp', [])
+        child = pexpect.spawn('/usr/bin/ssh', ['user@example.com'])
+        child = pexpect.spawn('ls', ['-latr', '/tmp'])
+
+    After this the child application will be created and will be ready to
+    talk to. For normal use, see expect() and send() and sendline().
+
+    Remember that Pexpect does NOT interpret shell meta characters such as
+    redirect, pipe, or wild cards (>, |, or *). This is a common mistake.
+    If you want to run a command and pipe it through another command then
+    you must also start a shell. For example::
+
+        child = pexpect.spawn('/bin/bash -c "ls -l | grep LOG > log_list.txt"')
+        child.expect(pexpect.EOF)
+
+    The second form of spawn (where you pass a list of arguments) is useful
+    in situations where you wish to spawn a command and pass it its own
+    argument list. This can make syntax more clear. For example, the
+    following is equivalent to the previous example::
+
+        shell_cmd = 'ls -l | grep LOG > log_list.txt'
+        child = pexpect.spawn('/bin/bash', ['-c', shell_cmd])
+        child.expect(pexpect.EOF)
+
+    The maxread attribute sets the read buffer size. This is maximum number
+    of bytes that Pexpect will try to read from a TTY at one time. Setting
+    the maxread size to 1 will turn off buffering. Setting the maxread
+    value higher may help performance in cases where large amounts of
+    output are read back from the child. This feature is useful in
+    conjunction with searchwindowsize.
+
+    The searchwindowsize attribute sets the how far back in the incomming
+    seach buffer Pexpect will search for pattern matches. Every time
+    Pexpect reads some data from the child it will append the data to the
+    incomming buffer. The default is to search from the beginning of the
+    imcomming buffer each time new data is read from the child. But this is
+    very inefficient if you are running a command that generates a large
+    amount of data where you want to match The searchwindowsize does not
+    effect the size of the incomming data buffer. You will still have
+    access to the full buffer after expect() returns.
+
+    The logfile member turns on or off logging. All input and output will
+    be copied to the given file object. Set logfile to None to stop
+    logging. This is the default. Set logfile to sys.stdout to echo
+    everything to standard output. The logfile is flushed after each write.
+
+    Example log input and output to a file::
+
+        child = pexpect.spawn('some_command')
+        fout = file('mylog.txt','w')
+        child.logfile = fout
+
+    Example log to stdout::
+
+        child = pexpect.spawn('some_command')
+        child.logfile = sys.stdout
+
+    The logfile_read and logfile_send members can be used to separately log
+    the input from the child and output sent to the child. Sometimes you
+    don't want to see everything you write to the child. You only want to
+    log what the child sends back. For example::
+
+        child = pexpect.spawn('some_command')
+        child.logfile_read = sys.stdout
+
+    To separately log output sent to the child use logfile_send::
+
+        self.logfile_send = fout
+
+    The delaybeforesend helps overcome a weird behavior that many users
+    were experiencing. The typical problem was that a user would expect() a
+    "Password:" prompt and then immediately call sendline() to send the
+    password. The user would then see that their password was echoed back
+    to them. Passwords don't normally echo. The problem is caused by the
+    fact that most applications print out the "Password" prompt and then
+    turn off stdin echo, but if you send your password before the
+    application turned off echo, then you get your password echoed.
+    Normally this wouldn't be a problem when interacting with a human at a
+    real keyboard. If you introduce a slight delay just before writing then
+    this seems to clear up the problem. This was such a common problem for
+    many users that I decided that the default pexpect behavior should be
+    to sleep just before writing to the child application. 1/20th of a
+    second (50 ms) seems to be enough to clear up the problem. You can set
+    delaybeforesend to 0 to return to the old behavior. Most Linux machines
+    don't like this to be below 0.03. I don't know why.
+
+    Note that spawn is clever about finding commands on your path.
+    It uses the same logic that "which" uses to find executables.
+
+    If you wish to get the exit status of the child you must call the
+    close() method. The exit or signal status of the child will be stored
+    in self.exitstatus or self.signalstatus. If the child exited normally
+    then exitstatus will store the exit return code and signalstatus will
+    be None. If the child was terminated abnormally with a signal then
+a        signalstatus will store the signal value and exitstatus will be None.
+    If you need more detail you can also read the self.status member which
+    stores the status returned by os.waitpid. You can interpret this using
+    os.WIFEXITED/os.WEXITSTATUS or os.WIFSIGNALED/os.TERMSIG.
+
+
+    """
 
     def __init__(self, command, args=None, timeout=30, maxread=2000, searchwindowsize=None, logfile=None, cwd=None, env=None):
-
-        """This is the constructor. The command parameter may be a string that
-        includes a command and any arguments to the command. For example::
-
-            child = pexpect.spawn ('/usr/bin/ftp')
-            child = pexpect.spawn ('/usr/bin/ssh user@example.com')
-            child = pexpect.spawn ('ls -latr /tmp')
-
-        You may also construct it with a list of arguments like so::
-
-            child = pexpect.spawn ('/usr/bin/ftp', [])
-            child = pexpect.spawn ('/usr/bin/ssh', ['user@example.com'])
-            child = pexpect.spawn ('ls', ['-latr', '/tmp'])
-
-        After this the child application will be created and will be ready to
-        talk to. For normal use, see expect() and send() and sendline().
-
-        Remember that Pexpect does NOT interpret shell meta characters such as
-        redirect, pipe, or wild cards (>, |, or *). This is a common mistake.
-        If you want to run a command and pipe it through another command then
-        you must also start a shell. For example::
-
-            child = pexpect.spawn('/bin/bash -c "ls -l | grep LOG > log_list.txt"')
-            child.expect(pexpect.EOF)
-
-        The second form of spawn (where you pass a list of arguments) is useful
-        in situations where you wish to spawn a command and pass it its own
-        argument list. This can make syntax more clear. For example, the
-        following is equivalent to the previous example::
-
-            shell_cmd = 'ls -l | grep LOG > log_list.txt'
-            child = pexpect.spawn('/bin/bash', ['-c', shell_cmd])
-            child.expect(pexpect.EOF)
-
-        The maxread attribute sets the read buffer size. This is maximum number
-        of bytes that Pexpect will try to read from a TTY at one time. Setting
-        the maxread size to 1 will turn off buffering. Setting the maxread
-        value higher may help performance in cases where large amounts of
-        output are read back from the child. This feature is useful in
-        conjunction with searchwindowsize.
-
-        The searchwindowsize attribute sets the how far back in the incomming
-        seach buffer Pexpect will search for pattern matches. Every time
-        Pexpect reads some data from the child it will append the data to the
-        incomming buffer. The default is to search from the beginning of the
-        imcomming buffer each time new data is read from the child. But this is
-        very inefficient if you are running a command that generates a large
-        amount of data where you want to match The searchwindowsize does not
-        effect the size of the incomming data buffer. You will still have
-        access to the full buffer after expect() returns.
-
-        The logfile member turns on or off logging. All input and output will
-        be copied to the given file object. Set logfile to None to stop
-        logging. This is the default. Set logfile to sys.stdout to echo
-        everything to standard output. The logfile is flushed after each write.
-
-        Example log input and output to a file::
-
-            child = pexpect.spawn('some_command')
-            fout = file('mylog.txt','w')
-            child.logfile = fout
-
-        Example log to stdout::
-
-            child = pexpect.spawn('some_command')
-            child.logfile = sys.stdout
-
-        The logfile_read and logfile_send members can be used to separately log
-        the input from the child and output sent to the child. Sometimes you
-        don't want to see everything you write to the child. You only want to
-        log what the child sends back. For example::
-        
-            child = pexpect.spawn('some_command')
-            child.logfile_read = sys.stdout
-
-        To separately log output sent to the child use logfile_send::
-        
-            self.logfile_send = fout
-
-        The delaybeforesend helps overcome a weird behavior that many users
-        were experiencing. The typical problem was that a user would expect() a
-        "Password:" prompt and then immediately call sendline() to send the
-        password. The user would then see that their password was echoed back
-        to them. Passwords don't normally echo. The problem is caused by the
-        fact that most applications print out the "Password" prompt and then
-        turn off stdin echo, but if you send your password before the
-        application turned off echo, then you get your password echoed.
-        Normally this wouldn't be a problem when interacting with a human at a
-        real keyboard. If you introduce a slight delay just before writing then
-        this seems to clear up the problem. This was such a common problem for
-        many users that I decided that the default pexpect behavior should be
-        to sleep just before writing to the child application. 1/20th of a
-        second (50 ms) seems to be enough to clear up the problem. You can set
-        delaybeforesend to 0 to return to the old behavior. Most Linux machines
-        don't like this to be below 0.03. I don't know why.
-
-        Note that spawn is clever about finding commands on your path.
-        It uses the same logic that "which" uses to find executables.
-
-        If you wish to get the exit status of the child you must call the
-        close() method. The exit or signal status of the child will be stored
-        in self.exitstatus or self.signalstatus. If the child exited normally
-        then exitstatus will store the exit return code and signalstatus will
-        be None. If the child was terminated abnormally with a signal then
-a        signalstatus will store the signal value and exitstatus will be None.
-        If you need more detail you can also read the self.status member which
-        stores the status returned by os.waitpid. You can interpret this using
-        os.WIFEXITED/os.WEXITSTATUS or os.WIFSIGNALED/os.TERMSIG. """
-
         if args is None:
             args = []
 
@@ -470,7 +473,6 @@ a        signalstatus will store the signal value and exitstatus will be None.
             self._spawn(command, args)
 
     def __del__(self):
-
         """This makes sure that no system resources are left open. Python only
         garbage collects Python objects. OS file descriptors are not Python
         objects, so they must be handled explicitly. If the child file
@@ -919,7 +921,7 @@ a        signalstatus will store the signal value and exitstatus will be None.
         # worry about if I have to later modify read() or expect().
         # Note, it's OK if size==-1 in the regex. That just means it
         # will never match anything in which case we stop only on EOF.
-        cre = re.compile('.{%d}' % size, re.DOTALL)
+        cre = re.compile(r'.{%d}' % size, re.DOTALL)
         index = self.expect ([cre, self.delimiter]) # delimiter default is EOF
         if index == 0:
             return self.after  # self.before should be ''. Should I assert this?
@@ -1012,7 +1014,7 @@ a        signalstatus will store the signal value and exitstatus will be None.
         """
         char = char.lower()
         a = ord(char)
-        if a >= 97 and a <= 122:
+        if 97 <= a <= 122:
             a = a - ord('a') + 1
             return self.send(chr(a))
         d = {'@': 0, '`': 0,
@@ -1613,12 +1615,14 @@ a        signalstatus will store the signal value and exitstatus will be None.
 ##############################################################################
 
 
-class spawn_windows(spawn_unix, object):
+class spawn_windows(spawn_unix):
     """This is the main class interface for Pexpect. Use this class to start and control child applications.
     """
 
     def __init__(self, command, args=None, timeout=30, maxread=60000, searchwindowsize=None, logfile=None, cwd=None,
                  env=None, codepage=None, columns=None, rows=None):
+        # super(spawn_windows, self).__init__(command=command, args=args, timeout=timeout, maxread=maxread,
+        #                                     searchwindowsize=searchwindowsize, logfile=logfile, cwd=cwd, env=env)
         self.stdin = sys.stdin
         self.stdout = sys.stdout
         self.stderr = sys.stderr
@@ -1666,7 +1670,7 @@ class spawn_windows(spawn_unix, object):
             self.args = None
             self.name = '<pexpect factory incomplete>'
         else:
-            self._spawn (command, args)
+            self._spawn(command, args)
 
     def __del__(self):
         """This makes sure that no system resources are left open. Python only
@@ -2688,7 +2692,7 @@ class searcher_string(object):
                 # better obey searchwindowsize
                 offset = -searchwindowsize
             n = buffer.find(s, offset)
-            if n >= 0 and n < first_match:
+            if 0 <= n < first_match:
                 first_match = n
                 best_index, best_match = index, s
         if first_match == absurd_match:
@@ -2738,7 +2742,7 @@ class searcher_re (object):
     def __str__(self):
         """This returns a human-readable string that represents the state of
         the object."""
-        ss = [(n, '    %d: re.compile("%s")' % (n, str(s.pattern))) for n, s in self._searches]
+        ss = [(n, '    %d: re.compile(r"%s")' % (n, str(s.pattern))) for n, s in self._searches]
         ss.append((-1, 'searcher_re:'))
         if self.eof_index >= 0:
             ss.append((self.eof_index, '    %d: EOF' % self.eof_index))

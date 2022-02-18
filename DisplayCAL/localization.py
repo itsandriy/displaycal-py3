@@ -152,9 +152,9 @@ if debug:
             temp.update(usage)
             usage = temp
         with open(usage_path, "wb") as usagefile:
-            usagefile.write("{\n")
+            usagefile.write(b"{\n")
             for key, count in sorted(usage.items()):
-                usagefile.write('\t"%s": %i,\n' % (key.encode("UTF-8"), count))
-            usagefile.write("}")
+                usagefile.write(b'\t"%s": %i,\n' % (key.encode("UTF-8"), count))
+            usagefile.write(b"}")
 
     atexit.register(write_usage)

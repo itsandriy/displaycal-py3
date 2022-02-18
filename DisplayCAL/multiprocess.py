@@ -44,7 +44,7 @@ def cpu_count(limit_by_total_vmem=True):
         return 1
 
 
-def pool_slice(func, data_in, args=(), kwds={}, num_workers=None,
+def pool_slice(func, data_in, args=None, kwds=None, num_workers=None,
                thread_abort=None, logfile=None, num_batches=1, progress=0):
     """Process data in slices using a pool of workers and return the results.
 
@@ -59,6 +59,12 @@ def pool_slice(func, data_in, args=(), kwds={}, num_workers=None,
     percentage into the queue which is passed as the second argument to 'func'.
 
     """
+    if args is None:
+        args = ()
+
+    if kwds is None:
+        kwds = {}
+
     from DisplayCAL.config import getcfg
 
     if num_workers is None:

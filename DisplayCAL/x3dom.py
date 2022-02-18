@@ -87,11 +87,11 @@ class Tag(object):
 
         """
         # Get children of X3D document
-        x3d_html = re.sub("\s*</?X3D(?:\s+[^>]*)?>\s*", "",
+        x3d_html = re.sub(r"\s*</?X3D(?:\s+[^>]*)?>\s*", "",
                           self.markup(xhtml, True))
         if not xhtml:
             # Convert uppercase letters at start of tag name to lowercase
-            x3d_html = re.sub("(</?[0-9A-Z]+)",
+            x3d_html = re.sub(r"(</?[0-9A-Z]+)",
                               lambda match: match.groups()[0].lower(), x3d_html)
         # Indent
         x3d_html = "\n".join(["\t" * 2 + line
@@ -101,14 +101,14 @@ class Tag(object):
         def get_resource(url, source=True):
             baseurl, basename = os.path.split(url)
             # Strip protocol
-            cache_uri = re.sub("^\w+://", "", baseurl)
+            cache_uri = re.sub(r"^\w+://", "", baseurl)
             # Strip www
-            cache_uri = re.sub("^(?:www\.)?", "", cache_uri)
+            cache_uri = re.sub(r"^(?:www\.)?", "", cache_uri)
             # domain.com -> com.domain
             domain, path = cache_uri.split("/", 1)
             cache_uri = "/".join([".".join(reversed(domain.split("."))), path])
             # com.domain/path -> com.domain.path
-            cache_uri = re.sub("^([^/]+)/", "\\1.", cache_uri)
+            cache_uri = re.sub(r"^([^/]+)/", "\\1.", cache_uri)
             cachedir = os.path.join(cachepath,
                                     os.path.join(*cache_uri.split("/")))
             if not os.path.isdir(cachedir):
@@ -163,7 +163,7 @@ class Tag(object):
                             domain.lower(), True)
         if cache or embed:
             # Update resources in HTML
-            restags = re.findall("<[^>]+\s+data-fallback-\w+=[^>]*>", html)
+            restags = re.findall(r"<[^>]+\s+data-fallback-\w+=[^>]*>", html)
             for restag in restags:
                 attrname = re.search(r"\s+data-fallback-(\w+)=",
                                      restag).groups()[0]
@@ -184,16 +184,16 @@ class Tag(object):
                                             restag)
                     html = html.replace(restag, updated_restag)
         # Update title
-        html = re.sub("(<title>)[^<]*(</title>)",
+        html = re.sub(r"(<title>)[^<]*(</title>)",
                       create_replace_function(r"\1%s\2", str(title)), html)
         # Insert X3D
         html = html.replace("</x3d>", "\t" + x3d_html + "\n\t\t</x3d>")
         # Finish
         if xhtml:
             html = "<?xml version='1.0' encoding='UTF-8'?>\n" + html
-            html = re.sub("\s*/>", " />", html)
+            html = re.sub(r"\s*/>", " />", html)
         else:
-            html = re.sub("\s*/>", ">", html)
+            html = re.sub(r"\s*/>", ">", html)
         return html
 
     def xhtml(self, *args, **kwargs):
@@ -390,9 +390,9 @@ def update_vrml(vrml, colorspace):
     for item in re.findall(r"point\s*\[[^\]]+\]", vrml):
         item = item[:-1].rstrip()
         # Remove comments
-        points = re.sub("#[^\n\r]*", "", item)
+        points = re.sub(r"#[^\n\r]*", "", item)
         # Get actual points
-        points = re.match("point\s*\[(.+)", points, re.S).groups()[0]
+        points = re.match(r"point\s*\[(.+)", points, re.S).groups()[0]
         points = points.strip().split(",")
         for i, xyz in enumerate(points):
             xyz = xyz.strip()
@@ -481,17 +481,13 @@ Transform {
         axes = re.findall(r'Shape\s*\{\s*geometry\s*(?:Box|Text)\s*\{\s*(?:size\s+\d+\.0+\s+\d+\.0+\s+\d+\.0+|string\s+\["[^"]*"\]\s*fontStyle\s+FontStyle\s*\{[^}]+\})\s*\}\s*appearance\s+Appearance\s*\{\s*material\s*Material\s*\{[^}]+}\s*\}\s*\}', vrml)
         for i, axis in enumerate(axes):
             # Red -> purpleish blue
-            vrml = vrml.replace(axis, re.sub("diffuseColor\s+1\.0+\s+0\.0+\s+0\.0+",
-                                             "diffuseColor 0.5 0.0 1.0", axis))
+            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+1\.0+\s+0\.0+\s+0\.0+", "diffuseColor 0.5 0.0 1.0", axis))
             # Green -> yellowish green
-            vrml = vrml.replace(axis, re.sub("diffuseColor\s+0\.0+\s+1\.0+\s+0\.0+",
-                                             "diffuseColor 0.8 1.0 0.0", axis))
+            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+0\.0+\s+1\.0+\s+0\.0+", "diffuseColor 0.8 1.0 0.0", axis))
             # Yellow -> magentaish red
-            vrml = vrml.replace(axis, re.sub("diffuseColor\s+1\.0+\s+1\.0+\s+0\.0+",
-                                             "diffuseColor 1.0 0.0 0.25", axis))
+            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+1\.0+\s+1\.0+\s+0\.0+", "diffuseColor 1.0 0.0 0.25", axis))
             # Blue -> cyan
-            vrml = vrml.replace(axis, re.sub("diffuseColor\s+0\.0+\s+0\.0+\s+1\.0+",
-                                             "diffuseColor 0.0 1.0 1.0", axis))
+            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+0\.0+\s+0\.0+\s+1\.0+", "diffuseColor 0.0 1.0 1.0", axis))
     elif colorspace == "IPT":
         # Replace L* a* b* labels with I P T
         vrml = re.sub(r'(string\s*\["[+\-]?)L\*?',
@@ -523,11 +519,11 @@ def vrml2x3dom(vrml, worker=None):
     quote = 0
     listing = False
     # Remove comments
-    vrml = re.sub("#[^\n\r]*", "", vrml)
+    vrml = re.sub(r"#[^\n\r]*", "", vrml)
     # <class> <Token> { -> <Token> {
-    vrml = re.sub("\w+[ \t]+(\w+\s*\{)", "\\1", vrml)
+    vrml = re.sub(r"\w+[ \t]+(\w+\s*\{)", "\\1", vrml)
     # Remove commas
-    vrml = re.sub(",\s*", " ", vrml)
+    vrml = re.sub(r",\s*", " ", vrml)
     indent = ""
     maxi = len(vrml) - 1.0
     lastprogress = 0

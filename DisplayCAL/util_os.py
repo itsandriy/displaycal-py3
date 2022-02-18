@@ -219,7 +219,7 @@ def quote_args(args):
     contain spaces or any of the characters ^!$%&()[]{}=;'+,`~ """
     args_out = []
     for arg in args:
-        if re.search("[\^!$%&()[\]{}=;'+,`~\s]", arg):
+        if re.search(r"[\^!$%&()[\]{}=;'+,`~\s]", arg):
             arg = '"' + arg + '"'
         args_out.append(arg)
     return args_out
@@ -514,21 +514,38 @@ def mkstemp_bypath(path, dir=None, text=False):
     return tempfile.mkstemp(ext, fname + "-", dir, text)
 
 
+#
+# This is from Python2.7 version of tempfile
+#
+try:
+    import fcntl as _fcntl
+except ImportError:
+    def _set_cloexec(fd):
+        pass
+else:
+    def _set_cloexec(fd):
+        try:
+            flags = _fcntl.fcntl(fd, _fcntl.F_GETFD, 0)
+        except IOError:
+            pass
+        else:
+            # flags read successfully, modify
+            flags |= _fcntl.FD_CLOEXEC
+            _fcntl.fcntl(fd, _fcntl.F_SETFD, flags)
+
+
 def mksfile(filename):
     """Create a file safely and return (fd, abspath)
 
-    If filename already exists, add '(n)' as suffix before extension (will
-    try up to os.TMP_MAX or 10000 for n)
+    If filename already exists, add '(n)' as suffix before extension (will try up to os.TMP_MAX or 10000 for n)
 
     Basically, this works in a similar way as _mkstemp_inner from the
     standard library 'tempfile' module.
-
     """
 
     flags = tempfile._bin_openflags
 
     fname, ext = os.path.splitext(filename)
-
     for seq in range(tempfile.TMP_MAX):
         if not seq:
             pth = filename
@@ -536,8 +553,8 @@ def mksfile(filename):
             pth = "%s(%i)%s" % (fname, seq, ext)
         try:
             fd = os.open(pth, flags, 0o600)
-            tempfile._set_cloexec(fd)
-            return (fd, os.path.abspath(pth))
+            _set_cloexec(fd)
+            return fd, os.path.abspath(pth)
         except OSError as e:
             if e.errno == errno.EEXIST:
                 continue  # Try again

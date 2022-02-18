@@ -12,8 +12,7 @@ from DisplayCAL.RealDisplaySizeMM import RealDisplaySizeMM as RDSMM
 for i in range(5):
     # Show ICC info for first five screens / outputs
     try:
-        x_icc_c = xrandr.get_atom("_ICC_PROFILE" if i < 1 else
-                                  "_ICC_PROFILE_%i" % i)
+        x_icc_c = xrandr.get_atom("_ICC_PROFILE" if i < 1 else "_ICC_PROFILE_%i" % i)
     except ValueError:
         x_icc_c = None
     if x_icc_c:

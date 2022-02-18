@@ -5,6 +5,7 @@ import os
 import sys
 from time import strftime
 
+
 if __name__ == '__main__':
     if len(sys.argv) in (3, 4):
         curve = []

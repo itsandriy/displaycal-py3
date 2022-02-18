@@ -32,7 +32,7 @@ def installer(action="install"):
         for desktopfilename in glob(os.path.join(root, "misc", "%s-*.desktop" %
                                                                appname.lower())):
             desktopbasename = os.path.basename(desktopfilename)
-            scriptname = re.sub("\.desktop$", "", desktopbasename)
+            scriptname = re.sub(r"\.desktop$", "", desktopbasename)
             if action == "install":
                 try:
                     for size in [16, 22, 24, 32, 48, 256]:
@@ -47,7 +47,7 @@ def installer(action="install"):
                 with open(desktopfilename) as desktopfile:
                     contents = desktopfile.read()
                 cmdname = script2pywname(scriptname)
-                cmd = re.sub("^%s-" % appname, "run-", cmdname)
+                cmd = re.sub(r"^%s-" % appname, "run-", cmdname)
                 for pattern, repl in [("Exec=.+",
                                        "Exec=0launch --command=%s -- %s %%f" %
                                        (cmd, feeduri))]:

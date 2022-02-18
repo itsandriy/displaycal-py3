@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import StringIO
+from io import StringIO, BytesIO
 import codecs
 import os
 import re
@@ -15,7 +15,6 @@ sys.path.insert(0, root)
 
 from DisplayCAL import lazydict
 from DisplayCAL import ordereddict
-from DisplayCAL.safe_print import safe_print
 from DisplayCAL.util_list import natsort
 from DisplayCAL.util_os import listdir_re
 
@@ -31,7 +30,7 @@ def quote(obj):
 
 
 def langmerge(infilename1, infilename2, outfilename):
-    safe_print("Syncing", infilename1, "to", infilename2)
+    print("Syncing", infilename1, "to", infilename2)
     dictin1 = lazydict.LazyDict_YAML_UltraLite(infilename1)
     dictin1.load()
     dictin2 = lazydict.LazyDict_YAML_UltraLite(infilename2)
@@ -44,10 +43,10 @@ def langmerge(infilename1, infilename2, outfilename):
             dictin1[key] = value
             added.append(key.encode("UTF-8"))
             if "*" + key not in dictin1:
-                safe_print("Added: '%s' '%s'" % (key, value))
-        #elif dictin1[key] == value and not key.startswith("*") and not key.startswith("!") and value.strip():
-        #same.append(key.encode("UTF-8"))
-        #safe_print("Same: '%s' '%s'" % (key, value))
+                print("Added: '%s' '%s'" % (key, value))
+        # elif dictin1[key] == value and not key.startswith("*") and not key.startswith("!") and value.strip():
+        # same.append(key.encode("UTF-8"))
+        # print("Same: '%s' '%s'" % (key, value))
         elif key != "*":
             # Check format chars
             format_chars = "dixXfFeEgGcs%"
@@ -56,7 +55,7 @@ def langmerge(infilename1, infilename2, outfilename):
                 a = dictin1[key].count("%" + c)
                 b = value.count("%" + c)
                 if a != b:
-                    safe_print(key, "ERROR: Format character count for %%%s is wrong:" % c, a, "(expected %i)" % b)
+                    print(key, "ERROR: Format character count for %%%s is wrong:" % c, a, "(expected %i)" % b)
             if key.startswith("info."):
                 # Check tag formatting and correct Google translator messing
                 # with tags
@@ -75,7 +74,7 @@ def langmerge(infilename1, infilename2, outfilename):
                 # E.g. ' </font>x' -> '</font> x'
                 wscleaned = re.sub(r'(\s+)(</[^>]*>)([^<,;.:\- \n])', r'\2\1\3', wscleaned)
                 if original != wscleaned:
-                    safe_print(key, "INFO: Corrected whitespace.")
+                    print(key, "INFO: Corrected whitespace.")
                 # Find all tags
                 tags = re.findall(r'<(\s*[^/> ]+)([^>]*)>([^<]*)(<\s*/\s*\1>)', wscleaned)
                 replaced = wscleaned
@@ -89,16 +88,16 @@ def langmerge(infilename1, infilename2, outfilename):
                                               "<font weight='bold'>%s</font>" %
                                               contents.strip())
                     if contents != contents.strip():
-                        safe_print(key, "INFO: Removed surrounding whitespace from tag contents %s" % tag)
+                        print(key, "INFO: Removed surrounding whitespace from tag contents %s" % tag)
                     tagcleaned = cleaned.replace(tag,
                                                  "<font weight='bold'>%s</font>" %
                                                  contents)
                 stripped = re.sub(r"<[^>]*>", "", replaced)
                 stripped = stripped.replace("<", "").replace(">", "")
                 if replaced != stripped:
-                    safe_print(key, "ERROR: Invalid markup")
+                    print(key, "ERROR: Invalid markup")
                 if wscleaned != tagcleaned:
-                    safe_print(key, "INFO: Corrected tag formatting.")
+                    print(key, "INFO: Corrected tag formatting.")
                 if original != cleaned:
                     dictin1[key] = cleaned
 
@@ -113,43 +112,41 @@ def langmerge(infilename1, infilename2, outfilename):
             if "ORPHANED KEY-VALUE PAIRS" not in merged:
                 merged["ORPHANED KEY-VALUE PAIRS"] = "Note to translators: Key-value pairs below this point are no longer used. You may consider removing them."
             merged[key] = dictin1[key]
-            safe_print("Orphan: '%s' '%s'" % (key, dictin1[key]))
+            print("Orphan: '%s' '%s'" % (key, dictin1[key]))
 
-    outstream = StringIO.StringIO()
+    outstream = BytesIO()
     for key, value in merged.items():
-        if not USE_INLINE or "\n" in value:
-            outstream.write('"%s": |-\n' % key.encode("UTF-8"))
+        if not USE_INLINE or b"\n" in value:
+            outstream.write(b'"%s": |-\n' % key.encode("UTF-8"))
             for line in value.split("\n"):
                 # Do not use splitlines, returns empty list for empty string
-                outstream.write("  %s\n" % line.encode("UTF-8"))
+                outstream.write(b"  %s\n" % line.encode("UTF-8"))
         else:
             # Inline
-            outstream.write('"%s": "%s"\n' % (key.encode("UTF-8"),
-                                              lazydict.escape(value).encode("UTF-8")))
+            outstream.write(b'"%s": "%s"\n' % (key.encode("UTF-8"), lazydict.escape(value).encode("UTF-8")))
     outstream.seek(0)
     formatted = outstream.read()
     for key in added:
-        formatted = formatted.replace('"%s":' % key, '"*%s":' % key)
+        formatted = formatted.replace(b'"%s":' % key, b'"*%s":' % key)
     for key in same:
-        formatted = formatted.replace('"%s":' % key, '"*%s":' % key)
+        formatted = formatted.replace(b'"%s":' % key, b'"*%s":' % key)
     with open(dictin1.path, "rb") as infile:
         if infile.read() == formatted:
-            safe_print("no change")
+            print("no change")
             return
-    safe_print("writing", outfilename)
+    print("writing", outfilename)
     with open(outfilename, "wb") as outfile:
         outfile.write(formatted)
 
 
 if __name__ == "__main__":
     if "-h" in sys.argv[1:] or "--help" in sys.argv[1:]:
-        safe_print("Usage: %s" % os.path.basename(sys.argv[0]))
-        safe_print("Synchronizes translations to en.yaml")
+        print("Usage: %s" % os.path.basename(sys.argv[0]))
+        print("Synchronizes translations to en.yaml")
     else:
-        for langfile in listdir_re(os.path.join(root, "DisplayCAL", "lang"),
-                                   r"^\w+\.yaml$"):
+        for langfile in listdir_re(os.path.join(root, "DisplayCAL", "lang"), r"^\w+\.yaml$"):
             if langfile != "template.yaml":
                 langmerge(os.path.join("lang", langfile),
                           os.path.join("lang", "en.yaml"),
                           os.path.join(root, "DisplayCAL", "lang", langfile))
-                safe_print("")
+                print("")

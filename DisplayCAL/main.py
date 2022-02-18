@@ -62,6 +62,8 @@ def _main(module, name, applockfilename, probe_ports=True):
         # If a race condition occurs, do not start another instance
         print("Not starting another instance.")
         return
+    else:
+        print("Acquired lock file:", lock)
     log("=" * 80)
     if verbose >= 1:
         version = VERSION_STRING
@@ -114,8 +116,7 @@ def _main(module, name, applockfilename, probe_ports=True):
                     # support per-monitor DPI)
                     shcore.SetProcessDpiAwareness(1)
                 except Exception as exception:
-                    print("Warning - SetProcessDpiAwareness() failed:",
-                               exception)
+                    print("Warning - SetProcessDpiAwareness() failed:", exception)
             else:
                 print("Warning - SetProcessDpiAwareness not found in shcore")
     initcfg(module)
@@ -193,7 +194,7 @@ def _main(module, name, applockfilename, probe_ports=True):
                             if appsocket.send("getappname"):
                                 print("Sent scripting request, awaiting response...")
                                 data_read = appsocket.read()
-                                print('data_read: %s' % data_read)
+                                print('data_read: {}'.format(data_read))
                                 incoming = data_read.rstrip("\4")
                                 print("Got response: %r" % incoming)
                                 if incoming:
@@ -219,8 +220,8 @@ def _main(module, name, applockfilename, probe_ports=True):
                             data = sp.list2cmdline(data)
                             if appsocket.send(data):
                                 print("Sent scripting request, awaiting response...")
-                                data_read = appsocket.read().decode()
-                                print('data_read: %s' % data_read)
+                                data_read = appsocket.read()
+                                print('data_read: {}'.format(data_read))
                                 incoming = data_read.rstrip("\4")
                                 print("Got response: %r" % incoming)
                                 if module == "apply-profiles":
@@ -241,14 +242,12 @@ def _main(module, name, applockfilename, probe_ports=True):
                         try:
                             osid = win32ts.ProcessIdToSessionId(opid)
                         except pywintypes.error as exception:
-                            print("Enumerating processes failed:",
-                                       exception)
+                            print("Enumerating processes failed:", exception)
                             osid = None
                         try:
                             processes = win32ts.WTSEnumerateProcesses()
                         except pywintypes.error as exception:
-                            print("Enumerating processes failed:",
-                                       exception)
+                            print("Enumerating processes failed:", exception)
                         else:
                             appname_lower = appname.lower()
                             exename_lower = exename.lower()
@@ -273,17 +272,17 @@ def _main(module, name, applockfilename, probe_ports=True):
                                                     pass
                                             except EnvironmentError as exception:
                                                 print("Warning - could "
-                                                           "not create dummy "
-                                                           "lockfile %s: %r" %
-                                                           (lockfilename,
-                                                            exception))
+                                                      "not create dummy "
+                                                      "lockfile %s: %r" %
+                                                      (lockfilename,
+                                                       exception))
                                             else:
                                                 print("Warning - had to "
-                                                           "create dummy "
-                                                           "lockfile",
-                                                           lockfilename)
+                                                      "create dummy "
+                                                      "lockfile",
+                                                      lockfilename)
                                         print("Closing existing instance "
-                                                   "with PID", pid2)
+                                              "with PID", pid2)
                                         startupinfo = sp.STARTUPINFO()
                                         startupinfo.dwFlags |= sp.STARTF_USESHOWWINDOW
                                         startupinfo.wShowWindow = sp.SW_HIDE
@@ -310,8 +309,7 @@ def _main(module, name, applockfilename, probe_ports=True):
                         # Wait for lockfile to be removed, in which case
                         # we know the running instance has successfully
                         # closed.
-                        print("Waiting for existing instance to exit and "
-                                   "delete lockfile", lockfilename)
+                        print("Waiting for existing instance to exit and delete lockfile", lockfilename)
                         while os.path.isfile(lockfilename):
                             sleep(.05)
                         lock.lock()
@@ -410,23 +408,20 @@ def _main(module, name, applockfilename, probe_ports=True):
             if not path or not os.path.isfile(path):
                 from DisplayCAL import localization as lang
                 lang.init()
-                raise ResourceError(lang.getstr("resources.notfound.error") +
-                                    "\n" + filename)
+                raise ResourceError(lang.getstr("resources.notfound.error") + "\n" + filename)
         # Create main data dir if it does not exist
         if not os.path.exists(datahome):
             try:
                 os.makedirs(datahome)
             except Exception as exception:
-                handle_error(UserWarning("Warning - could not create "
-                                         "directory '%s'" % datahome))
+                handle_error(UserWarning("Warning - could not create " "directory '%s'" % datahome))
         elif sys.platform == "darwin":
             # Check & fix permissions if necessary
             import getpass
-            user = getpass.getuser().decode()
+            user = getpass.getuser()
             script = []
             for directory in (confighome, datahome, logdir):
-                if (os.path.isdir(directory) and
-                        not os.access(directory, os.W_OK)):
+                if os.path.isdir(directory) and not os.access(directory, os.W_OK):
                     script.append("chown -R '%s' '%s'" % (user, directory))
             if script:
                 sp.call(['osascript', '-e',
@@ -548,8 +543,7 @@ def _update_lockfile(lockfilename, oport, lock):
                     lock.seek(0)
                     lock.truncate(0)
                 except EnvironmentError as exception:
-                    print("Warning - could not update lockfile %s: %r" %
-                               (lockfilename, exception))
+                    print("Warning - could not update lockfile %s: %r" % (lockfilename, exception))
                 else:
                     lock.write("\n".join(pids_ports))
             else:
@@ -557,8 +551,8 @@ def _update_lockfile(lockfilename, oport, lock):
                 try:
                     os.remove(lockfilename)
                 except EnvironmentError as exception:
-                    print("Warning - could not remove lockfile %s: %r" %
-                               (lockfilename, exception))
+                    print("Warning - could not remove lockfile %s: %r" % (lockfilename, exception))
+
 
 def main_3dlut_maker():
     main("3DLUT-maker")
@@ -625,8 +619,7 @@ class AppLock(object):
                 pass
             except EnvironmentError as exception:
                 # This shouldn't happen
-                print("Error - could not lock lockfile %s:" %
-                           self._lockfile.name, exception)
+                print("Error - could not lock lockfile %s:" % self._lockfile.name, exception)
             else:
                 return True
         return False
@@ -637,15 +630,13 @@ class AppLock(object):
                 self._lockfile.close()
             except EnvironmentError as exception:
                 # This shouldn't happen
-                print("Error - could not close lockfile %s:" %
-                           self._lockfile.name, exception)
+                print("Error - could not close lockfile %s:" % self._lockfile.name, exception)
         if self._lock:
             try:
                 self._lock.unlock()
             except FileLock.UnlockingError as exception:
                 # This shouldn't happen
-                print("Warning - could not unlock lockfile %s:" %
-                           self._lockfile.name, exception)
+                print("Warning - could not unlock lockfile %s:" % self._lockfile.name, exception)
 
     def write(self, contents):
         if self._lockfile:
@@ -686,8 +677,7 @@ class AppSocket(object):
         incoming = ""
         while "\4" not in incoming:
             try:
-                data = self.socket.recv(1024)
-                data = data.decode()
+                data = self.socket.recv(1024).decode()
             except socket.error as exception:
                 if exception.errno == errno.EWOULDBLOCK:
                     sleep(.05)

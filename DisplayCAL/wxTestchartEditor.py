@@ -1109,7 +1109,7 @@ END_DATA""")
                 self.tc_save_check()
         if not value_set:
             self.grid.SetCellValue(event.GetRow(), event.GetCol(),
-                                   re.sub("^0+(?!\.)", "", strval) or "0")
+                                   re.sub(r"^0+(?!\.)", "", strval) or "0")
 
     def tc_white_patches_handler(self, event = None):
         setcfg("tc_white_patches", self.tc_white_patches.GetValue())
@@ -2170,7 +2170,7 @@ END_DATA""")
             match = None
             display_no = getcfg("display.number") - 1
             if display_no in range(len(displays)):
-                match = re.search("@ -?\d+, -?\d+, (\d+)x(\d+)",
+                match = re.search(r"@ -?\d+, -?\d+, (\d+)x(\d+)",
                                   displays[display_no])
             if match:
                 display_size = [int(item) for item in match.groups()]
@@ -2946,17 +2946,17 @@ END_DATA""")
                     algo = fullspread_ba[key]
                     break
 
-            if white_patches != None: setcfg("tc_white_patches", white_patches)
-            if black_patches != None: setcfg("tc_black_patches", black_patches)
-            if single_channel_patches != None: setcfg("tc_single_channel_patches", single_channel_patches)
-            if gray_patches != None: setcfg("tc_gray_patches", gray_patches)
-            if multi_steps != None: setcfg("tc_multi_steps", multi_steps)
-            if multi_bcc_steps != None:
+            if white_patches is not None: setcfg("tc_white_patches", white_patches)
+            if black_patches is not None: setcfg("tc_black_patches", black_patches)
+            if single_channel_patches is not None: setcfg("tc_single_channel_patches", single_channel_patches)
+            if gray_patches is not None: setcfg("tc_gray_patches", gray_patches)
+            if multi_steps is not None: setcfg("tc_multi_steps", multi_steps)
+            if multi_bcc_steps is not None:
                 setcfg("tc_multi_bcc_steps", multi_bcc_steps)
             setcfg("tc_fullspread_patches", self.ti1.queryv1("NUMBER_OF_SETS") - self.tc_get_total_patches(white_patches, black_patches, single_channel_patches, gray_patches, multi_steps, multi_bcc_steps, 0))
-            if gamma != None: setcfg("tc_gamma", gamma)
-            if dark_emphasis != None: setcfg("tc_dark_emphasis", dark_emphasis)
-            if algo != None: setcfg("tc_algo", algo)
+            if gamma is not None: setcfg("tc_gamma", gamma)
+            if dark_emphasis is not None: setcfg("tc_dark_emphasis", dark_emphasis)
+            if algo is not None: setcfg("tc_algo", algo)
             self.writecfg()
 
             self.tc_update_controls()

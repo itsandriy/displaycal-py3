@@ -19,7 +19,7 @@ def sha256sum(filename, blocksize=65536):
 def main():
     dist = glob.glob(os.path.join('dist', 'DisplayCAL-*'))
     for entry in dist:
-        version = re.search('\d+(?:\.\d+){3}', entry)
+        version = re.search(r'\d+(?:\.\d+){3}', entry)
         if version:
             version = version.group()
             version_dir = os.path.join('dist', version)

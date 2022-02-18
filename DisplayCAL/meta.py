@@ -44,7 +44,7 @@ version_lin = VERSION_STRING  # Linux
 version_mac = VERSION_STRING  # Mac OS X
 version_win = VERSION_STRING  # Windows
 version_src = VERSION_STRING
-version_short = re.sub("(?:\.0){1,2}$", "", version)
+version_short = re.sub(r"(?:\.0){1,2}$", "", version)
 
 version_tuple = VERSION  # only ints allowed and must be exactly 4 values
 
@@ -55,7 +55,7 @@ wx_recversion = (4, 1, 1)
 def get_latest_chglog_entry(readme):
     """Get changelog entry for latest version from ReadMe HTML
     """
-    chglog = re.search('<div id="(?:changelog|history)">'
+    chglog = re.search(r'<div id="(?:changelog|history)">'
                        '.+?<h2>.+?</h2>'
                        '.+?<dl>.+?</dd>', readme, re.S)
     if chglog:

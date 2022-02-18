@@ -352,24 +352,21 @@ class DisplayAdjustmentImageContainer(labelbook.ImageContainer):
 
 
 class DisplayAdjustmentFlatImageBook(labelbook.FlatImageBook):
+    """Override default agw ImageContainer to use BackgroundColour and ForegroundColour with no borders/labeltext and
+    hilite image instead of hilite shading
+    """
 
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0, agwStyle=0, name="FlatImageBook"):
-        """Override default agw ImageContainer to use BackgroundColour and
-        ForegroundColour with no borders/labeltext and hilite image instead of
-        hilite shading
-        """
-        labelbook.FlatImageBook.__init__(self, parent, id, pos, size, style,
-                                         agwStyle, name)
+        labelbook.FlatImageBook.__init__(self, parent, id, pos, size, style, agwStyle, name)
 
     def CreateImageContainer(self):
-        return DisplayAdjustmentImageContainer(self, wx.ID_ANY,
-                                               agwStyle=self.GetAGWWindowStyleFlag())
+        return DisplayAdjustmentImageContainer(self, wx.ID_ANY, agwStyle=self.GetAGWWindowStyleFlag())
 
     def SetAGWWindowStyleFlag(self, agwStyle):
         """Sets the window style.
 
-        :param agwStyle: can be a combination of the following bits:
+        :param agwStyle: can be a combination of the following bits.
 
          =========================== =========== ==================================================
          Window Styles               Hex Value   Description
@@ -389,7 +386,6 @@ class DisplayAdjustmentFlatImageBook(labelbook.FlatImageBook):
          ``INB_NO_RESIZE``                0x1000 Don't allow resizing of the tab area.
          ``INB_FIT_LABELTEXT``            0x2000 Will fit the tab area to the longest text (or text+image if you have images) in all the tabs.
          =========================== =========== ==================================================
-
         """
 
         self._agwStyle = agwStyle
@@ -449,7 +445,8 @@ class DisplayAdjustmentFlatImageBook(labelbook.FlatImageBook):
 class DisplayAdjustmentPanel(wx_Panel):
 
     def __init__(self, parent=None, id=wx.ID_ANY, title="", ctrltype="luminance"):
-        wx_Panel.__init__(self, parent, id)
+        # wx_Panel.__init__(self, parent, id)
+        super(DisplayAdjustmentPanel, self).__init__(parent, id)
         self.ctrltype = ctrltype
         self.SetBackgroundColour(BGCOLOUR)
         self.SetForegroundColour(FGCOLOUR)
@@ -476,8 +473,7 @@ class DisplayAdjustmentPanel(wx_Panel):
                                ("black_level", "calibration.black_luminance"),
                                ("white_point", "whitepoint"),
                                ("black_point", "black_point")):
-                bitmap = wx.StaticBitmap(self, wx.ID_ANY,
-                                         getbitmap("theme/icons/16x16/%s" % name))
+                bitmap = wx.StaticBitmap(self, wx.ID_ANY, getbitmap("theme/icons/16x16/%s" % name))
                 bitmap.SetToolTipString(lang.getstr(lstr))
                 self.add_txt(name, bitmap, 4)
             return
@@ -539,22 +535,19 @@ class DisplayAdjustmentPanel(wx_Panel):
                            "B": (wx.Colour(0, 0, 153), wx.Colour(0, 0, 255)),
                            "L": (wx.Colour(153, 153, 153), wx.Colour(255, 255, 255))}
         scale = max(getcfg("app.dpi") / get_default_dpi(), 1.0)
-        self.gauges[name] = PyGauge(self, size=(int(round(200 * scale)),
-                                                int(round(8 * scale))))
+        self.gauges[name] = PyGauge(self, size=(int(round(200 * scale)), int(round(8 * scale))))
         self.gauges[name].SetBackgroundColour(BORDERCOLOUR)
         self.gauges[name].SetBarGradient(gaugecolors[name])
         self.gauges[name].SetBorderColour(BORDERCOLOUR)
         self.gauges[name].SetValue(0)
         if bitmapname:
-            self.gauges[name].label = wx.StaticBitmap(self, wx.ID_ANY, getbitmap("theme/icons/16x16/%s" %
-                                                                                 bitmapname))
+            self.gauges[name].label = wx.StaticBitmap(self, wx.ID_ANY, getbitmap("theme/icons/16x16/%s" % bitmapname))
             if tooltip:
                 self.gauges[name].label.SetToolTipString(tooltip)
         else:
             self.gauges[name].label = wx.StaticText(self, wx.ID_ANY, name)
             self.gauges[name].label.SetForegroundColour(FGCOLOUR)
-        self.sizer.Add(self.gauges[name].label, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                     wx.RIGHT, border=8)
+        self.sizer.Add(self.gauges[name].label, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=8)
         self.sizer.Add(self.gauges[name], flag=wx.ALIGN_CENTER_VERTICAL)
 
     def add_marker(self, direction="top"):
@@ -566,8 +559,7 @@ class DisplayAdjustmentPanel(wx_Panel):
                                              int(round(10 * scale)))))
 
     def add_txt(self, name, spacer=None, border=8):
-        checkmark = wx.StaticBitmap(self, wx.ID_ANY,
-                                    getbitmap("theme/icons/16x16/checkmark"))
+        checkmark = wx.StaticBitmap(self, wx.ID_ANY, getbitmap("theme/icons/16x16/checkmark"))
         txtsizer = wx.BoxSizer(wx.HORIZONTAL)
         if spacer:
             self.sizer.Add(spacer, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border=8)
@@ -583,19 +575,15 @@ class DisplayAdjustmentPanel(wx_Panel):
         longest = strings[max(strings.keys())]
         label = longest + " x 0.0000 y 0.0000 VDT 0000K 0.0 \u0394E*00\nX"
         checkmark.GetContainingSizer().Hide(checkmark)
-        self.sizer.Add(txtsizer, flag=wx.TOP | wx.BOTTOM |
-                                      wx.ALIGN_CENTER_VERTICAL | wx.EXPAND,
-                       border=border)
-        self.txt[name] = wx.StaticText(self, wx.ID_ANY, label,
-                                       style=wx.ST_NO_AUTORESIZE)
+        self.sizer.Add(txtsizer, flag=wx.TOP | wx.BOTTOM | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND, border=border)
+        self.txt[name] = wx.StaticText(self, wx.ID_ANY, label, style=wx.ST_NO_AUTORESIZE)
         self.txt[name].SetForegroundColour(BGCOLOUR)
         self.txt[name].SetMaxFontSize(10)
         self.txt[name].checkmark = checkmark
         self.txt[name].spacer = spacer
         txtsizer.Add(self.txt[name], 1)
         self.txt[name].Fit()
-        self.txt[name].SetMinSize((self.txt[name].GetSize()[0],
-                                   self.txt[name].GetSize()[1]))
+        self.txt[name].SetMinSize((self.txt[name].GetSize()[0], self.txt[name].GetSize()[1]))
 
     def update_desc(self):
         if self.ctrltype in ("luminance", "black_level"):
@@ -620,12 +608,16 @@ else:
 
 class DisplayAdjustmentFrame(windowcls):
 
-    def __init__(self, parent=None, handler=None,
-                 keyhandler=None, start_timer=True):
-        windowcls.__init__(self, parent, wx.ID_ANY,
-                           lang.getstr("calibration.interactive_display_adjustment"),
-                           style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
-                           name="displayadjustmentframe")
+    def __init__(self, parent=None, handler=None, keyhandler=None, start_timer=True):
+        # windowcls.__init__(self, parent, wx.ID_ANY,
+        #                    lang.getstr("calibration.interactive_display_adjustment"),
+        #                    style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+        #                    name="displayadjustmentframe")
+        super(DisplayAdjustmentFrame, self).__init__(
+            parent, wx.ID_ANY, lang.getstr("calibration.interactive_display_adjustment"),
+            style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+            name="displayadjustmentframe"
+        )
         self.SetIcons(get_icon_bundle([256, 48, 32, 16], appname))
         self.SetBackgroundColour(BGCOLOUR)
         self.sizer = wx.FlexGridSizer(0, 3, 0, 0)
@@ -634,9 +626,7 @@ class DisplayAdjustmentFrame(windowcls):
         self.SetSizer(self.sizer)
 
         # FlatImageNotebook
-        self.lb = DisplayAdjustmentFlatImageBook(self,
-                                                 agwStyle=INB_LEFT |
-                                                          INB_SHOW_ONLY_IMAGES)
+        self.lb = DisplayAdjustmentFlatImageBook(self, agwStyle=INB_LEFT | INB_SHOW_ONLY_IMAGES)
         self.lb.SetBackgroundColour(BGCOLOUR)
         self.add_panel((12, 12), flag=wx.EXPAND)
         self.add_panel((12, 12), flag=wx.EXPAND)
@@ -651,34 +641,28 @@ class DisplayAdjustmentFrame(windowcls):
         self.page_black_luminance = DisplayAdjustmentPanel(self, wx.ID_ANY,
                                                            lang.getstr("calibration.black_luminance"),
                                                            "black_level")
-        self.lb.AddPage(self.page_black_luminance,
-                        lang.getstr("calibration.black_luminance"), True, 0)
+        self.lb.AddPage(self.page_black_luminance, lang.getstr("calibration.black_luminance"), True, 0)
         self.pagenum_2_argyll_key_num[len(self.pagenum_2_argyll_key_num)] = "1"
 
         # Page - white point
         self.page_white_point = DisplayAdjustmentPanel(self, wx.ID_ANY,
                                                        lang.getstr("whitepoint") +
-                                                       " / " +
-                                                       lang.getstr("calibration.luminance"),
+                                                       " / " + lang.getstr("calibration.luminance"),
                                                        "rgb_gain")
         self.lb.AddPage(self.page_white_point, lang.getstr("whitepoint"), True, 1)
         self.pagenum_2_argyll_key_num[len(self.pagenum_2_argyll_key_num)] = "2"
 
         # Page - luminance
-        self.page_luminance = DisplayAdjustmentPanel(self, wx.ID_ANY,
-                                                     lang.getstr("calibration.luminance"))
-        self.lb.AddPage(self.page_luminance,
-                        lang.getstr("calibration.luminance"), True, 2)
+        self.page_luminance = DisplayAdjustmentPanel(self, wx.ID_ANY, lang.getstr("calibration.luminance"))
+        self.lb.AddPage(self.page_luminance, lang.getstr("calibration.luminance"), True, 2)
         self.pagenum_2_argyll_key_num[len(self.pagenum_2_argyll_key_num)] = "3"
 
         # Page - black point
         self.page_black_point = DisplayAdjustmentPanel(self, wx.ID_ANY,
                                                        lang.getstr("black_point")
-                                                       + " / " +
-                                                       lang.getstr("calibration.black_luminance"),
+                                                       + " / " + lang.getstr("calibration.black_luminance"),
                                                        "rgb_offset")
-        self.lb.AddPage(self.page_black_point, lang.getstr("black_point"),
-                        True, 3)
+        self.lb.AddPage(self.page_black_point, lang.getstr("black_point"), True, 3)
         self.pagenum_2_argyll_key_num[len(self.pagenum_2_argyll_key_num)] = "4"
 
         # Page - check all
@@ -692,8 +676,6 @@ class DisplayAdjustmentFrame(windowcls):
         # Set colours on tab list
         self.lb.Children[0].SetBackgroundColour(BGCOLOUR)
         self.lb.Children[0].SetForegroundColour(FGCOLOUR)
-
-
         # Sound when measuring
         # Needs to be stereo!
         self.measurement_sound = audio.Sound(get_data_path("beep.wav"))
@@ -712,29 +694,20 @@ class DisplayAdjustmentFrame(windowcls):
         self.btnsizer.Add(self.indicator_panel, flag=wx.EXPAND)
         scale = max(getcfg("app.dpi") / get_default_dpi(), 1.0)
         self.indicator_ctrl = wx.StaticBitmap(self.indicator_panel, wx.ID_ANY,
-                                              geticon(10, "empty",
-                                                      use_mask=True),
-                                              size=(int(round(10 * scale)),
-                                                    int(round(10 * scale))))
+                                              geticon(10, "empty", use_mask=True),
+                                              size=(int(round(10 * scale)), int(round(10 * scale))))
         self.indicator_ctrl.SetForegroundColour(FGCOLOUR)
-        self.indicator_panel.GetSizer().Add(self.indicator_ctrl,
-                                            flag=wx.ALIGN_CENTER_VERTICAL)
-        self.indicator_panel.GetSizer().Add(get_panel(self.indicator_panel,
-                                                      (10, 12)),
-                                            flag=wx.EXPAND)
+        self.indicator_panel.GetSizer().Add(self.indicator_ctrl, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.indicator_panel.GetSizer().Add(get_panel(self.indicator_panel, (10, 12)), flag=wx.EXPAND)
         self.create_start_interactive_adjustment_button()
         self.adjustment_btn.SetDefault()
         self.btnsizer.Add(get_panel(self, (6, 12)), flag=wx.EXPAND)
         bitmap = self.get_sound_on_off_btn_bitmap()
-        self.sound_on_off_btn = self.create_gradient_button(bitmap, "",
-                                                            name="sound_on_off_btn")
+        self.sound_on_off_btn = self.create_gradient_button(bitmap, "", name="sound_on_off_btn")
         self.sound_on_off_btn.SetToolTipString(lang.getstr("measurement.play_sound"))
-        self.sound_on_off_btn.Bind(wx.EVT_BUTTON,
-                                   self.measurement_play_sound_handler)
+        self.sound_on_off_btn.Bind(wx.EVT_BUTTON, self.measurement_play_sound_handler)
         self.btnsizer.Add(get_panel(self, (12, 12)), flag=wx.EXPAND)
-        self.calibration_btn = self.create_gradient_button(getbitmap("theme/icons/10x10/skip"),
-                                                           "",
-                                                           name="calibration_btn")
+        self.calibration_btn = self.create_gradient_button(getbitmap("theme/icons/10x10/skip"), "", name="calibration_btn")
         self.calibration_btn.Bind(wx.EVT_BUTTON, self.continue_to_calibration)
         self.calibration_btn.Disable()
         self.add_panel((12, 12), flag=wx.EXPAND)
@@ -797,9 +770,9 @@ class DisplayAdjustmentFrame(windowcls):
         pass
 
     def OnClose(self, event):
-        #if getattr(self, "measurement_play_sound_ctrl", None):
-        #setcfg("measurement.play_sound",
-        #int(self.measurement_play_sound_ctrl.GetValue()))
+        # if getattr(self, "measurement_play_sound_ctrl", None):
+        # setcfg("measurement.play_sound",
+        # int(self.measurement_play_sound_ctrl.GetValue()))
         config.writecfg()
         if not self.timer.IsRunning():
             self.Destroy()
@@ -998,27 +971,22 @@ class DisplayAdjustmentFrame(windowcls):
         else:
             self.abort_and_send("8")
 
-    def create_start_interactive_adjustment_button(self, icon="play",
-                                                   enable=False,
-                                                   startstop="start"):
+    def create_start_interactive_adjustment_button(self, icon="play", enable=False, startstop="start"):
         if getattr(self, "adjustment_btn", None):
-            self.adjustment_btn._bitmap = getbitmap("theme/icons/10x10/%s" %
-                                                    icon)
-            self.adjustment_btn.SetLabel(lang.getstr("calibration.interactive_display_adjustment.%s" %
-                                                     startstop))
+            self.adjustment_btn._bitmap = getbitmap("theme/icons/10x10/%s" % icon)
+            self.adjustment_btn.SetLabel(lang.getstr("calibration.interactive_display_adjustment.%s" % startstop))
             self.adjustment_btn.Enable(enable)
             return
-        self.adjustment_btn = self.create_gradient_button(getbitmap("theme/icons/10x10/%s" %
-                                                                    icon),
-                                                          lang.getstr("calibration.interactive_display_adjustment.%s" %
-                                                                      startstop),
-                                                          name="adjustment_btn")
+        self.adjustment_btn = self.create_gradient_button(
+            getbitmap("theme/icons/10x10/%s" % icon),
+            lang.getstr("calibration.interactive_display_adjustment.%s" % startstop),
+            name="adjustment_btn"
+        )
         self.adjustment_btn.Bind(wx.EVT_BUTTON, self.start_interactive_adjustment)
         self.adjustment_btn.Enable(enable)
 
     def create_gradient_button(self, bitmap, label, name):
-        btn = FlatShadedButton(self, bitmap=bitmap, label=label, name=name,
-                               fgcolour=FGCOLOUR)
+        btn = FlatShadedButton(self, bitmap=bitmap, label=label, name=name, fgcolour=FGCOLOUR)
         self.btnsizer.Add(btn)
         self.btnsizer.Layout()
         return btn
@@ -1034,11 +1002,11 @@ class DisplayAdjustmentFrame(windowcls):
         return True
 
     def key_handler(self, event):
-        #print {wx.EVT_CHAR.typeId: 'EVT_CHAR',
-        #wx.EVT_CHAR_HOOK.typeId: 'EVT_CHAR_HOOK',
-        #wx.EVT_KEY_DOWN.typeId: 'EVT_KEY_DOWN',
-        #wx.EVT_MENU.typeId: 'EVT_MENU'}.get(event.GetEventType(),
-        #event.GetEventType())
+        # print {wx.EVT_CHAR.typeId: 'EVT_CHAR',
+        # wx.EVT_CHAR_HOOK.typeId: 'EVT_CHAR_HOOK',
+        # wx.EVT_KEY_DOWN.typeId: 'EVT_KEY_DOWN',
+        # wx.EVT_MENU.typeId: 'EVT_MENU'}.get(event.GetEventType(),
+        # event.GetEventType())
         keycode = None
         if event.GetEventType() in (wx.EVT_CHAR.typeId,
                                     wx.EVT_CHAR_HOOK.typeId,
@@ -1050,8 +1018,7 @@ class DisplayAdjustmentFrame(windowcls):
             self.global_navigate() or event.Skip()
         elif keycode >= 0:
             if keycode == ord(" "):
-                if (not isinstance(self.FindFocus(), FlatShadedButton) or
-                        self.FindFocus() is self.adjustment_btn):
+                if not isinstance(self.FindFocus(), FlatShadedButton) or self.FindFocus() is self.adjustment_btn:
                     if self.is_measuring:
                         self.abort()
                     else:
@@ -1110,12 +1077,12 @@ class DisplayAdjustmentFrame(windowcls):
         else:
             indicator = getbitmap("theme/icons/10x10/record_outline")
 
-        target_br = re.search("Target white brightness = (\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
+        target_br = re.search(r"Target white brightness = (\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
         if getcfg("measurement_mode") == "c":
-            target_bl = re.search("Target Near Black = (\d+(?:\.\d+)?), Current = (\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
+            target_bl = re.search(r"Target Near Black = (\d+(?:\.\d+)?), Current = (\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
             if target_bl:
                 self.lb.GetCurrentPage().target_bl = ["Target", float(target_bl.groups()[0])]
-        initial_br = re.search("(Initial|Target)(?: Br)? (\d+(?:\.\d+)?)\s*(?:, x (\d+(?:\.\d+)?)\s*, y (\d+(?:\.\d+)?)(?:\s*, (?:(V[CD]T \d+K?) )?DE(?: 2K)? (\d+(?:\.\d+)?))?|$)".replace(" ", "\s+"), txt, re.I)
+        initial_br = re.search(r"(Initial|Target)(?: Br)? (\d+(?:\.\d+)?)\s*(?:, x (\d+(?:\.\d+)?)\s*, y (\d+(?:\.\d+)?)(?:\s*, (?:(V[CD]T \d+K?) )?DE(?: 2K)? (\d+(?:\.\d+)?))?|$)".replace(" ", r"\s+"), txt, re.I)
         current_br = None
         current_bl = None
         if target_br and not getattr(self, "target_br", None):
@@ -1124,40 +1091,38 @@ class DisplayAdjustmentFrame(windowcls):
             self.lb.GetCurrentPage().initial_br = [initial_br.groups()[0],
                                                    float(initial_br.groups()[1])] + list(initial_br.groups()[2:])
         if self.lb.GetCurrentPage().ctrltype != "check_all":
-            current_br = re.search("Current(?: Br)? (\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
+            current_br = re.search(r"Current(?: Br)? (\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
         else:
-            current_br = re.search("Target Brightness = (?:\d+(?:\.\d+)?), Current = (\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
+            current_br = re.search(r"Target Brightness = (?:\d+(?:\.\d+)?), Current = (\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
             if not current_br:
-                current_br = re.search("Current Brightness = (\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
+                current_br = re.search(r"Current Brightness = (\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
             if getcfg("measurement_mode") == "c":
                 if target_bl:
                     current_bl = float(target_bl.groups()[1])
             else:
-                current_bl = re.search("Black = XYZ (?:\d+(?:\.\d+)?) (\d+(?:\.\d+)?) (?:\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
+                current_bl = re.search(r"Black = XYZ (?:\d+(?:\.\d+)?) (\d+(?:\.\d+)?) (?:\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
                 if current_bl:
                     current_bl = float(current_bl.groups()[0])
-        xy_dE_rgb = re.search("x (\d+(?:\.\d+)?)[=+-]*, y (\d+(?:\.\d+)?)[=+-]*,? (?:(V[CD]T \d+K?) )?DE(?: 2K)? (\d+(?:\.\d+)?) R([=+-]+) G([=+-]+) B([=+-]+)".replace(" ", "\s+"), txt, re.I)
-        white_xy_dE_re = "(?:Target white = x (?:\d+(?:\.\d+)?), y (?:\d+(?:\.\d+)?), Current|Current white) = x (\d+(?:\.\d+)?), y (\d+(?:\.\d+)?), (?:(?:(V[CD]T \d+K?) )?DE(?: 2K)?|error =) (\d+(?:\.\d+)?)".replace(" ", "\s+")
+        xy_dE_rgb = re.search(r"x (\d+(?:\.\d+)?)[=+-]*, y (\d+(?:\.\d+)?)[=+-]*,? (?:(V[CD]T \d+K?) )?DE(?: 2K)? (\d+(?:\.\d+)?) R([=+-]+) G([=+-]+) B([=+-]+)".replace(" ", r"\s+"), txt, re.I)
+        white_xy_dE_re = "(?:Target white = x (?:\d+(?:\.\d+)?), y (?:\d+(?:\.\d+)?), Current|Current white) = x (\d+(?:\.\d+)?), y (\d+(?:\.\d+)?), (?:(?:(V[CD]T \d+K?) )?DE(?: 2K)?|error =) (\d+(?:\.\d+)?)".replace(" ", r"\s+")
         white_xy_dE = re.search(white_xy_dE_re, txt, re.I)
-        black_xy_dE = re.search(white_xy_dE_re.replace("white", "black"), txt, re.I)
-        white_xy_target = re.search("Target white = x (\d+(?:\.\d+)?), y (\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
-        black_xy_target = re.search("Target black = x (\d+(?:\.\d+)?), y (\d+(?:\.\d+)?)".replace(" ", "\s+"), txt, re.I)
+        black_xy_dE = re.search(white_xy_dE_re.replace(r"white", "black"), txt, re.I)
+        white_xy_target = re.search(r"Target white = x (\d+(?:\.\d+)?), y (\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
+        black_xy_target = re.search(r"Target black = x (\d+(?:\.\d+)?), y (\d+(?:\.\d+)?)".replace(" ", r"\s+"), txt, re.I)
         if current_br or current_bl or xy_dE_rgb or white_xy_dE or black_xy_dE:
             self.Freeze()
-        #for t in ("target_br", "target_bl", "initial_br", "current_br", "current_bl"):
-        #if locals()[t]:
-        #print "\n" + t, locals()[t].groups(),
+        # for t in ("target_br", "target_bl", "initial_br", "current_br", "current_bl"):
+        # if locals()[t]:
+        # print "\n" + t, locals()[t].groups(),
         if current_br:
             initial_br = getattr(self.lb.GetCurrentPage(), "initial_br", None)
-            if self.lb.GetCurrentPage().ctrltype in ("rgb_gain", "luminance",
-                                                     "check_all"):
+            if self.lb.GetCurrentPage().ctrltype in ("rgb_gain", "luminance", "check_all"):
                 target_br = getattr(self, "target_br", None)
             else:
                 target_br = None
             if self.lb.GetCurrentPage().ctrltype == "rgb_gain" and initial_br:
                 initial_br = ["Initial"] + initial_br[1:]
-            compare_br = target_br or initial_br or ("Initial",
-                                                     float(current_br.groups()[0]))
+            compare_br = target_br or initial_br or ("Initial", float(current_br.groups()[0]))
             lstr = (compare_br[0]).lower()
             if compare_br[1]:
                 percent = 100.0 / compare_br[1]
@@ -1189,12 +1154,11 @@ class DisplayAdjustmentFrame(windowcls):
                 self.lb.GetCurrentPage().txt["luminance"].SetForegroundColour(colors[lstr == "target" and abs(l_diff) * percent <= 1])
                 set_label_and_size(self.lb.GetCurrentPage().txt["luminance"], label)
         if current_bl and self.lb.GetCurrentPage().txt.get("black_level"):
-            target_bl = getattr(self.lb.GetCurrentPage(), "target_bl",
-                                None) or getattr(self.lb.GetCurrentPage(),
-                                                 "initial_br", None)
+            target_bl = getattr(self.lb.GetCurrentPage(), "target_bl", None) \
+                        or getattr(self.lb.GetCurrentPage(), "initial_br", None)
             if target_bl:
                 percent = 100.0 / target_bl[1]
-            if target_bl: #and round(target_bl[1], 2) != round(current_bl, 2):
+            if target_bl:  # and round(target_bl[1], 2) != round(current_bl, 2):
                 l_diff = current_bl - target_bl[1]
                 if round(l_diff, 2) > 0:
                     sign = "+"
@@ -1227,12 +1191,9 @@ class DisplayAdjustmentFrame(windowcls):
         # groups()[6] = B +-
         if xy_dE_rgb:
             x, y, vdt, dE = get_xy_vt_dE(xy_dE_rgb.groups())
-            r = int(round(50 - (xy_dE_rgb.groups()[4].count("+") -
-                                xy_dE_rgb.groups()[4].count("-")) * (dE)))
-            g = int(round(50 - (xy_dE_rgb.groups()[5].count("+") -
-                                xy_dE_rgb.groups()[5].count("-")) * (dE)))
-            b = int(round(50 - (xy_dE_rgb.groups()[6].count("+") -
-                                xy_dE_rgb.groups()[6].count("-")) * (dE)))
+            r = int(round(50 - (xy_dE_rgb.groups()[4].count("+") - xy_dE_rgb.groups()[4].count("-")) * dE))
+            g = int(round(50 - (xy_dE_rgb.groups()[5].count("+") - xy_dE_rgb.groups()[5].count("-")) * dE))
+            b = int(round(50 - (xy_dE_rgb.groups()[6].count("+") - xy_dE_rgb.groups()[6].count("-")) * dE))
             if self.lb.GetCurrentPage().gauges.get("R"):
                 self.lb.GetCurrentPage().gauges["R"].SetValue(min(max(r, 1), 100))
                 self.lb.GetCurrentPage().gauges["R"].Refresh()
@@ -1243,8 +1204,7 @@ class DisplayAdjustmentFrame(windowcls):
                 self.lb.GetCurrentPage().gauges["B"].SetValue(min(max(b, 1), 100))
                 self.lb.GetCurrentPage().gauges["B"].Refresh()
             if self.lb.GetCurrentPage().txt.get("rgb"):
-                self.lb.GetCurrentPage().txt["rgb"].checkmark.GetContainingSizer().Show(self.lb.GetCurrentPage().txt["rgb"].checkmark,
-                                                                                        abs(dE) <= 1)
+                self.lb.GetCurrentPage().txt["rgb"].checkmark.GetContainingSizer().Show(self.lb.GetCurrentPage().txt["rgb"].checkmark, abs(dE) <= 1)
                 self.lb.GetCurrentPage().txt["rgb"].SetForegroundColour(colors[abs(dE) <= 1])
                 label = (lang.getstr("current") + " x %.4f y %.4f %s %.1f \u0394E*00" %
                          (x, y, vdt, dE)).replace("  ", " ")

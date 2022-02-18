@@ -445,8 +445,7 @@ class Manifest(object):
                                                         for i in
                                                         redirect[1]])
                                         print("I: Found redirect for version(s)", old, "->", new)
-                                    if version >= redirect[0][0] and \
-                                       version <= redirect[0][-1] and \
+                                    if redirect[0][0] <= version <= redirect[0][-1] and \
                                        version != redirect[1]:
                                         if not silent:
                                             print("I: Applying redirect",
@@ -808,7 +807,7 @@ class Manifest(object):
             docE.aChild(aId)
         else:
             aId.unlink()
-        if self.applyPublisherPolicy != None:
+        if self.applyPublisherPolicy is not None:
             ppE = doc.cE("publisherPolicy")
             if self.applyPublisherPolicy:
                 ppE.setA("apply", "yes")

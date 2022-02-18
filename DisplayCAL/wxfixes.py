@@ -1077,11 +1077,11 @@ class ScrolledWindow(wx._ScrolledWindow):
         new_vs_x, new_vs_y = -1, -1
 
         # is it before the left edge?
-        if cr.x < 0 and sppu_x > 0:
+        if cr.x < 0 < sppu_x:
             new_vs_x = vs_x + (cr.x / sppu_x)
 
         # is it above the top?
-        if cr.y < 0 and sppu_y > 0:
+        if cr.y < 0 < sppu_y:
             new_vs_y = vs_y + (cr.y / sppu_y)
 
         # For the right and bottom edges, scroll enough to show the
@@ -1212,7 +1212,7 @@ class GenBitmapButton(GenButton, _GenBitmapButton):
         elif self.BitmapFocus and self.hasFocus:
             bmp = self.BitmapFocus
         bw, bh = bmp.GetWidth(), bmp.GetHeight()
-        hasMask = bmp.GetMask() != None
+        hasMask = bmp.GetMask() is not None
         dc.DrawBitmap(bmp, (width-bw)/2+dx, (height-bh)/2+dy, hasMask)
 
     def GetBitmapHover(self):
@@ -1448,7 +1448,7 @@ class PlateButton(platebtn.PlateButton):
         if bmp is not None and bmp.IsOk():
             bw, bh = bmp.GetSize()
             ypos = (self.GetSize()[1] - bh) // 2
-            gc.DrawBitmap(bmp, xpos, ypos, bmp.GetMask() != None)
+            gc.DrawBitmap(bmp, xpos, ypos, bmp.GetMask() is not None)
             return bw + xpos
         else:
             return xpos
@@ -1683,13 +1683,15 @@ class BitmapWithThemedButton(wx.BoxSizer):
                  validator=wx.DefaultValidator, name="button"):
         wx.BoxSizer.__init__(self, wx.HORIZONTAL)
         self._bmp = wx.StaticBitmap(parent, -1, bitmap)
-        self.Add(self._bmp, flag=wx.ALIGN_CENTER_VERTICAL)
+        # self.Add(self._bmp, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.Add(self._bmp)
         if wx.Platform == "__WXMSW__":
             btncls = ThemedGenButton
         else:
             btncls = wx.Button
         self._btn = btncls(parent, id, label, pos, size, style, validator, name)
-        self.Add(self._btn, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=8)
+        # self.Add(self._btn, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=8)
+        self.Add(self._btn, flag=wx.LEFT, border=8)
 
     def __getattr__(self, name):
         return getattr(self._btn, name)

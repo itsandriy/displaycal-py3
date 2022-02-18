@@ -68,9 +68,7 @@ def enumerate_displays():
     for display in _displays:
         desc = display.get("description")
         if desc:
-            match = re.findall("(.+?),? at (-?\d+), (-?\d+), "
-                               "width (\d+), height (\d+)",
-                               desc)
+            match = re.findall(r"(.+?),? at (-?\d+), (-?\d+), width (\d+), height (\d+)", desc)
             if len(match):
                 if sys.platform not in ("darwin", "win32"):
                     if (os.getenv("XDG_SESSION_TYPE") == "wayland" and
@@ -80,7 +78,7 @@ def enumerate_displays():
                         if wayland_display:
                             display.update(wayland_display)
                     else:
-                        xrandr_name = re.search(", Output (.+)", match[0][0])
+                        xrandr_name = re.search(r", Output (.+)", match[0][0])
                         if xrandr_name:
                             display["xrandr_name"] = xrandr_name.group(1)
                 desc = "%s @ %s, %s, %sx%s" % match[0]

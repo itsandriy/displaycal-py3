@@ -297,7 +297,7 @@ def get_argyll_version_string(name, paths=None):
 
 
 def parse_argyll_version_string(argyll_version_string):
-    argyll_version = re.findall("(\d+|[^.\d]+)", argyll_version_string)
+    argyll_version = re.findall(r"(\d+|[^.\d]+)", argyll_version_string)
     for i, v in enumerate(argyll_version):
         try:
             argyll_version[i] = int(v)

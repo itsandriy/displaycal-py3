@@ -49,6 +49,8 @@ instruments = {
     # long instrument name. In case no id is given, the instrument name is
     # the same as the id.
 
+    # TODO: Update instrument names from Argyll 2.3.0
+
     "DTP92": {
         "usb_ids": [
             {

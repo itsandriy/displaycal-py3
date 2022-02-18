@@ -110,7 +110,7 @@ if sys.platform == "win32":
                             # Check if this is a 0install implementation, in which
                             # case we want to call 0launch with the appropriate
                             # command
-                            if re.match("sha\d+(?:new)?",
+                            if re.match(r"sha\d+(?:new)?",
                                         os.path.basename(os.path.dirname(pydir))):
                                 # No stub needed as 0install-win acts as stub
                                 cmd = which("0install-win.exe") or "0install-win.exe"
@@ -328,7 +328,9 @@ if sys.platform == "win32":
 
     class ProfileLoaderExceptionsDialog(ConfirmDialog):
 
-        def __init__(self, exceptions, known_apps=set()):
+        def __init__(self, exceptions, known_apps=None):
+            if known_apps is None:
+                known_apps = set()
             self._exceptions = {}
             self.known_apps = known_apps
             scale = getcfg("app.dpi") / config.get_default_dpi()
@@ -967,7 +969,7 @@ if sys.platform == "win32":
         def update_profiles(self, event=None, monitor=None, next=False):
             if not monitor:
                 dindex = self.display_ctrl.GetSelection()
-                if dindex > -1 and dindex < len(self.monitors):
+                if -1 < dindex < len(self.monitors):
                     monitor = self.monitors[dindex]
                 else:
                     if event and not isinstance(event, wx.TimerEvent):
@@ -1878,7 +1880,7 @@ class ProfileLoader(object):
                     # Check if this is a 0install implementation, in which
                     # case we want to call 0launch with the appropriate
                     # command
-                    if re.match("sha\d+(?:new)?",
+                    if re.match(r"sha\d+(?:new)?",
                                 os.path.basename(os.path.dirname(pydir))):
                         cmd = which("0install-win.exe") or "0install-win.exe"
                         loader_args.extend(["run", "--batch", "--no-wait",

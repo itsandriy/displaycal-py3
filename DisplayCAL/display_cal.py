@@ -241,8 +241,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
         APP_IS_UPTODATE = newversion_tuple <= curversion_tuple
     if newversion_tuple > curversion_tuple:
         # Get changelog
-        resp = http_request(parent, domain, "GET", "/" + chglog_file,
-                            silent=True)
+        resp = http_request(parent, domain, "GET", "/" + chglog_file, silent=True)
         chglog = None
         if resp:
             readme = str(resp.read())
@@ -260,10 +259,9 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
 %s
 </body>""" % chglog
             if chglog:
-                chglog = re.sub(re.compile(r"<h\d>(.+?)</h\d>",
-                                           flags=re.I | re.S),
+                chglog = re.sub(re.compile(r"<h\d>(.+?)</h\d>", flags=re.I | re.S),
                                 r"<p><strong>\1</strong></p>", chglog)
-                chglog = re.sub(re.compile('href="(#[^"]+)"', flags=re.I),
+                chglog = re.sub(re.compile(r'href="(#[^"]+)"', flags=re.I),
                                 r'href="https://%s/\1"' % domain, chglog)
         if not wx.GetApp():
             return
@@ -328,11 +326,8 @@ def app_update_confirm(parent=None, newversion_tuple=(0, 0, 0, 0), chglog=None,
                        snapshot=False, argyll=False, silent=False):
     """ Show a dialog confirming application update, with cancel option """
     zeroinstall = (not argyll and
-                   os.path.exists(os.path.normpath(os.path.join(pydir, "..",
-                                                                appname +
-                                                                ".pyw"))) and
-                   re.match("sha\d+(?:new)?",
-                            os.path.basename(os.path.dirname(pydir))) and
+                   os.path.exists(os.path.normpath(os.path.join(pydir, "..", appname + ".pyw"))) and
+                   re.match(r"sha\d+(?:new)?", os.path.basename(os.path.dirname(pydir))) and
                    (which("0install-win.exe") or which("0install")))
     download = argyll and not check_argyll_bin()
     if zeroinstall or sys.platform in ("darwin", "win32") or argyll:
@@ -661,8 +656,7 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
             try:
                 created = strptime(created)
             except ValueError:
-                datetmp = re.search("\w+ (\w{3}) (\d{2}) (\d{2}(?::[0-5][0-9]){2}) (\d{4})",
-                                    created)
+                datetmp = re.search(r"\w+ (\w{3}) (\d{2}) (\d{2}(?::[0-5][0-9]){2}) (\d{4})", created)
                 if datetmp:
                     datetmp = "%s-%s-%s %s" % (datetmp.groups()[3],
                                                {"Jan": "01",
@@ -824,7 +818,7 @@ def get_cgats_measurement_mode(cgats, instrument):
 
 
 def get_cgats_path(cgats):
-    descriptor = re.search('\nDESCRIPTOR\s+"(.+?)"\n', cgats)
+    descriptor = re.search(r'\nDESCRIPTOR\s+"(.+?)"\n', cgats)
     if descriptor:
         descriptor = descriptor.groups()[0]
     description = str(descriptor or lang.getstr("unnamed"))
@@ -989,18 +983,12 @@ class ExtraArgsFrame(BaseFrame):
         child.Font = font
 
         # Bind event handlers
-        self.Bind(wx.EVT_TEXT, self.extra_args_handler,
-                  id=self.extra_args_dispcal_ctrl.GetId())
-        self.Bind(wx.EVT_TEXT, self.extra_args_handler,
-                  id=self.extra_args_dispread_ctrl.GetId())
-        self.Bind(wx.EVT_TEXT, self.extra_args_handler,
-                  id=self.extra_args_spotread_ctrl.GetId())
-        self.Bind(wx.EVT_TEXT, self.extra_args_handler,
-                  id=self.extra_args_colprof_ctrl.GetId())
-        self.Bind(wx.EVT_TEXT, self.extra_args_handler,
-                  id=self.extra_args_collink_ctrl.GetId())
-        self.Bind(wx.EVT_TEXT, self.extra_args_handler,
-                  id=self.extra_args_targen_ctrl.GetId())
+        self.Bind(wx.EVT_TEXT, self.extra_args_handler, id=self.extra_args_dispcal_ctrl.GetId())
+        self.Bind(wx.EVT_TEXT, self.extra_args_handler, id=self.extra_args_dispread_ctrl.GetId())
+        self.Bind(wx.EVT_TEXT, self.extra_args_handler, id=self.extra_args_spotread_ctrl.GetId())
+        self.Bind(wx.EVT_TEXT, self.extra_args_handler, id=self.extra_args_colprof_ctrl.GetId())
+        self.Bind(wx.EVT_TEXT, self.extra_args_handler, id=self.extra_args_collink_ctrl.GetId())
+        self.Bind(wx.EVT_TEXT, self.extra_args_handler, id=self.extra_args_targen_ctrl.GetId())
 
         self.setup_language()
         self.update_controls()
@@ -1163,18 +1151,16 @@ class GamapFrame(BaseFrame):
                         src_viewcond = "pp"
                     else:
                         src_viewcond = "mt"
-                    self.gamap_src_viewcond_ctrl.SetStringSelection(
-                        lang.getstr("gamap.viewconds." + src_viewcond))
+                    self.gamap_src_viewcond_ctrl.SetStringSelection(lang.getstr("gamap.viewconds." + src_viewcond))
                     self.gamap_src_viewcond_handler()
                     if not self.gamap_out_viewcond_ctrl.Selection:
                         current_profile = get_current_profile(True)
                         if current_profile:
-                            if current_profile.profileClass == "prtr":
+                            if current_profile.profileClass == b"prtr":
                                 out_viewcond = "pp"
                             else:
                                 out_viewcond = "mt"
-                            self.gamap_out_viewcond_ctrl.SetStringSelection(
-                                lang.getstr("gamap.viewconds." + out_viewcond))
+                            self.gamap_out_viewcond_ctrl.SetStringSelection(lang.getstr("gamap.viewconds." + out_viewcond))
                             self.gamap_out_viewcond_handler()
         enable_gamap = getcfg("profile.type") in ("l", "x", "X")
         self.gamap_perceptual_cb.Enable(enable_gamap)
@@ -1187,11 +1173,8 @@ class GamapFrame(BaseFrame):
         if not ((p and c) or getcfg("profile.b2a.hires")):
             setcfg("gamap_default_intent", "p")
         self.gamap_default_intent_ctrl.SetSelection(self.default_intent_ba[getcfg("gamap_default_intent")])
-        self.gamap_default_intent_ctrl.Enable((p and c) or
-                                              (getcfg("profile.b2a.hires") and
-                                               enable_gamap))
-        if v != getcfg("gamap_profile") and self.Parent and \
-                hasattr(self.Parent, "profile_settings_changed"):
+        self.gamap_default_intent_ctrl.Enable((p and c) or (getcfg("profile.b2a.hires") and enable_gamap))
+        if v != getcfg("gamap_profile") and self.Parent and hasattr(self.Parent, "profile_settings_changed"):
             self.Parent.profile_settings_changed()
         setcfg("gamap_profile", v or None)
 
@@ -1200,16 +1183,14 @@ class GamapFrame(BaseFrame):
         if not v:
             self.gamap_saturation_cb.SetValue(False)
             self.gamap_saturation_cb_handler()
-        if int(v) != getcfg("gamap_perceptual") and self.Parent and \
-                hasattr(self.Parent, "profile_settings_changed"):
+        if int(v) != getcfg("gamap_perceptual") and self.Parent and hasattr(self.Parent, "profile_settings_changed"):
             self.Parent.profile_settings_changed()
         setcfg("gamap_perceptual", int(v))
         self.gamap_profile_handler(event)
 
     def gamap_perceptual_intent_handler(self, event=None):
         v = self.intents_ba[self.gamap_perceptual_intent_ctrl.GetStringSelection()]
-        if v != getcfg("gamap_perceptual_intent") and self.Parent and \
-                hasattr(self.Parent, "profile_settings_changed"):
+        if v != getcfg("gamap_perceptual_intent") and self.Parent and hasattr(self.Parent, "profile_settings_changed"):
             self.Parent.profile_settings_changed()
         setcfg("gamap_perceptual_intent", v)
 
@@ -1219,16 +1200,14 @@ class GamapFrame(BaseFrame):
         if v:
             self.gamap_perceptual_cb.SetValue(True)
             self.gamap_perceptual_cb_handler()
-        if int(v) != getcfg("gamap_saturation") and self.Parent and \
-                hasattr(self.Parent, "profile_settings_changed"):
+        if int(v) != getcfg("gamap_saturation") and self.Parent and hasattr(self.Parent, "profile_settings_changed"):
             self.Parent.profile_settings_changed()
         setcfg("gamap_saturation", int(v))
         self.gamap_profile_handler(event and not perc)
 
     def gamap_saturation_intent_handler(self, event=None):
         v = self.intents_ba[self.gamap_saturation_intent_ctrl.GetStringSelection()]
-        if v != getcfg("gamap_saturation_intent") and self.Parent and \
-                hasattr(self.Parent, "profile_settings_changed"):
+        if v != getcfg("gamap_saturation_intent") and self.Parent and hasattr(self.Parent, "profile_settings_changed"):
             self.Parent.profile_settings_changed()
         setcfg("gamap_saturation_intent", v)
 
@@ -1417,7 +1396,7 @@ class MainFrame(ReportFrame, BaseFrame):
         for filename in resfiles:
             path, ext = (get_data_path(os.path.sep.join(filename.split("/"))),
                          os.path.splitext(filename)[1])
-            if (not path or not os.path.isfile(path)):
+            if not path or not os.path.isfile(path):
                 missing.append(filename)
             elif ext.lower() == ".ti1":
                 self.dist_testcharts.append(path)
@@ -1668,11 +1647,10 @@ class MainFrame(ReportFrame, BaseFrame):
         if header_bmp.Size[0] >= w and header_bmp.Size[1] >= h + y:
             header_bmp = header_bmp.GetSubBitmap((0, y, w, h))
             self.header_btm.SetBitmap(header_bmp)
-        self.headerpanel.Sizer.Insert(0, self.header_btm, flag=wx.ALIGN_TOP |
-                                                               wx.EXPAND)
-        #separator = BitmapBackgroundPanel(self.panel, size=(-1, 1))
-        #separator.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
-        #self.panel.Sizer.Insert(2, separator, flag=wx.EXPAND)
+        self.headerpanel.Sizer.Insert(0, self.header_btm, flag=wx.ALIGN_TOP | wx.EXPAND)
+        # separator = BitmapBackgroundPanel(self.panel, size=(-1, 1))
+        # separator.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
+        # self.panel.Sizer.Insert(2, separator, flag=wx.EXPAND)
 
         # Calibration settings panel
         self.calpanel = xrc.XRCCTRL(self, "calpanel")
@@ -2171,8 +2149,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                       lang.getstr("profile.type.lut_matrix.xyz"))
             self.profile_types_ab[profile_types_index] = "X"  # XYZ LUT + accurate matrix
             profile_types_index += 1
-        if (self.worker.argyll_version[0:3] > [1, 1, 0] and
-            self.worker.argyll_version[0:3] < [2, 0, 2]) or (
+        if ([1, 1, 0] < self.worker.argyll_version[0:3] < [2, 0, 2]) or (
                 self.worker.argyll_version[0:3] == [1, 1, 0]
                 and not "Beta" in self.worker.argyll_version_string
                 and not "RC1" in self.worker.argyll_version_string
@@ -2475,7 +2452,7 @@ class MainFrame(ReportFrame, BaseFrame):
         for lstr, lcode in llist:
             menuitem = languages.Append(-1, "&" + lstr, kind=wx.ITEM_RADIO)
             lcode2 = lmap.get(lcode, lcode).upper()
-            if (lcode2 in flagart.catalog):
+            if lcode2 in flagart.catalog:
                 if (sys.platform in ("darwin", "win32") or
                         menuitem.GetKind() == wx.ITEM_NORMAL):
                     # This can fail under Linux with wxPython 3.0
@@ -2754,40 +2731,28 @@ class MainFrame(ReportFrame, BaseFrame):
         self.Bind(wx.EVT_COMBOBOX, self.whitepoint_ctrl_handler,
                   id=self.whitepoint_colortemp_textctrl.GetId())
         self.whitepoint_colortemp_textctrl.SetItems(self.whitepoint_presets)
-        self.whitepoint_colortemp_textctrl.Bind(
-            wx.EVT_KILL_FOCUS, self.whitepoint_ctrl_handler)
+        self.whitepoint_colortemp_textctrl.Bind(wx.EVT_KILL_FOCUS, self.whitepoint_ctrl_handler)
         self.Bind(wx.EVT_CHOICE, self.whitepoint_colortemp_locus_ctrl_handler,
                   id=self.whitepoint_colortemp_locus_ctrl.GetId())
-        self.whitepoint_x_textctrl.Bind(floatspin.EVT_FLOATSPIN,
-                                        self.whitepoint_ctrl_handler)
-        self.whitepoint_y_textctrl.Bind(floatspin.EVT_FLOATSPIN,
-                                        self.whitepoint_ctrl_handler)
-        self.Bind(wx.EVT_BUTTON, self.ambient_measure_handler,
-                  id=self.whitepoint_measure_btn.GetId())
-        self.Bind(wx.EVT_BUTTON, self.visual_whitepoint_editor_handler,
-                  id=self.visual_whitepoint_editor_btn.GetId())
+        self.whitepoint_x_textctrl.Bind(floatspin.EVT_FLOATSPIN, self.whitepoint_ctrl_handler)
+        self.whitepoint_y_textctrl.Bind(floatspin.EVT_FLOATSPIN, self.whitepoint_ctrl_handler)
+        self.Bind(wx.EVT_BUTTON, self.ambient_measure_handler, id=self.whitepoint_measure_btn.GetId())
+        self.Bind(wx.EVT_BUTTON, self.visual_whitepoint_editor_handler, id=self.visual_whitepoint_editor_btn.GetId())
 
         # White luminance
-        self.Bind(wx.EVT_CHOICE, self.luminance_ctrl_handler,
-                  id=self.luminance_ctrl.GetId())
-        self.luminance_textctrl.Bind(floatspin.EVT_FLOATSPIN,
-                                     self.luminance_ctrl_handler)
+        self.Bind(wx.EVT_CHOICE, self.luminance_ctrl_handler, id=self.luminance_ctrl.GetId())
+        self.luminance_textctrl.Bind(floatspin.EVT_FLOATSPIN, self.luminance_ctrl_handler)
         self.Bind(wx.EVT_CHECKBOX, self.whitelevel_drift_compensation_handler,
                   id=self.whitelevel_drift_compensation.GetId())
-        self.Bind(wx.EVT_BUTTON, self.luminance_measure_handler,
-                  id=self.luminance_measure_btn.GetId())
-        self.Bind(wx.EVT_BUTTON, self.ambient_measure_handler,
-                  id=self.ambient_luminance_measure_btn.GetId())
+        self.Bind(wx.EVT_BUTTON, self.luminance_measure_handler, id=self.luminance_measure_btn.GetId())
+        self.Bind(wx.EVT_BUTTON, self.ambient_measure_handler, id=self.ambient_luminance_measure_btn.GetId())
 
         # Black luminance
-        self.Bind(wx.EVT_CHOICE, self.black_luminance_ctrl_handler,
-                  id=self.black_luminance_ctrl.GetId())
-        self.black_luminance_textctrl.Bind(floatspin.EVT_FLOATSPIN,
-                                           self.black_luminance_ctrl_handler)
+        self.Bind(wx.EVT_CHOICE, self.black_luminance_ctrl_handler, id=self.black_luminance_ctrl.GetId())
+        self.black_luminance_textctrl.Bind(floatspin.EVT_FLOATSPIN, self.black_luminance_ctrl_handler)
         self.Bind(wx.EVT_CHECKBOX, self.blacklevel_drift_compensation_handler,
                   id=self.blacklevel_drift_compensation.GetId())
-        self.Bind(wx.EVT_BUTTON, self.luminance_measure_handler,
-                  id=self.black_luminance_measure_btn.GetId())
+        self.Bind(wx.EVT_BUTTON, self.luminance_measure_handler, id=self.black_luminance_measure_btn.GetId())
 
         # Tonal response curve (TRC)
         self.Bind(wx.EVT_CHOICE, self.trc_ctrl_handler,
@@ -4102,7 +4067,7 @@ class MainFrame(ReportFrame, BaseFrame):
             setcfg("profile.update", 0)
 
         update_profile = update_cal and profile_exists
-        enable_profile = not(update_profile)
+        enable_profile = not update_profile
 
         if update_ccmx_items:
             self.update_colorimeter_correction_matrix_ctrl_items()
@@ -4835,7 +4800,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.whitepoint_ctrl_handler(
             CustomEvent(wx.EVT_CHOICE.evtType[0],
                         self.whitepoint_ctrl),
-            sel > -1 and self.whitepoint_ctrl.GetSelection() != sel)
+            -1 < sel != self.whitepoint_ctrl.GetSelection())
         show_advanced_options = bool(getcfg("show_advanced_options"))
         for ctrl in (self.whitepoint_colortemp_locus_label,
                      self.whitepoint_colortemp_locus_ctrl):
@@ -5383,8 +5348,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     profile = None
                 else:
                     geometry = display.Geometry.Get()  # Has to be tuple!
-        display_name = display_name.replace("[PRIMARY]",
-                                            lang.getstr("display.primary"))
+        display_name = display_name.replace("[PRIMARY]", lang.getstr("display.primary"))
         title = display_name + " ‒ " + lang.getstr("whitepoint.visual_editor")
         self.wpeditor = VisualWhitepointEditor(self, pos=pos, title=title,
                                                patterngenerator=patterngenerator,
@@ -5510,20 +5474,15 @@ class MainFrame(ReportFrame, BaseFrame):
             if isinstance(result, Exception):
                 show_result_dialog(result, self)
             return
-        result = re.sub("[^\t\n\r\x20-\x7f]", "",
-                        "".join(self.worker.output)).strip()
+        result = re.sub(r"[^\t\n\r\x20-\x7f]", "", "".join(self.worker.output)).strip()
         if getcfg("whitepoint.colortemp.locus") == "T":
-            K = re.search("Planckian temperature += (\d+(?:\.\d+)?)K",
-                          result, re.I)
+            K = re.search(r"Planckian temperature += (\d+(?:\.\d+)?)K", result, re.I)
         else:
-            K = re.search("Daylight temperature += (\d+(?:\.\d+)?)K",
-                          result, re.I)
-        XYZ = re.search("XYZ: (\d+(?:\.\d+)) (\d+(?:\.\d+)) (\d+(?:\.\d+))",
-                        result)
-        Yxy = re.search("Yxy: (\d+(?:\.\d+)) (\d+(?:\.\d+)) (\d+(?:\.\d+))",
-                        result)
-        Y = re.search("Y: (\d+(?:\.\d+))", result)  # Monochrome, e.g. Spyder4/5
-        lux = re.search("Ambient = (\d+(?:\.\d+)) Lux", result, re.I)
+            K = re.search(r"Daylight temperature += (\d+(?:\.\d+)?)K", result, re.I)
+        XYZ = re.search(r"XYZ: (\d+(?:\.\d+)) (\d+(?:\.\d+)) (\d+(?:\.\d+))", result)
+        Yxy = re.search(r"Yxy: (\d+(?:\.\d+)) (\d+(?:\.\d+)) (\d+(?:\.\d+))", result)
+        Y = re.search(r"Y: (\d+(?:\.\d+))", result)  # Monochrome, e.g. Spyder4/5
+        lux = re.search(r"Ambient = (\d+(?:\.\d+)) Lux", result, re.I)
         if not result or (not K and not XYZ and not Yxy and not lux):
             show_result_dialog(Error(result + lang.getstr("failure")),
                                self)
@@ -6400,7 +6359,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             name = nameprefix + "_" + component
                         if name:
                             label = name
-                            if ("_" in label):
+                            if "_" in label:
                                 label = label.split("_")
                                 for i, part in enumerate(label):
                                     label[i] = lang.getstr(part)
@@ -6410,7 +6369,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             text = wx.StaticText(panel, -1, label)
                             ctrl = wx.TextCtrl(panel, -1,
                                                metadata.getvalue("OSD_settings_%s" %
-                                                                 re.sub("[ .]", "_", name), ""),
+                                                                 re.sub(r"[ .]", "_", name), ""),
                                                size=(width * scale, -1),
                                                name=name)
                         else:
@@ -6492,8 +6451,7 @@ class MainFrame(ReportFrame, BaseFrame):
         metadata["CONNECTION_type"] = connections[dlg.connection_ctrl.GetSelection()]
         for ctrl in display_settings_ctrls:
             if isinstance(ctrl, wx.TextCtrl) and ctrl.GetValue().strip():
-                metadata["OSD_settings_%s" %
-                         re.sub("[ .]", "_", ctrl.Name)] = ctrl.GetValue().strip()
+                metadata["OSD_settings_%s" % re.sub(r"[ .]", "_", ctrl.Name)] = ctrl.GetValue().strip()
             if "OSD_" not in prefixes:
                 prefixes.append("OSD_")
         # Set meta prefix
@@ -6678,8 +6636,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def uninstall_argyll_instrument_drivers(self, event=None):
         self.install_argyll_instrument_drivers(uninstall=True)
 
-    def install_profile_handler(self, event=None, profile_path=None,
-                                install_3dlut=None):
+    def install_profile_handler(self, event=None, profile_path=None, install_3dlut=None):
         """ Install a profile. Show an error dialog if the profile is
         invalid or unsupported (only 'mntr' RGB profiles are allowed) """
         if not check_set_argyll_bin():
@@ -6698,8 +6655,7 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 profile = ICCP.ICCProfile(profile_path)
             except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                InfoDialog(self, msg=lang.getstr("profile.invalid") +
-                                     "\n" + profile_path,
+                InfoDialog(self, msg=lang.getstr("profile.invalid") + "\n" + profile_path,
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
@@ -6766,9 +6722,10 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     profile = ICCP.ICCProfile(path)
                 except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                    if verbose >= 1: print(lang.getstr("failure"))
-                    InfoDialog(self, msg=lang.getstr("profile.invalid") +
-                                         "\n" + path,
+                    if verbose >= 1:
+                        print(lang.getstr("failure"))
+                    InfoDialog(self,
+                               msg=lang.getstr("profile.invalid") + "\n" + path,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
@@ -6839,39 +6796,33 @@ class MainFrame(ReportFrame, BaseFrame):
             self.lut_viewer_load_lut(profile=profile)
             if verbose >= 1: print(lang.getstr("success"))
         else:
-            if verbose >= 1: print(lang.getstr("failure"))
+            if verbose >= 1:
+                print(lang.getstr("failure"))
 
     def profile_load_on_login_handler(self, event=None):
-        setcfg("profile.load_on_login",
-               int(self.profile_load_on_login.GetValue()))
+        setcfg("profile.load_on_login", int(self.profile_load_on_login.GetValue()))
         if sys.platform == "win32" and sys.getwindowsversion() >= (6, 1):
-            self.profile_load_on_login.Enable(is_superuser() or
-                                              not util_win.calibration_management_isenabled())
-            self.profile_load_by_os.Enable(is_superuser() and
-                                           self.profile_load_on_login.GetValue())
-            if (not self.profile_load_on_login.GetValue() and
-                    self.profile_load_by_os.GetValue() and is_superuser()):
+            self.profile_load_on_login.Enable(is_superuser() or not util_win.calibration_management_isenabled())
+            self.profile_load_by_os.Enable(is_superuser() and self.profile_load_on_login.GetValue())
+            if not self.profile_load_on_login.GetValue() and self.profile_load_by_os.GetValue() and is_superuser():
                 self.profile_load_by_os.SetValue(False)
                 self.profile_load_by_os_handler()
         # Update profile loader config
         if sys.platform == "win32" and event:
-            prev = self.send_command("apply-profiles",
-                                     "getcfg profile.load_on_login")
+            prev = self.send_command("apply-profiles", "getcfg profile.load_on_login")
             if prev:
                 try:
                     prev = int(prev.split()[-1])
                 except:
                     pass
                 result = self.send_command("apply-profiles",
-                                           "setcfg profile.load_on_login %i" %
-                                           getcfg("profile.load_on_login"))
+                                           "setcfg profile.load_on_login %i" % getcfg("profile.load_on_login"))
                 if result == "ok" and getcfg("profile.load_on_login") != prev:
                     if getcfg("profile.load_on_login"):
                         lstr = "calibration.preserve"
                     else:
                         lstr = "profile_loader.disable"
-                    self.send_command("apply-profiles",
-                                      "notify '%s'" % lang.getstr(lstr))
+                    self.send_command("apply-profiles", "notify '%s'" % lang.getstr(lstr))
             else:
                 # Profile loader not running? Fall back to config files
 
@@ -7032,6 +6983,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
             dlg.Center(wx.BOTH)
             result = dlg.ShowModal()
+            path = ""
             if result == wx.ID_OK:
                 path = dlg.GetPath()
                 setcfg("last_icc_path", path)
@@ -7042,8 +6994,8 @@ class MainFrame(ReportFrame, BaseFrame):
             try:
                 profile = ICCP.ICCProfile(path)
             except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                InfoDialog(parent, msg=lang.getstr("profile.invalid") +
-                                       "\n" + path,
+                InfoDialog(parent,
+                           msg=lang.getstr("profile.invalid") + "\n" + path,
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
@@ -8426,9 +8378,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     display = RDSMM.get_x_display(display_no)
                     if display:
                         x_hostname, x_display, x_screen = display
-                args = "DISPLAY=%s:%s.%s %s" % (x_hostname, x_display,
-                                                x_screen,
-                                                args)
+                args = "DISPLAY=%s:%s.%s %s" % (x_hostname, x_display, x_screen, args)
         delayedresult.startWorker(self.measureframe_consumer,
                                   self.measureframe_subprocess, wargs=(args, ))
 
@@ -8509,7 +8459,6 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def set_ccxx_measurement_mode(self):
         """Set measurement mode suitable for colorimeter correction creation
-
         """
         # IMPORTANT: Make changes aswell in the following locations:
         # - DisplayCAL.MainFrame.create_colorimeter_correction_handler
@@ -8557,8 +8506,7 @@ class MainFrame(ReportFrame, BaseFrame):
             setcfg("measurement_mode", measurement_mode)
             self.update_measurement_mode()
 
-    def set_pending_function(self, pending_function, *pending_function_args,
-                             **pending_function_kwargs):
+    def set_pending_function(self, pending_function, *pending_function_args, **pending_function_kwargs):
         self.pending_function = pending_function
         self.pending_function_args = pending_function_args
         self.pending_function_kwargs = pending_function_kwargs
@@ -8566,8 +8514,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def call_pending_function(self):
         # Needed for proper display updates under GNOME
         writecfg()
-        if (sys.platform in ("darwin", "win32") or isexe or
-                self.worker._use_patternwindow):
+        if sys.platform in ("darwin", "win32") or isexe or self.worker._use_patternwindow:
             if self.worker._use_patternwindow:
                 # Preliminary Wayland support. This still needs a lot
                 # of work as Argyll doesn't support Wayland natively yet,
@@ -8576,10 +8523,8 @@ class MainFrame(ReportFrame, BaseFrame):
             else:
                 self.measureframe.Hide()
         if debug:
-            print("[D] Calling pending function with args:",
-                       self.pending_function_args)
-        wx.CallLater(100, self.pending_function, *self.pending_function_args,
-                     **self.pending_function_kwargs)
+            print("[D] Calling pending function with args:", self.pending_function_args)
+        wx.CallLater(100, self.pending_function, *self.pending_function_args, **self.pending_function_kwargs)
         self.pending_function = None
 
     def calibrate_and_profile_btn_handler(self, event):
@@ -8596,8 +8541,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if self.measure_auto(self.calibrate_and_profile):
             return
         print("-" * 80)
-        print(lang.getstr("button.calibrate_and_profile").replace("&&",
-                                                                       "&"))
+        print(lang.getstr("button.calibrate_and_profile").replace("&&", "&"))
         setcfg("calibration.continue_next", 1)
         self.worker.dispcal_create_fast_matrix_shaper = False
         self.worker.dispread_after_dispcal = True
@@ -8611,9 +8555,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.worker.start_calibration(self.calibrate_finish,
                                       progress_msg=lang.getstr("calibration"),
                                       continue_next=True,
-                                      resume=bool(getattr(self,
-                                                          "measure_auto_after",
-                                                          None)))
+                                      resume=bool(getattr(self, "measure_auto_after", None)))
 
     def calibrate_finish(self, result):
         """ Start characterization measurements """
@@ -8656,8 +8598,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def check_copy_ti3(self):
         result = self.measurement_file_check_confirm(parent=getattr(self.worker, "progress_wnd", self))
         if isinstance(result, tuple):
-            result = self.worker.wrapup(copy=True, remove=False,
-                                        ext_filter=[".ti3"])
+            result = self.worker.wrapup(copy=True, remove=False, ext_filter=[".ti3"])
         if isinstance(result, Exception) or not result:
             self.worker.stop_progress()
         return result
@@ -8671,8 +8612,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.worker.interactive = False
         self.worker.start(self.profile_finish, self.worker.create_profile,
                           ckwargs={"success_msg": success_msg,
-                                   "failure_msg": lang.getstr(
-                                       "profiling.incomplete"),
+                                   "failure_msg": lang.getstr("profiling.incomplete"),
                                    "install_3dlut": getcfg("3dlut.create")},
                           wkwargs={"tags": True},
                           progress_msg=lang.getstr("create_profile"),
@@ -8712,8 +8652,8 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     profile = ICCP.ICCProfile(cal)
                 except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                    InfoDialog(self, msg=lang.getstr("profile.invalid") +
-                                         "\n" + path,
+                    InfoDialog(self,
+                               msg=lang.getstr("profile.invalid") + "\n" + cal,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     self.start_timers()
@@ -8754,13 +8694,11 @@ class MainFrame(ReportFrame, BaseFrame):
                             bitmap=geticon(32, "dialog-%s" % icon))
         border = 12
         if can_use_current_cal or cal:
-            dlg.reset_cal_ctrl = wx.CheckBox(dlg, -1,
-                                             lang.getstr("calibration.use_linear_instead"))
-            dlg.sizer3.Add(dlg.reset_cal_ctrl, flag=wx.TOP | wx.ALIGN_LEFT,
-                           border=border)
+            dlg.reset_cal_ctrl = wx.CheckBox(dlg, -1, lang.getstr("calibration.use_linear_instead"))
+            dlg.sizer3.Add(dlg.reset_cal_ctrl, flag=wx.TOP | wx.ALIGN_LEFT, border=border)
             border = 4
-        dlg.embed_cal_ctrl = wx.CheckBox(dlg, -1,
-                                         lang.getstr("calibration.embed"))
+        dlg.embed_cal_ctrl = wx.CheckBox(dlg, -1, lang.getstr("calibration.embed"))
+
         def embed_cal_ctrl_handler(event):
             embed_cal = dlg.embed_cal_ctrl.GetValue()
             dlg.reset_cal_ctrl.Enable(embed_cal)
@@ -8769,8 +8707,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if can_use_current_cal or cal:
             dlg.embed_cal_ctrl.Bind(wx.EVT_CHECKBOX, embed_cal_ctrl_handler)
         dlg.embed_cal_ctrl.SetValue(bool(can_use_current_cal or cal))
-        dlg.sizer3.Add(dlg.embed_cal_ctrl, flag=wx.TOP | wx.ALIGN_LEFT,
-                       border=border)
+        dlg.sizer3.Add(dlg.embed_cal_ctrl, flag=wx.TOP | wx.ALIGN_LEFT, border=border)
         dlg.sizer0.SetSizeHints(dlg)
         dlg.sizer0.Layout()
         if silent:
@@ -8826,14 +8763,12 @@ class MainFrame(ReportFrame, BaseFrame):
             if not is_ccxx_testchart():
                 ccxx_testchart = get_ccxx_testchart()
                 if not ccxx_testchart:
-                    self.measure_auto_finish(Error(lang.getstr("not_found",
-                                                               lang.getstr("ccxx.ti1"))))
+                    self.measure_auto_finish(Error(lang.getstr("not_found", lang.getstr("ccxx.ti1"))))
                     return True
                 setcfg("testchart.file.backup", getcfg("testchart.file"))
                 self.set_testchart(ccxx_testchart)
             self.setup_ccxx_measurement()
-            self.just_measure(get_data_path("linear.cal"),
-                              self.measure_auto_finish)
+            self.just_measure(get_data_path("linear.cal"), self.measure_auto_finish)
             return True
 
     def measure_auto_finish(self, result):
@@ -8883,7 +8818,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 return
                             body = response.read()
                             response.close()
-                            if body.strip().startswith("CTI3"):
+                            if body.decode().strip().startswith("CTI3"):
                                 print("Successfully retrieved", url)
                                 try:
                                     with open(path, "wb") as calibrationfile:
@@ -8891,8 +8826,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 except Exception as exception:
                                     print(exception)
                             else:
-                                print("Got unexpected answer from %s:" %
-                                           url)
+                                print("Got unexpected answer from %s:" % url)
                                 print(body)
                         if os.path.isfile(path):
                             print("Using factory calibration", path)
@@ -8906,12 +8840,8 @@ class MainFrame(ReportFrame, BaseFrame):
                                                        "RGB_B": 1})
                                 if white:
                                     luminance = white["XYZ_Y"]
-                                    print("Using luminance %.2f from "
-                                               "factory calibration" %
-                                               luminance)
-            if self.create_colorimeter_correction_handler(None, [profile_path,
-                                                                 ti3_path],
-                                                          luminance=luminance):
+                                    print("Using luminance %.2f from factory calibration" % luminance)
+            if self.create_colorimeter_correction_handler(None, [profile_path, ti3_path], luminance=luminance):
                 self.measure_auto_after(*self.measure_auto_after_args)
             else:
                 self.Show()
@@ -11017,7 +10947,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if sys.platform == "darwin":
             # In case of internal screen, get 'nice' description
             model_id = display or util_mac.get_model_id()
-            if model_id and re.match("iBook|iMac|MacBook|PowerBook", model_id,
+            if model_id and re.match(r"iBook|iMac|MacBook|PowerBook", model_id,
                                      flags=re.I):
                 attrs = util_mac.get_machine_attributes(model_id) or {}
                 description = description.replace(model_id,
@@ -11292,14 +11222,14 @@ class MainFrame(ReportFrame, BaseFrame):
             cgats = universal_newlines(cgatsfile.read())
             cgatsfile.close()
             if (reference_ti3[0].get("TARGET_INSTRUMENT") and
-                    not re.search('\nREFERENCE\s+".+?"\n', cgats)):
+                    not re.search(r'\nREFERENCE\s+".+?"\n', cgats)):
                 # By default, CCSS files don't contain reference instrument
-                cgats = re.sub('(\nDISPLAY\s+"[^"]*"\n)',
+                cgats = re.sub(r'(\nDISPLAY\s+"[^"]*"\n)',
                                '\nREFERENCE "%s"\\1' %
                                reference_ti3[0].get("TARGET_INSTRUMENT").replace("\\", "\\\\"), cgats)
-            if not re.search('\nTECHNOLOGY\s+".+?"\n', cgats) and tech:
+            if not re.search(r'\nTECHNOLOGY\s+".+?"\n', cgats) and tech:
                 # By default, CCMX files don't contain technology string
-                cgats = re.sub('(\nDISPLAY\s+"[^"]*"\n)',
+                cgats = re.sub(r'(\nDISPLAY\s+"[^"]*"\n)',
                                '\nTECHNOLOGY "%s"\\1' %
                                safe_str(tech, "UTF-8"), cgats)
             manufacturer_id = None
@@ -11309,25 +11239,25 @@ class MainFrame(ReportFrame, BaseFrame):
                     get_manufacturer_name("???")
                 manufacturers = dict([name, id_] for id_, name in pnpidcache.items())
                 manufacturer_id = manufacturers.get(manufacturer)
-            if manufacturer_id and not re.search('\nMANUFACTURER_ID\s+".+?"\n', cgats):
+            if manufacturer_id and not re.search(r'\nMANUFACTURER_ID\s+".+?"\n', cgats):
                 # By default, CCMX/CCSS files don't contain manufacturer ID
-                cgats = re.sub('(\nDISPLAY\s+"[^"]*"\n)',
+                cgats = re.sub(r'(\nDISPLAY\s+"[^"]*"\n)',
                                '\nMANUFACTURER_ID "%s"\\1' %
                                safe_str(manufacturer_id, "UTF-8").replace("\\", "\\\\"), cgats)
-            if manufacturer and not re.search('\nMANUFACTURER\s+".+?"\n', cgats):
+            if manufacturer and not re.search(r'\nMANUFACTURER\s+".+?"\n', cgats):
                 # By default, CCMX/CCSS files don't contain manufacturer
-                cgats = re.sub('(\nDISPLAY\s+"[^"]*"\n)',
+                cgats = re.sub(r'(\nDISPLAY\s+"[^"]*"\n)',
                                '\nMANUFACTURER "%s"\\1' %
                                safe_str(manufacturer, "UTF-8").replace("\\", "\\\\"), cgats)
-            if observer and not re.search('\nOBSERVER\s+".+?"\n', cgats):
+            if observer and not re.search(r'\nOBSERVER\s+".+?"\n', cgats):
                 # By default, CCMX/CCSS files don't contain observer
-                cgats = re.sub('(\nDISPLAY\s+"[^"]*"\n)',
+                cgats = re.sub(r'(\nDISPLAY\s+"[^"]*"\n)',
                                '\nOBSERVER "%s"\\1' %
                                safe_str(observer, "UTF-8").replace("\\", "\\\\"), cgats)
             if (reference_observer and
-                    not re.search('\nREFERENCE_OBSERVER\s+".+?"\n', cgats)):
+                    not re.search(r'\nREFERENCE_OBSERVER\s+".+?"\n', cgats)):
                 # By default, CCMX/CCSS files don't contain observer
-                cgats = re.sub('(\nDISPLAY\s+"[^"]*"\n)',
+                cgats = re.sub(r'(\nDISPLAY\s+"[^"]*"\n)',
                                '\nREFERENCE_OBSERVER "%s"\\1' %
                                safe_str(reference_observer, "UTF-8").replace("\\", "\\\\"), cgats)
             result = check_create_dir(config.get_argyll_data_dir())
@@ -11493,7 +11423,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                          ("MAX_DE00", max(deltaE_00)),
                                          ("AVG_DE00", sum(deltaE_00) /
                                                       len(deltaE_00))):
-                    cgats = re.sub('(\nREFERENCE\s+"[^"]*"\n)',
+                    cgats = re.sub(r'(\nREFERENCE\s+"[^"]*"\n)',
                                    '\\1FIT_%s "%.6f"\n' %
                                    (label, fit_error), cgats)
             metadata = []
@@ -11543,7 +11473,7 @@ class MainFrame(ReportFrame, BaseFrame):
             else:
                 metadata.append('FIT_METHOD "ΔE*94"'.encode("UTF-8"))
             if metadata:
-                cgats = re.sub('(\nREFERENCE\s+"[^"]*"\n)',
+                cgats = re.sub(r'(\nREFERENCE\s+"[^"]*"\n)',
                                '\\1%s\n' %
                                "\n".join(metadata).replace("\\", "\\\\"), cgats)
             if event:
@@ -11637,9 +11567,9 @@ class MainFrame(ReportFrame, BaseFrame):
             cgatsfile = open(path, "rb")
             cgats = cgatsfile.read().decode()
             cgatsfile.close()
-            originator = re.search('\nORIGINATOR\s+"Argyll', cgats)
+            originator = re.search(r'\nORIGINATOR\s+"Argyll', cgats)
             if not originator:
-                originator = re.search('\nORIGINATOR\s+"' + appname, cgats)
+                originator = re.search(r'\nORIGINATOR\s+"' + appname, cgats)
             if not originator:
                 InfoDialog(self,
                            msg=lang.getstr("colorimeter_correction.upload.deny"),
@@ -12086,6 +12016,7 @@ class MainFrame(ReportFrame, BaseFrame):
         return result, i1d3, spyd4, icd
 
     def import_colorimeter_corrections_consumer(self, results, callafter=None, callafter_args=()):
+        print('results:', results)
         result, i1d3, spyd4, icd = results
         if isinstance(result, Exception):
             show_result_dialog(result, self)
@@ -13604,8 +13535,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if "%ck" in profile_name:
             k = int(float(black_point_correction) * 100)
             auto = self.black_point_correction_auto_cb.GetValue()
-            profile_name = profile_name.replace("%ck", (str(k) + "% " if k > 0 and
-                                                                         k < 100 else "") +
+            profile_name = profile_name.replace("%ck", (str(k) + "% " if 0 < k < 100 else "") +
                                                        (lang.getstr("neutral") if
                                                         k > 0 else "\0").lower()
             if trc and not auto
@@ -13642,7 +13572,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 quality["p"] = msgs[aspects["p"]]
             if len(quality) == 2 and (quality["c"] == quality["p"] or
                                       quality["c"] == "\0"):
-                profile_name = re.sub("%cq\W*%pq", quality["p"], profile_name)
+                profile_name = re.sub(r"%cq\W*%pq", quality["p"], profile_name)
             for q in quality:
                 profile_name = profile_name.replace("%%%sq" % q, quality[q])
 
@@ -13694,31 +13624,31 @@ class MainFrame(ReportFrame, BaseFrame):
                     pass
 
         # All whitespace to space
-        profile_name = re.sub("\s", " ", profile_name)
+        profile_name = re.sub(r"\s", " ", profile_name)
 
         # Get rid of inserted NULL bytes
         # Try to keep spacing intact
         if "\0" in profile_name:
-            profile_name = re.sub("^(\0[_\- ]?)+|([_\- ]?\0)+$", "", profile_name)
+            profile_name = re.sub(r"^(\0[_\- ]?)+|([_\- ]?\0)+$", "", profile_name)
             # Surrounded by underscores
             while "_\0" in profile_name or "\0_" in profile_name:
-                while re.search("_\0+_", profile_name):
-                    profile_name = re.sub("_\0+_", "_", profile_name)
-                profile_name = re.sub("_\0+", "_", profile_name)
-                profile_name = re.sub("\0+_", "_", profile_name)
+                while re.search(r"_\0+_", profile_name):
+                    profile_name = re.sub(r"_\0+_", "_", profile_name)
+                profile_name = re.sub(r"_\0+", "_", profile_name)
+                profile_name = re.sub(r"\0+_", "_", profile_name)
             # Surrounded by dashes
             while "-\0" in profile_name or "\0-" in profile_name:
-                while re.search("-\0+-", profile_name):
-                    profile_name = re.sub("-\0+-", "-", profile_name)
-                profile_name = re.sub("-\0+", "-", profile_name)
-                profile_name = re.sub("\0+-", "-", profile_name)
+                while re.search(r"-\0+-", profile_name):
+                    profile_name = re.sub(r"-\0+-", "-", profile_name)
+                profile_name = re.sub(r"-\0+", "-", profile_name)
+                profile_name = re.sub(r"\0+-", "-", profile_name)
             # Surrounded by whitespace
             while " \0" in profile_name or "\0 " in profile_name:
-                while re.search(" \0+ ", profile_name):
-                    profile_name = re.sub(" \0+ ", " ", profile_name)
-                profile_name = re.sub(" \0+", " ", profile_name)
-                profile_name = re.sub("\0+ ", " ", profile_name)
-            profile_name = re.sub("\0+", "", profile_name)
+                while re.search(r" \0+ ", profile_name):
+                    profile_name = re.sub(r" \0+ ", " ", profile_name)
+                profile_name = re.sub(r" \0+", " ", profile_name)
+                profile_name = re.sub(r"\0+ ", " ", profile_name)
+            profile_name = re.sub(r"\0+", "", profile_name)
 
         # Windows silently strips any combination of trailing spaces and dots
         profile_name = profile_name.rstrip(" .")
@@ -13790,47 +13720,36 @@ class MainFrame(ReportFrame, BaseFrame):
         if sys.platform != "darwin":
             if "l" in scope:
                 for commonappdata in config.commonappdata:
-                    data_files += safe_glob(os.path.join(commonappdata, "color",
-                                                         wildcard))
-                    data_files += safe_glob(os.path.join(commonappdata, "ArgyllCMS",
-                                                         wildcard))
+                    data_files += safe_glob(os.path.join(commonappdata, "color", wildcard))
+                    data_files += safe_glob(os.path.join(commonappdata, "ArgyllCMS", wildcard))
             if "u" in scope:
-                data_files += safe_glob(os.path.join(config.appdata, "color",
-                                                     wildcard))
+                data_files += safe_glob(os.path.join(config.appdata, "color", wildcard))
         else:
             if "l" in scope:
-                data_files += safe_glob(os.path.join(config.library, "color",
-                                                     wildcard))
-                data_files += safe_glob(os.path.join(config.library, "ArgyllCMS",
-                                                     wildcard))
-                if (self.worker.argyll_version >= [1, 9] and
-                        self.worker.argyll_version <= [1, 9, 1]):
+                data_files += safe_glob(os.path.join(config.library, "color", wildcard))
+                data_files += safe_glob(os.path.join(config.library, "ArgyllCMS", wildcard))
+                if [1, 9] <= self.worker.argyll_version <= [1, 9, 1]:
                     # Argyll CMS 1.9 and 1.9.1 use *nix locations due to a
                     # configuration problem
-                    data_files += safe_glob(os.path.join("/usr/local/share",
-                                                         "ArgyllCMS", wildcard))
+                    data_files += safe_glob(os.path.join("/usr/local/share", "ArgyllCMS", wildcard))
             if "u" in scope:
-                data_files += safe_glob(os.path.join(config.library_home, "color",
-                                                     wildcard))
-                if (self.worker.argyll_version >= [1, 9] and
-                        self.worker.argyll_version <= [1, 9, 1]):
+                data_files += safe_glob(os.path.join(config.library_home, "color", wildcard))
+                if [1, 9] <= self.worker.argyll_version <= [1, 9, 1]:
                     # Argyll CMS 1.9 and 1.9.1 use *nix locations due to a
                     # configuration problem
-                    data_files += safe_glob(os.path.join(config.home, ".local", "share",
-                                                         "ArgyllCMS", wildcard))
+                    data_files += safe_glob(os.path.join(config.home, ".local", "share", "ArgyllCMS", wildcard))
         if "u" in scope:
-            data_files += safe_glob(os.path.join(config.appdata, "ArgyllCMS",
-                                                 wildcard))
+            data_files += safe_glob(os.path.join(config.appdata, "ArgyllCMS", wildcard))
         filenames = list(data_files)
         data_files = []
         mapping = OrderedDict()
         for filename in filenames:
             basename = os.path.basename(filename)
-            if (not basename in mapping or
-                    os.path.basename(os.path.dirname(filename)) == "ArgyllCMS"):
+            if basename not in mapping or os.path.basename(os.path.dirname(filename)) == "ArgyllCMS":
                 # Prefer files with same basename in 'ArgyllCMS' folder over
                 # 'color' folder
                 mapping[basename] = filename
+
         for filename in mapping.values():
             if include_lastmod:
                 try:
@@ -14561,8 +14480,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 return
             if not os.path.exists(path):
                 sel = self.calibration_file_ctrl.GetSelection()
-                if len(self.recent_cals) > sel and \
-                        self.recent_cals[sel] == path:
+                if len(self.recent_cals) > sel and self.recent_cals[sel] == path:
                     self.recent_cals.remove(self.recent_cals[sel])
                     recent_cals = []
                     for recent_cal in self.recent_cals:
@@ -14599,8 +14517,8 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     profile = ICCP.ICCProfile(path)
                 except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                    InfoDialog(self, msg=lang.getstr("profile.invalid") +
-                                         "\n" + path,
+                    InfoDialog(self,
+                               msg=lang.getstr("profile.invalid") + "\n" + path,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
@@ -14619,7 +14537,8 @@ class MainFrame(ReportFrame, BaseFrame):
                 try:
                     cal = open(path, "rU")
                 except Exception as exception:
-                    InfoDialog(self, msg=lang.getstr("error.file.open", path),
+                    InfoDialog(self,
+                               msg=lang.getstr("error.file.open", path),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
@@ -14661,16 +14580,15 @@ class MainFrame(ReportFrame, BaseFrame):
                             edid_md5_indexes.append(i)
                     if len(display_name_indexes) == 1:
                         display_index = display_name_indexes[0]
-                        print("Found display device matching model "
-                                   "description at index #%i" % display_index)
+                        print("Found display device matching model description at index #%i" % display_index)
                     elif len(edid_md5_indexes) == 1:
                         display_index = edid_md5_indexes[0]
-                        print("Found display device matching EDID MD5 "
-                                   "at index #%i" % display_index)
+                        print("Found display device matching EDID MD5 at index #%i" % display_index)
                     else:
                         # We got several matches. As we can't be sure which
                         # is the right one, do nothing.
                         display_index = None
+
                     if display_index is not None:
                         # Found it
                         display_match = True
@@ -14681,8 +14599,8 @@ class MainFrame(ReportFrame, BaseFrame):
                             setcfg("display.number", display_index + 1)
                             self.get_set_display()
                             display_changed = True
-                        if (config.is_virtual_display() or
-                                config.get_display_name() == "SII REPEATER"):
+
+                        if config.is_virtual_display() or config.get_display_name() == "SII REPEATER":
                             # Don't disable 3D LUT tab when switching from
                             # madVR / Resolve / eeColor
                             setcfg("3dlut.tab.enable", 1)
@@ -14696,8 +14614,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         if instrument.lower() == instrument_id:
                             # Found it
                             instrument_match = True
-                            if (self.worker.get_instrument_name().lower() ==
-                                    instrument_id):
+                            if self.worker.get_instrument_name().lower() == instrument_id:
                                 # No need to update anything
                                 break
                             setcfg("comport.number", i + 1)
@@ -14710,11 +14627,10 @@ class MainFrame(ReportFrame, BaseFrame):
                             break
             else:
                 try:
-                    (options_dispcal,
-                     options_colprof) = get_options_from_cal(path)
+                    (options_dispcal, options_colprof) = get_options_from_cal(path)
                 except (IOError, CGATS.CGATSError) as exception:
-                    InfoDialog(self, msg=lang.getstr("calibration.file.invalid") +
-                                         "\n" + path,
+                    InfoDialog(self,
+                               msg=lang.getstr("calibration.file.invalid") + "\n" + path,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
@@ -14756,8 +14672,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     override={"trc": ""} if not trc else None)
                 # Parse options
                 if options_dispcal:
-                    self.worker.options_dispcal = ["-" + arg for arg
-                                                   in options_dispcal]
+                    self.worker.options_dispcal = ["-" + arg for arg in options_dispcal]
                     for o in options_dispcal:
                         if o[0] == "d" and o[1:] in ("web", "madvr"):
                             # Special case web and madvr so it can be used in
@@ -14913,8 +14828,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         ccmx = ccxx[0]
                         update_ccmx_items = True
                 if ccmx:
-                    setcfg("colorimeter_correction_matrix_file",
-                           "%s:%s" % (ccxxsetting, ccmx))
+                    setcfg("colorimeter_correction_matrix_file", "%s:%s" % (ccxxsetting, ccmx))
                 if options_colprof:
                     # restore defaults
                     self.restore_defaults_handler(
@@ -14992,107 +14906,73 @@ class MainFrame(ReportFrame, BaseFrame):
                     cfgpart = CGATS.CGATS("\n".join(ti3_lines[:cfgend]))
                     lut3d_trc_set = False
                     simset = False  # Only HDR 3D LUTs will have this set
-                    for keyword, cfgname in {"SMOOTH_B2A_SIZE":
-                                                 "profile.b2a.hires.size",
-                                             "HIRES_B2A_SIZE":
-                                                 "profile.b2a.hires.size",
-                                             # NOTE that profile black point
-                                             # correction is not the same
-                                             # as calibration black point
-                                             # correction!
-                                             # See Worker.create_profile in
-                                             # worker.py
-                                             "BLACK_POINT_CORRECTION":
-                                                 "profile.black_point_correction",
-                                             "MIN_DISPLAY_UPDATE_DELAY_MS":
-                                                 "measure.min_display_update_delay_ms",
-                                             "DISPLAY_SETTLE_TIME_MULT":
-                                                 "measure.display_settle_time_mult",
-                                             "FFP_INSERTION_INTERVAL":
-                                                 "patterngenerator.ffp_insertion.interval",
-                                             "FFP_INSERTION_DURATION":
-                                                 "patterngenerator.ffp_insertion.duration",
-                                             "FFP_INSERTION_LEVEL":
-                                                 "patterngenerator.ffp_insertion.level",
-                                             "AUTO_OPTIMIZE":
-                                                 "testchart.auto_optimize",
-                                             "PATCH_SEQUENCE":
-                                                 "testchart.patch_sequence",
-                                             "3DLUT_SOURCE_PROFILE":
-                                                 "3dlut.input.profile",
-                                             "3DLUT_TRC":
-                                                 "3dlut.trc",
-                                             "3DLUT_HDR_PEAK_LUMINANCE":
-                                                 "3dlut.hdr_peak_luminance",
-                                             "3DLUT_HDR_SAT":
-                                                 "3dlut.hdr_sat",
-                                             "3DLUT_HDR_HUE":
-                                                 "3dlut.hdr_hue",
-                                             "3DLUT_HDR_DISPLAY":
-                                                 "3dlut.hdr_display",
-                                             "3DLUT_HDR_MAXCLL":  # MaxCLL is no longer used, map to mastering display max light level (MaxMLL)
-                                                 "3dlut.hdr_maxmll",
-                                             "3DLUT_HDR_MAXMLL":
-                                                 "3dlut.hdr_maxmll",
-                                             "3DLUT_HDR_MAXMLL_ALT_CLIP":
-                                                 "3dlut.hdr_maxmll_alt_clip",
-                                             "3DLUT_HDR_MINMLL":
-                                                 "3dlut.hdr_minmll",
-                                             "3DLUT_HDR_AMBIENT_LUMINANCE":
-                                                 "3dlut.hdr_ambient_luminance",
-                                             "3DLUT_GAMMA":
-                                                 "3dlut.trc_gamma",
-                                             "3DLUT_DEGREE_OF_BLACK_OUTPUT_OFFSET":
-                                                 "3dlut.trc_output_offset",
-                                             "3DLUT_INPUT_ENCODING":
-                                                 "3dlut.encoding.input",
-                                             "3DLUT_OUTPUT_ENCODING":
-                                                 "3dlut.encoding.output",
-                                             "3DLUT_GAMUT_MAPPING_MODE":
-                                                 "3dlut.gamap.use_b2a",
-                                             "3DLUT_RENDERING_INTENT":
-                                                 "3dlut.rendering_intent",
-                                             "3DLUT_FORMAT":
-                                                 "3dlut.format",
-                                             "3DLUT_SIZE":
-                                                 "3dlut.size",
-                                             "3DLUT_INPUT_BITDEPTH":
-                                                 "3dlut.bitdepth.input",
-                                             "3DLUT_OUTPUT_BITDEPTH":
-                                                 "3dlut.bitdepth.output",
-                                             "3DLUT_APPLY_CAL":
-                                                 "3dlut.output.profile.apply_cal",
-                                             "SIMULATION_PROFILE":
-                                                 "measurement_report.simulation_profile"}.items():
+                    config_lut = {
+                        "SMOOTH_B2A_SIZE": "profile.b2a.hires.size",
+                        "HIRES_B2A_SIZE": "profile.b2a.hires.size",
+                        # NOTE that profile black point
+                        # correction is not the same
+                        # as calibration black point
+                        # correction!
+                        # See Worker.create_profile in
+                        # worker.py
+                        "BLACK_POINT_CORRECTION": "profile.black_point_correction",
+                        "MIN_DISPLAY_UPDATE_DELAY_MS": "measure.min_display_update_delay_ms",
+                        "DISPLAY_SETTLE_TIME_MULT": "measure.display_settle_time_mult",
+
+                        "FFP_INSERTION_INTERVAL": "patterngenerator.ffp_insertion.interval",
+                        "FFP_INSERTION_DURATION": "patterngenerator.ffp_insertion.duration",
+                        "FFP_INSERTION_LEVEL": "patterngenerator.ffp_insertion.level",
+
+                        "AUTO_OPTIMIZE": "testchart.auto_optimize",
+                        "PATCH_SEQUENCE": "testchart.patch_sequence",
+                        "3DLUT_SOURCE_PROFILE": "3dlut.input.profile",
+                        "3DLUT_TRC": "3dlut.trc",
+
+                        "3DLUT_HDR_PEAK_LUMINANCE": "3dlut.hdr_peak_luminance",
+                        "3DLUT_HDR_SAT": "3dlut.hdr_sat",
+                        "3DLUT_HDR_HUE": "3dlut.hdr_hue",
+                        "3DLUT_HDR_DISPLAY": "3dlut.hdr_display",
+
+                        # MaxCLL is no longer used, map to mastering display max light level (MaxMLL)
+                        "3DLUT_HDR_MAXCLL": "3dlut.hdr_maxmll",
+                        "3DLUT_HDR_MAXMLL": "3dlut.hdr_maxmll",
+                        "3DLUT_HDR_MAXMLL_ALT_CLIP": "3dlut.hdr_maxmll_alt_clip",
+                        "3DLUT_HDR_MINMLL": "3dlut.hdr_minmll",
+
+                        "3DLUT_HDR_AMBIENT_LUMINANCE": "3dlut.hdr_ambient_luminance",
+                        "3DLUT_GAMMA": "3dlut.trc_gamma",
+                        "3DLUT_DEGREE_OF_BLACK_OUTPUT_OFFSET": "3dlut.trc_output_offset",
+                        "3DLUT_INPUT_ENCODING": "3dlut.encoding.input",
+                        "3DLUT_OUTPUT_ENCODING": "3dlut.encoding.output",
+                        "3DLUT_GAMUT_MAPPING_MODE": "3dlut.gamap.use_b2a",
+                        "3DLUT_RENDERING_INTENT": "3dlut.rendering_intent",
+                        "3DLUT_FORMAT": "3dlut.format",
+                        "3DLUT_SIZE": "3dlut.size",
+                        "3DLUT_INPUT_BITDEPTH": "3dlut.bitdepth.input",
+                        "3DLUT_OUTPUT_BITDEPTH": "3dlut.bitdepth.output",
+                        "3DLUT_APPLY_CAL": "3dlut.output.profile.apply_cal",
+                        "SIMULATION_PROFILE": "measurement_report.simulation_profile"
+                    }
+                    for keyword, cfgname in config_lut.items():
                         cfgvalue = cfgpart.queryv1(keyword)
-                        if keyword in ("MIN_DISPLAY_UPDATE_DELAY_MS",
-                                       "DISPLAY_SETTLE_TIME_MULT"):
-                            backup = getcfg("measure.override_%s.backup" %
-                                            keyword.lower(), False)
+                        if keyword in ("MIN_DISPLAY_UPDATE_DELAY_MS", "DISPLAY_SETTLE_TIME_MULT"):
+                            backup = getcfg("measure.override_%s.backup" % keyword.lower(), False)
                             if (cfgvalue is not None and display_match and
                                     (instrument_match or not instrument_id)):
                                 # Only set display update delay if a matching
                                 # display/instrument stored in profile meta
                                 # tag or no instrument ID (i.e. a preset)
                                 if backup is None:
-                                    setcfg("measure.override_%s.backup" %
-                                           keyword.lower(),
-                                           getcfg("measure.override_" +
-                                                  keyword.lower()))
-                                    setcfg("measure.%s.backup" %
-                                           keyword.lower(),
-                                           getcfg("measure." +
-                                                  keyword.lower()))
+                                    setcfg("measure.override_%s.backup" % keyword.lower(),
+                                           getcfg("measure.override_" + keyword.lower()))
+                                    setcfg("measure.%s.backup" % keyword.lower(),
+                                           getcfg("measure." + keyword.lower()))
                                 setcfg("measure.override_" + keyword.lower(), 1)
                             elif backup is not None:
-                                setcfg("measure.override_" +
-                                       keyword.lower(), backup)
-                                cfgvalue = getcfg("measure.%s.backup" %
-                                                  keyword.lower())
-                                setcfg("measure.override_%s.backup" %
-                                       keyword.lower(), None)
-                                setcfg("measure.%s.backup" %
-                                       keyword.lower(), None)
+                                setcfg("measure.override_" + keyword.lower(), backup)
+                                cfgvalue = getcfg("measure.%s.backup" % keyword.lower())
+                                setcfg("measure.override_%s.backup" % keyword.lower(), None)
+                                setcfg("measure.%s.backup" % keyword.lower(), None)
                         elif cfgvalue is not None:
                             if keyword == "AUTO_OPTIMIZE" and cfgvalue:
                                 setcfg("testchart.file", "auto")
@@ -15103,8 +14983,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                     # smallest testchart.
                                     cfgvalue = 1
                             elif keyword == "PATCH_SEQUENCE":
-                                cfgvalue = cfgvalue.lower().replace("_rgb_",
-                                                                    "_RGB_")
+                                cfgvalue = cfgvalue.lower().replace("_rgb_", "_RGB_")
                             elif keyword == "3DLUT_GAMMA":
                                 try:
                                     cfgvalue = float(cfgvalue)
@@ -15118,8 +14997,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                         gamma_type = "b"
                                     setcfg("3dlut.trc_gamma_type", gamma_type)
                                     # Sync measurement report settings
-                                    setcfg("measurement_report.trc_gamma_type",
-                                           gamma_type)
+                                    setcfg("measurement_report.trc_gamma_type", gamma_type)
                                     setcfg("measurement_report.apply_black_offset", 0)
                                     setcfg("measurement_report.apply_trc", 1)
                             elif keyword == "3DLUT_GAMUT_MAPPING_MODE":
@@ -15143,13 +15021,10 @@ class MainFrame(ReportFrame, BaseFrame):
                                 if os.path.basename(os.path.dirname(cfgvalue)) == "ref":
                                     # Fall back to ref file if not absolute
                                     # path or not found
-                                    cfgvalue = (get_data_path("ref/" +
-                                                              os.path.basename(cfgvalue)) or
-                                                cfgvalue)
+                                    cfgvalue = (get_data_path("ref/" + os.path.basename(cfgvalue)) or cfgvalue)
                                 elif not os.path.dirname(cfgvalue):
                                     # Use profile dir
-                                    cfgvalue = os.path.join(os.path.dirname(path),
-                                                            cfgvalue)
+                                    cfgvalue = os.path.join(os.path.dirname(path), cfgvalue)
                             setcfg(cfgname, cfgvalue)
                             if keyword == "SIMULATION_PROFILE":
                                 # Only HDR 3D LUTs will have this set
@@ -15157,14 +15032,11 @@ class MainFrame(ReportFrame, BaseFrame):
                             # Sync measurement report settings
                             if cfgname == "3dlut.input.profile":
                                 if not simset:
-                                    setcfg("measurement_report.simulation_profile",
-                                           cfgvalue)
+                                    setcfg("measurement_report.simulation_profile", cfgvalue)
                                 setcfg("measurement_report.use_simulation_profile", 1)
                                 setcfg("measurement_report.use_simulation_profile_as_output", 1)
-                            elif cfgname in ("3dlut.trc_gamma",
-                                             "3dlut.trc_output_offset"):
-                                cfgname = cfgname.replace("3dlut",
-                                                          "measurement_report")
+                            elif cfgname in ("3dlut.trc_gamma", "3dlut.trc_output_offset"):
+                                cfgname = cfgname.replace("3dlut", "measurement_report")
                                 setcfg(cfgname, cfgvalue)
                             elif cfgname == "3dlut.format":
                                 if cfgvalue == "madVR" and not simset:
@@ -15187,8 +15059,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 cfgvalue = round(float(cfgvalue), 4)
                             except ValueError:
                                 pass
-                            setcfg("3dlut.content.colorspace.%s.%s" % (color,
-                                                                       coord),
+                            setcfg("3dlut.content.colorspace.%s.%s" % (color, coord),
                                    cfgvalue)
                     # Make sure 3D LUT TRC enumeration matches parameters for
                     # older profiles not containing 3DLUT_TRC
@@ -15248,9 +15119,9 @@ class MainFrame(ReportFrame, BaseFrame):
                 else:
                     msg = lang.getstr("settings_loaded.profile")
 
-                #if not silent:
-                #InfoDialog(self, msg=msg + "\n" + path, ok=lang.getstr("ok"),
-                #bitmap=geticon(32, "dialog-information"))
+                # if not silent:
+                # InfoDialog(self, msg=msg + "\n" + path, ok=lang.getstr("ok"),
+                # bitmap=geticon(32, "dialog-information"))
                 return
             elif ext.lower() in (".icc", ".icm"):
                 sel = self.calibration_file_ctrl.GetSelection()
@@ -15270,8 +15141,8 @@ class MainFrame(ReportFrame, BaseFrame):
                     idx = index_fallback_ignorecase(self.recent_cals, cal)
                     self.calibration_file_ctrl.SetSelection(idx)
                 if not silent:
-                    InfoDialog(self, msg=lang.getstr("no_settings") +
-                                         "\n" + path,
+                    InfoDialog(self,
+                               msg=lang.getstr("no_settings") + "\n" + path,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                 return
@@ -15640,7 +15511,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
         items.append(wx.StaticText(self.aboutdialog.panel, -1, ""))
 
-        match = re.match("([^(]+)\s*(\([^(]+\))?\s*(\[[^[]+\])?", sys.version)
+        match = re.match(r"([^(]+)\s*(\([^(]+\))?\s*(\[[^[]+\])?", sys.version)
         if match:
             pyver_long = match.groups()
         else:
@@ -15836,6 +15707,7 @@ else:
 class StartupFrame(start_cls):
 
     def __init__(self):
+        super(StartupFrame, self).__init__()
         title = "%s %s" % (appname, version_short)
         if VERSION > VERSION_BASE:
             title += " Beta"
@@ -16464,10 +16336,10 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
                 if "." in strval:
                     strval = strval.rstrip("0").rstrip(".")
                 grid.SetCellValue(event.Row, event.Col,
-                                  re.sub("^0+(?!\.)", "", strval) or "0")
+                                  re.sub(r"^0+(?!\.)", "", strval) or "0")
             else:
                 grid.SetCellValue(event.Row, event.Col,
-                                  re.sub("^0+(?!\.)", "", strval) or "0")
+                                  re.sub(r"^0+(?!\.)", "", strval) or "0")
                 RGB = []
                 for i in (1, 2, 3):
                     RGB.append(float(grid.GetCellValue(event.Row, i)))

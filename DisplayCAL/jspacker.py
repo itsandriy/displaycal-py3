@@ -41,9 +41,9 @@ class ParseMaster(object):
     SUB_REPLACE = re.compile(r"""\$\d""", re.M)
     INDEXED = re.compile(r"""^\$\d+$""", re.M)
     TRIM = re.compile(r"""(['"])\1\+(.*)\+\1\1$""", re.M)
-    ESCAPE = re.compile(r"""\\.""", re.M)#g
+    ESCAPE = re.compile(r"""\\.""", re.M)  # g
     # QUOTE = re.compile(r"""'""", re.M)
-    DELETED = re.compile("""\x01[^\x01]*\x01""", re.M)#g
+    DELETED = re.compile(r"""\x01[^\x01]*\x01""", re.M)  # g
 
     def __init__(self):
         # private
@@ -128,7 +128,7 @@ class ParseMaster(object):
             return escapeChar
         if escapeChar is None:
             return string
-        r = re.compile("\\"+escapeChar+"(.)", re.M)
+        r = re.compile(r"\\" + escapeChar + "(.)", re.M)
         result = r.sub(repl, string)
         return result
 
@@ -143,7 +143,7 @@ class ParseMaster(object):
                 return escapeChar
         if escapeChar is None:
             return string
-        r = re.compile("\\"+escapeChar, re.M)
+        r = re.compile(r"\\" + escapeChar, re.M)
         result = r.sub(repl, string)
         return result
 

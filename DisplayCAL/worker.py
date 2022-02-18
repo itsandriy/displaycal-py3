@@ -148,7 +148,7 @@ if sys.platform not in ("darwin", "win32"):
     try:
         from DisplayCAL import RealDisplaySizeMM as RDSMM
     except ImportError as exception:
-        warnings.warn(exception, Warning)
+        warnings.warn(str(exception), ImportWarning)
 import wx.lib.delayedresult as delayedresult
 
 
@@ -925,8 +925,8 @@ def get_current_profile_path(include_display_profile=True,
 
 def parse_argument_string(args):
     """ Parses an argument string and returns a list of arguments. """
-    return [re.sub('^["\']|["\']$', '', arg) for arg in
-            re.findall('(?:^|\s+)(-[^\s"\']+|"[^"]+?"|\'[^\']+?\'|[^\s"\']+)', args)]
+    return [re.sub(r'^["\']|["\']$', '', arg) for arg in
+            re.findall(r'(?:^|\s+)(-[^\s"\']+|"[^"]+?"|\'[^\']+?\'|[^\s"\']+)', args)]
 
 
 def get_cfg_option_from_args(option_name, argmatch, args, whole=False):
@@ -974,12 +974,11 @@ def get_options_from_args(dispcal_args=None, colprof_args=None):
     options_dispcal = []
     options_colprof = []
     if dispcal_args:
-        options_dispcal = re.findall(" -(" + "|".join(re_options_dispcal) +
-                                     ")", " " + dispcal_args)
+        options_dispcal = re.findall(r" -(" + "|".join(re_options_dispcal) + ")", " " + dispcal_args)
     if colprof_args:
-        options_colprof = re.findall(" -(" + "|".join(re_options_colprof) +
-                                     ")", " " + colprof_args)
+        options_colprof = re.findall(r" -(" + "|".join(re_options_colprof) + ")", " " + colprof_args)
     return options_dispcal, options_colprof
+
 
 def get_options_from_cprt(cprt):
     """Extract options used for dispcal and colprof from profile copyright.
@@ -1012,8 +1011,7 @@ def get_options_from_cal(cal):
         cal = CGATS.CGATS(cal)
     if 0 in cal:
         cal = cal[0]
-    if not cal or "ARGYLL_DISPCAL_ARGS" not in cal or \
-            not cal.ARGYLL_DISPCAL_ARGS:
+    if not cal or b"ARGYLL_DISPCAL_ARGS" not in cal or not cal.ARGYLL_DISPCAL_ARGS:
         return [], []
     dispcal_args = cal.ARGYLL_DISPCAL_ARGS[0]
     return get_options_from_args(dispcal_args)
@@ -1067,7 +1065,7 @@ def get_pattern_geometry():
         # No way to get coordinates under Wayland, default to center
         x = y = 0.5
     size = size * defaults["size.measureframe"]
-    match = re.search("@ -?\d+, -?\d+, (\d+)x(\d+)", getcfg("displays",
+    match = re.search(r"@ -?\d+, -?\d+, (\d+)x(\d+)", getcfg("displays",
                                                             raw=True))
     if match:
         display_size = [int(item) for item in match.groups()]
@@ -1187,8 +1185,7 @@ def http_request(parent=None, domain=None, request_type="GET", path="",
         uri = "http://" + domain + path
         msg = " ".join([failure_msg,
                         lang.getstr("connection.fail.http",
-                                    " ".join([str(resp.status),
-                                              resp.reason]))]).strip() + "\n" + uri
+                                    " ".join([str(resp.status), resp.reason]))]).strip() + "\n" + uri
         print(msg)
         html = universal_newlines(resp.read().strip())
         html = re.sub(re.compile(r"<script.*?</script>", re.I | re.S),
@@ -1542,8 +1539,8 @@ class Producer(object):
 
 
 class StringWithLengthOverride(UserString):
-
-    """ Allow defined behavior in comparisons and when evaluating length """
+    """Allow defined behavior in comparisons and when evaluating length
+    """
 
     def __init__(self, seq, length=None):
         UserString.__init__(self, seq)
@@ -1556,8 +1553,8 @@ class StringWithLengthOverride(UserString):
 
 
 class Sudo(object):
-
-    """ Determine if a command can be run via sudo """
+    """Determine if a command can be run via sudo
+    """
 
     def __init__(self):
         self.availoptions = {}
@@ -1566,19 +1563,16 @@ class Sudo(object):
             # Determine available sudo options
             man = which("man")
             if man:
-                manproc = sp.Popen([man, "sudo"], stdout=sp.PIPE,
-                                   stderr=sp.PIPE)
+                manproc = sp.Popen([man, "sudo"], stdout=sp.PIPE, stderr=sp.PIPE)
                 # Strip formatting
-                stdout = re.sub(".\x08", "", manproc.communicate()[0])
-                self.availoptions = {"E": bool(re.search("-E\W", stdout)),
-                                     "l [command]":
-                                         bool(re.search("-l\W(?:.*?\W)?command\W",
-                                                        stdout)),
-                                     "K": bool(re.search("-K\W", stdout)),
-                                     "k": bool(re.search("-k\W", stdout))}
+                stdout = re.sub(b".\x08", b"", manproc.communicate()[0:1])
+                self.availoptions = {"E": bool(re.search(b"-E\W", stdout)),
+                                     "l [command]": bool(re.search(r"-l\W(?:.*?\W)?command\W", stdout)),
+                                     "K": bool(re.search(r"-K\W", stdout)),
+                                     "k": bool(re.search(r"-k\W", stdout))}
             if debug:
                 print("[D] Available sudo options:",
-                           ", ".join([option for option in list(self.availoptions.keys()) if self.availoptions[option]]))
+                      ", ".join([option for option in list(self.availoptions.keys()) if self.availoptions[option]]))
 
     def __len__(self):
         return int(bool(self.sudo))
@@ -1597,7 +1591,6 @@ class Sudo(object):
         is matched, timeout is reached or an exception occurs. The max time an
         expect call will block if the child is already dead can be set with the
         child_timeout parameter.
-
         """
         if timeout == -1:
             timeout = self.subprocess.timeout
@@ -1619,15 +1612,14 @@ class Sudo(object):
         if self.subprocess.after is wexpect.TIMEOUT:
             print("Warning: sudo timed out")
             if not self.subprocess.terminate(force=True):
-                print("Warning: Couldn't terminate timed-out "
-                           "sudo subprocess")
+                print("Warning: Couldn't terminate timed-out sudo subprocess")
         else:
             print(self.subprocess.before.strip().decode(enc, "replace"))
 
     def authenticate(self, args, title, parent=None):
         """Athenticate for a given command
 
-        The return value will be a tuple (auth_succesful, password).
+        The return value will be a tuple (auth_successful, password).
 
         auth_succesful will be a custom class that will always have length 0 if
         authentication was not successful or the command is not allowed (even
@@ -1700,14 +1692,11 @@ class Sudo(object):
         if p.after is wexpect.TIMEOUT:
             print("Error: sudo timed out")
             if not p.terminate(force=True):
-                print("Warning: Couldn't terminate timed-out sudo "
-                           "subprocess")
+                print("Warning: Couldn't terminate timed-out sudo subprocess")
             return StringWithLengthOverride("sudo timed out", 0), pwd
         if p.exitstatus != 0:
-            return StringWithLengthOverride(p.before.strip().decode(enc,
-                                                                    "replace") or
-                                            ("sudo exited prematurely with "
-                                             "status %s" % p.exitstatus), 0), pwd
+            return StringWithLengthOverride(p.before.strip().decode(enc, "replace") or
+                                            ("sudo exited prematurely with status %s" % p.exitstatus), 0), pwd
         # Password was accepted, check if command is allowed
         return self.is_allowed(args, pwd), pwd
 
@@ -1720,15 +1709,13 @@ class Sudo(object):
         The returned error is a custom class that will always have length 0
         if the command is not allowed (even if the actual string length is
         non-zero), thus allowing for easy boolean comparisons.
-
         """
         sudo_args = ["-p", "Password:", "-l"]
         # Set sudo args based on available options
         if self.availoptions.get("l [command]") and args:
             sudo_args += args
         try:
-            p = self.subprocess = wexpect.spawn(safe_str(self.sudo),
-                                                sudo_args)
+            p = self.subprocess = wexpect.spawn(safe_str(self.sudo), sudo_args)
         except Exception as exception:
             return StringWithLengthOverride("Could not run %s %s: %s" %
                                             (self.sudo, " ".join(sudo_args),
@@ -1855,7 +1842,7 @@ class Worker(WorkerBase):
         # Nov 26 16:28:16  dispcal[1006] <Warning>: void CGSUpdateManager::log() const: conn 0x1ec57 token 0x3ffffffffffd0a
         prestrip = re.compile(r"\D+\s+\d+\s+\d+:\d+:\d+\s+\w+\[\d+\]\s+<Warning>:[\S\s]*")
         discard = [r"[\*\.]+|Current (?:RGB|XYZ)(?: +.*)?"]
-        self.lastmsg_discard = re.compile("|".join(discard))
+        self.lastmsg_discard = re.compile(r"|".join(discard))
         self._init_sounds(dummy=True)
         self.options_colprof = []
         self.options_dispcal = []
@@ -1885,7 +1872,7 @@ class Worker(WorkerBase):
                    # These need to be last because they're very generic!
                    r"[\*\.]+",
                    r"\s*\d*%?"]
-        self.recent_discard = re.compile("|".join(discard), re.I)
+        self.recent_discard = re.compile(r"|".join(discard), re.I)
         self.resume = False
         self.sudo = None
         self.auth_timestamp = 0
@@ -2919,7 +2906,7 @@ END_DATA
             # by looking for serial number of calibration tile
             # Argyll up to 1.8.3: 'Serial no.'
             # Argyll 1.9.x: 'S/N'
-            serial = re.search("(?:Serial no.|S/N) (\S+)", self.recent.read(),
+            serial = re.search(r"(?:Serial no.|S/N) (\S+)", self.recent.read(),
                                re.I)
             if serial:
                 # Reflective calibration, white reference tile required
@@ -4243,24 +4230,24 @@ END_DATA
                             for line in cube_file:
                                 # Strip any leading whitespace
                                 line = line.lstrip()
-                                if line.startswith("DOMAIN_"):
+                                if line.startswith(b"DOMAIN_"):
                                     # Account for the possibility that a
                                     # future Argyll version might write
                                     # DOMAIN_MIN/MAX keywords.
                                     add_domain = False
-                                elif line.startswith("0.") and add_domain:
+                                elif line.startswith(b"0.") and add_domain:
                                     # 1st cube data entry marks end of keywords.
                                     # Add DOMAIN_MIN/MAX keywords
-                                    cube_data.append("DOMAIN_MIN 0.0 0.0 0.0\n")
+                                    cube_data.append(b"DOMAIN_MIN 0.0 0.0 0.0\n")
                                     fp_offset = str(maxval).find(".")
-                                    domain_max = "DOMAIN_MAX %s %s %s\n" % (("%%.%if" % len(str(maxval)[fp_offset + 1:]), ) * 3)
-                                    cube_data.append(domain_max % ((maxval ,) * 3))
+                                    domain_max = b"DOMAIN_MAX %s %s %s\n" % ((b"%%.%if" % len(str(maxval)[fp_offset + 1:]), ) * 3)
+                                    cube_data.append(domain_max % ((maxval,) * 3))
                                     cube_data.append("\n")
                                     add_domain = False
                                 cube_data.append(line)
                         # Write updated cube
                         with open(cube_filename, "wb") as cube_file:
-                            cube_file.write("".join(cube_data).encode())
+                            cube_file.write(b"".join(cube_data).encode())
                 result2 = self.wrapup(not isinstance(result, UnloggedInfo) and
                                       result, dst_path=path,
                                       ext_filter=[".3dlut", ".cube",
@@ -4270,8 +4257,7 @@ END_DATA
                     result = UnloggedError(lang.getstr("aborted"))
                 if isinstance(result2, Exception):
                     if isinstance(result, Exception):
-                        result = Error(str(result) + "\n\n" +
-                                       str(result2))
+                        result = Error(str(result) + "\n\n" + str(result2))
                     else:
                         result = result2
                 if not isinstance(result, Exception):
@@ -4570,28 +4556,27 @@ END_DATA
                     line = line.strip()
                     if (argyll_version_string is None
                             and "version" in line.lower()):
-                        argyll_version_string = line[line.lower().find("version")
-                                                     + 8:]
-                        if (argyll_version_string != self.argyll_version_string):
+                        argyll_version_string = line[line.lower().find("version") + 8:]
+                        if argyll_version_string != self.argyll_version_string:
                             self.set_argyll_version_from_string(argyll_version_string)
                         print("ArgyllCMS " + self.argyll_version_string)
-                        config.defaults["copyright"] = ("No copyright. Created "
-                                                        "with %s %s and Argyll"
-                                                        "CMS %s" %
-                                                        (appname, version,
-                                                         argyll_version_string))
+                        config.defaults["copyright"] = (
+                            "No copyright. Created with %s %s and Argyll CMS %s" %
+                            (appname, version, argyll_version_string)
+                        )
+
                         if self.argyll_version > [1, 0, 4]:
                             # Rate of blending from neutral to black point.
                             defaults["calibration.black_point_rate.enabled"] = 1
-                        if (self.argyll_version >= [1, 7] and
-                                "Beta" not in self.argyll_version_string):
+
+                        if self.argyll_version >= [1, 7] and "Beta" not in self.argyll_version_string:
                             # Forced black point hack available
                             # (Argyll CMS 1.7)
                             defaults["calibration.black_point_hack"] = 1
+
                         if self.argyll_version >= [1, 9, 4]:
                             # Add CIE 2012 observers
-                            valid_observers = natsort(observers +
-                                                      ["2012_2", "2012_10"])
+                            valid_observers = natsort(observers + ["2012_2", "2012_10"])
                         else:
                             valid_observers = observers
                         for key in ["%s",
@@ -4629,12 +4614,11 @@ END_DATA
                         value = line[1].strip(" ='")
                         if arg == "-d":
                             # Standard displays
-                            match = re.findall("(.+?),? at (-?\d+), (-?\d+), "
-                                               "width (\d+), height (\d+)",
-                                               value)
+                            match = re.findall(
+                               r"(.+?),? at (-?\d+), (-?\d+), width (\d+), height (\d+)", value
+                            )
                             if len(match):
-                                xrandr_name = re.search(", Output (.+)",
-                                                        match[0][0])
+                                xrandr_name = re.search(r", Output (.+)", match[0][0])
                                 if xrandr_name:
                                     xrandr_names[len(displays)] = xrandr_name.group(1)
                                 display = "%s @ %s, %s, %sx%s" % match[0]
@@ -4662,15 +4646,15 @@ END_DATA
                             # Prisma (via Argyll CMS)
                             # <serial no>: <name> @ <ip>
                             # 141550000000: prisma-0000 @ 172.31.31.162
-                            match = re.findall(".+?: (.+) @ (.+)", value)
+                            match = re.findall(r".+?: (.+) @ (.+)", value)
                             if len(match):
                                 displays.append("Prisma %s: %s @ %s" %
                                                 (line[0],
                                                  str(safe_str(match[0][0], enc),
                                                               "UTF-8"), match[0][1]))
                         elif arg == "-c" and enumerate_ports:
-                            if ((re.match("/dev(?:/[\w.\-]+)*$", value) or
-                                 re.match("COM\d+$", value)) and
+                            if ((re.match(r"/dev(?:/[\w.\-]+)*$", value) or
+                                 re.match(r"COM\d+$", value)) and
                                     getcfg("skip_legacy_serial_ports")):
                                 # Skip all legacy serial ports (this means we
                                 # deliberately don't support DTP92 and
@@ -4735,13 +4719,12 @@ END_DATA
                     desc = []
                     if sys.platform == "win32" and i < len(monitors):
                         # Get monitor description using win32api
-                        device = util_win.get_active_display_device(
-                            monitors[i]["Device"])
+                        device = util_win.get_active_display_device(monitors[i][b"Device"])
                         if device:
                             desc.append(device.DeviceString.decode(fs_enc,
                                                                    "replace"))
                         # Deal with HiDPI - update monitor rect
-                        m_left, m_top, m_right, m_bottom = monitors[i]["Monitor"]
+                        m_left, m_top, m_right, m_bottom = monitors[i][b"Monitor"]
                         m_width = m_right - m_left
                         m_height = m_bottom - m_top
                         self.display_rects[i] = wx.Rect(m_left, m_top, m_width,
@@ -4760,8 +4743,7 @@ END_DATA
                         # include it
                         edid = get_edid(i, display_name)
                     except Exception as exception:
-                        suppress_errors = (SystemError, TypeError, ValueError,
-                                           WMIError)
+                        suppress_errors = (SystemError, TypeError, ValueError, WMIError)
                         if sys.platform == "win32":
                             suppress_errors += (pywintypes.error, )
                         if isinstance(exception, EnvironmentError):
@@ -4772,13 +4754,8 @@ END_DATA
                     self.display_edid.append(edid)
                     if edid:
                         manufacturer = edid.get("manufacturer", "").split()
-                        monitor = edid.get("monitor_name",
-                                           edid.get("ascii",
-                                                    str(edid["product_id"] or
-                                                        "")))
-                        if (monitor in ("Color LCD", "iMac") and
-                                edid["manufacturer_id"] == "APP" and
-                                sys.platform == "darwin"):
+                        monitor = edid.get("monitor_name", edid.get("ascii", str(edid["product_id"] or "")))
+                        if (monitor in ("Color LCD", "iMac") and edid["manufacturer_id"] == "APP" and sys.platform == "darwin"):
                             # Get mac model if internal display
                             model_id = get_model_id()
                             if model_id:
@@ -4936,7 +4913,7 @@ END_DATA
         elif silent or not check_argyll_bin():
             self.clear_argyll_info()
 
-    def exec_cmd(self, cmd, args=[], capture_output=False,
+    def exec_cmd(self, cmd, args=None, capture_output=False,
                  display_output=False, low_contrast=True, skip_scripts=False,
                  silent=False, parent=None, asroot=False, log_output=True,
                  title=appname, shell=False, working_dir=None, dry_run=None,
@@ -4967,6 +4944,8 @@ END_DATA
         the basename. If False, no working dir will be used and file arguments
         not changed.
         """
+        if args is None:
+            args = []
         # If dry_run is explicitly set to False, ignore dry_run config value
         dry_run = dry_run is not False and (dry_run or getcfg("dry_run"))
         if not capture_output:
@@ -5589,10 +5568,8 @@ while 1:
             if i > 0 and item.find(os.path.sep) > -1:
                 if sys.platform == "win32":
                     item = make_win32_compatible_long_path(item)
-                    if (re.search("[^\x20-\x7e]",
-                                  os.path.basename(item)) and
-                            os.path.exists(item) and
-                            i < len(cmdline) - 1):
+                    if (re.search(r"[^\x20-\x7e]",
+                        os.path.basename(item)) and os.path.exists(item) and i < len(cmdline) - 1):
                         # Avoid problems with encoding under Windows by using
                         # GetShortPathName, but be careful with the last
                         # parameter which may be used as the basename for the
@@ -5604,7 +5581,7 @@ while 1:
                 if item != cmdline[i]:
                     cmdline[i] = item
         if (working_dir and sys.platform == "win32" and
-                re.search("[^\x20-\x7e]", working_dir) and
+                re.search(r"[^\x20-\x7e]", working_dir) and
                 os.path.exists(working_dir)):
             # Avoid problems with encoding
             working_dir = win32api.GetShortPathName(working_dir)
@@ -7362,7 +7339,7 @@ while 1:
     def get_display_edid(self):
         """ Return EDID of currently configured display """
         n = getcfg("display.number") - 1
-        if n >= 0 and n < len(self.display_edid):
+        if 0 <= n < len(self.display_edid):
             return self.display_edid[n]
         return {}
 
@@ -7370,7 +7347,7 @@ while 1:
                          remove_manufacturer=True):
         """ Return name of currently configured display """
         n = getcfg("display.number") - 1
-        if n >= 0 and n < len(self.display_names):
+        if 0 <= n < len(self.display_names):
             display = []
             manufacturer = None
             display_name = None
@@ -7395,7 +7372,7 @@ while 1:
                     if start > -1:
                         display_name = (display_name[:start] +
                                         display_name[start + len(manufacturer):]).lstrip()
-                        display_name = re.sub("^[^([{\w]+", "", display_name)
+                        display_name = re.sub(r"^[^([{\w]+", "", display_name)
             display.append(display_name)
             return " ".join(display)
         return ""
@@ -7410,12 +7387,12 @@ while 1:
         display_name = self.get_display_name(prepend_manufacturer, prefer_edid)
         if len(display_name) > 10:
             maxweight = 0
-            for part in re.findall('[^\s_]+(?:\s*\d+)?', re.sub("\([^)]+\)", "",
+            for part in re.findall(r'[^\s_]+(?:\s*\d+)?', re.sub(r"\([^)]+\)", "",
                                                                 display_name)):
-                digits = re.search("\d+", part)
+                digits = re.search(r"\d+", part)
                 if digits:
                     # Weigh parts with digits higher than those without
-                    chars = re.sub("\d+", "", part)
+                    chars = re.sub(r"\d+", "", part)
                     weight = len(chars) + len(digits.group()) * 5
                 else:
                     # Weigh parts with uppercase letters higher than those without
@@ -7426,7 +7403,7 @@ while 1:
                     weight = len(chars)
                 if chars and weight >= maxweight:
                     # Weigh parts further to the right higher
-                    display_name = re.sub("^[^([{\w]+", "", part)
+                    display_name = re.sub(r"^[^([{\w]+", "", part)
                     maxweight = weight
         return display_name
 
@@ -7517,8 +7494,7 @@ while 1:
 
     def get_instrument_features(self, instrument_name=None):
         """ Return features of currently configured instrument """
-        features = all_instruments.get(instrument_name or
-                                       self.get_instrument_name(), {})
+        features = all_instruments.get(instrument_name or self.get_instrument_name(), {})
         if test_require_sensor_cal:
             features["sensor_cal"] = True
             features["skip_sensor_cal"] = False
@@ -7641,7 +7617,7 @@ usage: spotread [-options] [logfile]
     def get_instrument_name(self):
         """ Return name of currently configured instrument """
         n = getcfg("comport.number") - 1
-        if n >= 0 and n < len(self.instruments):
+        if 0 <= n < len(self.instruments):
             return self.instruments[n]
         return ""
 
@@ -7955,7 +7931,7 @@ usage: spotread [-options] [logfile]
         if (which("oyranos-monitor") and
                 self.check_display_conf_oy_compat(getcfg("display.number"))):
             if device_id:
-                profile_name = re.sub("[- ]", "_", device_id.lower()) + ".icc"
+                profile_name = re.sub(r"[- ]", "_", device_id.lower()) + ".icc"
             else:
                 profile_name = None
             result = self._install_profile_oy(profile_path, profile_name,
@@ -8651,7 +8627,7 @@ usage: spotread [-options] [logfile]
                 # Check if this is a 0install implementation, in which
                 # case we want to call 0launch with the appropriate
                 # command
-                if re.match("sha\d+(?:new)?",
+                if re.match(r"sha\d+(?:new)?",
                             os.path.basename(os.path.dirname(pydir))):
                     cmd = which("0install-win.exe") or "0install-win.exe"
                     loader_args.extend(["run", "--batch", "--no-wait",
@@ -8830,25 +8806,19 @@ usage: spotread [-options] [logfile]
             desktopfile.write('Version=1.0\n')
             desktopfile.write('Encoding=UTF-8\n')
             desktopfile.write('Type=Application\n')
-            desktopfile.write('Name=%s\n' % (appname +
-                                             ' ICC Profile Loader').encode("UTF-8"))
-            desktopfile.write('Comment=%s\n' %
-                              lang.getstr("calibrationloader.description",
-                                          lcode="en").encode("UTF-8"))
+            desktopfile.write('Name=%s\n' % (appname + ' ICC Profile Loader'))
+            desktopfile.write('Comment=%s\n' % lang.getstr("calibrationloader.description", lcode="en"))
             if lang.getcode() != "en":
                 desktopfile.write(('Comment[%s]=%s\n' %
-                                   (lang.getcode(),
-                                    lang.getstr("calibrationloader.description"))).encode("UTF-8"))
-            pyw = os.path.normpath(os.path.join(pydir, "..",
-                                                appname +
-                                                "-apply-profiles.pyw"))
+                                   (lang.getcode(), lang.getstr("calibrationloader.description"))))
+            pyw = os.path.normpath(os.path.join(pydir, "..", appname + "-apply-profiles.pyw"))
             icon = appname.lower() + "-apply-profiles"
             if os.path.exists(pyw):
                 # Running from source, or 0install/Listaller install
                 # Check if this is a 0install implementation, in which
                 # case we want to call 0launch with the appropriate
                 # command
-                if re.match("sha\d+(?:new)?",
+                if re.match(r"sha\d+(?:new)?",
                             os.path.basename(os.path.dirname(pydir))):
                     executable = ("0launch --console --offline "
                                   "--command=run-apply-profiles "
@@ -9754,9 +9724,9 @@ usage: spotread [-options] [logfile]
         rms = None
         for line in self.output:
             if line.startswith("Profile check complete"):
-                peak = re.search("(?:peak err|max\.) = (\d+(?:\.\d+))", line)
-                avg = re.search("avg(?: err|\.) = (\d+(?:\.\d+))", line)
-                rms = re.search("RMS = (\d+(?:\.\d+))", line)
+                peak = re.search(r"(?:peak err|max\.) = (\d+(?:\.\d+))", line)
+                avg = re.search(r"avg(?: err|\.) = (\d+(?:\.\d+))", line)
+                rms = re.search(r"RMS = (\d+(?:\.\d+))", line)
                 if peak:
                     peak = peak.groups()[0]
                 if avg:
@@ -11503,7 +11473,7 @@ usage: spotread [-options] [logfile]
                 (config.get_display_name() == "Prisma" and
                  not defaults["patterngenerator.prisma.argyll"])):
             # Substitute actual measurement frame dimensions
-            self.options_dispcal = [re.sub("^-[Pp]1,1,0.01$",
+            self.options_dispcal = [re.sub(r"^-[Pp]1,1,0.01$",
                                            "-P" + getcfg("dimensions.measureframe"),
                                            arg) for arg in args]
             # Re-add -F (darken background) so it can be set when loading settings
@@ -11806,7 +11776,7 @@ usage: spotread [-options] [logfile]
                     profile_name = os.path.basename(profile_path)
                     if (sys.platform in ("win32", "darwin") or
                         fs_enc.upper() not in ("UTF8", "UTF-8")) and \
-                            re.search("[^\x20-\x7e]", profile_name):
+                            re.search(r"[^\x20-\x7e]", profile_name):
                         # Copy to temp dir and give ASCII-only name to
                         # avoid profile install issues
                         profile_tmp_path = os.path.join(tmp_dir,
@@ -11902,7 +11872,7 @@ usage: spotread [-options] [logfile]
                 percentage = int(self.lastmsg.read().split("%")[0])
             except ValueError:
                 pass
-        elif re.match("Patch \\d+ of \\d+", lastmsg, re.I):
+        elif re.match(r"Patch \\d+ of \\d+", lastmsg, re.I):
             # dispcal/dispread
             components = lastmsg.split()
             try:
@@ -11912,7 +11882,7 @@ usage: spotread [-options] [logfile]
                 pass
             else:
                 percentage = max(start - 1, 0) / end * 100
-        elif re.match("Added \\d+/\\d+", lastmsg, re.I):
+        elif re.match(r"Added \\d+/\\d+", lastmsg, re.I):
             # targen
             components = lastmsg.lower().replace("added ", "").split("/")
             try:
@@ -11923,7 +11893,7 @@ usage: spotread [-options] [logfile]
             else:
                 percentage = start / end * 100
         else:
-            iteration = re.search("It (\\d+):", msg)
+            iteration = re.search(r"It (\\d+):", msg)
             if iteration:
                 # targen
                 try:
@@ -11961,7 +11931,7 @@ usage: spotread [-options] [logfile]
             keepGoing, skip = self.progress_wnd.UpdateProgress(max(min(percentage, 100), 0),
                                                                msg + "\n" +
                                                                lastmsg)
-        elif re.match("\d+(?:\.\d+)? (?:[KM]iB)", lastmsg, re.I):
+        elif re.match(r"\d+(?:\.\d+)? (?:[KM]iB)", lastmsg, re.I):
             keepGoing, skip = self.progress_wnd.Pulse("\n".join([msg, lastmsg]))
         else:
             if getattr(self.progress_wnd, "lastmsg", "") == msg or not msg:
@@ -11970,7 +11940,7 @@ usage: spotread [-options] [logfile]
                 if "Setting up the instrument" in lastmsg:
                     msg = lang.getstr("instrument.initializing")
                 elif "Created web server at" in msg:
-                    webserver = re.search("(http\:\/\/[^']+)", msg)
+                    webserver = re.search(r"(http\:\/\/[^']+)", msg)
                     if webserver:
                         msg = (lang.getstr("webserver.waiting") +
                                " " + webserver.groups()[0])
@@ -12374,8 +12344,7 @@ usage: spotread [-options] [logfile]
                     paths2.append(defaultpaths.appdata)
                 if not scope or scope == "l":
                     paths2.append(defaultpaths.library)
-                if (self.argyll_version >= [1, 9] and
-                        self.argyll_version <= [1, 9, 1]):
+                if [1, 9] <= self.argyll_version <= [1, 9, 1]:
                     # Argyll CMS 1.9 and 1.9.1 use *nix locations due to a
                     # configuration problem
                     paths2.extend([os.path.join(defaultpaths.home, ".local",
@@ -12695,8 +12664,7 @@ usage: spotread [-options] [logfile]
                 #
                 # Total volume of gamut is xxxxxx.xxxxxx cubic colorspace units
                 for line in self.output:
-                    match = re.search("(\d+(?:\.\d+)?)\s+cubic\s+colorspace\s+"
-                                      "units", line)
+                    match = re.search(r"(\d+(?:\.\d+)?)\s+cubic\s+colorspace\s+units", line)
                     if match:
                         gamut_volume = float(match.groups()[0]) / ICCP.GAMUT_VOLUME_SRGB
                         break
@@ -12770,8 +12738,7 @@ usage: spotread [-options] [logfile]
                 try:
                     def tweak_vrml(vrml):
                         # Set viewpoint further away
-                        vrml = re.sub("(Viewpoint\s*\{)[^}]+\}",
-                                      r"\1 position 0 0 340 }", vrml)
+                        vrml = re.sub(r"(Viewpoint\s*\{)[^}]+\}", r"\1 position 0 0 340 }", vrml)
                         # Fix label color for -a* axis
                         label = re.search(r'Transform\s*\{\s*translation\s+[+\-0-9.]+\s*[+\-0-9.]+\s*[+\-0-9.]+\s+children\s*\[\s*Shape\s*\{\s*geometry\s+Text\s*\{\s*string\s*\["-a\*"\]\s*fontStyle\s+FontStyle\s*\{[^}]*\}\s*\}\s*appearance\s+Appearance\s*\{\s*material\s+Material\s*{[^}]*\}\s*\}\s*\}\s*\]\s*\}', vrml)
                         if label:
@@ -12839,7 +12806,7 @@ usage: spotread [-options] [logfile]
                 # 'path/to/1.gam' volume = xxx.x cubic units, intersect = xx.xx%
                 # 'path/to/2.gam' volume = xxx.x cubic units, intersect = xx.xx%
                 for line in worker.output:
-                    match = re.search("[\\\/]%s.gam'\s+volume\s*=\s*"
+                    match = re.search(r"[\\\/]%s.gam'\s+volume\s*=\s*"
                                       "\d+(?:\.\d+)?\s+cubic\s+units,?"
                                       "\s+intersect\s*=\s*"
                                       "(\d+(?:\.\d+)?)" %
@@ -13913,29 +13880,26 @@ BEGIN_DATA
                 expectedhash_hex = hashesdict.get(filename, "").lower()
                 if not expectedhash_hex:
                     response.close()
-                    return DownloadError(lang.getstr("file.hash.missing",
-                                                     filename),
-                                         orig_uri)
+                    return DownloadError(lang.getstr("file.hash.missing", filename), orig_uri)
                 actualhash = sha256()
-            total_size = response.info().getheader("Content-Length")
+            total_size = response.info().get("Content-Length")
             if total_size is not None:
                 try:
                     total_size = int(total_size)
                 except (TypeError, ValueError):
-                    return DownloadError(lang.getstr("download.fail.wrong_size",
-                                                     ("<%s>" % lang.getstr("unknown"), ) * 2),
-                                         orig_uri)
+                    return DownloadError(
+                        lang.getstr("download.fail.wrong_size", ("<%s>" % lang.getstr("unknown"), ) * 2), orig_uri)
                 else:
                     if not total_size:
                         total_size = None
-            contentdispo = response.info().getheader("Content-Disposition")
+            contentdispo = response.info().get("Content-Disposition")
             if contentdispo:
-                filename = re.search('filename="([^"]+)"', contentdispo)
+                filename = re.search(r'filename="([^"]+)"', contentdispo)
                 if filename:
                     filename = filename.groups()[0]
             if not filename:
                 filename = make_filename_safe(uri.rstrip("/"), concat=False)
-                content_type = response.info().getheader("Content-Type")
+                content_type = response.info().get("Content-Type")
                 if content_type:
                     content_type = content_type.split(";", 1)[0]
                 ext = mimetypes.guess_extension(content_type or "", False)
@@ -14037,10 +14001,10 @@ BEGIN_DATA
                                 prev_percent = percent
                                 update_ts = time()
                         elif time() >= update_ts + frametime:
-                            if bytes_so_far > 1048576 and unit_size < 1048576:
+                            if bytes_so_far > 1048576 > unit_size:
                                 unit = "MiB"
                                 unit_size = 1048576.0
-                            elif bytes_so_far > 1024 and unit_size < 1024:
+                            elif bytes_so_far > 1024 > unit_size:
                                 unit = "KiB"
                                 unit_size = 1024.0
                             self.lastmsg.write("\r%.1f %s (%.2f %s/s)" %
@@ -14520,7 +14484,7 @@ BEGIN_DATA
             serial = re.search(r"(?:Serial Number):\s+([^\r\n]+)", txt, re.I)
             if serial:
                 self._detected_instrument_serial = serial.group(1)
-        if re.search("press 1|space when done|patch 1 of ", txt, re.I):
+        if re.search(r"press 1|space when done|patch 1 of ", txt, re.I):
             # There are some intial measurements which we can't check for
             # unless -D (debug) is used for Argyll tools
             if not "patch 1 of " in txt.lower() or not self.patch_sequence:
@@ -14607,8 +14571,7 @@ BEGIN_DATA
                 self.log("%s: Patch update count: %i" %
                          (appname, self.patch_count))
         if self.use_madnet_tpg:
-            progress = re.search("(?:Patch (\\d+) of|Number of patches =) (\\d+)",
-                                 txt, re.I)
+            progress = re.search(r"(?:Patch (\\d+) of|Number of patches =) (\\d+)", txt, re.I)
             if progress:
                 # Set madTPG progress bar
                 try:

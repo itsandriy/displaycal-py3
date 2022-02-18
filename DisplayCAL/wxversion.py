@@ -162,17 +162,18 @@ def select(versions, optionsRequired=False):
     if bestMatch.pathname not in sys.path:
         sys.path.insert(1, bestMatch.pathname)
         # q.v. Bug #1409256
-        path64 = re.sub('/lib/','/lib64/',bestMatch.pathname)
+        path64 = re.sub('/lib/', '/lib64/', bestMatch.pathname)
         if path64 != bestMatch.pathname and os.path.isdir(path64):
             sys.path.insert(1, path64)
     _selected = bestMatch
         
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
-UPDATE_URL = "http://wxPython.org/"
-#UPDATE_URL = "http://sourceforge.net/project/showfiles.php?group_id=10718"
+UPDATE_URL = "https://wxPython.org/"
+#UPDATE_URL = "https://sourceforge.net/project/showfiles.php?group_id=10718"
 
-_EM_DEBUG=0
+_EM_DEBUG = 0
+
 
 def ensureMinimal(minVersion, optionsRequired=False):
     """Checks to see if the default version of wxPython is greater-than
@@ -269,8 +270,9 @@ def getInstalled():
 
 
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # private helpers...
+
 
 def _get_best_match(installed, versions, optionsRequired):
     bestMatch = None
@@ -326,12 +328,9 @@ def _find_installed(removeExisting=False):
             version_info = {}
             exec(compile(open(phoenix_version_py, "rb").read(), phoenix_version_py, 'exec'), {}, version_info)
             if version_info['VERSION'] >= (4, ):
-                pinfo = _wxPackageInfo("%s-%s" % (name,
-                                                  version_info['VERSION_STRING']),
-                                       True)
+                pinfo = _wxPackageInfo("%s-%s" % (name, version_info['VERSION_STRING']), True)
                 pinfo.pathname = pth
                 installed.append(pinfo)
-            
 
     if removeExisting:
         for rem in toRemove:

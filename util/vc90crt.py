@@ -9,6 +9,7 @@ import winmanifest
 
 name = "Microsoft.VC90.CRT"
 
+
 def vc90crt_find_files():
     if platform.architecture()[0] == "64bit":
         arch = "amd64"

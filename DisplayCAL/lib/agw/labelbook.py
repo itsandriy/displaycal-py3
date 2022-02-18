@@ -618,7 +618,7 @@ class ImageContainerBase(wx.Panel):
         # The delete page was the last first on the array,
         # but the book still has more pages, so we set the
         # active page to be the first one (0)
-        if self._nIndex < 0 and len(self._pagesInfoVec) > 0:
+        if self._nIndex < 0 < len(self._pagesInfoVec):
             self._nIndex = 0
 
         # Refresh the tabs
@@ -856,7 +856,7 @@ class ImageContainerBase(wx.Panel):
         
         if not self._bCollapsed:
         
-            if self._nHoeveredImgIdx >= 0 and self._nHoeveredImgIdx < len(self._pagesInfoVec):
+            if 0 <= self._nHoeveredImgIdx < len(self._pagesInfoVec):
             
                 # Change the cursor to be Hand
                 if self.HasAGWFlag(INB_WEB_HILITE) and self._nHoeveredImgIdx != self._nIndex:

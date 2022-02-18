@@ -274,15 +274,14 @@ class DisplayUniformityFrame(BaseFrame):
             #							CCT = ddddK (Delta E d.dddddd)
             # Closest Planckian temperature = ddddK (Delta E d.dddddd)
             # Closest Daylight temperature  = ddddK (Delta E d.dddddd)
-            XYZ = re.search("XYZ:\s+(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)", txt)
+            XYZ = re.search(r"XYZ:\s+(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)", txt)
             self.results[self.index].append({"XYZ": [float(value) for value in
                                                      XYZ.groups()]})
             self.last_error = None
         loci = {"t": "Daylight", "T": "Planckian"}
         for locus in list(loci.values()):
             if locus in txt:
-                CT = re.search("Closest\s+%s\s+temperature\s+=\s+(\d+)K" % locus,
-                               txt, re.I)
+                CT = re.search(r"Closest\s+%s\s+temperature\s+=\s+(\d+)K" % locus, txt, re.I)
                 self.results[self.index][-1]["C%sT" % locus[0]] = int(CT.groups()[0])
         if "key to take a reading" in txt and not self.last_error:
             print("%s: Got 'key to take a reading'" % appname)

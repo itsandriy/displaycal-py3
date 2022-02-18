@@ -963,11 +963,11 @@ class FloatSpin(wx.PyControl):
         :note: This method doesn't modify the current value.
         """
 
-        if (min_val != None):
+        if min_val is not None:
             self._min = FixedPoint(str(min_val), 20)
         else:
             self._min = None
-        if (max_val != None):
+        if max_val is not None:
             self._max = FixedPoint(str(max_val), 20)
         else:
             self._max = None
@@ -1012,13 +1012,13 @@ class FloatSpin(wx.PyControl):
         :return: A clamped copy of `var`.
         """
 
-        if (self._min != None):
-            if (var < self._min):
+        if self._min is not None:
+            if var < self._min:
                 var = self._min
                 return var
 
-        if (self._max != None):
-            if (var > self._max):
+        if self._max is not None:
+            if var > self._max:
                 var = self._max
                 
         return var
@@ -1258,7 +1258,7 @@ class FloatSpin(wx.PyControl):
     def HasRange(self):
         """ Returns whether :class:`FloatSpin` range has been set or not. """
 
-        return (self._min != None) or (self._max != None)
+        return (self._min is not None) or (self._max is not None)
 
 
     def InRange(self, value):
@@ -1267,13 +1267,13 @@ class FloatSpin(wx.PyControl):
         :param value: the value to test.
         """
 
-        if (not self.HasRange()):
+        if not self.HasRange():
             return True
-        if (self._min != None):
-            if (value < self._min):
+        if self._min is not None:
+            if value < self._min:
                 return False
-        if (self._max != None):
-            if (value > self._max):
+        if self._max is not None:
+            if value > self._max:
                 return False
         return True
 
@@ -1738,7 +1738,10 @@ class FixedPoint(object):
 
 # return 10L**n
 
-def _tento(n, cache={}):
+
+def _tento(n, cache=None):
+    if cache is None:
+        cache = {}
     try:
         return cache[n]
     except KeyError:

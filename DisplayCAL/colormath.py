@@ -379,10 +379,10 @@ def LMS_wp_adaption_matrix(whitepoint_source=None,
     cat = get_cat_matrix(cat)
     XYZWS = get_whitepoint(whitepoint_source)
     XYZWD = get_whitepoint(whitepoint_destination)
-    if XYZWS[1] <= 1.0 and XYZWD[1] > 1.0:
+    if XYZWS[1] <= 1.0 < XYZWD[1]:
         # make sure the scaling is identical
         XYZWD = [v / XYZWD[1] * XYZWS[1] for v in XYZWD]
-    if XYZWD[1] <= 1.0 and XYZWS[1] > 1.0:
+    if XYZWD[1] <= 1.0 < XYZWS[1]:
         # make sure the scaling is identical
         XYZWS = [v / XYZWS[1] * XYZWD[1] for v in XYZWS]
     Ls, Ms, Ss = XYZ2LMS(XYZWS[0], XYZWS[1], XYZWS[2], cat)
@@ -711,7 +711,7 @@ def delta(L1, a1, b1, L2, a2, b2, method="1976", p1=None, p2=None, p3=None,
         SC = (0.0638 * C1) / (1 + 0.0131 * C1) + 0.638
         F = math.sqrt(math.pow(C1, 4) / (math.pow(C1, 4) + 1900.0))
         H1 = math.degrees(math.atan2(b1, a1)) + (0 if b1 >= 0 else 360.0)
-        T = 0.56 + abs(0.2 * math.cos(math.radians(H1 + 168.0))) if 164 <= H1 and H1 <= 345 else 0.36 + abs(0.4 * math.cos(math.radians(H1 + 35)))
+        T = 0.56 + abs(0.2 * math.cos(math.radians(H1 + 168.0))) if 164 <= H1 <= 345 else 0.36 + abs(0.4 * math.cos(math.radians(H1 + 35)))
         SH = SC * (F * T + 1 - F)
         dLw, dCw, dHw = dL / (l * SL), dC / (c * SC), dH / SH
         dE = math.sqrt(math.pow(dLw, 2) + math.pow(dCw, 2) + math.pow(dHw, 2))
@@ -859,7 +859,7 @@ def get_gamma(values, scale=1.0, vmin=0.0, vmax=1.0, average=True, least_squares
     for x, y in values:
         x /= scale
         y = (y / scale - vmin) * (vmax + vmin)
-        if x > 0 and x < 1 and y > 0:
+        if 0 < x < 1 and y > 0:
             if least_squares:
                 logxy.append(math.log(x) * math.log(y))
                 logx2.append(math.pow(math.log(x), 2))
@@ -1195,7 +1195,7 @@ def Lab2DIN99familyLGhrad(L, a, b, kE, l1, l2, deg, f1):
 def Lab2LCHab(L, a, b):
     C = math.sqrt(math.pow(a, 2) + math.pow(b, 2))
     H = 180.0 * math.atan2(b, a) / math.pi
-    if (H < 0.0):
+    if H < 0.0:
         H += 360.0
     return L, C, H
 
@@ -1265,7 +1265,7 @@ def Lab2xyY(L, a, b, whitepoint=None, scale=1.0):
 def Luv2LCHuv(L, u, v):
     C = math.sqrt(math.pow(u, 2) + math.pow(v, 2))
     H = 180.0 * math.atan2(v, u) / math.pi
-    if (H < 0.0):
+    if H < 0.0:
         H += 360.0
     return L, C, H
 
@@ -1759,29 +1759,29 @@ def planckianCT2xyY(T, scale=1.0):
     Formula from http://en.wikipedia.org/wiki/Planckian_locus
 
     """
-    if   1667 <= T and T <= 4000:
+    if 1667 <= T <= 4000:
         x = (  -0.2661239 * (math.pow(10, 9) / math.pow(T, 3))
                -  0.2343580 * (math.pow(10, 6) / math.pow(T, 2))
                +  0.8776956 * (math.pow(10, 3) / T)
                +  0.179910)
-    elif 4000 <= T and T <= 25000:
+    elif 4000 <= T <= 25000:
         x = (  -3.0258469 * (math.pow(10, 9) / math.pow(T, 3))
                +  2.1070379 * (math.pow(10, 6) / math.pow(T, 2))
                +  0.2226347 * (math.pow(10, 3) / T)
                +  0.24039)
     else:
         return None
-    if   1667 <= T and T <= 2222:
+    if 1667 <= T <= 2222:
         y = (  -1.1063814  * math.pow(x, 3)
                -  1.34811020 * math.pow(x, 2)
                +  2.18555832 * x
                -  0.20219683)
-    elif 2222 <= T and T <= 4000:
+    elif 2222 <= T <= 4000:
         y = (  -0.9549476  * math.pow(x, 3)
                -  1.37418593 * math.pow(x, 2)
                +  2.09137015 * x
                -  0.16748867)
-    elif 4000 <= T and T <= 25000:
+    elif 4000 <= T <= 25000:
         y = (   3.0817580  * math.pow(x, 3)
                 -  5.87338670 * math.pow(x, 2)
                 +  3.75112997 * x
@@ -1907,11 +1907,11 @@ def XYZ2CCT(X, Y, Z):
     i = 0
     while i < 31:
         di = (vs - uvt[i][1]) - uvt[i][2] * (us - uvt[i][0])
-        if i > 0 and ((di < 0.0 and dm >= 0.0) or (di >= 0.0 and dm < 0.0)):
+        if i > 0 and ((di < 0.0 <= dm) or (di >= 0.0 > dm)):
             break	# found lines bounding (us, vs) : i-1 and i
         dm = di
         i += 1
-    if (i == 31):
+    if i == 31:
         # bad XYZ input, color temp would be less than minimum of 1666.7
         # degrees, or too far towards blue
         return None
@@ -2065,7 +2065,7 @@ def XYZ2Lpt(X, Y, Z, whitepoint=None):
     for j in range(3):
         lms[j] /= wlms[j]
 
-        if (lms[j] > 0.008856451586):
+        if lms[j] > 0.008856451586:
             lms[j] = pow(lms[j], 1.0 / 3.0);
         else:
             lms[j] = 7.787036979 * lms[j] + 16.0 / 116.0
@@ -2410,9 +2410,9 @@ def linmin(cp, xi, di, ftol, func, fdata):
         q = (xx - bx) * (xf - af)
         r = (xx - ax) * (xf - bf)
         tt = q - r
-        if tt >= 0.0 and tt < 1e-20:  # If +ve too small
+        if 0.0 <= tt < 1e-20:  # If +ve too small
             tt = 1e-20
-        elif tt <= 0.0 and tt > -1e-20:  # If -ve too small
+        elif 0.0 >= tt > -1e-20:  # If -ve too small
             tt = -1e-20
         ux = xx - ((xx - bx) * q - (xx - ax) * r) / (2.0 * tt)
         ulim = xx + 100.0 * (bx - xx)  # Extrapolation limit
@@ -2696,7 +2696,7 @@ def powell(di, cp, s, ftol, maxit, func, fdata, prog=None, pdata=None):
             tt = (100.0 * math.pow((math.log(curdel) - math.log(startdel)) /
                                    (math.log(stopth) - math.log(startdel)),
                                    4.0) + 0.5)
-            if tt > pc and tt < 100:
+            if pc < tt < 100:
                 pc = tt
                 if prog:  # Report initial progress
                     prog(pdata, pc)
@@ -3066,10 +3066,10 @@ class BT2390(object):
 
 
 class Matrix3x3(list):
-
     """ Simple 3x3 matrix """
 
     def __init__(self, matrix=None):
+        super(Matrix3x3, self).__init__()
         if matrix:
             self.update(matrix)
         else:

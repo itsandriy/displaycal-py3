@@ -22,10 +22,10 @@ def tiff_get_header(w, h, samples_per_pixel, bitdepth):
     # Very helpful: http://www.fileformat.info/format/tiff/corion.htm
 
     header = []
-    header.append("MM\0*")  # Note: We use big-endian byte order
+    header.append(b"MM\0*")  # Note: We use big-endian byte order
 
     # Offset of image directory
-    header.append("\0\0\0\x08")
+    header.append(b"\0\0\0\x08")
 
     pixelcount = w * h * samples_per_pixel
     if bitdepth == 16:
@@ -72,23 +72,22 @@ def tiff_get_header(w, h, samples_per_pixel, bitdepth):
         if is_data and tagtype == 3:
             # A word left-aligned in a dword
             header.append(struct.pack(">H", payload))
-            header.append("\0\0")
+            header.append(b"\0\0")
         else:
             header.append(struct.pack(">I", payload))
 
     # PlanarConfiguration default is 1 = RGBRGBRGB...
 
     # End of IFD
-    header.append("\0" * 4)
+    header.append(b"\0" * 4)
 
     # BitsPerSample (6 bytes)
     header.append(struct.pack(">H", bitdepth) * 3)
 
-    return "".join(header)
+    return b"".join(header)
 
 
-def write(data, stream_or_filename, bitdepth=16, format=None, dimensions=None,
-          extrainfo=None):
+def write(data, stream_or_filename, bitdepth=16, format=None, dimensions=None, extrainfo=None):
     Image(data, bitdepth, extrainfo).write(stream_or_filename, format, dimensions)
 
 
@@ -122,7 +121,7 @@ class Image(object):
         if self.bitdepth == 16:
             data = struct.pack(">H", n)
         elif self.bitdepth == 8:
-            data = chr(n)
+            data = chr(n).encode()
         else:
             raise ValueError("Unsupported bitdepth: %r" % self.bitdepth)
         return data
@@ -132,9 +131,9 @@ class Image(object):
         # http://www.simplesystems.org/users/bfriesen/dpx/S268M_Revised.pdf
 
         # Generic file header (768 bytes)
-        stream.write("SDPX")  # Magic number
+        stream.write(b"SDPX")  # Magic number
         stream.write(struct.pack(">I", 8192))  # Offset to image data
-        stream.write("V2.0\0\0\0\0")  # ASCII version
+        stream.write(b"V2.0\0\0\0\0")  # ASCII version
 
         # Optimize for single color
         optimize = len(self.data) == 1 and len(self.data[0]) == 1 and dimensions
@@ -152,20 +151,19 @@ class Image(object):
                     for datum, sample in enumerate(RGB):
                         packed_u32 |= (sample << shifts[datum])
                     packed.append(struct.pack(">I", packed_u32))
-                scanline = "".join(packed)
+                scanline = b"".join(packed)
             else:
-                scanline = "".join("".join(self._pack(v) for v in RGB) for RGB in
-                                   scanline)
+                scanline = b"".join(b"".join(self._pack(v) for v in RGB) for RGB in scanline)
             if not optimize:
                 # Pad lines with binary zeros so they end on 4-byte boundaries
-                scanline = scanline.ljust(int(math.ceil(len(scanline) / 4.0)) * 4, "\0")
+                scanline = scanline.ljust(int(math.ceil(len(scanline) / 4.0)) * 4, b"\0")
             imgdata.append(scanline)
         imgdata = "".join(imgdata)
         if optimize:
             # Optimize for single color
             imgdata *= dimensions[0]
             # Pad lines with binary zeros so they end on 4-byte boundaries
-            imgdata = imgdata.ljust(int(math.ceil(len(imgdata) / 4.0)) * 4, "\0")
+            imgdata = imgdata.ljust(int(math.ceil(len(imgdata) / 4.0)) * 4, b"\0")
             imgdata *= dimensions[1]
             w, h = dimensions
         else:
@@ -173,130 +171,125 @@ class Image(object):
 
         # Generic file header (cont.)
         stream.write(struct.pack(">I", 8192 + len(imgdata)))  # File size
-        stream.write("\0\0\0\1")  # DittoKey (1 = not same as previous frame)
+        stream.write(b"\0\0\0\1")  # DittoKey (1 = not same as previous frame)
         stream.write(struct.pack(">I", 768 + 640 + 256))  # Generic section header length
         stream.write(struct.pack(">I", 256 + 128))  # Industry-specific section header length
         stream.write(struct.pack(">I", 0))  # User-defined data length
-        stream.write(safe_str(stream.name or "").ljust(100, "\0")[-100:])  # File name
+        stream.write(safe_str(stream.name or b"").ljust(100, b"\0")[-100:])  # File name
         # Date & timestamp
         tzoffset = round((time.mktime(time.localtime()) -
                           time.mktime(time.gmtime())) / 60.0 / 60.0)
         if tzoffset < 0:
-            tzoffset = "%.2i" % tzoffset
+            tzoffset = b"%.2i" % tzoffset
         else:
-            tzoffset = "+%.2i" % tzoffset
-        stream.write(time.strftime("%Y:%m:%d:%H:%M:%S") + tzoffset + "\0\0")
-        stream.write(safe_str("%s %s" % (appname, version)).ljust(100, "\0"))  # Creator
-        stream.write("\0" * 200)  # Project
-        stream.write("\0" * 200)  # Copyright
-        stream.write("\xff" * 4)  # EncryptKey 0xffffffff = not encrypted
-        stream.write("\0" * 104)  # Reserved
+            tzoffset = b"+%.2i" % tzoffset
+        stream.write(time.strftime("%Y:%m:%d:%H:%M:%S").encode() + tzoffset.encode() + b"\0\0")
+        stream.write(safe_str(b"%s %s" % (appname, version)).ljust(100, b"\0"))  # Creator
+        stream.write(b"\0" * 200)  # Project
+        stream.write(b"\0" * 200)  # Copyright
+        stream.write(b"\xff" * 4)  # EncryptKey 0xffffffff = not encrypted
+        stream.write(b"\0" * 104)  # Reserved
 
         # Generic image header (640 bytes)
-        stream.write("\0\0")  # Orientation 0 = left to right, top to bottom
-        stream.write("\0\1")  # Number of image elements
+        stream.write(b"\0\0")  # Orientation 0 = left to right, top to bottom
+        stream.write(b"\0\1")  # Number of image elements
         stream.write(struct.pack(">I", w))  # Pixels per line
         stream.write(struct.pack(">I", h))  # Lines per image element
 
         # Generic image header - image element
-        stream.write("\0" * 4)  # 0 = unsigned data
-        stream.write("\0" * 4)  # Reference low data code value
-        stream.write("\xff" * 4)  # Reference low quantity
+        stream.write(b"\0" * 4)  # 0 = unsigned data
+        stream.write(b"\0" * 4)  # Reference low data code value
+        stream.write(b"\xff" * 4)  # Reference low quantity
         stream.write(struct.pack(">I", 2 ** self.bitdepth - 1))  # Reference high data code value
-        stream.write("\xff" * 4)  # Reference high quantity
-        stream.write(chr(50))  # Descriptor 50 = RGB
-        stream.write("\2")  # Transfer 2 = linear
-        stream.write("\2")  # Colorimetric 2 = not applicable
-        stream.write(chr(self.bitdepth))  # BitSize
-        stream.write("\0\1")  # Packing 1 = filled 32-bit words
-        stream.write("\0\0")  # Encoding 0 = not encoded
+        stream.write(b"\xff" * 4)  # Reference high quantity
+        stream.write(chr(50).encode())  # Descriptor 50 = RGB
+        stream.write(b"\2")  # Transfer 2 = linear
+        stream.write(b"\2")  # Colorimetric 2 = not applicable
+        stream.write(chr(self.bitdepth).encode())  # BitSize
+        stream.write(b"\0\1")  # Packing 1 = filled 32-bit words
+        stream.write(b"\0\0")  # Encoding 0 = not encoded
         stream.write(struct.pack(">I", 8192))  # Image data offset
-        stream.write("\0" * 4)  # End of line padding
-        stream.write("\0" * 4)  # End of image padding
-        stream.write("RGB / Linear".ljust(32, "\0"))  # Description
+        stream.write(b"\0" * 4)  # End of line padding
+        stream.write(b"\0" * 4)  # End of image padding
+        stream.write(b"RGB / Linear".ljust(32, b"\0"))  # Description
 
         # Seven additional unused image elements
-        stream.write("\0" * 72 * 7)
+        stream.write(b"\0" * 72 * 7)
 
         # Generic image header (cont.)
-        stream.write("\0" * 52)  # Reserved
+        stream.write(b"\0" * 52)  # Reserved
 
         # Generic image source header (256 bytes)
         sw, sh = [self.extrainfo.get("original_" + dim,
-                                     locals()[dim[0]]) for dim in ("width",
-                                                                   "height")]
+                                     locals()[dim[0]]) for dim in ("width", "height")]
         # X offset
-        stream.write(struct.pack(">I", self.extrainfo.get("offset_x",
-                                                          (sw - w) / 2)))
+        stream.write(struct.pack(">I", self.extrainfo.get("offset_x", (sw - w) / 2)))
         # Y offset
-        stream.write(struct.pack(">I", self.extrainfo.get("offset_y",
-                                                          (sh - h) / 2)))
+        stream.write(struct.pack(">I", self.extrainfo.get("offset_y", (sh - h) / 2)))
         # X center
         stream.write(struct.pack(">f", self.extrainfo.get("center_x", sw / 2.0)))
         # Y center
         stream.write(struct.pack(">f", self.extrainfo.get("center_y", sh / 2.0)))
         stream.write(struct.pack(">I", sw))  # X original size
         stream.write(struct.pack(">I", sh))  # Y original size
-        stream.write("\0" * 100)  # Source image file name
-        stream.write("\0" * 24)  # Source image date & timestamp
-        stream.write("\0" * 32)  # Input device name
-        stream.write("\0" * 32)  # Input device serial number
-        stream.write("\0" * 2 * 4)  # Border
-        stream.write("\0\0\0\1" * 2)  # Pixel aspect ratio
-        stream.write("\xff" * 4)  # X scanned size
-        stream.write("\xff" * 4)  # Y scanned size
-        stream.write("\0" * 20)  # Reserved
+        stream.write(b"\0" * 100)  # Source image file name
+        stream.write(b"\0" * 24)  # Source image date & timestamp
+        stream.write(b"\0" * 32)  # Input device name
+        stream.write(b"\0" * 32)  # Input device serial number
+        stream.write(b"\0" * 2 * 4)  # Border
+        stream.write(b"\0\0\0\1" * 2)  # Pixel aspect ratio
+        stream.write(b"\xff" * 4)  # X scanned size
+        stream.write(b"\xff" * 4)  # Y scanned size
+        stream.write(b"\0" * 20)  # Reserved
 
         # Industry-specific film info header (256 bytes)
-        stream.write("\0" * 2)  # Film mfg. ID code
-        stream.write("\0" * 2)  # Film type
-        stream.write("\0" * 2)  # Offset in perfs
-        stream.write("\0" * 6)  # Prefix
-        stream.write("\0" * 4)  # Count
-        stream.write("\0" * 32)  # Format
+        stream.write(b"\0" * 2)  # Film mfg. ID code
+        stream.write(b"\0" * 2)  # Film type
+        stream.write(b"\0" * 2)  # Offset in perfs
+        stream.write(b"\0" * 6)  # Prefix
+        stream.write(b"\0" * 4)  # Count
+        stream.write(b"\0" * 32)  # Format
         # Frame position in sequence
-        stream.write(struct.pack(">I", self.extrainfo.get("frame_position",
-                                                          2 ** 32 - 1)))
+        stream.write(struct.pack(">I", self.extrainfo.get("frame_position", 2 ** 32 - 1)))
         # Sequence length
-        stream.write(struct.pack(">I", self.extrainfo.get("sequence_length",
-                                                          2 ** 32 - 1)))
+        stream.write(struct.pack(">I", self.extrainfo.get("sequence_length", 2 ** 32 - 1)))
         # Held count
         stream.write(struct.pack(">I", self.extrainfo.get("held_count", 1)))
         # Frame rate of original
         if "frame_rate" in self.extrainfo:
             stream.write(struct.pack(">f", self.extrainfo["frame_rate"]))
         else:
-            stream.write("\xff" * 4)
+            stream.write(b"\xff" * 4)
         # Shutter angle of camera in degrees
-        stream.write("\xff" * 4)
-        stream.write("\0" * 32)  # Frame identification - e.g. keyframe
-        stream.write("\0" * 100)  # Slate
-        stream.write("\0" * 56)  # Reserved
+        stream.write(b"\xff" * 4)
+        stream.write(b"\0" * 32)  # Frame identification - e.g. keyframe
+        stream.write(b"\0" * 100)  # Slate
+        stream.write(b"\0" * 56)  # Reserved
 
         # Industry-specific TV info header (128 bytes)
         # SMPTE time code
-        stream.write("".join(chr(int(str(v), 16)) for v in
-                             self.extrainfo.get("timecode", ["ff"] * 4)))
-        stream.write("\xff" * 4)  # User bits
-        stream.write("\xff")  # Interlace
-        stream.write("\xff")  # Field number
-        stream.write("\xff")  # Video signal standard
-        stream.write("\0")  # Zero for byte alignment
-        stream.write("\xff" * 4)  # H sampling rate Hz
-        stream.write("\xff" * 4)  # V sampling rate Hz
+        stream.write(b"".join(chr(int(str(v), 16)).encode() for v in
+                             self.extrainfo.get("timecode", [b"ff"] * 4)))
+        stream.write(b"\xff" * 4)  # User bits
+        stream.write(b"\xff")  # Interlace
+        stream.write(b"\xff")  # Field number
+        stream.write(b"\xff")  # Video signal standard
+        stream.write(b"\0")  # Zero for byte alignment
+        stream.write(b"\xff" * 4)  # H sampling rate Hz
+        stream.write(b"\xff" * 4)  # V sampling rate Hz
         # Temporal sampling or frame rate Hz
         if "frame_rate" in self.extrainfo:
             stream.write(struct.pack(">f", self.extrainfo["frame_rate"]))
         else:
-            stream.write("\xff" * 4)
-        stream.write("\xff" * 4)  # Time offset in ms from sync to 1st pixel
-        stream.write("\xff" * 4)  # Gamma
-        stream.write("\xff" * 4)  # Black level code value
-        stream.write("\xff" * 4)  # Black gain
-        stream.write("\xff" * 4)  # Breakpoint
-        stream.write("\xff" * 4)  # Reference white level code value
-        stream.write("\xff" * 4)  # Integration time in s
-        stream.write("\0" * 76)  # Reserved
+            stream.write(b"\xff" * 4)
+        stream.write(b"\xff" * 4)  # Time offset in ms from sync to 1st pixel
+        stream.write(b"\xff" * 4)  # Gamma
+        stream.write(b"\xff" * 4)  # Black level code value
+        stream.write(b"\xff" * 4)  # Black gain
+        stream.write(b"\xff" * 4)  # Breakpoint
+        stream.write(b"\xff" * 4)  # Reference white level code value
+        stream.write(b"\xff" * 4)  # Integration time in s
+        stream.write(b"\0" * 76)  # Reserved
 
         # Padding so image data begins at 8K boundary
         stream.write("\0" * 6144)
@@ -306,11 +299,11 @@ class Image(object):
 
     def _write_png(self, stream, dimensions=None):
         # Header
-        stream.write("\x89PNG\r\n\x1a\n")
+        stream.write(b"\x89PNG\r\n\x1a\n")
         # IHDR image header length
         stream.write(struct.pack(">I", 13))
         # IHDR image header chunk type
-        ihdr = ["IHDR"]
+        ihdr = [b"IHDR"]
         # Optimize for single color
         optimize = len(self.data) == 1 and len(self.data[0]) == 1 and dimensions
         # IHDR: width, height
@@ -322,40 +315,40 @@ class Image(object):
         # IHDR: Bit depth
         ihdr.append(chr(self.bitdepth))
         # IHDR: Color type 2 (truecolor)
-        ihdr.append("\2")
+        ihdr.append(b"\2")
         # IHDR: Compression method 0 (deflate)
-        ihdr.append("\0")
+        ihdr.append(b"\0")
         # IHDR: Filter method 0 (adaptive)
-        ihdr.append("\0")
+        ihdr.append(b"\0")
         # IHDR: Interlace method 0 (none)
-        ihdr.append("\0")
-        ihdr = "".join(ihdr)
+        ihdr.append(b"\0")
+        ihdr = b"".join(ihdr)
         stream.write(ihdr)
-        stream.write(struct.pack(">I", zlib.crc32(ihdr.encode()) & 0xFFFFFFFF))
+        stream.write(struct.pack(">I", zlib.crc32(ihdr) & 0xFFFFFFFF))
         # IDAT image data chunk type
         imgdata = []
         for i, scanline in enumerate(self.data):
             # Add a scanline, filter type 0
-            imgdata.append("\0")
+            imgdata.append(b"\0")
             for RGB in scanline:
-                RGB = "".join(self._pack(v) for v in RGB)
+                RGB = b"".join(self._pack(v) for v in RGB)
                 if optimize:
                     RGB *= dimensions[0]
                 imgdata.append(RGB)
-        imgdata = "".join(imgdata)
+        imgdata = b"".join(imgdata)
         if optimize:
             imgdata *= dimensions[1]
         imgdata = zlib.compress(imgdata, 9)
         stream.write(struct.pack(">I", len(imgdata)))
-        idat = ["IDAT"]
+        idat = [b"IDAT"]
         idat.append(imgdata)
-        idat = "".join(idat)
+        idat = b"".join(idat)
         stream.write(idat)
-        stream.write(struct.pack(">I", zlib.crc32(idat.encode()) & 0xFFFFFFFF))
+        stream.write(struct.pack(">I", zlib.crc32(idat) & 0xFFFFFFFF))
         # IEND chunk
-        stream.write("\0" * 4)
-        stream.write("IEND")
-        stream.write(struct.pack(">I", zlib.crc32("IEND".encode()) & 0xFFFFFFFF))
+        stream.write(b"\0" * 4)
+        stream.write(b"IEND")
+        stream.write(struct.pack(">I", zlib.crc32(b"IEND") & 0xFFFFFFFF))
 
     def _write_tiff(self, stream, dimensions=None):
         # Very helpful: http://www.fileformat.info/format/tiff/corion.htm
@@ -379,7 +372,7 @@ class Image(object):
         # Write image data
         for i, scanline in enumerate(imgdata):
             for sample in scanline:
-                stream.write("".join(self._pack(v) for v in sample))
+                stream.write(b"".join(self._pack(v) for v in sample))
 
     def write(self, stream_or_filename, format=None, dimensions=None):
         if not format:

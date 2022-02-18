@@ -61,7 +61,7 @@ class OrderedDict(dict):
         return not self == other
 
     def __reduce__(self):
-        'Return state information for pickling'
+        """Return state information for pickling"""
         items = [[k, self[k]] for k in self]
         tmp = self._keys
         del self._keys

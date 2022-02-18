@@ -28,12 +28,17 @@ FGCOLOUR = wx.Colour(0x99, 0x99, 0x99)
 
 class UntetheredFrame(BaseFrame):
 
-    def __init__(self, parent=None, handler=None,
-                 keyhandler=None, start_timer=True):
-        BaseFrame.__init__(self, parent, wx.ID_ANY,
-                           lang.getstr("measurement.untethered"),
-                           style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
-                           name="untetheredframe")
+    def __init__(self, parent=None, handler=None, keyhandler=None, start_timer=True):
+        # BaseFrame.__init__(self, parent, wx.ID_ANY,
+        #                    lang.getstr("measurement.untethered"),
+        #                    style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+        #                    name="untetheredframe")
+        super(UntetheredFrame, self).__init__(
+            self, parent, wx.ID_ANY,
+            lang.getstr("measurement.untethered"),
+            style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
+            name="untetheredframe"
+        )
         self.SetIcons(get_icon_bundle([256, 48, 32, 16], appname))
         self.sizer = wx.FlexGridSizer(2, 1, 0, 0)
         self.sizer.AddGrowableCol(0)
@@ -50,47 +55,37 @@ class UntetheredFrame(BaseFrame):
         self.panel.SetSizer(panelsizer)
         self.label_RGB = wx.StaticText(self.panel, wx.ID_ANY, " ")
         self.label_RGB.SetForegroundColour(FGCOLOUR)
-        panelsizer.Add(self.label_RGB, 0, wx.TOP | wx.LEFT | wx.EXPAND,
-                       border=8)
+        panelsizer.Add(self.label_RGB, 0, wx.TOP | wx.LEFT | wx.EXPAND, border=8)
         self.label_XYZ = wx.StaticText(self.panel, wx.ID_ANY, " ")
         self.label_XYZ.SetForegroundColour(FGCOLOUR)
-        panelsizer.Add(self.label_XYZ, 0, wx.TOP | wx.RIGHT | wx.EXPAND,
-                       border=8)
+        panelsizer.Add(self.label_XYZ, 0, wx.TOP | wx.RIGHT | wx.EXPAND, border=8)
         if sys.platform == "darwin":
             style = wx.BORDER_THEME
         else:
             style = wx.BORDER_SIMPLE
-        self.panel_RGB = BitmapBackgroundPanel(self.panel, size=(256, 256),
-                                               style=style)
+        self.panel_RGB = BitmapBackgroundPanel(self.panel, size=(256, 256), style=style)
         self.panel_RGB.scalebitmap = (True, True)
         self.panel_RGB.SetBitmap(getbitmap("theme/checkerboard-32x32x5-333-444"))
         panelsizer.Add(self.panel_RGB, 1, wx.LEFT | wx.EXPAND, border=8)
-        self.panel_XYZ = BitmapBackgroundPanel(self.panel, size=(256, 256),
-                                               style=style)
+        self.panel_XYZ = BitmapBackgroundPanel(self.panel, size=(256, 256), style=style)
         self.panel_XYZ.scalebitmap = (True, True)
         self.panel_XYZ.SetBitmap(getbitmap("theme/checkerboard-32x32x5-333-444"))
         panelsizer.Add(self.panel_XYZ, 1, wx.RIGHT | wx.EXPAND, border=8)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.back_btn = FlatShadedButton(self.panel, bitmap=geticon(10, "back"),
-                                         label="",
-                                         fgcolour=FGCOLOUR)
+        self.back_btn = FlatShadedButton(self.panel, bitmap=geticon(10, "back"), label="", fgcolour=FGCOLOUR)
         self.back_btn.Bind(wx.EVT_BUTTON, self.back_btn_handler)
         sizer.Add(self.back_btn, 0, wx.LEFT | wx.RIGHT, border=8)
         self.label_index = wx.StaticText(self.panel, wx.ID_ANY, " ")
         self.label_index.SetForegroundColour(FGCOLOUR)
         sizer.Add(self.label_index, 0, wx.ALIGN_CENTER_VERTICAL)
-        self.next_btn = FlatShadedButton(self.panel, bitmap=geticon(10, "play"),
-                                         label="",
-                                         fgcolour=FGCOLOUR)
+        self.next_btn = FlatShadedButton(self.panel, bitmap=geticon(10, "play"), label="", fgcolour=FGCOLOUR)
         self.next_btn.Bind(wx.EVT_BUTTON, self.next_btn_handler)
         sizer.Add(self.next_btn, 0, wx.LEFT, border=8)
         sizer.Add((12, 1), 1)
-        self.measure_auto_cb = CustomCheckBox(self.panel, wx.ID_ANY,
-                                              lang.getstr("auto"))
+        self.measure_auto_cb = CustomCheckBox(self.panel, wx.ID_ANY, lang.getstr("auto"))
         self.measure_auto_cb.SetForegroundColour(FGCOLOUR)
         self.measure_auto_cb.Bind(wx.EVT_CHECKBOX, self.measure_auto_ctrl_handler)
-        sizer.Add(self.measure_auto_cb, 0, wx.ALIGN_CENTER_VERTICAL |
-                  wx.ALIGN_RIGHT)
+        sizer.Add(self.measure_auto_cb, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
         panelsizer.Add(sizer, 0, wx.BOTTOM | wx.EXPAND, border=8)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.measure_btn = FlatShadedButton(self.panel,
@@ -104,16 +99,12 @@ class UntetheredFrame(BaseFrame):
         self.measurement_sound = audio.Sound(get_data_path("beep.wav"))
         self.commit_sound = audio.Sound(get_data_path("camera_shutter.wav"))
         bitmap = self.get_sound_on_off_btn_bitmap()
-        self.sound_on_off_btn = FlatShadedButton(self.panel, bitmap=bitmap,
-                                                 fgcolour=FGCOLOUR)
+        self.sound_on_off_btn = FlatShadedButton(self.panel, bitmap=bitmap, fgcolour=FGCOLOUR)
         self.sound_on_off_btn.SetToolTipString(lang.getstr("measurement.play_sound"))
-        self.sound_on_off_btn.Bind(wx.EVT_BUTTON,
-                                   self.measurement_play_sound_handler)
+        self.sound_on_off_btn.Bind(wx.EVT_BUTTON, self.measurement_play_sound_handler)
         sizer.Add(self.sound_on_off_btn, 0)
         sizer.Add((12, 1), 1)
-        self.finish_btn = FlatShadedButton(self.panel,
-                                           label=lang.getstr("finish"),
-                                           fgcolour=FGCOLOUR)
+        self.finish_btn = FlatShadedButton(self.panel, label=lang.getstr("finish"), fgcolour=FGCOLOUR)
         self.finish_btn.Bind(wx.EVT_BUTTON, self.finish_btn_handler)
         sizer.Add(self.finish_btn, 0, wx.RIGHT, border=8)
         panelsizer.Add(sizer, 0, wx.BOTTOM | wx.EXPAND, border=8)
@@ -477,8 +468,7 @@ class UntetheredFrame(BaseFrame):
             if getcfg("measurement.play_sound"):
                 self.measurement_sound.safe_play()
             # Result is XYZ: d.dddddd d.dddddd d.dddddd, D50 Lab: d.dddddd d.dddddd d.dddddd
-            XYZ = re.search("XYZ:\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)",
-                            txt)
+            XYZ = re.search(r"XYZ:\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)", txt)
             if not XYZ:
                 return
             XYZ = [float(v) for v in XYZ.groups()]

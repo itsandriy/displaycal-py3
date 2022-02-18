@@ -16,7 +16,7 @@ def floatlist(alist):
 
 def get(alist, index, default=None):
     """ Similar to dict.get, return item at index or default if not in list """
-    if index > -1 and index < len(alist):
+    if -1 < index < len(alist):
         return alist[index]
     return default
 
@@ -46,7 +46,7 @@ def intlist(alist):
     return result
 
 
-alphanumeric_re = re.compile("\D+|\d+")
+alphanumeric_re = re.compile(r"\D+|\d+")
 
 
 def natsort_key_factory(ignorecase=True, n=10):

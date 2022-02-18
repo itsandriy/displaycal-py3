@@ -1282,11 +1282,11 @@ class ProfileInfoFrame(LUTFrame):
             lines.extend(list(zip(label, value)))
         for i, line in enumerate(lines):
             line = list(line)
-            indent = re.match("\s+", line[0])
+            indent = re.match(r"\s+", line[0])
             for j, v in enumerate(line):
                 if v.endswith("_"):
                     continue
-                key = re.sub("[^0-9A-Za-z]+", "_",
+                key = re.sub(r"[^0-9A-Za-z]+", "_",
                              strtr(line[j],
                                    {"\u0394E": "Delta E"}).lower().strip(), 0).strip("_")
                 val = lang.getstr(key)
@@ -1330,7 +1330,7 @@ class ProfileInfoFrame(LUTFrame):
             elif label.strip() and label.lstrip() == label:
                 namedcolor = False
             if namedcolor:
-                color = re.match("(Lab|XYZ)((?:\s+-?\d+(?:\.\d+)){3,})", value)
+                color = re.match(r"(Lab|XYZ)((?:\s+-?\d+(?:\.\d+)){3,})", value)
             else:
                 color = None
             if color:

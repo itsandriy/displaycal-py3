@@ -68,9 +68,9 @@ class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
         # Some servers (incorrectly) return multiple Location headers
         # (so probably same goes for URI).  Use first header.
         if 'location' in headers:
-            newurl = headers.getheaders('location')[0]
+            newurl = headers.get('location')
         elif 'uri' in headers:
-            newurl = headers.getheaders('uri')[0]
+            newurl = headers.get('uri')
         else:
             return
 
@@ -97,9 +97,9 @@ class NoHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
         # Some servers (incorrectly) return multiple Location headers
         # (so probably same goes for URI).  Use first header.
         if 'location' in headers:
-            newurl = headers.getheaders('location')[0]
+            newurl = headers.get('location')
         elif 'uri' in headers:
-            newurl = headers.getheaders('uri')[0]
+            newurl = headers.get('uri')
         else:
             return
 

@@ -376,21 +376,19 @@ class AuiManager_LRDocking(aui.AuiManager):
         direction = part.pane.dock_direction
 
         if direction == aui.AUI_DOCK_TOP:
-            if pt.y >= part.rect.y and pt.y < part.rect.y+aui.auiInsertRowPixels:
+            if part.rect.y <= pt.y < part.rect.y+aui.auiInsertRowPixels:
                 insert_dock_row = True
 
         elif direction == aui.AUI_DOCK_BOTTOM:
-            if pt.y > part.rect.y+part.rect.height-aui.auiInsertRowPixels and \
-               pt.y <= part.rect.y + part.rect.height:
+            if part.rect.y+part.rect.height-aui.auiInsertRowPixels < pt.y <= part.rect.y + part.rect.height:
                 insert_dock_row = True
 
         elif direction == aui.AUI_DOCK_LEFT:
-            if pt.x >= part.rect.x and pt.x < part.rect.x+aui.auiInsertRowPixels:
+            if part.rect.x <= pt.x < part.rect.x+aui.auiInsertRowPixels:
                 insert_dock_row = True
 
         elif direction == aui.AUI_DOCK_RIGHT:
-            if pt.x > part.rect.x+part.rect.width-aui.auiInsertRowPixels and \
-               pt.x <= part.rect.x+part.rect.width:
+            if part.rect.x+part.rect.width-aui.auiInsertRowPixels < pt.x <= part.rect.x+part.rect.width:
                 insert_dock_row = True
 
         elif direction == aui.AUI_DOCK_CENTER:
@@ -414,13 +412,13 @@ class AuiManager_LRDocking(aui.AuiManager):
                 insert_dock_row = True
                 pr = part.rect
 
-                if pt.x >= pr.x and pt.x < pr.x + new_row_pixels_x:
+                if pr.x <= pt.x < pr.x + new_row_pixels_x:
                     insert_dir = aui.AUI_DOCK_LEFT
-                elif pt.y >= pr.y and pt.y < pr.y + new_row_pixels_y:
+                elif pr.y <= pt.y < pr.y + new_row_pixels_y:
                     insert_dir = aui.AUI_DOCK_TOP
-                elif pt.x >= pr.x + pr.width - new_row_pixels_x and pt.x < pr.x + pr.width:
+                elif pr.x + pr.width - new_row_pixels_x <= pt.x < pr.x + pr.width:
                     insert_dir = aui.AUI_DOCK_RIGHT
-                elif pt.y >= pr.y+ pr.height - new_row_pixels_y and pt.y < pr.y + pr.height:
+                elif pr.y + pr.height - new_row_pixels_y <= pt.y < pr.y + pr.height:
                     insert_dir = aui.AUI_DOCK_BOTTOM
                 else:
                     return False, target
@@ -527,7 +525,7 @@ class Colour(object):
                 hue = hue/60.0
                 self.g = int(round(hue*delta + minVal))
             
-        elif self.h > 60 and self.h < 180:
+        elif 60 < self.h < 180:
         
             self.g = int(round(maxVal))
             
@@ -1654,19 +1652,16 @@ class ProfileManager(object):
             profile_name = os.path.basename(profile.fileName)
         else:
             profile_name = profile.getDescription() + profile_ext
-        if (sys.platform in ("win32", "darwin") or fs_enc.upper() not in
-            ("UTF8", "UTF-8")) and re.search("[^\x20-\x7e]", profile_name):
+        if (sys.platform in ("win32", "darwin") or fs_enc.upper() not in ("UTF8", "UTF-8")) \
+            and re.search(r"[^\x20-\x7e]", profile_name):
             profile_name = safe_asciize(profile_name)
         profile.fileName = os.path.join(temp, profile_name)
         return True
 
-
     def _stop_timer(self):
-        if (hasattr(self, "_update_timer") and
-            self._update_timer.IsRunning()):
+        if hasattr(self, "_update_timer") and self._update_timer.IsRunning():
             self._update_timer.Stop()
-    
-    
+
     def update(self, restore_display_profiles=True):
         """Clear calibration on the current display, and restore it on
         the previous one (if any)

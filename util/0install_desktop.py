@@ -7,7 +7,7 @@ import re
 import shutil
 import sys
 
-from meta import name as appname, domain, script2pywname
+from DisplayCAL.meta import name as appname, domain, script2pywname
 
 
 def zeroinstall_desktop(datadir="/usr/share"):
@@ -19,7 +19,7 @@ def zeroinstall_desktop(datadir="/usr/share"):
     for desktopfilename in glob(os.path.join("misc", "%s*.desktop" %
                                                      appname.lower())):
         desktopbasename = os.path.basename(desktopfilename)
-        scriptname = re.sub("\.desktop$", "", desktopbasename)
+        scriptname = re.sub(r"\.desktop$", "", desktopbasename)
         for size in [16, 22, 24, 32, 48, 128, 256]:
             icondir = os.path.join(datadir, "icons", "hicolor",
                                    "%sx%s" % (size, size), "apps")
@@ -34,7 +34,7 @@ def zeroinstall_desktop(datadir="/usr/share"):
         if cmdname == appname:
             cmd = ""
         else:
-            cmd = re.sub("^%s" % appname, " --command=run", cmdname)
+            cmd = re.sub(r"^%s" % appname, " --command=run", cmdname)
         for pattern, repl in [("Exec=.+",
                                "Exec=0launch%s -- %s %%f" %
                                (cmd, feeduri))]:

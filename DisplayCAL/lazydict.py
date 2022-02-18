@@ -251,8 +251,7 @@ class LazyDict_YAML_UltraLite(LazyDict):
 
     """
 
-    def __init__(self, path=None, encoding="UTF-8", errors="strict",
-                 debug=False):
+    def __init__(self, path=None, encoding="UTF-8", errors="strict", debug=False):
         LazyDict.__init__(self, path, encoding, errors)
         self.debug = debug
 

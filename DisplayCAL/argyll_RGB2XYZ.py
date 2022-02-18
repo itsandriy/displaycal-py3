@@ -102,11 +102,11 @@ def RGB2XYZ(R, G, B):  # from xcolorants.c -> icxColorantLu_to_XYZ
     XYZ = [0.0, 0.0, 0.0]
     for e in range(3):
         v = d[e]
-        if (v < 0.0):
+        if v < 0.0:
             v = 0.0
-        elif (v > 1.0):
+        elif v > 1.0:
             v = 1.0
-        if (v <= 0.03928):
+        if v <= 0.03928:
             v /= 12.92
         else:
             v = math.pow((0.055 + v) / 1.055, 2.4)  # Gamma

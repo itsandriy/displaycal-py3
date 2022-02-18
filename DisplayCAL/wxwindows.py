@@ -1350,7 +1350,7 @@ class BaseFrame(wx.Frame):
                 except ValueError:
                     menu_pos = menubar.FindMenu(data[1])
                 if (menu_pos not in (wx.NOT_FOUND, None) and
-                        menu_pos > -1 and menu_pos < menubar.GetMenuCount() and
+                        -1 < menu_pos < menubar.GetMenuCount() and
                         menubar.IsEnabledTop(menu_pos)):
                     menu = menubar.GetMenu(menu_pos)
                     try:
@@ -1496,7 +1496,7 @@ class BaseFrame(wx.Frame):
             response = [format_ui_element(win, responseformats[conn])
                         for win in windows]
             win = None
-        elif data[0] == "interact" and len(data) > 1 and len(data) < 6:
+        elif data[0] == "interact" and 1 < len(data) < 6:
             response = "invalid"
             value = None
             args = data[1:]
@@ -1561,11 +1561,8 @@ class BaseFrame(wx.Frame):
                                 row, col = (int(v) for v in values[:2])
                             except ValueError:
                                 row, col = -1, -1
-                            if (row > -1 and col > -1 and
-                                    row < child.GetNumberRows() and
-                                    col < child.GetNumberCols()):
-                                if (child.IsEditable() and
-                                        not child.IsReadOnly(row, col)):
+                            if -1 < row < child.GetNumberRows() and col > -1 and col < child.GetNumberCols():
+                                if child.IsEditable() and not child.IsReadOnly(row, col):
                                     child.SetCellValue(row, col, values[2])
                                     event = wx.grid.GridEvent(-1,
                                                               wx.grid.EVT_GRID_CELL_CHANGE.evtType[0],
@@ -2588,8 +2585,8 @@ class BitmapBackgroundPanel(wx.PyPanel):
                             quality=self.scalequality)
                 bmp = img.ConvertToBitmap()
             dc.DrawBitmap(bmp, 0, 0)
-            if self.repeat_sub_bitmap_h and self.Size[0] > bmp.Size[0] \
-               and bmp.Size[0] >= self.repeat_sub_bitmap_h[0] and bmp.Size[1] >= self.repeat_sub_bitmap_h[1]:
+            if self.repeat_sub_bitmap_h and self.Size[0] > bmp.Size[0] >= self.repeat_sub_bitmap_h[0] \
+               and bmp.Size[1] >= self.repeat_sub_bitmap_h[1]:
                 sub_bmp = bmp.GetSubBitmap(self.repeat_sub_bitmap_h)
                 sub_img = sub_bmp.ConvertToImage()
                 sub_img.Rescale(self.GetSize()[0] -
@@ -3606,9 +3603,9 @@ class CustomGrid(wx.grid.Grid):
             cols = []
             while ri:
                 rect = ri.GetRect()
-                rect.Offset((x,0))
+                rect.Offset((x, 0))
                 colPos = self.GetColPos(self.XToCol(rect.left))
-                while colPos < self.GetNumberCols() and colPos >= 0:
+                while self.GetNumberCols() > colPos >= 0:
                     col = self.GetColAt(colPos)
                     cl, cr = self.GetColLeftRight(col)
                     if cr < rect.left:
@@ -3630,7 +3627,7 @@ class CustomGrid(wx.grid.Grid):
                 rect = ri.GetRect()
                 rect.Offset((0,y))
                 row = self.YToRow(rect.top)
-                while row < self.GetNumberRows() and row >= 0:
+                while self.GetNumberRows() > row >= 0:
                     rt, rb = self.GetRowTopBottom(row)
                     if rb < rect.top:
                         continue
@@ -3729,7 +3726,7 @@ class CustomGrid(wx.grid.Grid):
                 if success:
                     lines = do.GetText().splitlines()
                     for i, line in enumerate(lines):
-                        lines[i] = re.sub(" +", "\t", line).split("\t")
+                        lines[i] = re.sub(r" +", "\t", line).split("\t")
                     # Translate from selected cells into a grid with None values
                     # for not selected cells
                     grid = []
@@ -3783,7 +3780,7 @@ class CustomGrid(wx.grid.Grid):
                 elif keycode in (wx.WXK_NUMPAD_DECIMAL,
                                  wx.WXK_NUMPAD_SEPARATOR):
                     ch = "."
-                elif keycode < 256 and keycode >= 32:
+                elif 256 > keycode >= 32:
                     ch = str(chr(keycode))
                 if ch is not None or keycode in (wx.WXK_BACK, wx.WXK_DELETE):
                     changed = 0
@@ -4418,8 +4415,7 @@ class CustomCellRenderer(wx.grid.PyGridCellRenderer):
         align = grid.GetCellAlignment(row, col)
         if align[1] == wx.ALIGN_CENTER:
             align = align[0], wx.ALIGN_CENTER_VERTICAL
-        dc.DrawLabel(grid.GetCellValue(row, col), rect,
-                     align[0] | align[1])
+        dc.DrawLabel(grid.GetCellValue(row, col), rect, align[0] | align[1])
 
     def GetBestSize(self, grid, attr, dc, row, col):
         dc.SetFont(grid.GetCellFont(row, col))
@@ -4511,10 +4507,10 @@ class CustomColLabelRenderer(object):
                 color = grid.GetLabelTextColour()
             dc.SetTextForeground(color)
             align = grid.GetColLabelAlignment()
-            if align[1] == wx.ALIGN_CENTER:
-                align = align[0], wx.ALIGN_CENTER_VERTICAL
-            dc.DrawLabel(" %s " % grid.GetColLabelValue(col), orect,
-                         align[0] | align[1])
+            # if align[1] == wx.ALIGN_CENTER:
+            #     align = align[0], wx.ALIGN_CENTER_VERTICAL
+            # dc.DrawLabel(" %s " % grid.GetColLabelValue(col), orect, align[0] | align[1])
+            dc.DrawLabel(" %s " % grid.GetColLabelValue(col), orect)
 
 
 class CustomRowLabelRenderer(object):
@@ -5017,8 +5013,7 @@ class BetterStaticFancyText_SetLabelMarkup(BetterStaticFancyTextBase,
         for i, line in enumerate(self._label.splitlines()):
             if line:
                 # Account for bold text which is approximately 14% wider
-                parts = re.findall("(<font weight='bold'>([^<]+)</font>|[^<]+)",
-                                   line)
+                parts = re.findall(r"(<font weight='bold'>([^<]+)</font>|[^<]+)", line)
                 w, h = 0, 0
                 for markup, bold in parts:
                     if bold:
@@ -6354,7 +6349,7 @@ class TabButton(PlateButton):
             bw, bh = bmp.GetSize()
             ypos = (self.GetSize()[1] - bh) // 2
             ypos -= 8  # Tab hilite
-            gc.DrawBitmap(bmp, xpos, ypos, bmp.GetMask() != None)
+            gc.DrawBitmap(bmp, xpos, ypos, bmp.GetMask() is not None)
             return bw + xpos
         else:
             return xpos

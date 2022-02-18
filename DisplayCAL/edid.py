@@ -182,7 +182,7 @@ def get_edid(display_no=0, display_name=None, device=None):
         stdout, stderr = p.communicate()
         if stdout:
             for edid in [binascii.unhexlify(edid_hex) for edid_hex in
-                         re.findall('"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>', stdout.decode())]:
+                         re.findall(r'"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>', stdout.decode())]:
                 if edid and len(edid) >= 128:
                     parsed_edid = parse_edid(edid)
                     if parsed_edid.get("monitor_name",

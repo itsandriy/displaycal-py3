@@ -7,7 +7,7 @@ import tempfile
 sys.path.insert(1, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "DisplayCAL"))
 
 
-from meta import author, description, domain, name, version, version_tuple
+from DisplayCAL.meta import author, description, domain, name, version, version_tuple
 
 
 def mktempver(version_template_path, name_=name, description_=description,

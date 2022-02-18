@@ -937,7 +937,7 @@ class ArtManager(wx.EvtHandler):
             
                 if rect.width > rect.height:
                 
-                    dc.DrawLine(rect.x, (int)(rect.y + proportion * i), rect.x + sizeX - i, rect.y + sizeY)
+                    dc.DrawLine(rect.x, int(rect.y + proportion * i), rect.x + sizeX - i, rect.y + sizeY)
                     dc.DrawPoint(rect.x + sizeX - i, rect.y + sizeY)
                 
                 else:
@@ -1279,7 +1279,7 @@ class ArtManager(wx.EvtHandler):
                     csstyle |= CS_DROPSHADOW     #Nothing to be done
             else:
                 if csstyle & CS_DROPSHADOW:
-                    csstyle &= ~(CS_DROPSHADOW)
+                    csstyle &= ~CS_DROPSHADOW
                 else:
                     return  #Nothing to be done
 
