@@ -1201,11 +1201,9 @@ def http_request(parent=None, domain=None, request_type="GET", path="",
     return resp
 
 
-def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path,
-                                              logfn=print):
+def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path, logfn=print):
     """Insert patches from first TI file after first patch of second TI,
     ignoring RGB duplicates. Return second TI as CGATS instance.
-
     """
     cgats2 = CGATS.CGATS(cgats2_path)
     cgats1_data = cgats1.queryv1("DATA")
@@ -11517,7 +11515,7 @@ usage: spotread [-options] [logfile]
                     shutil.copyfile(filename + ext, inoutfile + ".ti1")
                 else: # ti3
                     try:
-                        ti3 = open(filename + ext, "rU")
+                        ti3 = open(filename + ext, "r", newline="")
                     except Exception as exception:
                         return Error(lang.getstr("error.testchart.read",
                                                  getcfg("testchart.file"))), None

@@ -1,0 +1,21 @@
+Number of Samples: 126
+DE Formula: DE1976
+
+OVERALL - (126 colors)
+	Average DE: 6.0827
+	    Max DE: 17.0683
+	    Min DE: 1.2521
+	 StdDev DE: 4.4151
+
+BEST 90% - (113 colors)
+	Average DE: 4.9270
+	    Max DE: 13.8694
+	    Min DE: 1.2521
+	 StdDev DE: 2.9365
+
+WORST 10% - (13 colors)
+	Average DE: 16.1285
+	    Max DE: 17.0683
+	    Min DE: 14.5027
+	 StdDev DE: 0.8122
+

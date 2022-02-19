@@ -11,6 +11,7 @@ import math
 import re
 import os
 import sys
+from pathlib import Path
 
 from DisplayCAL import colormath
 from DisplayCAL.options import debug, verbose
@@ -207,9 +208,7 @@ class CGATSValueError(CGATSError, ValueError):
 class CGATS(dict):
     """CGATS structure.
 
-    CGATS files are treated mostly as 'soup', so only basic checking is
-    in place.
-
+    CGATS files are treated mostly as 'soup', so only basic checking is in place.
     """
 
     datetime = None
@@ -232,8 +231,7 @@ class CGATS(dict):
     type = 'ROOT'
     vmaxlen = 0
 
-    def __init__(self, cgats=None, normalize_fields=False, file_identifier="CTI3",
-                 emit_keywords=False, strict=False):
+    def __init__(self, cgats=None, normalize_fields=False, file_identifier="CTI3", emit_keywords=False, strict=False):
         """Return a CGATS instance.
 
         cgats can be a path, a string holding CGATS data, or a file object.
@@ -243,7 +241,6 @@ class CGATS(dict):
         SAMPLE_ID or SAMPLE_NAME respectively
 
         file_identifier is used as fallback if no file identifier is present
-
         """
         super(CGATS, self).__init__()
 
@@ -254,36 +251,38 @@ class CGATS(dict):
         self._keys = []
 
         if cgats:
-
             if isinstance(cgats, list):
                 raw_lines = cgats
             else:
                 if isinstance(cgats, str):
-                    if cgats.find('\n') < 0 and cgats.find('\r') < 0:
+                    if "\n" not in cgats and "\r" not in cgats:
                         # assume filename
-                        cgats = open(cgats, 'rU')
+                        cgats = open(cgats, 'r', newline='')
                         self.filename = cgats.name
                     else:
                         # assume text
-                        cgats = StringIO(cgats)
+                        cgats = io.StringIO(cgats)
+                elif isinstance(cgats, Path):
+                    self.filename = cgats.absolute()
+                    cgats = open(cgats, 'r', newline='')
                 elif isinstance(cgats, io.IOBase):
                     self.filename = cgats.name
                 elif not isinstance(cgats, StringIO):
                     raise CGATSInvalidError('Unsupported type: %s' % type(cgats))
-                if self.filename not in ('', None):
+
+                if self.filename:
                     self.mtime = os.stat(self.filename).st_mtime
+
                 cgats.seek(0)
                 raw_lines = cgats.readlines()
                 cgats.close()
 
             context = self
-
             for raw_line in raw_lines:
                 # Replace 1.#IND00 with NaN
                 raw_line = raw_line.replace("1.#IND00", "NaN")
                 # strip control chars and leading/trailing whitespace
-                line = re.sub(r'[^\x09\x20-\x7E\x80-\xFF]', '',
-                                raw_line.strip())
+                line = re.sub('[^\x09\x20-\x7E\x80-\xFF]', '', raw_line.strip())
                 if '#' in line or '"' in line:
                     # Deal with comments and quotes
                     quoted = False
@@ -315,7 +314,9 @@ class CGATS(dict):
                             elif char in ' \t':
                                 token_start = i + 1
                 else:
+                    # no comments or quotes
                     values = line.split()
+
                 if line[:6] == 'BEGIN_':
                     key = line[6:]
                     if key in context:
@@ -327,6 +328,7 @@ class CGATS(dict):
                         self[new].root = self.root
                         self[new].type = ''
                         context = self[new]
+
                 if line == 'BEGIN_DATA_FORMAT':
                     context['DATA_FORMAT'] = CGATS()
                     context['DATA_FORMAT'].key = 'DATA_FORMAT'
@@ -371,23 +373,23 @@ class CGATS(dict):
                             else:
                                 context = context.add_data({key: ''})
                         elif strict:
-                            raise CGATSInvalidError('Malformed %s file: %s' %
-                                                    (context.parent and
-                                                     context.type or "CGATS",
-                                                     self.filename or self))
-                elif values and values[0] not in ('Comment:', 'Date:') and \
-                     len(line) >= 3 and not re.search(r"[^ 0-9A-Za-z/.]", line):
+                            raise CGATSInvalidError(
+                                'Malformed %s file: {}'.format(
+                                    context.parent and context.type or "CGATS", self.filename or self
+                                )
+                            )
+                elif values and values[0] not in ('Comment:', 'Date:') \
+                   and len(line) >= 3 and not re.search(r"[^ 0-9A-Za-z/.]", line):
                     context = self.add_data(line)
+
             if 0 in self and self[0].get("NORMALIZED_TO_Y_100") == "NO":
                 # Always normalize to Y = 100
                 reprstr = (self.filename or "<%s.%s instance at 0x%016x>" %
-                                            (self.__module__,
-                                             self.__class__.__name__, id(self)))
+                                            (self.__module__, self.__class__.__name__, id(self)))
                 if self[0].normalize_to_y_100():
                     print("Normalized to Y = 100:", reprstr)
                 else:
-                    print("Warning: Could not normalize to Y = 100:",
-                               reprstr)
+                    print("Warning: Could not normalize to Y = 100:", reprstr)
             self.setmodified(False)
 
     def __delattr__(self, name):
@@ -438,7 +440,7 @@ class CGATS(dict):
             colorants = []
             for i in range(len(color_rep[0])):
                 for j, channelname in enumerate(color_rep[0]):
-                    query["_".join([color_rep[0], channelname])] = {i: 100}.get(j, 0)
+                    query["_".join([color_rep[0], channelname])] = 100 if i == j else 0
                 colorants.append(self.queryi1(query))
             return colorants
 
@@ -467,12 +469,12 @@ class CGATS(dict):
                         display = self.queryv1("DISPLAY")
                     if localized:
                         from DisplayCAL import localization as lang
-                        tech = str(tech)
+                        tech = str(tech).encode()
                         tech = lang.getstr("display.tech." + tech, default=tech)
                         if display:
                             # Localized tech will be unicode always, need to
                             # make sure display is as well
-                            display = str(display)
+                            display = str(display).encode()
                     if display:
                         tech += " (%s)" % display
                 desc = tech
@@ -487,7 +489,7 @@ class CGATS(dict):
     def __setattr__(self, name, value):
         if name in ('_keys', '_lvl'):
             object.__setattr__(self, name, value)
-        elif name == 'modified':
+        elif name == b'modified':
             self.setmodified(value)
         elif name in ('datetime', 'filename', 'fileName', 'file_identifier', 'key',
                       'mtime', 'normalize_fields', 'parent', 'root', 'type',
@@ -498,8 +500,7 @@ class CGATS(dict):
             self[name] = value
 
     def __setitem__(self, name, value):
-        if (self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and
-            name not in self):
+        if self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and name not in self:
             self._keys.append(name)
         dict.__setitem__(self, name, value)
         self.setmodified()
@@ -530,9 +531,9 @@ class CGATS(dict):
             if self.type == 'SECTION':
                 result.append('BEGIN_' + self.key)
             elif self.parent and self.parent.type == 'ROOT':
-                result.append(self.type.ljust(7))	# Make sure CGATS file
-                                                # identifiers are always
-                                                # a minimum of 7 characters
+                result.append(self.type.ljust(7))  # Make sure CGATS file
+                                                   # identifiers are always
+                                                   # a minimum of 7 characters
                 result.append('')
             if self.type in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION'):
                 iterable = self
@@ -581,8 +582,7 @@ class CGATS(dict):
                                         for item in
                                         list(data.parent['DATA_FORMAT'].values())]))
             result.append('END_DATA')
-        if (self.parent and self.parent.type or
-            self.type) == 'ROOT' and result and result[-1] != '' and lvl == 0:
+        if (self.parent and self.parent.type or self.type) == 'ROOT' and result and result[-1] != '' and lvl == 0:
             # Add empty line at end if not yet present
             result.append('')
         self.root._lvl -= 1

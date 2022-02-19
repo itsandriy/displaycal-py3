@@ -37,7 +37,7 @@ class ParseMaster(object):
     EXPRESSION = 0
     REPLACEMENT = 1
     LENGTH = 2
-    GROUPS = re.compile(r"""\(""", re.M)#g
+    GROUPS = re.compile(r"""\(""", re.M)  # g
     SUB_REPLACE = re.compile(r"""\$\d""", re.M)
     INDEXED = re.compile(r"""^\$\d+$""", re.M)
     TRIM = re.compile(r"""(['"])\1\+(.*)\+\1\1$""", re.M)

@@ -493,8 +493,7 @@ def setup():
                              os.path.join(pydir, "dist", tmpl_name),
                              lastmod_time, {"APPDATAPROVIDES": provides,
                                             "LANGUAGES": languages,
-                                            "CHANGELOG": format_chglog(chglog,
-                                                                       "appstream")})
+                                            "CHANGELOG": format_chglog(chglog, "appstream")})
     if appdata:
         sys.argv.remove("appdata")
 

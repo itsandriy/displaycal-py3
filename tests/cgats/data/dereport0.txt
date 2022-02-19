@@ -1,0 +1,22 @@
+Number of Samples: 126
+DE Formula: DE2000
+
+OVERALL - (126 colors)
+	Average DE: 3.9074
+	    Max DE: 9.4788
+	    Min DE: 0.7333
+	 StdDev DE: 2.5379
+
+BEST 90% - (113 colors)
+	Average DE: 3.3392
+	    Max DE: 8.0006
+	    Min DE: 0.7333
+	 StdDev DE: 2.0017
+
+WORST 10% - (13 colors)
+	Average DE: 8.8466
+	    Max DE: 9.4788
+	    Min DE: 8.1507
+	 StdDev DE: 0.4770
+
+
