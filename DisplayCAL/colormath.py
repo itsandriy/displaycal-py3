@@ -587,23 +587,23 @@ def smooth_avg(values, passes=1, window=None, protect=None):
     for x in range(0, passes):
         data = []
         for j, v in enumerate(values):
-            tmpwindow = window
+            tmp_window = window
             if not protect or j not in protect:
-                while 0 < j < len(values) - 1 and len(tmpwindow) >= 3:
-                    tl = (len(tmpwindow) - 1) / 2
-                    # print j, tl, tmpwindow
+                while 0 < j < len(values) - 1 and len(tmp_window) >= 3:
+                    tl = (len(tmp_window) - 1) / 2
+                    # print j, tl, tmp_window
                     if tl > 0 and j - tl >= 0 and j + tl <= len(values) - 1:
-                        windowslice = values[j - tl:j + tl + 1]
+                        windowslice = values[int(j - tl):int(j + tl + 1)]
                         windowsize = 0
-                        for k, weight in enumerate(tmpwindow):
+                        for k, weight in enumerate(tmp_window):
                             windowsize += float(weight) * windowslice[k]
-                        v = windowsize / sum(tmpwindow)
+                        v = windowsize / sum(tmp_window)
                         break
                     else:
-                        tmpwindow = tmpwindow[1:-1]
+                        tmp_window = tmp_window[1:-1]
             data.append(v)
         values = data
-    return data
+    return values
 
 
 def compute_bpc(bp_in, bp_out):
