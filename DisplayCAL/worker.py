@@ -11851,8 +11851,7 @@ usage: spotread [-options] [logfile]
 
     def progress_handler(self, event):
         """ Handle progress dialog updates and react to Argyll CMS command output """
-        if getattr(self, "subprocess_abort", False) or \
-                getattr(self, "thread_abort", False):
+        if getattr(self, "subprocess_abort", False) or getattr(self, "thread_abort", False):
             self.progress_wnd.Pulse(lang.getstr("aborting"))
             return
         percentage = None
@@ -11870,7 +11869,7 @@ usage: spotread [-options] [logfile]
                 percentage = int(self.lastmsg.read().split("%")[0])
             except ValueError:
                 pass
-        elif re.match(r"Patch \\d+ of \\d+", lastmsg, re.I):
+        elif re.match(r"Patch \d+ of \d+", lastmsg, re.I):
             # dispcal/dispread
             components = lastmsg.split()
             try:
@@ -11880,7 +11879,7 @@ usage: spotread [-options] [logfile]
                 pass
             else:
                 percentage = max(start - 1, 0) / end * 100
-        elif re.match(r"Added \\d+/\\d+", lastmsg, re.I):
+        elif re.match(r"Added \d+/\d+", lastmsg, re.I):
             # targen
             components = lastmsg.lower().replace("added ", "").split("/")
             try:
@@ -11891,7 +11890,7 @@ usage: spotread [-options] [logfile]
             else:
                 percentage = start / end * 100
         else:
-            iteration = re.search(r"It (\\d+):", msg)
+            iteration = re.search(r"It (\d+):", msg)
             if iteration:
                 # targen
                 try:
@@ -12804,10 +12803,10 @@ usage: spotread [-options] [logfile]
                 # 'path/to/1.gam' volume = xxx.x cubic units, intersect = xx.xx%
                 # 'path/to/2.gam' volume = xxx.x cubic units, intersect = xx.xx%
                 for line in worker.output:
-                    match = re.search(r"[\\\/]%s.gam'\s+volume\s*=\s*"
-                                      "\d+(?:\.\d+)?\s+cubic\s+units,?"
-                                      "\s+intersect\s*=\s*"
-                                      "(\d+(?:\.\d+)?)" %
+                    match = re.search(r"[\/]%s.gam'\s+volume\s*=\s*"
+                                      r"\d+(?:\.\d+)?\s+cubic\s+units,?"
+                                      r"\s+intersect\s*=\s*"
+                                      r"(\d+(?:\.\d+)?)" %
                                       re.escape(src), line)
                     if match:
                         gamut_coverage[key] = float(match.groups()[0]) / 100.0
@@ -14569,7 +14568,7 @@ BEGIN_DATA
                 self.log("%s: Patch update count: %i" %
                          (appname, self.patch_count))
         if self.use_madnet_tpg:
-            progress = re.search(r"(?:Patch (\\d+) of|Number of patches =) (\\d+)", txt, re.I)
+            progress = re.search(r"(?:Patch (\d+) of|Number of patches =) (\d+)", txt, re.I)
             if progress:
                 # Set madTPG progress bar
                 try:

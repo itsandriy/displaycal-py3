@@ -469,12 +469,12 @@ class CGATS(dict):
                         display = self.queryv1("DISPLAY")
                     if localized:
                         from DisplayCAL import localization as lang
-                        tech = str(tech).encode()
+                        tech = str(tech)
                         tech = lang.getstr("display.tech." + tech, default=tech)
                         if display:
                             # Localized tech will be unicode always, need to
                             # make sure display is as well
-                            display = str(display).encode()
+                            display = str(display)
                     if display:
                         tech += " (%s)" % display
                 desc = tech
