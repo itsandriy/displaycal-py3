@@ -8,35 +8,35 @@ def test_cgats_with_sample_data_1(data_files):
     """
     cgats = CGATS.CGATS(cgats=data_files["cgats0.txt"].absolute())
 
-    assert cgats[0]["DESCRIPTOR"] == "Output Characterisation"
-    assert cgats[0]["ORIGINATOR"] == "Barbieri Gateway MAC 4.5.0, Speclib Version: 4.59"
-    assert cgats[0]["INSTRUMENTATION"] == "Spectropad  ver:6.26-6.10 R DOC,SN=B5101140,MN=B11J0026,1"
-    assert cgats[0]["BARBIERI_INFO_0"] == "Mode=Reflection,Measurement Condition=M1,Aperture=6,IntegrationTime=7"
-    assert cgats[0]["BARBIERI_INFO_1"] == "<Type>eChartJob</Type>, <ReferenceCheck>1</ReferenceCheck>, <JobName>IT8_" \
-                                           "7-4-M1</JobName>, Spectro_xy_version=1, Spectro_xy_version=1,File_Format=" \
-                                           "BARBIERI - Horizontal (default),Patches_X=24,"
-    assert cgats[0]["BARBIERI_INFO_2"] == "Patches_Y=17,Number_of_Patches=1617,Number_of_Pages=4,Target_Size_X=277,T" \
-                                           "arget_Size_Y=206,MR,Illuminant=D50,Observer=10,Density=Status T,Save_Spec" \
-                                           "tral=1,Save_Lab=1,Save_XYZ=1,Save_Density=1,"
-    assert cgats[0]["BARBIERI_INFO_3"] == "Save_CxF=255,Fast_Measuring_Mode=1,Use_AutoPositioning=1,Use_AutoRecognit" \
-                                           "ion=0,Run_Profiler=0,Reference_File_Name=References/IT8_7-4 CMYK visual.r" \
-                                           "ef,Quality_Control=0,Control_Reference_File=,"
-    assert cgats[0]["BARBIERI_INFO_4"] == "Control_Settings_File=,Profile_File_Name=,Target_Image_Preview=Previews/I" \
-                                           "T8_7-4 CMYK visual.bmp,Spot_Measurement_Mode=0,Spot_Measurement=0,Display" \
-                                           "_Values=0,Number_of_Measurements_per_Patch_y=1,"
-    assert cgats[0]["BARBIERI_INFO_5"] == "Distance_of_Measurements_per_Patch_y=10,Number_of_Measurements_per_Patch_" \
-                                           "x=1,Distance_of_Measurements_per_Patch_x=10,Average_Method=1,Target_Heade" \
-                                           "r_Size=20,AutoPositioning_Mode=0,"
-    assert cgats[0]["BARBIERI_INFO_6"] == "Continuous_Measurement_Mode=0,Save_Continuous_Measurement=0,Continuous_Me" \
-                                           "asurement_Delay=0,CF_Option=1,Calibration_Frequency=0,Measuring_Aperture=" \
-                                           "6,Slope_Factor=1.000,Job_protection=-1,"
-    assert cgats[0]["BARBIERI_INFO_7"] == "Measurement_Condition=M1,Translucency_Mode=0,Translucency_IntTime=1000,Sa" \
-                                           "ve_Debug=0,"
-    assert cgats[0]["MEASUREMENT_SOURCE"] == "Illumination=D50	ObserverAngle=10degree	WhiteBase=Abs	Filter=No"
-    assert cgats[0]["ILLUMINANT"] == "D50"
-    assert cgats[0]["OBSERVER"] == "10"
-    assert cgats[0]["PRINT_CONDITIONS"] == "No printer defined, No resolution defined, No ink defined, No paper defi" \
-                                            "ned, No screening defined"
+    assert cgats[0]["DESCRIPTOR"] == b"Output Characterisation"
+    assert cgats[0]["ORIGINATOR"] == b"Barbieri Gateway MAC 4.5.0, Speclib Version: 4.59"
+    assert cgats[0]["INSTRUMENTATION"] == b"Spectropad  ver:6.26-6.10 R DOC,SN=B5101140,MN=B11J0026,1"
+    assert cgats[0]["BARBIERI_INFO_0"] == b"Mode=Reflection,Measurement Condition=M1,Aperture=6,IntegrationTime=7"
+    assert cgats[0]["BARBIERI_INFO_1"] == b"<Type>eChartJob</Type>, <ReferenceCheck>1</ReferenceCheck>, <JobName>IT8_" \
+                                          b"7-4-M1</JobName>, Spectro_xy_version=1, Spectro_xy_version=1,File_Format=" \
+                                          b"BARBIERI - Horizontal (default),Patches_X=24,"
+    assert cgats[0]["BARBIERI_INFO_2"] == b"Patches_Y=17,Number_of_Patches=1617,Number_of_Pages=4,Target_Size_X=277,T" \
+                                          b"arget_Size_Y=206,MR,Illuminant=D50,Observer=10,Density=Status T,Save_Spec" \
+                                          b"tral=1,Save_Lab=1,Save_XYZ=1,Save_Density=1,"
+    assert cgats[0]["BARBIERI_INFO_3"] == b"Save_CxF=255,Fast_Measuring_Mode=1,Use_AutoPositioning=1,Use_AutoRecognit" \
+                                          b"ion=0,Run_Profiler=0,Reference_File_Name=References/IT8_7-4 CMYK visual.r" \
+                                          b"ef,Quality_Control=0,Control_Reference_File=,"
+    assert cgats[0]["BARBIERI_INFO_4"] == b"Control_Settings_File=,Profile_File_Name=,Target_Image_Preview=Previews/I" \
+                                          b"T8_7-4 CMYK visual.bmp,Spot_Measurement_Mode=0,Spot_Measurement=0,Display" \
+                                          b"_Values=0,Number_of_Measurements_per_Patch_y=1,"
+    assert cgats[0]["BARBIERI_INFO_5"] == b"Distance_of_Measurements_per_Patch_y=10,Number_of_Measurements_per_Patch_" \
+                                          b"x=1,Distance_of_Measurements_per_Patch_x=10,Average_Method=1,Target_Heade" \
+                                          b"r_Size=20,AutoPositioning_Mode=0,"
+    assert cgats[0]["BARBIERI_INFO_6"] == b"Continuous_Measurement_Mode=0,Save_Continuous_Measurement=0,Continuous_Me" \
+                                          b"asurement_Delay=0,CF_Option=1,Calibration_Frequency=0,Measuring_Aperture=" \
+                                          b"6,Slope_Factor=1.000,Job_protection=-1,"
+    assert cgats[0]["BARBIERI_INFO_7"] == b"Measurement_Condition=M1,Translucency_Mode=0,Translucency_IntTime=1000,Sa" \
+                                          b"ve_Debug=0,"
+    assert cgats[0]["MEASUREMENT_SOURCE"] == b"Illumination=D50	ObserverAngle=10degree	WhiteBase=Abs	Filter=No"
+    assert cgats[0]["ILLUMINANT"] == b"D50"
+    assert cgats[0]["OBSERVER"] == b"10"
+    assert cgats[0]["PRINT_CONDITIONS"] == b"No printer defined, No resolution defined, No ink defined, No paper defi" \
+                                           b"ned, No screening defined"
     assert cgats[0]["NUMBER_OF_FIELDS"] == 52
     assert isinstance(cgats[0]["DATA_FORMAT"], CGATS.CGATS)
 
@@ -1680,16 +1680,78 @@ def test_cgats_with_sample_data_1(data_files):
             assert cgats[0]['DATA'][i][k] == values[i][j + 1]
 
 
-def test_cgats_with_sample_data_2(data_files):
+def test_cgats_with_sample_data_1A(data_files):
     """tests CGATS class with some sample data
+    """
+    cgats = CGATS.CGATS(cgats=data_files["cgats0.txt"].absolute())
+
+    assert cgats[0]["DESCRIPTOR"] == b"Output Characterisation"
+    assert cgats[0]["ORIGINATOR"] == b"Barbieri Gateway MAC 4.5.0, Speclib Version: 4.59"
+    assert cgats[0]["INSTRUMENTATION"] == b"Spectropad  ver:6.26-6.10 R DOC,SN=B5101140,MN=B11J0026,1"
+    assert cgats[0]["BARBIERI_INFO_0"] == b"Mode=Reflection,Measurement Condition=M1,Aperture=6,IntegrationTime=7"
+    assert cgats[0]["BARBIERI_INFO_1"] == b"<Type>eChartJob</Type>, <ReferenceCheck>1</ReferenceCheck>, <JobName>IT8_" \
+                                           b"7-4-M1</JobName>, Spectro_xy_version=1, Spectro_xy_version=1,File_Format=" \
+                                           b"BARBIERI - Horizontal (default),Patches_X=24,"
+    assert cgats[0]["BARBIERI_INFO_2"] == b"Patches_Y=17,Number_of_Patches=1617,Number_of_Pages=4,Target_Size_X=277,T" \
+                                           b"arget_Size_Y=206,MR,Illuminant=D50,Observer=10,Density=Status T,Save_Spec" \
+                                           b"tral=1,Save_Lab=1,Save_XYZ=1,Save_Density=1,"
+    assert cgats[0]["BARBIERI_INFO_3"] == b"Save_CxF=255,Fast_Measuring_Mode=1,Use_AutoPositioning=1,Use_AutoRecognit" \
+                                           b"ion=0,Run_Profiler=0,Reference_File_Name=References/IT8_7-4 CMYK visual.r" \
+                                           b"ef,Quality_Control=0,Control_Reference_File=,"
+    assert cgats[0]["BARBIERI_INFO_4"] == b"Control_Settings_File=,Profile_File_Name=,Target_Image_Preview=Previews/I" \
+                                           b"T8_7-4 CMYK visual.bmp,Spot_Measurement_Mode=0,Spot_Measurement=0,Display" \
+                                           b"_Values=0,Number_of_Measurements_per_Patch_y=1,"
+    assert cgats[0]["BARBIERI_INFO_5"] == b"Distance_of_Measurements_per_Patch_y=10,Number_of_Measurements_per_Patch_" \
+                                           b"x=1,Distance_of_Measurements_per_Patch_x=10,Average_Method=1,Target_Heade" \
+                                           b"r_Size=20,AutoPositioning_Mode=0,"
+    assert cgats[0]["BARBIERI_INFO_6"] == b"Continuous_Measurement_Mode=0,Save_Continuous_Measurement=0,Continuous_Me" \
+                                           b"asurement_Delay=0,CF_Option=1,Calibration_Frequency=0,Measuring_Aperture=" \
+                                           b"6,Slope_Factor=1.000,Job_protection=-1,"
+    assert cgats[0]["BARBIERI_INFO_7"] == b"Measurement_Condition=M1,Translucency_Mode=0,Translucency_IntTime=1000,Sa" \
+                                           b"ve_Debug=0,"
+    assert cgats[0]["MEASUREMENT_SOURCE"] == b"Illumination=D50	ObserverAngle=10degree	WhiteBase=Abs	Filter=No"
+    assert cgats[0]["ILLUMINANT"] == b"D50"
+    assert cgats[0]["OBSERVER"] == b"10"
+    assert cgats[0]["PRINT_CONDITIONS"] == b"No printer defined, No resolution defined, No ink defined, No paper defi" \
+                                            b"ned, No screening defined"
+    assert cgats[0]["NUMBER_OF_FIELDS"] == 52
+    assert isinstance(cgats[0]["DATA_FORMAT"], CGATS.CGATS)
+
+    keys = [
+        'CMYK_C', 'CMYK_M', 'CMYK_Y', 'CMYK_K', 'XYZ_X', 'XYZ_Y', 'XYZ_Z', 'LAB_L', 'LAB_A', 'LAB_B',
+        'SPECTRAL_380', 'SPECTRAL_390', 'SPECTRAL_400', 'SPECTRAL_410', 'SPECTRAL_420', 'SPECTRAL_430', 'SPECTRAL_440',
+        'SPECTRAL_450', 'SPECTRAL_460', 'SPECTRAL_470', 'SPECTRAL_480', 'SPECTRAL_490', 'SPECTRAL_500', 'SPECTRAL_510',
+        'SPECTRAL_520', 'SPECTRAL_530', 'SPECTRAL_540', 'SPECTRAL_550', 'SPECTRAL_560', 'SPECTRAL_570', 'SPECTRAL_580',
+        'SPECTRAL_590', 'SPECTRAL_600', 'SPECTRAL_610', 'SPECTRAL_620', 'SPECTRAL_630', 'SPECTRAL_640', 'SPECTRAL_650',
+        'SPECTRAL_660', 'SPECTRAL_670', 'SPECTRAL_680', 'SPECTRAL_690', 'SPECTRAL_700', 'SPECTRAL_710', 'SPECTRAL_720',
+        'SPECTRAL_730', 'SPECTRAL_740', 'SPECTRAL_750', 'SPECTRAL_760', 'SPECTRAL_770', 'SPECTRAL_780',
+    ]
+
+    # TO GENERATE DATA
+    # for i in range(cgats[0]['NUMBER_OF_SETS']):
+    #     values = ", ".join([str(x) for x in cgats[0]['DATA'][i].values()])
+    #     print(f"        {i}: [{values}],")
+
+    values = {
+        0: [1, 0.0, 100.0, 20.0, 0.0, 36.266, 25.588, 21.129, 57.644, 43.118, -0.587, 0.22703, 0.158521, 0.198916, 0.233576, 0.273344, 0.281545, 0.275103, 0.268394, 0.2608, 0.25577, 0.240171, 0.224809, 0.213421, 0.19068, 0.164624, 0.13483, 0.12763, 0.129758, 0.126645, 0.130081, 0.177509, 0.272117, 0.429915, 0.576974, 0.683854, 0.746946, 0.776108, 0.794132, 0.808238, 0.815922, 0.816633, 0.81732, 0.824127, 0.824325, 0.824718, 0.83017, 0.831191, 0.83384, 0.83384, 0.83384, 0.83384],
+        1: [2, 0.0, 85.0, 20.0, 0.0, 38.662, 28.299, 23.364, 60.157, 40.057, -0.601, 0.274704, 0.168645, 0.211179, 0.250617, 0.295082, 0.305504, 0.300246, 0.295093, 0.289493, 0.286288, 0.273133, 0.258376, 0.247178, 0.223566, 0.194819, 0.161104, 0.15285, 0.155392, 0.15176, 0.155079, 0.207079, 0.306173, 0.463505, 0.604229, 0.70203, 0.758555, 0.784057, 0.800388, 0.813682, 0.820672, 0.82168, 0.823508, 0.831216, 0.828949, 0.829395, 0.835401, 0.838929, 0.841753, 0.841753, 0.841753, 0.841753],
+    }
+
+    for i in values:
+        for j, k in enumerate(keys):
+            assert cgats[0]['DATA'][i][k] == values[i][j + 1]
+
+
+def test_cgats_with_sample_data_2(data_files):
+    """tests ``DisplayCAL.CGATS.CGATS`` class with some sample data
     """
     cgats = CGATS.CGATS(cgats=data_files["ccxx.ti1"].absolute())
 
-    assert cgats[0]["DESCRIPTOR"] == "Argyll Calibration Target chart information 1 for creating .ti3 for ccxxmake"
-    assert cgats[0]["ORIGINATOR"] == "Argyll targen"
-    assert cgats[0]["KEYWORDS"] == {0: 'APPROX_WHITE_POINT', 1: 'COLOR_REP'}
-    assert cgats[0]["APPROX_WHITE_POINT"] == "95.045781 100.000003 108.905751"
-    assert cgats[0]["COLOR_REP"] == "RGB"
+    assert cgats[0]["DESCRIPTOR"] == b"Argyll Calibration Target chart information 1 for creating .ti3 for ccxxmake"
+    assert cgats[0]["ORIGINATOR"] == b"Argyll targen"
+    assert cgats[0]["KEYWORDS"] == {0: b'APPROX_WHITE_POINT', 1: b'COLOR_REP'}
+    assert cgats[0]["APPROX_WHITE_POINT"] == b"95.045781 100.000003 108.905751"
+    assert cgats[0]["COLOR_REP"] == b"RGB"
     assert cgats[0]["NUMBER_OF_FIELDS"] == 7
     assert cgats[0]["NUMBER_OF_SETS"] == 4
 

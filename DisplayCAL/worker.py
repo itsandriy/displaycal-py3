@@ -1027,6 +1027,9 @@ def get_options_from_profile(profile):
     dispcal_args = None
     colprof_args = None
     if "targ" in profile.tags:
+        import pathlib
+        with open(pathlib.Path().home() / 'profile_tags_targ', 'wb') as f:
+            f.write(profile.tags.targ.data)
         ti3 = CGATS.CGATS(profile.tags.targ)
         if 1 in ti3 and "ARGYLL_DISPCAL_ARGS" in ti3[1] and \
                 ti3[1].ARGYLL_DISPCAL_ARGS:
@@ -10088,8 +10091,7 @@ usage: spotread [-options] [logfile]
                 except Info as exception:
                     return exception
                 # Get RGB space from already added matrix column tags
-                rgb_space = colormath.get_rgb_space(profile.get_rgb_space("pcs",
-                                                                          1))
+                rgb_space = colormath.get_rgb_space(profile.get_rgb_space("pcs", 1))
                 mtx = rgb_space[-1].inverted()
                 self.log("-" * 80)
                 for channel in "rgb":
@@ -10246,33 +10248,30 @@ usage: spotread [-options] [logfile]
             profile.tags.chrm = chrm
         # Fixup desc tags - ASCII needs to be 7-bit
         # also add Unicode strings if different from ASCII
-        if "desc" in profile.tags and isinstance(profile.tags.desc,
-                                                 ICCP.TextDescriptionType):
+        if "desc" in profile.tags and isinstance(profile.tags.desc, ICCP.TextDescriptionType):
             profile.setDescription(profile.getDescription())
-        if "dmdd" in profile.tags and isinstance(profile.tags.dmdd,
-                                                 ICCP.TextDescriptionType):
+        if "dmdd" in profile.tags and isinstance(profile.tags.dmdd, ICCP.TextDescriptionType):
             profile.setDeviceModelDescription(
                 profile.getDeviceModelDescription())
-        if "dmnd" in profile.tags and isinstance(profile.tags.dmnd,
-                                                 ICCP.TextDescriptionType):
+        if "dmnd" in profile.tags and isinstance(profile.tags.dmnd, ICCP.TextDescriptionType):
             profile.setDeviceManufacturerDescription(
                 profile.getDeviceManufacturerDescription())
         if tags and tags is not True:
             # Add custom tags
             for tagname, tag in tags.items():
                 if tagname == "mmod":
-                    profile.device["manufacturer"] = "\0\0" + tag["manufacturer"][1] + tag["manufacturer"][0]
-                    profile.device["model"] = "\0\0" + tag["model"][0] + tag["model"][1]
+                    profile.device["manufacturer"] = b"\0\0" + tag["manufacturer"][1] + tag["manufacturer"][0]
+                    profile.device["model"] = b"\0\0" + tag["model"][0] + tag["model"][1]
                 profile.tags[tagname] = tag
         elif tags is True:
             edid = self.get_display_edid()
             if edid:
-                profile.device["manufacturer"] = "\0\0" + edid["edid"][9] + edid["edid"][8]
-                profile.device["model"] = "\0\0" + edid["edid"][11] + edid["edid"][10]
+                profile.device["manufacturer"] = b"\0\0" + edid["edid"][9] + edid["edid"][8]
+                profile.device["model"] = b"\0\0" + edid["edid"][11] + edid["edid"][10]
                 # Add Apple-specific 'mmod' tag (TODO: need full spec)
-                mmod = ("mmod" + ("\x00" * 6) + edid["edid"][8:10] +
-                        ("\x00" * 2) + edid["edid"][11] + edid["edid"][10] +
-                        ("\x00" * 4) + ("\x00" * 20))
+                mmod = (b"mmod" + (b"\x00" * 6) + edid["edid"][8:10] +
+                        (b"\x00" * 2) + edid["edid"][11] + edid["edid"][10] +
+                        (b"\x00" * 4) + (b"\x00" * 20))
                 profile.tags.mmod = ICCP.ICCProfileTag(mmod, "mmod")
                 # Add new meta information based on EDID
                 profile.set_edid_metadata(edid)
@@ -11167,8 +11166,7 @@ usage: spotread [-options] [logfile]
         args.append(profile_name)
         args.append(inoutfile)
         # Add dispcal and colprof arguments to ti3
-        ti3 = add_options_to_ti3(inoutfile + ".ti3", options_dispcal,
-                                 self.options_colprof)
+        ti3 = add_options_to_ti3(inoutfile + ".ti3", options_dispcal, self.options_colprof)
         if ti3:
             color_rep = (ti3.queryv1("COLOR_REP") or "").split("_")
             # Prepare ChromaticityType tag
@@ -12858,10 +12856,9 @@ usage: spotread [-options] [logfile]
                             # contain TI3 data, but look for it anyways
                             # to be future-proof
                             ti3 = add_options_to_ti3(
-                                profile.tags.get("targ",
-                                                 profile.tags.get("CIED",
-                                                                  "")),
-                                self.options_dispcal)
+                                profile.tags.get("targ", profile.tags.get("CIED", "")),
+                                self.options_dispcal
+                            )
                             if not ti3:
                                 ti3 = CGATS.CGATS("TI3\n")
                                 ti3[1] = cal_cgats

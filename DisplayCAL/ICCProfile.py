@@ -2165,8 +2165,7 @@ def get_display_profile(display_no=0, x_hostname=None, x_display=None,
                                     warnings.warn(str(exception, enc), Warning)
                                 else:
                                     if property:
-                                        profile = ICCProfile("".join(chr(n) for n in property),
-                                                             use_cache=True)
+                                        profile = ICCProfile(b"".join(bytes(chr(n), "UTF-8") for n in property), use_cache=True)
                                 if profile:
                                     return profile
                                 if debug:
@@ -2599,7 +2598,7 @@ def uInt8Number(binaryString):
 
 
 def uInt8Number_tohex(num):
-    return struct.pack(">H", int(round(num)))[1]
+    return struct.pack(">H", int(round(num)))[1:2]
 
 
 def videoCardGamma(tagData, tagSignature):
@@ -2698,18 +2697,18 @@ class LazyLoadTagAODict(AODict):
                 tag = tagSignature2Tag[tagSignature](tagData, tagSignature)
             elif typeSignature in typeSignature2Type:
                 args = tagData, tagSignature
-                if typeSignature in ("clrt", "ncl2"):
+                if typeSignature in (b"clrt", b"ncl2"):
                     args += (self.profile.connectionColorSpace, )
-                    if typeSignature == "ncl2":
+                    if typeSignature == b"ncl2":
                         args += (self.profile.colorSpace, )
-                elif typeSignature in ("XYZ ", "mft2", "curv", "MS10", "pseq"):
+                elif typeSignature in (b"XYZ ", b"mft2", b"curv", b"MS10", b"pseq"):
                     args += (self.profile, )
                 tag = typeSignature2Type[typeSignature](*args)
             else:
                 tag = ICCProfileTag(tagData, tagSignature)
         except Exception as exception:
             raise ICCProfileInvalidError(
-                "Couldn't parse tag %r (type %r, offet %i, size %i): %r" %
+                "Couldn't parse tag %r (type %r, offset %i, size %i): %r" %
                 (tagSignature, typeSignature, tagDataOffset, tagDataSize, exception))
         self[key] = tag
         return tag
@@ -2755,12 +2754,12 @@ class ICCProfileTag(object):
             return "%s.%s(%r)" % (self.__class__.__module__, self.__class__.__name__, self.tagData)
 
 
-class Text(ICCProfileTag, UserString, str):
+class Text(ICCProfileTag, UserString):
 
     def __init__(self, seq):
         UserString.__init__(self, seq)
 
-    def __unicode__(self):
+    def __str__(self):
         # return str(self.data, fs_enc, errors="replace")
         return self.data
 
@@ -2885,9 +2884,9 @@ class LUT16Type(ICCProfileTag):
         self._input = None
         self._clut = None
         self._output = None
-        self._i = (tagData and uInt8Number(tagData[8])) or 0  # Input channel count
-        self._o = (tagData and uInt8Number(tagData[9])) or 0  # Output channel count
-        self._g = (tagData and uInt8Number(tagData[10])) or 0  # cLUT grid res
+        self._i = (tagData and uInt8Number(tagData[8:9])) or 0  # Input channel count
+        self._o = (tagData and uInt8Number(tagData[9:10])) or 0  # Output channel count
+        self._g = (tagData and uInt8Number(tagData[10:11])) or 0  # cLUT grid res
         self._n = (tagData and uInt16Number(tagData[48:50])) or 0  # Input channel entries count
         self._m = (tagData and uInt16Number(tagData[50:52])) or 0  # Output channel entries count
 
@@ -3392,8 +3391,7 @@ BEGIN_DATA
 
     @property
     def tagData(self):
-        doc = """
-        Return raw tag data.
+        """Return raw tag data.
         """
 
         if (self._matrix, self._input, self._clut, self._output) == (None, ) * 4:
@@ -3421,7 +3419,7 @@ BEGIN_DATA
                 tagData.extend(uInt16Number_tohex(v) for v in entries)
         for entries in self.output:
             tagData.extend(uInt16Number_tohex(v) for v in entries)
-        return "".join(tagData)
+        return b"".join(tagData)
 
     @tagData.setter
     def tagData(self, tagData):
@@ -3612,10 +3610,8 @@ class CurveType(ICCProfileTag, list):
                 vmax = self[-1]
         return colormath.get_gamma(values, 65535.0, vmin, vmax, average, least_squares)
 
-    def get_transfer_function(self, best=True, slice=(0.05, 0.95), black_Y=None,
-                              outoffset=None):
+    def get_transfer_function(self, best=True, slice=(0.05, 0.95), black_Y=None, outoffset=None):
         """Return transfer function name, exponent and match percentage
-
         """
         if len(self) == 1:
             # Gamma
@@ -3833,7 +3829,7 @@ class CurveType(ICCProfileTag, list):
         self[:] = [min(v * 65535, 65535) for v in values]
 
     def set_smpte2084_trc(self, black_cdm2=0, white_cdm2=100,
-                          master_black_cdm2=0, master_white_cdm2=None,
+                          master_black_cdm2=0, master_white_cdm2=0,
                           use_alternate_master_white_clip=True,
                           rolloff=False, size=None):
         """Set the response to the SMPTE 2084 perceptual quantizer (PQ) function
@@ -4271,7 +4267,7 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict): # ICC v4
         if not tagData:
             return
         recordsCount = uInt32Number(tagData[8:12])
-        recordSize = uInt32Number(tagData[12:16]) # 12
+        recordSize = uInt32Number(tagData[12:16])  # 12
         if recordSize != 12:
             print("Warning (non-critical): '%s' invalid record length (expected 12, got %s)" %
                   (tagData[:4], recordSize))
@@ -4333,7 +4329,6 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict): # ICC v4
     def tagData(self):
         """Return raw tag data.
         """
-
         tagData = [b"mluc", b"\0" * 4]
         recordsCount = 0
         for languageCode in self:
@@ -4359,7 +4354,7 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict): # ICC v4
                 tagData.append(uInt32Number_tohex(recordLength))
                 tagData.append(uInt32Number_tohex(storage_offset + offset))
         tagData.append("".join(storage))
-        return "".join(tagData)
+        return b"".join(tagData)
 
     @tagData.setter
     def tagData(self, tagData):
@@ -4474,7 +4469,7 @@ class s15Fixed16ArrayType(ICCProfileTag, list):
         tag_data = [b"sf32", b"\0" * 4]
         for value in self:
             tag_data.append(s15Fixed16Number_tohex(value))
-        return "".join(tag_data)
+        return b"".join(tag_data)
 
     @tagData.setter
     def tagData(self, tag_data):
@@ -4482,7 +4477,7 @@ class s15Fixed16ArrayType(ICCProfileTag, list):
 
 
 def SignatureType(tagData, tagSignature):
-    tag = Text(tagData[8:12].rstrip("\0"))
+    tag = Text(tagData[8:12].rstrip(b"\0"))
     tag.tagData = tagData
     tag.tagSignature = tagSignature
     return tag
@@ -4577,7 +4572,7 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
         self.macScriptCode = 0
         if len(tagData) > macOffset + 2:
             self.macScriptCode = uInt16Number(tagData[macOffset:macOffset + 2])
-            macDescriptionLength = ord(tagData[macOffset + 2])
+            macDescriptionLength = ord(tagData[macOffset + 2:macOffset + 3])
             if macDescriptionLength:
                 try:
                     macDescription = str(tagData[macOffset + 3: macOffset + 3 + macDescriptionLength],
@@ -4818,7 +4813,7 @@ class VideoCardGammaFormulaType(VideoCardGammaType):
                      math.pow(1.0 / (entryCount - 1) * i, gamma) *
                      float(vmax - vmin))
                 tagData.append(int2hex[entrySize](quantizer(v * maxValue)))
-        return VideoCardGammaTableType("".join(tagData), self.tagSignature)
+        return VideoCardGammaTableType(b"".join(tagData), self.tagSignature)
 
 
 class VideoCardGammaTableType(VideoCardGammaType):
@@ -4832,9 +4827,9 @@ class VideoCardGammaTableType(VideoCardGammaType):
                          "data": []})
             return
         data = tagData[12:]
-        channels   = uInt16Number(data[0:2])
+        channels = uInt16Number(data[0:2])
         entryCount = uInt16Number(data[2:4])
-        entrySize  = uInt16Number(data[4:6])
+        entrySize = uInt16Number(data[4:6])
         self.update({
             "channels": channels,
             "entryCount": entryCount,
@@ -4896,7 +4891,7 @@ class VideoCardGammaTableType(VideoCardGammaType):
             tagData.append(u16Fixed16Number_tohex(gamma))
             tagData.append(u16Fixed16Number_tohex(vmin))
             tagData.append(u16Fixed16Number_tohex(vmax))
-        return VideoCardGammaFormulaType("".join(tagData), self.tagSignature)
+        return VideoCardGammaFormulaType(b"".join(tagData), self.tagSignature)
 
     def quantize(self, bits=16, quantizer=round):
         """Quantize to n bits of precision.
@@ -5056,7 +5051,7 @@ class WcsProfilesTagType(ICCProfileTag, ADict):
             if pcurves is None:
                 return
             vcgtData = "vcgt"
-            vcgtData += "\0" * 4
+            vcgtData += b"\0" * 4
             vcgtData += uInt32Number_tohex(1)  # Type 1 = formula
             for color in ("Red", "Green", "Blue"):
                 trc = pcurves.find(color + "TRC")
@@ -5280,10 +5275,10 @@ class chromaticAdaptionTag(colormath.Matrix3x3, s15Fixed16ArrayType):
 
 class NamedColor2Value(object):
 
-    def __init__(self, valueData="\0" * 38, deviceCoordCount=0, pcs="XYZ", device="RGB"):
+    def __init__(self, valueData=b"\0" * 38, deviceCoordCount=0, pcs="XYZ", device="RGB"):
         self._pcsname = pcs
         self._devicename = device
-        end = valueData[0:32].find("\0")
+        end = valueData[0:32].find(b"\0")
         if end < 0:
             end = 32
         self.rootName = valueData[0:end]
@@ -5347,12 +5342,12 @@ class NamedColor2Value(object):
         """ Return raw tag data.
         """
         valueData = []
-        valueData.append(self.rootName.ljust(32, "\0"))
+        valueData.append(self.rootName.ljust(32, b"\0"))
         valueData.extend(
             [uInt16Number_tohex(pcsval) for pcsval in self.pcsvalues])
         valueData.extend(
             [uInt16Number_tohex(deviceval) for deviceval in self.devicevalues])
-        return "".join(valueData)
+        return b"".join(valueData)
 
     @tagData.setter
     def tagData(self, tagData):
@@ -5374,7 +5369,7 @@ class NamedColor2ValueTuple(tuple):
     def tagData(self):
         """ Return raw tag data.
         """
-        return "".join([val.tagData for val in self])
+        return b"".join([val.tagData for val in self])
 
     @tagData.setter
     def tagData(self, tagData):
@@ -5385,7 +5380,7 @@ class NamedColor2Type(ICCProfileTag, AODict):
 
     REPR_OUTPUT_SIZE = 10
 
-    def __init__(self, tagData="\0" * 84, tagSignature=None, pcs=None,
+    def __init__(self, tagData=b"\0" * 84, tagSignature=None, pcs=None,
                  device=None):
         ICCProfileTag.__init__(self, tagData, tagSignature)
         AODict.__init__(self)
@@ -5409,7 +5404,7 @@ class NamedColor2Type(ICCProfileTag, AODict):
             end = start + (stride*colorCount)
             for i in range(start, end, stride):
                 nc2 = NamedColor2Value(
-                    tagData[i:i+stride],
+                    tagData[i:i + stride],
                     deviceCoordCount, pcs=pcs, device=device)
                 keys.append(nc2.name)
                 values.append(nc2)
@@ -5499,7 +5494,7 @@ class NamedColor2Type(ICCProfileTag, AODict):
                    uInt32Number_tohex(self.deviceCoordCount),
                    self._prefix.ljust(32), self._suffix.ljust(32),
                    self.colorValues.tagData]
-        return "".join(tagData)
+        return b"".join(tagData)
 
     @tagData.setter
     def tagData(self, tagData):
@@ -5512,26 +5507,26 @@ tagSignature2Tag = {
 }
 
 typeSignature2Type = {
-    "chrm": ChromaticityType,
-    "clrt": ColorantTableType,
-    "curv": CurveType,
-    "desc": TextDescriptionType,  # ICC v2
-    "dict": DictType,  # ICC v2 + v4
-    "dtim": DateTimeType,
-    "meas": MeasurementType,
-    "mluc": MultiLocalizedUnicodeType,  # ICC v4
-    "mft2": LUT16Type,
-    "mmod": MakeAndModelType,  # Apple private tag
-    "ncl2": NamedColor2Type,
-    "para": ParametricCurveType,
-    "pseq": ProfileSequenceDescType,
-    "sf32": s15Fixed16ArrayType,
-    "sig ": SignatureType,
-    "text": TextType,
-    "vcgt": videoCardGamma,
-    "view": ViewingConditionsType,
-    "MS10": WcsProfilesTagType,
-    "XYZ ": XYZType
+    b"chrm": ChromaticityType,
+    b"clrt": ColorantTableType,
+    b"curv": CurveType,
+    b"desc": TextDescriptionType,  # ICC v2
+    b"dict": DictType,  # ICC v2 + v4
+    b"dtim": DateTimeType,
+    b"meas": MeasurementType,
+    b"mluc": MultiLocalizedUnicodeType,  # ICC v4
+    b"mft2": LUT16Type,
+    b"mmod": MakeAndModelType,  # Apple private tag
+    b"ncl2": NamedColor2Type,
+    b"para": ParametricCurveType,
+    b"pseq": ProfileSequenceDescType,
+    b"sf32": s15Fixed16ArrayType,
+    b"sig ": SignatureType,
+    b"text": TextType,
+    b"vcgt": videoCardGamma,
+    b"view": ViewingConditionsType,
+    b"MS10": WcsProfilesTagType,
+    b"XYZ ": XYZType,
 }
 
 
@@ -6373,8 +6368,7 @@ class ICCProfile(object):
         for i, XYZ in values.items():
             rgb = mtx.inverted() * XYZ
             for j, channel in enumerate(("r", "g", "b")):
-                self.tags[channel + "TRC"][i] = max(min(rgb[j] * 65535, 65535),
-                                                    0)
+                self.tags[channel + "TRC"][i] = max(min(rgb[j] * 65535, 65535), 0)
         self.set_blackpoint(XYZbp)
 
     def set_dicom_trc(self, XYZbp, white_cdm2=100, size=1024):
@@ -6629,7 +6623,7 @@ class ICCProfile(object):
         info["Creator"] = hexrepr(self.creator, manufacturers)
         info["Checksum"] = "0x%s" % binascii.hexlify(self.ID).upper().decode()
         calcID = self.calculateID(False)
-        if self.ID != "\0" * 16:
+        if self.ID != b"\0" * 16:
             info["    Checksum OK"] = {True: "Yes"}.get(self.ID == calcID, "No")
         if self.ID != calcID:
             info["    Calculated checksum"] = "0x%s" % binascii.hexlify(calcID).upper()
@@ -6839,7 +6833,7 @@ class ICCProfile(object):
                 else:
                     info[name] = (tag[:60 - len(name)] +
                                   (b"...[%i more Bytes]" % (len(tag) - (60 - len(name)))
-                                   if len(tag) > 60 - len(name) else b"")).decode()
+                                   if len(tag) > 60 - len(name) else b""))
             elif isinstance(tag, TextDescriptionType):
                 if not tag.get("Unicode") and not tag.get("Macintosh"):
                     info["%s (ASCII)" % name] = tag.ASCII.decode()
@@ -6876,7 +6870,7 @@ class ICCProfile(object):
                         vmax = scale
                         gamma = colormath.get_gamma([((len(channel) / 2 - 1) /
                                                       (len(channel) - 1.0) * scale,
-                                                      channel[len(channel) / 2 - 1])],
+                                                      channel[int(len(channel) / 2 - 1)])],
                                                     scale, vmin, vmax, False,
                                                     False)
                         if gamma:

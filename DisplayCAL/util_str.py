@@ -179,39 +179,39 @@ safesubst = {
 subst = dict(safesubst)
 subst.update({
     # Latin-1 supplement
-    "\u00a6": "|",
-    "\u00ab": "<<",
-    "\u00bb": ">>",
-    "\u00bc": "1/4",
-    "\u00bd": "1/2",
-    "\u00be": "3/4",
-    "\u00f7": ":",
+    "\u00a6": b"|",
+    "\u00ab": b"<<",
+    "\u00bb": b">>",
+    "\u00bc": b"1/4",
+    "\u00bd": b"1/2",
+    "\u00be": b"3/4",
+    "\u00f7": b":",
     # General punctuation
-    "\u201c": "\x22",
-    "\u201d": "\x22",
-    "\u201f": "\x22",
-    "\u2033": "\x22",
-    "\u2036": "\x22",
-    "\u2039": "<",
-    "\u203a": ">",
-    "\u203d": "!?",
-    "\u2044": "/",
+    "\u201c": b"\x22",
+    "\u201d": b"\x22",
+    "\u201f": b"\x22",
+    "\u2033": b"\x22",
+    "\u2036": b"\x22",
+    "\u2039": b"<",
+    "\u203a": b">",
+    "\u203d": b"!?",
+    "\u2044": b"/",
     # Number forms
-    "\u2153": "1/3",
-    "\u2154": "2/3",
-    "\u215b": "1/8",
-    "\u215c": "3/8",
-    "\u215d": "5/8",
-    "\u215e": "7/8",
+    "\u2153": b"1/3",
+    "\u2154": b"2/3",
+    "\u215b": b"1/8",
+    "\u215c": b"3/8",
+    "\u215d": b"5/8",
+    "\u215e": b"7/8",
     # Arrows
-    "\u2190": "<-",
-    "\u2192": "->",
-    "\u2194": "<->",
+    "\u2190": b"<-",
+    "\u2192": b"->",
+    "\u2194": b"<->",
     # Mathematical operators
-    "\u226a": "<<",
-    "\u226b": ">>",
-    "\u2264": "<=",
-    "\u2265": "=>",
+    "\u226a": b"<<",
+    "\u226b": b">>",
+    "\u2264": b"<=",
+    "\u2265": b"=>",
 })
 
 
@@ -239,12 +239,11 @@ def asciize(obj):
 
     This function either takes a string or an exception as argument (when used
     as error handler for encode or decode).
-
     """
-    chars = ""
+    chars = b""
     if isinstance(obj, Exception):
         for char in obj.object[obj.start:obj.end]:
-            chars += subst.get(char, normalencode(char).strip() or "?")
+            chars += subst.get(char, normalencode(char).strip() or b"?")
         return chars, obj.end
     else:
         return obj.encode("ASCII", "asciize")
@@ -260,13 +259,13 @@ def safe_asciize(obj):
     as error handler for encode or decode).
 
     """
-    chars = ""
+    chars = b""
     if isinstance(obj, Exception):
         for char in obj.object[obj.start:obj.end]:
             if char in safesubst:
                 subst_char = safesubst[char]
             else:
-                subst_char = "_"
+                subst_char = b"_"
                 if char not in subst:
                     subst_char = normalencode(char).strip() or subst_char
             chars += subst_char
@@ -285,7 +284,7 @@ def escape(obj):
     as error handler for encode or decode).
 
     """
-    chars = ""
+    chars = b""
     if isinstance(obj, Exception):
         for char in obj.object[obj.start:obj.end]:
             chars += subst.get(char, "\\u%s" % hex(ord(char))[2:].rjust(4, '0'))
@@ -298,8 +297,8 @@ def escape(obj):
 codecs.register_error("escape", escape)
 
 
-def make_ascii_printable(text, subst=""):
-    return "".join([char if char in ascii_printable else subst for char in text])
+def make_ascii_printable(text, subst=b""):
+    return b"".join([char if char in ascii_printable else subst for char in text])
 
 
 def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
@@ -340,7 +339,6 @@ def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
 
 def normalencode(unistr, form="NFKD", encoding="ASCII", errors="ignore"):
     """Return encoded normal form of unicode string
-
     """
     return unicodedata.normalize(form, unistr).encode(encoding, errors)
 
@@ -433,7 +431,6 @@ def indent(text, prefix, predicate=None):
 
 def universal_newlines(txt):
     """Return txt with all new line formats converted to POSIX newlines.
-
     """
     return txt.replace("\r\n", "\n").replace("\r", "\n")
 

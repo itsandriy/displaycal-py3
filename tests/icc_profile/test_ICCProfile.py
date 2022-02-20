@@ -160,6 +160,16 @@ def test_iccprofile_from_xyz():
     assert isinstance(mtx, ICCProfile.ICCProfile)
 
 
+def test_uInt8Number_tohex_is_working_properly():
+    """testing if uInt8Number_tohex is working properly
+    """
+    from DisplayCAL.ICCProfile import uInt8Number_tohex
+    test_value = 1321
+    result = uInt8Number_tohex(test_value)
+    expected_value = b")"
+    assert result == expected_value
+
+
 def test_uInt32Number_tohex_is_working_properly():
     """testing if uInt32Number_tohex is working properly
     """
@@ -167,6 +177,26 @@ def test_uInt32Number_tohex_is_working_properly():
     test_value = 132123
     result = uInt32Number_tohex(test_value)
     expected_value = b"\x00\x02\x04\x1b"
+    assert result == expected_value
+
+
+def test_s15Fixed16Number_tohex_is_working_properly():
+    """testing if s15Fixed16Number_tohex is working properly
+    """
+    from DisplayCAL.ICCProfile import s15Fixed16Number_tohex
+    test_value = 123.12
+    result = s15Fixed16Number_tohex(test_value)
+    expected_value = b"\x00{\x1e\xb8"
+    assert result == expected_value
+
+
+def test_uInt16Number_tohex_tohex_is_working_properly():
+    """testing if uInt16Number_tohex is working properly
+    """
+    from DisplayCAL.ICCProfile import uInt16Number_tohex
+    test_value = 12123
+    result = uInt16Number_tohex(test_value)
+    expected_value = b"/["
     assert result == expected_value
 
 
@@ -198,7 +228,7 @@ def test_sample_icc_file_1(data_files):
     icc_profile = ICCProfile.ICCProfile(profile=data_files['default.icc'].absolute())
     result = icc_profile.get_info()
 
-    expected_result =[
+    expected_result = [
         ['Size', '20240 Bytes (19.77 KiB)'],
         ['Preferred CMM', "0x6172676C 'argl' ArgyllCMS"],
         ['ICC version', '2.2'],
@@ -218,18 +248,59 @@ def test_sample_icc_file_1(data_files):
         ['Creator', "0x6172676C 'argl' ArgyllCMS"],
         ['Checksum', '0xCE27ED7FC7C06FBB9492BC1408729D6C'],
         ['    Checksum OK', 'Yes'],
-        ['Description', "'desc' [129 Bytes]"],
-        ['Copyright', "'text' [47 Bytes]"],
-        ['Media white point', "'XYZ ' [20 Bytes]"],
-        ['Media black point', "'XYZ ' [20 Bytes]"],
-        ['Video card gamma table', "'vcgt' [1554 Bytes]"],
-        ['Red matrix column', "'XYZ ' [20 Bytes]"],
-        ['Green matrix column', "'XYZ ' [20 Bytes]"],
-        ['Blue matrix column', "'XYZ ' [20 Bytes]"],
-        ['Red tone response curve', "'curv' [524 Bytes]"],
-        ['Green tone response curve', "'curv' [524 Bytes]"],
-        ['Blue tone response curve', "'curv' [524 Bytes]"],
-        ['Characterization target', "'text' [17547 Bytes]"],
+        ['Description (ASCII)', 'DisplayCAL calibration preset: Default'],
+        ['Copyright', 'Created with DisplayCAL and Argyll CMS'],
+        ['Media white point', ''],
+        ['    Illuminant-relative XYZ', ' 95.05 100.00 108.91 (xy 0.3127 0.3290)'],
+        ['    Illuminant-relative CCT', '6503K'],
+        ['        ΔE 2000 to daylight locus', '0.09'],
+        ['        ΔE 2000 to blackbody locus', '4.57'],
+        ['Media black point', ''],
+        ['    Illuminant-relative XYZ', '0.0000 0.0000 0.0000'],
+        ['Video card gamma table', ''],
+        ['    Bitdepth', '16'],
+        ['    Channels', '3'],
+        ['    Number of entries per channel', '256'],
+        ['    Channel 1 gamma at 50% input', '1.00'],
+        ['    Channel 1 minimum', '0.0000%'],
+        ['    Channel 1 maximum', '100.00%'],
+        ['    Channel 1 unique values', '256 @ 8 Bit'],
+        ['    Channel 1 is linear', 'Yes'],
+        ['    Channel 2 gamma at 50% input', '1.00'],
+        ['    Channel 2 minimum', '0.0000%'],
+        ['    Channel 2 maximum', '100.00%'],
+        ['    Channel 2 unique values', '256 @ 8 Bit'],
+        ['    Channel 2 is linear', 'Yes'],
+        ['    Channel 3 gamma at 50% input', '1.00'],
+        ['    Channel 3 minimum', '0.0000%'],
+        ['    Channel 3 maximum', '100.00%'],
+        ['    Channel 3 unique values', '256 @ 8 Bit'],
+        ['    Channel 3 is linear', 'Yes'],
+        ['Red matrix column', ''],
+        ['    Illuminant-relative XYZ', ' 41.24  21.26   1.93 (xy 0.6400 0.3300)'],
+        ['    PCS-relative XYZ', ' 43.60  22.25   1.39 (xy 0.6484 0.3309)'],
+        ['Green matrix column', ''],
+        ['    Illuminant-relative XYZ', ' 35.76  71.52  11.92 (xy 0.3000 0.6000)'],
+        ['    PCS-relative XYZ', ' 38.51  71.69   9.71 (xy 0.3212 0.5979)'],
+        ['Blue matrix column', ''],
+        ['    Illuminant-relative XYZ', ' 18.05   7.22  95.05 (xy 0.1500 0.0600)'],
+        ['    PCS-relative XYZ', ' 14.31   6.06  71.39 (xy 0.1559 0.0661)'],
+        ['Red tone response curve', ''],
+        ['    Number of entries', '256'],
+        ['    Transfer function', 'Gamma 2.20 100%'],
+        ['    Minimum Y', '0.0000'],
+        ['    Maximum Y', '100.00'],
+        ['Green tone response curve', ''],
+        ['    Number of entries', '256'],
+        ['    Transfer function', 'Gamma 2.20 100%'],
+        ['    Minimum Y', '0.0000'],
+        ['    Maximum Y', '100.00'],
+        ['Blue tone response curve', ''],
+        ['    Number of entries', '256'],
+        ['    Transfer function', 'Gamma 2.20 100%'],
+        ['    Minimum Y', '0.0000'],
+        ['    Maximum Y', '100.00'],
+        ['Characterization target', 'b\'CTI3   \\r\\n\\r\\nDESCRIPTOR "Argyll Cb\'...[18462 more Bytes]\''],
         ['Absolute to media relative transform', 'Bradford'],
         ['    Matrix', '0.8951 0.2664 -0.1614'],
         ['        ', '-0.7502 1.7135 0.0367'],

@@ -10,6 +10,7 @@ import os
 import re
 import sys
 import warnings
+from io import BytesIO
 from time import localtime, strftime, time
 
 from DisplayCAL.meta import name as appname, script2pywname
@@ -62,7 +63,7 @@ def showwarning(message, category, filename, lineno, file=None, line=""):
 
 warnings.showwarning = showwarning
 
-logbuffer = EncodedFile(StringIO(), "UTF-8", errors="replace")
+logbuffer = EncodedFile(BytesIO(), "UTF-8", errors="replace")
 
 
 def wx_log(logwindow, msg):

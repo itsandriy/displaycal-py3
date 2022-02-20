@@ -23,7 +23,7 @@ import sys
 
 # Standard modules
 
-from io import StringIO
+from io import StringIO, BytesIO
 import datetime
 # import decimal
 # Decimal = decimal.Decimal
@@ -103,7 +103,7 @@ except ImportError:
 
 from DisplayCAL.trash import trash, TrashAborted, TrashcanUnavailableError
 from DisplayCAL.util_decimal import float2dec, stripzeros
-from DisplayCAL.util_io import LineCache, StringIOu, TarFileProper
+from DisplayCAL.util_io import LineCache, TarFileProper
 from DisplayCAL.util_list import index_fallback_ignorecase, intlist, natsort
 from DisplayCAL.util_os import (dlopen, expanduseru, get_program_file, getenvu, is_superuser, launch_file, listdir_re,
                                 safe_glob, waccess, which)
@@ -12610,8 +12610,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     show_result_dialog(Error(lang.getstr("profile.no_embedded_ti3") +
                                              "\n" + path), self)
                     return
-                ti3 = StringIOu(profile.tags.get("CIED", "") or
-                                profile.tags.get("targ", ""))
+                ti3 = BytesIO(profile.tags.get("CIED", "") or profile.tags.get("targ", ""))
             else:
                 profile = None
                 try:
@@ -13105,8 +13104,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
-                ti3 = StringIOu(profile.tags.get("CIED", "") or
-                                profile.tags.get("targ", ""))
+                ti3 = BytesIO(profile.tags.get("CIED", "") or profile.tags.get("targ", ""))
                 # Preserve custom tags
                 for tagname in ("mmod", "meta"):
                     if tagname in profile.tags:
@@ -13914,12 +13912,10 @@ class MainFrame(ReportFrame, BaseFrame):
                                bitmap=geticon(32, "dialog-error"))
                     return
                 ti3_lines = [line.strip() for
-                             line in StringIOu(profile.tags.get("CIED", "") or
-                                               profile.tags.get("targ", ""))]
+                             line in BytesIO(profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))]
                 if "CTI3" not in ti3_lines:
                     InfoDialog(self,
-                               msg=lang.getstr("profile.no_embedded_ti3") +
-                                   "\n" + path,
+                               msg=lang.getstr("profile.no_embedded_ti3") + "\n" + path,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
@@ -14512,10 +14508,20 @@ class MainFrame(ReportFrame, BaseFrame):
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
-                cal = StringIOu(profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
+
+
+                cied = profile.tags.get("CIED")
+                if cied:
+                    cal = BytesIO(cied)
+                else:
+                    targ = profile.tags.get("targ")
+                    from DisplayCAL.ICCProfile import Text
+                    if targ and isinstance(targ, Text):
+                        tag_data = targ.tagData
+                        cal = BytesIO(tag_data)
             else:
                 try:
-                    cal = open(path, "r", newline="")
+                    cal = open(path, "rb")
                 except Exception as exception:
                     InfoDialog(self,
                                msg=lang.getstr("error.file.open", path),
@@ -14546,7 +14552,12 @@ class MainFrame(ReportFrame, BaseFrame):
                 display_name = profile.getDeviceModelDescription()
                 # Second try to find the correct display by comparing
                 # the EDID hash (if present)
-                edid_md5 = profile.tags.get("meta", {}).get(b"EDID_md5", {}).get(b"value")
+                profile_tags_meta = profile.tags.get("meta", {})
+                print(f"profile_tags_meta: {profile_tags_meta}")
+                print(f"type(profile_tags_meta): {type(profile_tags_meta)}")
+                print(f"type(profile_tags_meta): {type(profile_tags_meta)}")
+                edid_md5 = profile_tags_meta.get("EDID_md5", {}).get("value")
+                print("edid_md5: {}".format(edid_md5))
                 if display_name or edid_md5:
                     display_name_indexes = []
                     edid_md5_indexes = []

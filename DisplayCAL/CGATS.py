@@ -19,33 +19,37 @@ from DisplayCAL.util_io import GzipFileProper, StringIOu as StringIO
 
 
 def get_device_value_labels(color_rep=None):
+    # TODO: Avoid using filter...
     return list(filter(bool, [v[1] if not color_rep or v[0] == color_rep
-                                      else False for v in iter({"CMYK": ("CMYK_C", "CMYK_M", "CMYK_Y", "CMYK_K"),
-                             "RGB": ("RGB_R", "RGB_G", "RGB_B")}.items())]))
+                                      else False for v in {b"CMYK": (b"CMYK_C", b"CMYK_M", b"CMYK_Y", b"CMYK_K"),
+                             b"RGB": (b"RGB_R", b"RGB_G", b"RGB_B")}]))
 
 
-def rpad(value, width):
+def rpad(value, width) -> bytes:
     """If value isn't a number, return a quoted string representation.
     If value is greater or equal than 1e+16, return string in scientific
     notation.
     Otherwise, return string in decimal notation right-padded to given width
     (using trailing zeros).
-
     """
-    strval = str(value)
+    strval = b""
+    if not isinstance(value, bytes):
+        strval = bytes(str(value), "UTF-8")
+
     if not isinstance(value, (int, float, complex)):
         # Return quoted string representation
         # Also need to escape single quote -> double quote
-        return '"%s"' % strval.replace('"', '""')
+        return b'"%s"' % strval.replace(b'"', b'""')
+
     if value < 1e+16:
-        i = strval.find(".")
+        i = strval.find(b".")
         if i > -1:
             if i < width - 1:
                 # Avoid scientific notation by formatting to decimal
-                fmt = "%%%i.%if" % (width, width - i - 1)
+                fmt = b"%%%i.%if" % (width, width - i - 1)
                 strval = fmt % value
             else:
-                strval = str(int(round(value)))
+                strval = bytes(str(int(round(value))), "UTF-8")
     return strval
 
 
@@ -228,7 +232,7 @@ class CGATS(dict):
     mtime = None
     parent = None
     root = None
-    type = 'ROOT'
+    type = b'ROOT'
     vmaxlen = 0
 
     def __init__(self, cgats=None, normalize_fields=False, file_identifier="CTI3", emit_keywords=False, strict=False):
@@ -255,19 +259,24 @@ class CGATS(dict):
                 raw_lines = cgats
             else:
                 if isinstance(cgats, str):
-                    if "\n" not in cgats and "\r" not in cgats:
+                    if "\n" not in cgats or "\r" not in cgats:
                         # assume filename
-                        cgats = open(cgats, 'r', newline='')
+                        cgats = open(cgats, 'rb')
                         self.filename = cgats.name
                     else:
                         # assume text
                         cgats = io.StringIO(cgats)
+
+                from DisplayCAL.ICCProfile import ICCProfileTag
+                if isinstance(cgats, bytes):
+                    # assume text
+                    cgats = io.BytesIO(cgats)
+                elif isinstance(cgats, ICCProfileTag):
+                    cgats = io.BytesIO(cgats.tagData)
                 elif isinstance(cgats, Path):
                     self.filename = cgats.absolute()
-                    cgats = open(cgats, 'r', newline='')
-                elif isinstance(cgats, io.IOBase):
-                    self.filename = cgats.name
-                elif not isinstance(cgats, StringIO):
+                    cgats = open(cgats, 'rb')
+                elif not isinstance(cgats, (StringIO, io.BytesIO, io.BufferedReader)):
                     raise CGATSInvalidError('Unsupported type: %s' % type(cgats))
 
                 if self.filename:
@@ -280,45 +289,48 @@ class CGATS(dict):
             context = self
             for raw_line in raw_lines:
                 # Replace 1.#IND00 with NaN
-                raw_line = raw_line.replace("1.#IND00", "NaN")
+                raw_line = raw_line.replace(b'1.#IND00', b'NaN')
+
                 # strip control chars and leading/trailing whitespace
-                line = re.sub('[^\x09\x20-\x7E\x80-\xFF]', '', raw_line.strip())
-                if '#' in line or '"' in line:
+                line = re.sub(b'[^\x09\x20-\x7E\x80-\xFF]', b'', raw_line.strip())
+
+                if b'#' in line or b'"' in line:
                     # Deal with comments and quotes
                     quoted = False
                     values = []
                     token_start = 0
                     end = len(line) - 1
-                    for i, char in enumerate(line):
-                        if char == '"':
+                    for i in range(len(line)):
+                        char = line[i:i+1]
+                        if char == b'"':
                             if quoted is False:
                                 if not line[token_start:i]:
                                     token_start = i
                                 quoted = True
                             else:
                                 quoted = False
-                        if (quoted is False and char in '# \t') or i == end:
+                        if (quoted is False and char in b'# \t') or i == end:
                             if i == end:
                                 i += 1
                             value = line[token_start:i]
                             if value:
-                                if value[0] == '"' == value[-1]:
+                                if value[0:1] == b'"' == value[-2:-1]:
                                     # Unquote
                                     value = value[1:-1]
                                 # Need to unescape double quote -> single quote
-                                values.append(value.replace('""', '"'))
-                            if char == '#':
+                                values.append(value.replace(b'""', b'"'))
+                            if char == b'#':
                                 # Strip comment
                                 line = line[:i].strip()
                                 break
-                            elif char in ' \t':
+                            elif char in b' \t':
                                 token_start = i + 1
                 else:
                     # no comments or quotes
                     values = line.split()
 
-                if line[:6] == 'BEGIN_':
-                    key = line[6:]
+                if line[:6] == b'BEGIN_':
+                    key = line[6:].decode()
                     if key in context:
                         # Start new CGATS
                         new = len(self)
@@ -326,63 +338,63 @@ class CGATS(dict):
                         self[new].key = ''
                         self[new].parent = self
                         self[new].root = self.root
-                        self[new].type = ''
+                        self[new].type = b''
                         context = self[new]
 
-                if line == 'BEGIN_DATA_FORMAT':
+                if line == b'BEGIN_DATA_FORMAT':
                     context['DATA_FORMAT'] = CGATS()
                     context['DATA_FORMAT'].key = 'DATA_FORMAT'
                     context['DATA_FORMAT'].parent = context
                     context['DATA_FORMAT'].root = self
-                    context['DATA_FORMAT'].type = 'DATA_FORMAT'
+                    context['DATA_FORMAT'].type = b'DATA_FORMAT'
                     context = context['DATA_FORMAT']
-                elif line == 'END_DATA_FORMAT':
+                elif line == b'END_DATA_FORMAT':
                     context = context.parent
-                elif line == 'BEGIN_DATA':
+                elif line == b'BEGIN_DATA':
                     context['DATA'] = CGATS()
                     context['DATA'].key = 'DATA'
                     context['DATA'].parent = context
                     context['DATA'].root = self
-                    context['DATA'].type = 'DATA'
+                    context['DATA'].type = b'DATA'
                     context = context['DATA']
-                elif line == 'END_DATA':
+                elif line == b'END_DATA':
                     context = context.parent
-                elif line[:6] == 'BEGIN_':
-                    key = line[6:]
+                elif line[:6] == b'BEGIN_':
+                    key = line[6:].decode()
                     context[key] = CGATS()
                     context[key].key = key
                     context[key].parent = context
                     context[key].root = self
-                    context[key].type = 'SECTION'
+                    context[key].type = b'SECTION'
                     context = context[key]
-                elif line[:4] == 'END_':
+                elif line[:4] == b'END_':
                     context = context.parent
-                elif context.type in ('DATA_FORMAT', 'DATA'):
+                elif context.type in (b'DATA_FORMAT', b'DATA'):
                     if len(values):
                         context = context.add_data(values)
-                elif context.type == 'SECTION':
+                elif context.type == b'SECTION':
                     context = context.add_data(line)
                 elif len(values) > 1:
-                    if values[0] == 'Date:':
+                    if values[0] == b'Date:':
                         context.datetime = line
                     else:
-                        if len(values) == 2 and '"' not in values[0]:
-                            key, value = values
+                        if len(values) == 2 and b'"' not in values[0]:
+                            key, value = values[0].decode(), values[1]
                             if value is not None:
-                                context = context.add_data({key: value.strip('"')})
+                                context = context.add_data({key: value.strip(b'"')})
                             else:
-                                context = context.add_data({key: ''})
+                                context = context.add_data({key: b''})
                         elif strict:
                             raise CGATSInvalidError(
                                 'Malformed %s file: {}'.format(
                                     context.parent and context.type or "CGATS", self.filename or self
                                 )
                             )
-                elif values and values[0] not in ('Comment:', 'Date:') \
-                   and len(line) >= 3 and not re.search(r"[^ 0-9A-Za-z/.]", line):
+                elif values and values[0] not in (b'Comment:', b'Date:') \
+                     and len(line) >= 3 and not re.search(b"[^ 0-9A-Za-z/.]", line):
                     context = self.add_data(line)
 
-            if 0 in self and self[0].get("NORMALIZED_TO_Y_100") == "NO":
+            if 0 in self and self[0].get("NORMALIZED_TO_Y_100") == b"NO":
                 # Always normalize to Y = 100
                 reprstr = (self.filename or "<%s.%s instance at 0x%016x>" %
                                             (self.__module__, self.__class__.__name__, id(self)))
@@ -397,7 +409,7 @@ class CGATS(dict):
         self.setmodified()
 
     def __delitem__(self, name):
-        if self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and name in self._keys:
+        if self.type not in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION') and name in self._keys:
             self._keys.remove(name)
         dict.__delitem__(self, name)
         self.setmodified()
@@ -445,31 +457,31 @@ class CGATS(dict):
             return colorants
 
     def get_descriptor(self, localized=True):
-        """Return CGATS description as unicode, based on metadata
+        """Return CGATS description as string, based on metadata
 
         If 'localized' is True (default), include localized technology
         description for CCSS files.
 
         """
         desc = self.queryv1("DESCRIPTOR")
-        is_ccss = self.get(0, self).type == "CCSS"
-        if not desc or desc == "Not specified" or is_ccss:
+        is_ccss = self.get(0, self).type == b"CCSS"
+        if not desc or desc == b"Not specified" or is_ccss:
             if not is_ccss:
                 desc = self.queryv1("INSTRUMENT")
                 if desc:
                     display = self.queryv1("DISPLAY")
                     if display:
-                        desc += " & %s" % display
+                        desc += b" & %s" % display
             else:
                 tech = self.queryv1("TECHNOLOGY")
                 if tech:
-                    if desc and desc != "Not specified" and desc != "CCSS for %s" % tech:
+                    if desc and desc != b"Not specified" and desc != b"CCSS for %s" % tech:
                         display = desc
                     else:
                         display = self.queryv1("DISPLAY")
                     if localized:
                         from DisplayCAL import localization as lang
-                        tech = str(tech)
+                        tech = tech.decode()
                         tech = lang.getstr("display.tech." + tech, default=tech)
                         if display:
                             # Localized tech will be unicode always, need to
@@ -481,15 +493,16 @@ class CGATS(dict):
         if not desc and self.filename:
             # Filesystem encoding can be different from UTF-8 (depending on
             # platform), by default str will use FS enc
-            desc = str(os.path.splitext(os.path.basename(self.filename))[0])
+            # This is not True anymore, after Python 3.6 even Windows switched to UTF-8
+            desc = bytes(str(os.path.splitext(os.path.basename(self.filename))[0]), "UTF-8")
         else:
-            desc = str(desc or "")
+            desc = bytes(str(desc or ""), "UTF-8")
         return desc
 
     def __setattr__(self, name, value):
         if name in ('_keys', '_lvl'):
             object.__setattr__(self, name, value)
-        elif name == b'modified':
+        elif name == 'modified':
             self.setmodified(value)
         elif name in ('datetime', 'filename', 'fileName', 'file_identifier', 'key',
                       'mtime', 'normalize_fields', 'parent', 'root', 'type',
@@ -500,7 +513,7 @@ class CGATS(dict):
             self[name] = value
 
     def __setitem__(self, name, value):
-        if self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and name not in self:
+        if self.type not in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION') and name not in self:
             self._keys.append(name)
         dict.__setitem__(self, name, value)
         self.setmodified()
@@ -510,32 +523,32 @@ class CGATS(dict):
         if self.root and self.root._modified != modified:
             object.__setattr__(self.root, '_modified', modified)
 
-    def __str__(self):
+    def __bytes__(self):
         result = []
         lvl = self.root._lvl
         self.root._lvl += 1
         data = None
-        if self.type == 'SAMPLE':
-            result.append(' '.join(rpad(self[item],
+        if self.type == b'SAMPLE':
+            result.append(b' '.join(rpad(self[item],
                                         self.parent.vmaxlen +
                                         (1 if self[item] < 0 else 0))
                                    for item in
                                    list(self.parent.parent['DATA_FORMAT'].values())))
-        elif self.type == 'DATA':
+        elif self.type == b'DATA':
             data = self
-        elif self.type == 'DATA_FORMAT':
+        elif self.type == b'DATA_FORMAT':
             result.append(' '.join(list(self.values())))
         else:
             if self.datetime:
                 result.append(self.datetime)
-            if self.type == 'SECTION':
-                result.append('BEGIN_' + self.key)
-            elif self.parent and self.parent.type == 'ROOT':
+            if self.type == b'SECTION':
+                result.append(b'BEGIN_' + self.key.encode())
+            elif self.parent and self.parent.type == b'ROOT':
                 result.append(self.type.ljust(7))  # Make sure CGATS file
                                                    # identifiers are always
                                                    # a minimum of 7 characters
-                result.append('')
-            if self.type in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION'):
+                result.append(b'')
+            if self.type in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION'):
                 iterable = self
             else:
                 iterable = self._keys
@@ -546,53 +559,55 @@ class CGATS(dict):
                 elif isinstance(value, (float, int, str)):
                     if key not in ('NUMBER_OF_FIELDS', 'NUMBER_OF_SETS'):
                         if isinstance(key, int):
-                            result.append(str(value))
+                            result.append(bytes(value))
                         else:
                             if 'KEYWORDS' in self and key in list(self['KEYWORDS'].values()):
                                 if self.emit_keywords:
-                                    result.append('KEYWORD "%s"' % key)
+                                    result.append(b'KEYWORD "%s"' % key.encode())
                             if isinstance(value, str):
                                 # Need to escape single quote -> double quote
-                                value = value.replace('"', '""')
-                            result.append('%s "%s"' % (key, value))
+                                value = value.replace('"', '""').encode()
+                            result.append(b'%s "%s"' % (key.encode(), value))
                 elif key not in ('DATA_FORMAT', 'KEYWORDS'):
-                    if value.type == 'SECTION' and result[-1:] and result[-1:][0] != '':
-                        result.append('')
-                    result.append(str(value))
-            if self.type == 'SECTION':
-                result.append('END_' + self.key)
-            if self.type == 'SECTION' or data:
-                result.append('')
+                    if value.type == b'SECTION' and result[-1:] and result[-1:][0] != b'':
+                        result.append(b'')
+                    result.append(value)
+            if self.type == b'SECTION':
+                result.append(b'END_' + self.key.encode())
+            if self.type == b'SECTION' or data:
+                result.append(b'')
         if data and data.parent['DATA_FORMAT']:
             if 'KEYWORDS' in data.parent and self.emit_keywords:
                 for item in list(data.parent['DATA_FORMAT'].values()):
                     if item in list(data.parent['KEYWORDS'].values()):
-                        result.append('KEYWORD "%s"' % item)
-            result.append('NUMBER_OF_FIELDS %s' % len(data.parent['DATA_FORMAT']))
-            result.append('BEGIN_DATA_FORMAT')
-            result.append(' '.join(list(data.parent['DATA_FORMAT'].values())))
-            result.append('END_DATA_FORMAT')
-            result.append('')
-            result.append('NUMBER_OF_SETS %s' % (len(data)))
-            result.append('BEGIN_DATA')
+                        result.append(b'KEYWORD "%s"' % item)
+            result.append(b'NUMBER_OF_FIELDS %s' % len(data.parent['DATA_FORMAT']))
+            result.append(b'BEGIN_DATA_FORMAT')
+            result.append(b' '.join(list(data.parent['DATA_FORMAT'].values())))
+            result.append(b'END_DATA_FORMAT')
+            result.append(b'')
+            result.append(b'NUMBER_OF_SETS %s' % (len(data)))
+            result.append(b'BEGIN_DATA')
             for key in data:
-                result.append(' '.join([rpad(data[key][item],
-                                             data.vmaxlen +
-                                             (1 if data[key][item] < 0 else 0))
-                                        for item in
-                                        list(data.parent['DATA_FORMAT'].values())]))
-            result.append('END_DATA')
-        if (self.parent and self.parent.type or self.type) == 'ROOT' and result and result[-1] != '' and lvl == 0:
+                result.append(b' '.join([rpad(data[key][item],
+                                              data.vmaxlen + (1 if data[key][item] < 0 else 0))
+                                              for item in
+                                              list(data.parent['DATA_FORMAT'].values())]))
+            result.append(b'END_DATA')
+        if (self.parent and self.parent.type or self.type) == b'ROOT' and result and result[-1] != b'' and lvl == 0:
             # Add empty line at end if not yet present
-            result.append('')
+            result.append(b'')
         self.root._lvl -= 1
-        return '\n'.join(result)
+        return b'\n'.join(result)
 
     def add_keyword(self, keyword, value=None):
         """ Add a keyword to the list of keyword values. """
-        if self.type in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION'):
+        if isinstance(keyword, bytes):
+            keyword = keyword.decode()
+
+        if self.type in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION'):
             context = self.parent
-        elif self.type == 'SAMPLE':
+        elif self.type == b'SAMPLE':
             context = self.parent.parent
         else:
             context = self
@@ -601,12 +616,12 @@ class CGATS(dict):
             context['KEYWORDS'].key = 'KEYWORDS'
             context['KEYWORDS'].parent = context
             context['KEYWORDS'].root = self.root
-            context['KEYWORDS'].type = 'KEYWORDS'
-        if keyword not in list(context['KEYWORDS'].values()):
+            context['KEYWORDS'].type = b'KEYWORDS'
+        if keyword.encode() not in list(context['KEYWORDS'].values()):
             newkey = len(context['KEYWORDS'])
             while newkey in context['KEYWORDS']:
                 newkey += 1
-            context['KEYWORDS'][newkey] = keyword
+            context['KEYWORDS'][newkey] = keyword.encode()
         if value is not None:
             context[keyword] = value
 
@@ -615,29 +630,32 @@ class CGATS(dict):
         self[key].key = key
         self[key].parent = self
         self[key].root = self
-        self[key].type = 'SECTION'
+        self[key].type = b'SECTION'
         self[key].add_data(value)
 
     def remove_keyword(self, keyword, remove_value=True):
-        """ Remove a keyword from the list of keyword values. """
-        if self.type in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION'):
+        """Remove a keyword from the list of keyword values.
+        """
+        if self.type in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION'):
             context = self.parent
-        elif self.type == 'SAMPLE':
+        elif self.type == b'SAMPLE':
             context = self.parent.parent
         else:
             context = self
         for key in list(context['KEYWORDS'].keys()):
-            if context['KEYWORDS'][key] == keyword:
+            if context['KEYWORDS'][key] == keyword.encode():
                 del context['KEYWORDS'][key]
         if remove_value:
             del context[keyword]
 
     def insert(self, key=None, data=None):
-        """ Insert data at index key. Also see add_data method. """
+        """Insert data at index key. Also see add_data method.
+        """
         self.add_data(data, key)
 
     def append(self, data):
-        """ Append data. Also see add_data method. """
+        """Append data. Also see add_data method.
+        """
         self.add_data(data)
 
     def get_data(self, field_names=None):
@@ -897,68 +915,64 @@ class CGATS(dict):
         unicode instance.
         """
         context = self
-        if self.type == 'DATA':
+        if self.type == b'DATA':
             if isinstance(data, (dict, list, tuple)):
                 if self.parent['DATA_FORMAT']:
                     fl, il = len(self.parent['DATA_FORMAT']), len(data)
                     if fl != il:
-                        raise CGATSTypeError('DATA entries take exactly %s '
-                                             'values (%s given)' % (fl, il))
+                        raise CGATSTypeError(
+                            'DATA entries take exactly %s values (%s given)' % (fl, il)
+                        )
                     dataset = CGATS()
                     i = -1
                     for item in list(self.parent['DATA_FORMAT'].values()):
                         i += 1
                         if isinstance(data, dict):
                             try:
-                                value = data[item]
+                                value = data[item.decode()]
                             except KeyError:
                                 raise CGATSKeyError(item)
                         else:
                             value = data[i]
-                        if item.upper() in ('INDEX', 'SAMPLE_ID', 'SAMPLEID'):
+                        if item.upper() in (b'INDEX', b'SAMPLE_ID', b'SAMPLEID'):
                             if self.root.normalize_fields and \
-                               item.upper() == 'SAMPLEID':
-                                item = 'SAMPLE_ID'
+                               item.upper() == b'SAMPLEID':
+                                item = b'SAMPLE_ID'
                             # allow alphanumeric INDEX / SAMPLE_ID
-                            if isinstance(value, str):
-                                match = re.match(
-                                    '(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$', value)
+                            if isinstance(value, bytes):
+                                match = re.match(rb'(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$', value)
                                 if match:
                                     if match.groups()[0]:
                                         value = float(value)
                                     else:
                                         value = int(value)
-                        elif item.upper() not in ('SAMPLE_NAME', 'SAMPLE_LOC',
-                                                  'SAMPLENAME'):
+                        elif item.upper() not in (b'SAMPLE_NAME', b'SAMPLE_LOC', b'SAMPLENAME'):
                             try:
                                 value = float(value)
                             except ValueError:
-                                raise CGATSValueError('Invalid data type for '
-                                                      '%s (expected float, '
-                                                      'got %s)' %
-                                                      (item, type(value)))
+                                raise CGATSValueError(
+                                    'Invalid data type for %s (expected float, got %s)' % (item, type(value))
+                                )
                             else:
-                                strval = str(abs(value))
-                                if (self.parent.type != "CAL" and
-                                    item.startswith("RGB_") or
-                                    item.startswith("CMYK_")):
+                                strval = bytes(str(abs(value)), "UTF-8")
+                                if (self.parent.type != b"CAL" and
+                                    item.startswith(b"RGB_") or item.startswith(b"CMYK_")):
                                     # Assuming 0..100, 4 decimal digits is
                                     # enough for roughly 19 bits integer
                                     # device values
-                                    parts = strval.split(".")
+                                    parts = strval.split(b".")
                                     if len(parts) == 2 and len(parts[-1]) > 4:
                                         value = round(value, 4)
-                                        strval = str(abs(value))
-                                parts = strval.split("e")
+                                        strval = bytes(str(abs(value)), "UTF-8")
+                                parts = strval.split(b"e")
                                 lencheck = len(parts[0])
                                 if len(parts) > 1:
                                     lencheck += abs(int(parts[1]))
                                 if lencheck > self.vmaxlen:
                                     self.vmaxlen = lencheck
-                        elif self.root.normalize_fields and \
-                             item.upper() == 'SAMPLENAME':
-                            item = 'SAMPLE_NAME'
-                        dataset[item] = value
+                        elif self.root.normalize_fields and item.upper() == b'SAMPLENAME':
+                            item = b'SAMPLE_NAME'
+                        dataset[item.decode()] = value
                     if isinstance(key, int):
                         # accept only integer keys.
                         # move existing items
@@ -968,7 +982,7 @@ class CGATS(dict):
                     dataset.key = key
                     dataset.parent = self
                     dataset.root = self.root
-                    dataset.type = 'SAMPLE'
+                    dataset.type = b'SAMPLE'
                     self[key] = dataset
                 else:
                     raise CGATSInvalidOperationError("Cannot add to DATA because of missing DATA_FORMAT")
@@ -976,9 +990,8 @@ class CGATS(dict):
                 raise CGATSTypeError(
                     "Invalid data type for %s (expected CGATS, dict, list or tuple, got %s)" % (self.type, type(data))
                 )
-        elif self.type == 'ROOT':
-            if isinstance(data, str) and data.find('\n') < 0 and \
-               data.find('\r') < 0:
+        elif self.type == b'ROOT':
+            if isinstance(data, bytes) and data.find(b'\n') < 0 and data.find(b'\r') < 0:
                 if isinstance(key, int):
                     # accept only integer keys.
                     # move existing items
@@ -998,11 +1011,8 @@ class CGATS(dict):
                 raise CGATSTypeError(
                     'Invalid data type for %s '
                     '(expected str or unicode without line endings, got %s)' % (self.type, type(data)))
-        elif self.type == 'SECTION':
+        elif self.type == b'SECTION':
             if isinstance(data, bytes):
-                data = data.decode()
-
-            if isinstance(data, str):
                 if isinstance(key, int):
                     # accept only integer keys.
                     # move existing items
@@ -1013,40 +1023,39 @@ class CGATS(dict):
             else:
                 raise CGATSTypeError(
                     'Invalid data type for %s '
-                    '(expected str or unicode, got %s)' % (self.type, type(data))
+                    '(expected bytes or str, got %s)' % (self.type, type(data))
                 )
-        elif self.type in ('DATA_FORMAT', 'KEYWORDS') or \
-            (self.parent and self.parent.type == 'ROOT'):
+        elif self.type in (b'DATA_FORMAT', b'KEYWORDS') or (self.parent and self.parent.type == b'ROOT'):
             if isinstance(data, (dict, list, tuple)):
                 for var in data:
+                    if isinstance(var, bytes):
+                        var = var.decode()
                     if var in ('NUMBER_OF_FIELDS', 'NUMBER_OF_SETS'):
                         self[var] = None
                     else:
                         if isinstance(data, dict):
-                            if self.type in ('DATA_FORMAT', 'KEYWORDS'):
+                            if self.type in (b'DATA_FORMAT', b'KEYWORDS'):
                                 key, value = len(self), data[var]
                             else:
                                 key, value = var, data[var]
                         else:
-                            key, value = len(self), var
+                            key, value = len(self), var.encode()
                         if (self.root.normalize_fields and
-                            (self.type in ('DATA_FORMAT', 'KEYWORDS') or
-                             var == 'KEYWORD') and
-                            isinstance(value, str)):
+                            (self.type in (b'DATA_FORMAT', b'KEYWORDS') or var == 'KEYWORD')
+                                and isinstance(value, bytes)):
                             value = value.upper()
-                            if value == 'SAMPLEID':
-                                value = 'SAMPLE_ID'
-                            elif value == 'SAMPLENAME':
-                                value = 'SAMPLE_NAME'
+                            if value == b'SAMPLEID':
+                                value = b'SAMPLE_ID'
+                            elif value == b'SAMPLENAME':
+                                value = b'SAMPLE_NAME'
                         if var == 'KEYWORD':
                             self.emit_keywords = True
-                            if value != 'KEYWORD':
+                            if value != b'KEYWORD':
                                 self.add_keyword(value)
                             else:
-                                print('Warning: cannot add keyword '
-                                            '"KEYWORD"')
+                                print('Warning: cannot add keyword "KEYWORD"')
                         else:
-                            if (isinstance(value, str) and
+                            if (isinstance(value, bytes) and
                                 key not in ("DESCRIPTOR", "ORIGINATOR",
                                             "CREATED", "DEVICE_CLASS",
                                             "COLOR_REP", "TARGET_INSTRUMENT",
@@ -1057,30 +1066,25 @@ class CGATS(dict):
                                             "TECHNOLOGY", "REFERENCE_FILENAME",
                                             "REFERENCE_HASH", "TARGET_FILENAME",
                                             "TARGET_HASH", "FIT_METHOD")):
-                                match = re.match(
-                                    '(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$', value)
+                                match = re.match(rb'(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$', value)
                                 if match:
                                     if match.groups()[0]:
                                         value = float(value)
                                     else:
                                         value = int(value)
-                                    if self.type in ('DATA_FORMAT',
-                                                    'KEYWORDS'):
-                                        raise CGATSTypeError('Invalid data '
-                                                             'type for %s '
-                                                             '(expected str '
-                                                             'or unicode, got '
-                                                             '%s)' %
-                                                             (self.type,
-                                                              type(value)))
+                                    if self.type in (b'DATA_FORMAT', b'KEYWORDS'):
+                                        raise CGATSTypeError(
+                                            'Invalid data type for %s (expected bytes or str, got %s)' %
+                                            (self.type, type(value))
+                                        )
                             self[key] = value
             else:
-                raise CGATSTypeError('Invalid data type for %s (expected '
-                    'CGATS, dict, list or tuple, got %s)' % (self.type,
-                                                             type(data)))
+                raise CGATSTypeError(
+                    'Invalid data type for %s (expected '
+                    'CGATS, dict, list or tuple, got %s)' % (self.type, type(data))
+                )
         else:
-            raise CGATSInvalidOperationError('Cannot add data to %s' %
-                                             self.type)
+            raise CGATSInvalidOperationError('Cannot add data to %s' % self.type)
         return context
 
     def export_3d(self, filename, colorspace="RGB", RGB_black_offset=40,
@@ -1675,7 +1679,7 @@ Transform {
 
     def remove(self, item):
         """ Remove an item from the internal CGATS structure. """
-        if type(item) == CGATS:
+        if isinstance(item, CGATS):
             key = item.key
         else:
             key = item
@@ -1684,7 +1688,7 @@ Transform {
         if type(key) == int and key != maxindex:
             self.moveby1(key + 1, -1)
         name = len(self) - 1
-        if (self.type not in ('DATA', 'DATA_FORMAT', 'KEYWORDS', 'SECTION') and
+        if (self.type not in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION') and
             name in self._keys):
             self._keys.remove(name)
         dict.pop(self, name)
@@ -1853,7 +1857,7 @@ Transform {
         """ Quantize device values to n bits """
         q = 2 ** bits - 1.0
         for data in self.queryv("DATA").values():
-            if data.parent.type == "CAL":
+            if data.parent.type == b"CAL":
                 maxv = 1.0
                 digits = 8
             else:
@@ -1924,7 +1928,7 @@ Transform {
         """
         n = 0
         for dataset in self.query("DATA").values():
-            if dataset.type.strip() == "CAL":
+            if dataset.type.strip() == b"CAL":
                 is_Lab = False
                 labels = ("RGB_R", "RGB_G", "RGB_B")
                 data = dataset.queryi(labels)

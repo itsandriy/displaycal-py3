@@ -42,7 +42,7 @@ def _mp_xicclu(chunk, thread_abort_event, progress_queue, profile_filename,
                show_actual_if_clipped=False, input_encoding=None,
                output_encoding=None, abortmessage="Aborted", output_format=None,
                reverse=False, convert_video_rgb_to_clut65=False, verbose=1):
-    if not config.cfg.items(config.ConfigParser.DEFAULTSECT):
+    if not config.cfg.items(config.configparser.DEFAULTSECT):
         config.initcfg()
     profile = ICCP.ICCProfile(profile_filename)
     xicclu = Xicclu(profile, intent, direction, order, pcs, scale, cwd,
@@ -87,17 +87,17 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
         print("numpy?", "numpy" in str(list(sys.modules.keys())))
         print("wx?", "wx" in str(list(sys.modules.keys())))
         print("x3dom?", "x3dom" in str(list(sys.modules.keys())))
-    if not config.cfg.items(config.ConfigParser.DEFAULTSECT):
+    if not config.cfg.items(config.configparser.DEFAULTSECT):
         config.initcfg()
     idata = []
     abmaxval = 255 + (255 / 256.0)
     profile = ICCP.ICCProfile(profile_filename)
     xicclu1 = Xicclu(profile, intent, direction, "n", pcs, 100)
+    xicclu2 = xicclu1
     if use_cam_clipping:
         # Use CAM Jab for clipping for cLUT grid points after a given
         # threshold
-        xicclu2 = Xicclu(profile, intent, direction, "n", pcs, 100,
-                         use_cam_clipping=True)
+        xicclu2 = Xicclu(profile, intent, direction, "n", pcs, 100, use_cam_clipping=True)
     prevperc = 0
     count = 0
     chunksize = len(chunk)
@@ -115,6 +115,7 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
                 interp = interp_list
             else:
                 Linterp = interp_list[0]
+    m2i = m2
     if profile.connectionColorSpace == "XYZ":
         m2i = m2.inverted()
     for a in chunk:
@@ -130,17 +131,15 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
                     # Apply TRC to XYZ values to distribute them optimally
                     # across cLUT grid points.
                     XYZ = [interp[i](v) for i, v in enumerate((d, e, f))]
-                    ##print "%3.6f %3.6f %3.6f" % tuple(XYZ), '->',
+                    # print "%3.6f %3.6f %3.6f" % tuple(XYZ), '->',
                     # Scale into PCS
                     v = m2i * XYZ
                     if bpc and XYZbp != [0, 0, 0]:
-                        v = colormath.blend_blackpoint(v[0], v[1], v[2],
-                                                       None, XYZbp)
-                    ##print "%3.6f %3.6f %3.6f" % tuple(v)
-                    ##raw_input()
+                        v = colormath.blend_blackpoint(v[0], v[1], v[2], None, XYZbp)
+                    # print "%3.6f %3.6f %3.6f" % tuple(v)
+                    # raw_input()
                     if intent == "a":
-                        v = colormath.adapt(*v + [XYZwp,
-                                                  list(profile.tags.wtpt.ir.values())])
+                        v = colormath.adapt(*v + [XYZwp, list(profile.tags.wtpt.ir.values())])
                 else:
                     # Legacy CIELAB
                     L = Linterp(d * 100)
@@ -175,6 +174,7 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
 def check_argyll_bin(paths=None):
     """ Check if the Argyll binaries can be found. """
     prev_dir = None
+    cur_dir = os.curdir
     for name in argyll_names:
         exe = get_argyll_util(name, paths)
         if not exe:
@@ -209,16 +209,15 @@ def check_argyll_bin(paths=None):
                 paths = [argyll_dir] + paths
         print("[D] Searchpath:\n  ", "\n  ".join(paths))
     # Fedora doesn't ship Rec709.icm
-    config.defaults["3dlut.input.profile"] = get_data_path(os.path.join("ref",
-                                                                        "Rec709.icm")) or \
-                                             get_data_path(os.path.join("ref", "sRGB.icm")) or ""
-    config.defaults["testchart.reference"] = get_data_path(os.path.join("ref",
-                                                                        "ColorChecker.cie")) or ""
+    config.defaults["3dlut.input.profile"] = \
+        get_data_path(os.path.join("ref", "Rec709.icm")) or get_data_path(os.path.join("ref", "sRGB.icm")) or ""
+    config.defaults["testchart.reference"] = get_data_path(os.path.join("ref", "ColorChecker.cie")) or ""
     config.defaults["gamap_profile"] = get_data_path(os.path.join("ref", "sRGB.icm")) or ""
     return True
 
 
 argyll_utils = {}
+
 
 def get_argyll_util(name, paths=None):
     """ Find a single Argyll utility. Return the full path. """
@@ -306,9 +305,11 @@ def parse_argyll_version_string(argyll_version_string):
     return argyll_version
 
 
-def printcmdline(cmd, args=None, fn=print, cwd=None):
+def printcmdline(cmd, args=None, fn=None, cwd=None):
     """Pretty-print a command line.
     """
+    if fn is None:
+        fn = print
     if args is None:
         args = []
     if cwd is None:
@@ -521,9 +522,7 @@ class Xicclu(WorkerBase):
                 if order != "n":
                     args.append("-o" + order)
             if profile.profileClass != "link":
-                if (direction in ("f", "ib") and
-                        (pcs == "x" or (profile.connectionColorSpace == "XYZ" and
-                                        not pcs))):
+                if direction in ("f", "ib") and (pcs == "x" or (profile.connectionColorSpace == "XYZ" and not pcs)):
                     # In case of forward lookup with XYZ PCS, use 0..100 scaling
                     # internally so we get extra precision from xicclu for the
                     # decimal part. Scale back to 0..1 later.
@@ -533,8 +532,7 @@ class Xicclu(WorkerBase):
                     args.append("-p" + pcs)
         args.append(self.profile_path)
         if debug or verbose > 1:
-            self.sessionlogfile = LogFile(profile_basename + ".xicclu",
-                                          os.path.dirname(profile.fileName))
+            self.sessionlogfile = LogFile(profile_basename + ".xicclu", os.path.dirname(profile.fileName))
             if is_profile:
                 profile_act = ICCP.ICCProfile(profile.fileName)
                 self.sessionlogfile.write("Profile ID %s (actual %s)" %
@@ -610,15 +608,15 @@ class Xicclu(WorkerBase):
                 print("Got SIGBREAK, aborting subprocess...")
             if self.subprocess_abort or self.thread_abort:
                 if p.poll() is None:
-                    p.stdin.write("\n")
+                    p.stdin.write(b"\n")
                     p.stdin.close()
                     p.wait()
                 raise Info(lang.getstr("aborted"))
             if p.poll() is None:
                 # We don't use communicate() because it will end the
                 # process
-                p.stdin.write("\n".join(idata[chunklen * i:
-                                              chunklen * (i + 1)]) + "\n")
+                joined_data = "\n".join(idata[chunklen * i: chunklen * (i + 1)]) + "\n"
+                p.stdin.write(joined_data.encode())
                 p.stdin.flush()
             else:
                 # Error
@@ -645,7 +643,7 @@ class Xicclu(WorkerBase):
         p = self.subprocess
         if p.poll() is None:
             try:
-                p.stdin.write("\n")
+                p.stdin.write(b"\n")
             except IOError:
                 pass
             p.stdin.close()
@@ -690,32 +688,36 @@ class Xicclu(WorkerBase):
             devop_devo = VidRGB_to_eeColor
         else:
             devop_devo = lambda v: v
+
+        fmt = ""
+        maxv = ""
         if output_format:
             fmt = output_format[0]
             maxv = output_format[1]
         # Interesting: In CPython, testing for 'if not x' is slightly quicker
-        # than testing for 'if x'. Also, struct.pack is faster if the second
-        # argument is passed as an integer.
+        # than testing for 'if x'. (EOY: Yeah I measured it is ~3% faster)
+        # Also, struct.pack is faster if the second argument is passed as an integer.
+        clip = None
         for i, line in enumerate(self.output):
             if verbose:
                 line = line.strip()
-                if line.startswith("["):
+                if line.startswith(b"["):
                     if parsed and get_clip and self.show_actual_if_clipped:
-                        parts = line.strip("[]").split(",")
+                        parts = line.strip(b"[]").split(b",")
                         actual = [float(v) for v in parts[0].split()[1:4]]  # Actual CIE
                         actual.append(float(parts[1].split()[-1]))  # deltaE
                         parsed[-1].append(actual)
                     elif self.sessionlogfile:
                         self.sessionlogfile.write(line)
                     continue
-                elif "->" not in line:
+                elif b"->" not in line:
                     if self.sessionlogfile and line:
                         self.sessionlogfile.write(line)
                     continue
                 elif self.sessionlogfile:
                     self.sessionlogfile.write("#%i %s" % (j, line))
-                parts = line.split("->")[-1].strip().split()
-                clip = parts.pop() == "(clip)"
+                parts = line.split(b"->")[-1].strip().split()
+                clip = parts.pop() == b"(clip)"
                 if clip:
                     parts.pop()
                 j += 1
@@ -728,8 +730,7 @@ class Xicclu(WorkerBase):
                 if get_clip and not self.show_actual_if_clipped:
                     out.append(clip)
             else:
-                out = "".join(struct.pack(fmt, int(round(devop_devo(float(v) / scale) * maxv)))
-                              for v in parts)
+                out = b"".join(struct.pack(fmt, int(round(devop_devo(float(v) / scale) * maxv))) for v in parts)
             parsed.append(out)
         if self.sessionlogfile:
             self.sessionlogfile.close()

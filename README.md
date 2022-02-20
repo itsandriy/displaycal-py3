@@ -65,9 +65,11 @@ Some ideas on where to focus on future development:
 - Replace the ``wexpect.py`` with the latest release of ``Pexpect``. I'm not very familiar with this module, and there
   is no comment in the code on why we have a ``wexpect.py`` instead of using the PyPI version of ``Pexpect``.
 - Replace the ``DisplayCAL.ordereddict.OrderedDict`` with the real thing.
-- Replace ``os.path`` with ``pathlib``.
-- Replace 
+- Replace ``os.path`` related stuff with ``pathlib``.
 - Organize the module structure, move UI related stuff in to ``ui`` module etc., move non-source files into their own
-  folders.
+  folders and ``data``.
 - Remove all the hackery that includes ``exec()``. I know, there should be a reason for them to exist, but this
   generally is considered as ``hacking``.
+- Update the ``Remaining time`` calculation during profiling to estimate the time by also considering the luminance of
+  the remaining patches to have a better estimation. Because, patches with higher luminance values are measured quickly
+  than patches with lower luminance values.
