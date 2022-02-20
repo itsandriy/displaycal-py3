@@ -28,7 +28,4 @@ def data_files():
         for element in (pathlib.Path(DisplayCAL.__file__).parent / 'ti1').glob(extension):
             d_files[element.name] = element
 
-    for p in d_files:
-        print(d_files[p].absolute())
-
     yield d_files

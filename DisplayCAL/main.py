@@ -471,6 +471,8 @@ def main(module=None):
 
 
 def _exit(lockfilename, oport):
+    print('lockfilename: %s' % lockfilename)
+    print('oport: %s' % oport)
     for process in mp.active_children():
         if "Manager" not in process.name:
             print("Terminating zombie process", process.name)
@@ -482,9 +484,14 @@ def _exit(lockfilename, oport):
             print("Waiting for thread %s to exit" % thread.getName())
             thread.join()
             print(thread.getName(), "exited")
+    print("code is here 1")
     if lockfilename and os.path.isfile(lockfilename):
+        print("code is here 2")
         with AppLock(lockfilename, "r+", True, True) as lock:
+            print("code is here 3A")
             _update_lockfile(lockfilename, oport, lock)
+            print("code is here 3B")
+        print("code is here 4")
     print("Exiting", pyname)
 
 
@@ -577,13 +584,16 @@ def main_testchart_editor():
 class AppLock(object):
 
     def __init__(self, lockfilename, mode, exclusive=False, blocking=False):
+        print("AppLock: Code is here 1")
         self._lockfilename = lockfilename
         self._mode = mode
         self._lockfile = None
         self._lock = None
         self._exclusive = exclusive
         self._blocking = blocking
+        print("AppLock: Code is here 2")
         self.lock()
+        print("AppLock: Code is here 3")
 
     def __enter__(self):
         return self
@@ -601,27 +611,38 @@ class AppLock(object):
         return bool(self._lock)
 
     def lock(self):
+        print("AppLock: Code is here A1")
         lockdir = os.path.dirname(self._lockfilename)
+        print("AppLock: Code is here A2")
         try:
+            print("AppLock: Code is here A3")
             if not os.path.isdir(lockdir):
+                print("AppLock: Code is here A4")
                 os.makedirs(lockdir)
+            print("AppLock: Code is here A5")
             # Create lockfile
             self._lockfile = open(self._lockfilename, self._mode)
+            print("AppLock: Code is here A6")
         except EnvironmentError as exception:
             # This shouldn't happen
-            print("Error - could not open lockfile %s:" % self._lockfilename,
-                       exception)
+            print("Error - could not open lockfile %s:" % self._lockfilename, exception)
         else:
+            print("AppLock: Code is here A7")
             try:
-                self._lock = FileLock(self._lockfile, self._exclusive,
-                                      self._blocking)
+                print("AppLock: Code is here A8")
+                self._lock = FileLock(self._lockfile, self._exclusive, self._blocking)
+                print("AppLock: Code is here A9")
             except FileLock.LockingError as exception:
+                print("AppLock: Code is here A10")
                 pass
             except EnvironmentError as exception:
                 # This shouldn't happen
                 print("Error - could not lock lockfile %s:" % self._lockfile.name, exception)
             else:
+                print("AppLock: Code is here A11")
                 return True
+            print("AppLock: Code is here A12")
+        print("AppLock: Code is here A13")
         return False
 
     def unlock(self):

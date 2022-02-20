@@ -1156,7 +1156,7 @@ class GamapFrame(BaseFrame):
                     if not self.gamap_out_viewcond_ctrl.Selection:
                         current_profile = get_current_profile(True)
                         if current_profile:
-                            if current_profile.profileClass == b"prtr":
+                            if current_profile.profileClass == "prtr":
                                 out_viewcond = "pp"
                             else:
                                 out_viewcond = "mt"
@@ -1346,19 +1346,16 @@ class GamapFrame(BaseFrame):
             config.valid_values["profile.b2a.hires.size"].index(
                 getcfg("profile.b2a.hires.size")))
         self.b2a_size_ctrl.Enable(b2a_hires)
-        self.b2a_smooth_cb.SetValue(b2a_hires and
-                                    bool(getcfg("profile.b2a.hires.smooth")))
+        self.b2a_smooth_cb.SetValue(b2a_hires and bool(getcfg("profile.b2a.hires.smooth")))
         self.b2a_smooth_cb.Enable(b2a_hires)
 
         # CIECAM02
         self.gamap_profile.SetPath(getcfg("gamap_profile"))
-        self.gamap_perceptual_cb.SetValue(enable_gamap and
-                                          bool(getcfg("gamap_perceptual")))
+        self.gamap_perceptual_cb.SetValue(enable_gamap and bool(getcfg("gamap_perceptual")))
         self.gamap_perceptual_intent_ctrl.SetStringSelection(
             self.intents_ab.get(getcfg("gamap_perceptual_intent"),
                                 self.intents_ab.get(defaults["gamap_perceptual_intent"])))
-        self.gamap_saturation_cb.SetValue(enable_gamap and
-                                          bool(getcfg("gamap_saturation")))
+        self.gamap_saturation_cb.SetValue(enable_gamap and bool(getcfg("gamap_saturation")))
         self.gamap_saturation_intent_ctrl.SetStringSelection(
             self.intents_ab.get(getcfg("gamap_saturation_intent"),
                                 self.intents_ab.get(defaults["gamap_saturation_intent"])))
@@ -1373,8 +1370,8 @@ class GamapFrame(BaseFrame):
 
 
 class MainFrame(ReportFrame, BaseFrame):
-
-    """ Display calibrator main application window. """
+    """Display calibrator main application window.
+    """
 
     # Shared methods from 3D LUT UI
     for lut3d_ivar_name, lut3d_ivar in LUT3DFrame.__dict__.items():
@@ -4316,8 +4313,7 @@ class MainFrame(ReportFrame, BaseFrame):
                      self.calibration_quality_ctrl,
                      self.calibration_quality_info,
                      self.cal_meas_time):
-            ctrl.GetContainingSizer().Show(ctrl,
-                                           self.trc_ctrl.GetSelection() > 0)
+            ctrl.GetContainingSizer().Show(ctrl, self.trc_ctrl.GetSelection() > 0)
         # Make the height of the last row in the calibration settings sizer
         # match the other rows
         if self.trc_ctrl.GetSelection() > 0:
@@ -4428,12 +4424,10 @@ class MainFrame(ReportFrame, BaseFrame):
         not_untethered = config.get_display_name(None, True) != "Untethered"
         self.blacklevel_drift_compensation.GetContainingSizer().Show(
             self.blacklevel_drift_compensation,
-            self.worker.argyll_version >= [1, 3, 0] and
-            not_untethered)
+            self.worker.argyll_version >= [1, 3, 0] and not_untethered)
         self.whitelevel_drift_compensation.GetContainingSizer().Show(
             self.whitelevel_drift_compensation,
-            self.worker.argyll_version >= [1, 3, 0] and
-            not_untethered)
+            self.worker.argyll_version >= [1, 3, 0] and not_untethered)
         self.calpanel.Layout()
         self.panel.Thaw()
 
@@ -5183,20 +5177,15 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def set_calibration_quality_label(self, q):
         if q == "v":
-            self.calibration_quality_info.SetLabel(
-                lang.getstr("calibration.speed.veryhigh"))
+            self.calibration_quality_info.SetLabel(lang.getstr("calibration.speed.veryhigh"))
         elif q == "l":
-            self.calibration_quality_info.SetLabel(
-                lang.getstr("calibration.speed.high"))
+            self.calibration_quality_info.SetLabel(lang.getstr("calibration.speed.high"))
         elif q == "m":
-            self.calibration_quality_info.SetLabel(
-                lang.getstr("calibration.speed.medium"))
+            self.calibration_quality_info.SetLabel(lang.getstr("calibration.speed.medium"))
         elif q == "h":
-            self.calibration_quality_info.SetLabel(
-                lang.getstr("calibration.speed.low"))
+            self.calibration_quality_info.SetLabel(lang.getstr("calibration.speed.low"))
         elif q == "u":
-            self.calibration_quality_info.SetLabel(
-                lang.getstr("calibration.speed.verylow"))
+            self.calibration_quality_info.SetLabel(lang.getstr("calibration.speed.verylow"))
 
     def interactive_display_adjustment_ctrl_handler(self, event):
         if debug:
@@ -5313,7 +5302,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if not self.setup_patterngenerator(self):
             return
         display_name = config.get_display_name(None, True)
-        if display_name == "madVR":
+        if display_name == b"madVR":
             # Disable gamma ramp
             self.worker.madtpg.set_device_gamma_ramp(None)
             # Disable 3D LUT
@@ -5321,7 +5310,7 @@ class MainFrame(ReportFrame, BaseFrame):
             if self.worker.madtpg.is_fullscreen():
                 # Leave fullscreen
                 self.worker.madtpg.leave_fullscreen()
-        elif display_name == "Prisma":
+        elif display_name == b"Prisma":
             # Disable 3D LUT
             try:
                 self.worker.patterngenerator.disable_processing()
@@ -5331,8 +5320,9 @@ class MainFrame(ReportFrame, BaseFrame):
         pos = self.GetDisplay().ClientArea[:2]
         geometry = None
         profile = None
-        if (display_name in ("madVR", "Prisma", "Resolve", "Web @ localhost") or
-                display_name.startswith("Chromecast ")):
+        print(" *************** display_name: ", display_name)
+        if (display_name in (b"madVR", b"Prisma", b"Resolve", b"Web @ localhost") or
+                display_name.startswith(b"Chromecast ")):
             patterngenerator = self.worker.patterngenerator
         else:
             patterngenerator = None
@@ -6659,12 +6649,10 @@ class MainFrame(ReportFrame, BaseFrame):
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
-            if profile.profileClass != "mntr" or \
-                    profile.colorSpace != "RGB":
-                InfoDialog(self, msg=lang.getstr("profile.unsupported",
-                                                 (profile.profileClass,
-                                                  profile.colorSpace)) +
-                                     "\n" + profile_path,
+            if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
+                InfoDialog(self,
+                           msg=lang.getstr("profile.unsupported",
+                                           (profile.profileClass, profile.colorSpace)) + "\n" + profile_path,
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
@@ -6999,12 +6987,10 @@ class MainFrame(ReportFrame, BaseFrame):
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
-            if check_profile_class and (profile.profileClass != "mntr" or
-                                        profile.colorSpace != "RGB"):
-                InfoDialog(parent, msg=lang.getstr("profile.unsupported",
-                                                   (profile.profileClass,
-                                                    profile.colorSpace)) +
-                                       "\n" + path,
+            if check_profile_class and (profile.profileClass != b"mntr" or profile.colorSpace != b"RGB"):
+                InfoDialog(parent,
+                           msg=lang.getstr("profile.unsupported",
+                                           (profile.profileClass, profile.colorSpace)) + "\n" + path,
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
@@ -8835,9 +8821,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             except (IOError, CGATS.CGATSError) as exception:
                                 print(exception)
                             else:
-                                white = cgats.queryi1({"RGB_R": 1,
-                                                       "RGB_G": 1,
-                                                       "RGB_B": 1})
+                                white = cgats.queryi1({"RGB_R": 1, "RGB_G": 1, "RGB_B": 1})
                                 if white:
                                     luminance = white["XYZ_Y"]
                                     print("Using luminance %.2f from factory calibration" % luminance)
@@ -9045,8 +9029,7 @@ class MainFrame(ReportFrame, BaseFrame):
             else:
                 has_cal = isinstance(profile.tags.get("vcgt"),
                                      ICCP.VideoCardGammaType)
-                if profile.profileClass != "mntr" or \
-                        profile.colorSpace != "RGB":
+                if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
                     InfoDialog(self, msg=lang.getstr("profiling.complete"),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-information"))
@@ -12632,7 +12615,7 @@ class MainFrame(ReportFrame, BaseFrame):
             else:
                 profile = None
                 try:
-                    ti3 = open(path, "rU")
+                    ti3 = open(path, "r", newline="")
                 except Exception as exception:
                     show_result_dialog(Error(lang.getstr("error.file.open", path)),
                                        self)
@@ -13130,7 +13113,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         tags[tagname] = profile.tags[tagname]
             else:
                 try:
-                    ti3 = open(path, "rU")
+                    ti3 = open(path, "r", newline="")
                 except Exception as exception:
                     InfoDialog(self, msg=lang.getstr("error.file.open", path),
                                ok=lang.getstr("ok"),
@@ -14121,7 +14104,7 @@ class MainFrame(ReportFrame, BaseFrame):
         try:
             if ext.lower() in (".ti1", ".ti3"):
                 if ext.lower() == ".ti3":
-                    ti1 = CGATS.CGATS(ti3_to_ti1(open(path, "rU")))
+                    ti1 = CGATS.CGATS(ti3_to_ti1(open(path, "r", newline="")))
                 else:
                     ti1 = CGATS.CGATS(path)
             else: # icc or icm profile
@@ -14522,20 +14505,17 @@ class MainFrame(ReportFrame, BaseFrame):
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
-                if profile.profileClass != "mntr" or \
-                        profile.colorSpace != "RGB":
-                    InfoDialog(self, msg=lang.getstr("profile.unsupported",
-                                                     (profile.profileClass,
-                                                      profile.colorSpace)) +
-                                         "\n" + path,
+                if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
+                    InfoDialog(self,
+                               msg=lang.getstr("profile.unsupported",
+                                               (profile.profileClass, profile.colorSpace)) + "\n" + path,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
-                cal = StringIOu(profile.tags.get("CIED", "") or
-                                profile.tags.get("targ", ""))
+                cal = StringIOu(profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
             else:
                 try:
-                    cal = open(path, "rU")
+                    cal = open(path, "r", newline="")
                 except Exception as exception:
                     InfoDialog(self,
                                msg=lang.getstr("error.file.open", path),
@@ -14559,25 +14539,23 @@ class MainFrame(ReportFrame, BaseFrame):
                 # Disable 3D LUT tab when switching from madVR / Resolve
                 setcfg("3dlut.tab.enable", 0)
                 setcfg("3dlut.tab.enable.backup", 0)
-                (options_dispcal,
-                 options_colprof) = get_options_from_profile(profile)
+                (options_dispcal, options_colprof) = get_options_from_profile(profile)
                 # Get and set the display
                 # First try to find the correct display by comparing
                 # the model (if present)
                 display_name = profile.getDeviceModelDescription()
                 # Second try to find the correct display by comparing
                 # the EDID hash (if present)
-                edid_md5 = profile.tags.get("meta", {}).get("EDID_md5",
-                                                            {}).get("value")
+                edid_md5 = profile.tags.get("meta", {}).get(b"EDID_md5", {}).get(b"value")
                 if display_name or edid_md5:
                     display_name_indexes = []
                     edid_md5_indexes = []
                     for i, edid in enumerate(self.worker.display_edid):
-                        if display_name in (edid.get("monitor_name", False),
-                                            self.worker.display_names[i]):
+                        if display_name in (edid.get(b"monitor_name", False), self.worker.display_names[i]):
                             display_name_indexes.append(i)
-                        if edid_md5 == edid.get("hash", False):
+                        if edid_md5 == edid.get(b"hash", False):
                             edid_md5_indexes.append(i)
+
                     if len(display_name_indexes) == 1:
                         display_index = display_name_indexes[0]
                         print("Found display device matching model description at index #%i" % display_index)
@@ -14592,8 +14570,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     if display_index is not None:
                         # Found it
                         display_match = True
-                        if (config.get_display_name(None, False) !=
-                                config.get_display_name(display_index, False)):
+                        if config.get_display_name(None, False) != config.get_display_name(display_index, False):
                             # Only need to update if currently selected display
                             # does not match found one
                             setcfg("display.number", display_index + 1)
@@ -14606,9 +14583,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             setcfg("3dlut.tab.enable", 1)
                             setcfg("3dlut.tab.enable.backup", 1)
                 # Get and set the instrument
-                instrument_id = profile.tags.get("meta",
-                                                 {}).get("MEASUREMENT_device",
-                                                         {}).get("value")
+                instrument_id = profile.tags.get("meta", {}).get(b"MEASUREMENT_device", {}).get(b"value")
                 if instrument_id:
                     for i, instrument in enumerate(self.worker.instruments):
                         if instrument.lower() == instrument_id:
@@ -14646,7 +14621,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 trc = False
                 if options_dispcal:
                     for o in options_dispcal:
-                        if o[0] in ("g", "G"):
+                        if o[0:1] in (b"g", b"G"):
                             trc = True
                 # Restore defaults
                 self.restore_defaults_handler(
@@ -14674,7 +14649,8 @@ class MainFrame(ReportFrame, BaseFrame):
                 if options_dispcal:
                     self.worker.options_dispcal = ["-" + arg for arg in options_dispcal]
                     for o in options_dispcal:
-                        if o[0] == "d" and o[1:] in ("web", "madvr"):
+                        # TODO: Use a dictionary to map all the values to settings names
+                        if o[0:1] == b"d" and o[1:] in (b"web", b"madvr"):
                             # Special case web and madvr so it can be used in
                             # preset templates which are TI3 files
                             for i, display_name in enumerate(self.worker.display_names):
@@ -14687,49 +14663,47 @@ class MainFrame(ReportFrame, BaseFrame):
                                         display_changed = True
                                     break
                             continue
-                        if o[0] == "m":
+                        if o[0:1] == b"m":
                             setcfg("calibration.interactive_display_adjustment", 0)
                             continue
-                        ##if o[0] == "o":
-                        ##setcfg("profile.update", 1)
-                        ##continue
-                        ##if o[0] == "u":
-                        ##setcfg("calibration.update", 1)
-                        ##continue
-                        if o[0] == "q":
+                        # if o[0:1] == b"o":
+                        #     setcfg("profile.update", 1)
+                        #     continue
+                        # if o[0:1] == b"u":
+                        #     setcfg("calibration.update", 1)
+                        #     continue
+                        if o[0:1] == b"q":
                             setcfg("calibration.quality", o[1])
                             continue
-                        if o[0] == "y" and getcfg("measurement_mode") != "auto":
+                        if o[0:1] == b"y" and getcfg("measurement_mode") != b"auto":
                             setcfg("measurement_mode", o[1])
                             continue
-                        if o[0] in ("t", "T"):
-                            setcfg("whitepoint.colortemp.locus", o[0])
+                        if o[0:1] in (b"t", b"T"):
+                            setcfg("whitepoint.colortemp.locus", o[0:1])
                             if o[1:]:
-                                setcfg("whitepoint.colortemp",
-                                       int(float(o[1:])))
+                                setcfg("whitepoint.colortemp", int(float(o[1:])))
                             setcfg("whitepoint.x", None)
                             setcfg("whitepoint.y", None)
                             continue
-                        if o[0] == "w":
-                            o = o[1:].split(",")
+                        if o[0:1] == b"w":
+                            o = o[1:].split(b",")
                             setcfg("whitepoint.colortemp", None)
-                            setcfg("whitepoint.x", o[0])
+                            setcfg("whitepoint.x", o[0:1])
                             setcfg("whitepoint.y", o[1])
-                            setcfg("3dlut.whitepoint.x", o[0])
+                            setcfg("3dlut.whitepoint.x", o[0:1])
                             setcfg("3dlut.whitepoint.y", o[1])
                             continue
-                        if o[0] == "b":
+                        if o[0:1] == b"b":
                             setcfg("calibration.luminance", o[1:])
                             continue
-                        if o[0] in ("g", "G"):
-                            setcfg("trc.type", o[0])
+                        if o[0:1] in (b"g", b"G"):
+                            setcfg("trc.type", o[0:1])
                             setcfg("trc", o[1:])
                             continue
-                        if o[0] == "f":
-                            setcfg("calibration.black_output_offset",
-                                   o[1:])
+                        if o[0:1] == b"f":
+                            setcfg("calibration.black_output_offset", o[1:])
                             continue
-                        if o[0] == "a":
+                        if o[0:1] == b"a":
                             try:
                                 ambient = float(o[1:])
                             except ValueError:
@@ -14744,41 +14718,37 @@ class MainFrame(ReportFrame, BaseFrame):
                                 setcfg("calibration.ambient_viewcond_adjust.lux",
                                        ambient / 5.0)
                             continue
-                        if o[0] == "k":
+                        if o[0:1] == b"k":
                             if stripzeros(o[1:]) >= 0:
                                 black_point_correction = True
-                                setcfg("calibration.black_point_correction",
-                                       o[1:])
+                                setcfg("calibration.black_point_correction", o[1:])
                             continue
-                        if o[0] == "A":
-                            setcfg("calibration.black_point_rate",
-                                   o[1:])
+                        if o[0:1] == b"A":
+                            setcfg("calibration.black_point_rate", o[1:])
                             continue
-                        if o[0] == "B":
-                            setcfg("calibration.black_luminance",
-                                   o[1:])
+                        if o[0:1] == b"B":
+                            setcfg("calibration.black_luminance", o[1:])
                             continue
-                        if o[0] in ("p", "P") and len(o[1:]) >= 5:
+                        if o[0:1] in (b"p", b"P") and len(o[1:]) >= 5:
                             setcfg("dimensions.measureframe", o[1:])
-                            setcfg("dimensions.measureframe.unzoomed",
-                                   o[1:])
+                            setcfg("dimensions.measureframe.unzoomed", o[1:])
                             continue
-                        if o[0] == "V":
+                        if o[0:1] == b"V":
                             setcfg("measurement_mode.adaptive", 1)
                             continue
-                        if o[0:2] == "YA":
+                        if o[0:2] == b"YA":
                             setcfg("measurement_mode.adaptive", 0)
                             continue
-                        if o[0] == "H":
+                        if o[0:1] == b"H":
                             setcfg("measurement_mode.highres", 1)
                             continue
-                        if o[0] == "p" and len(o[1:]) == 0:
+                        if o[0:1] == b"p" and len(o[1:]) == 0:
                             setcfg("measurement_mode.projector", 1)
                             continue
-                        if o[0] == "F":
+                        if o[0:1] == b"F":
                             setcfg("measure.darken_background", 1)
                             continue
-                        if o[0] == "X":
+                        if o[0:1] == b"X":
                             o = o.split(None, 1)
                             ccmx = o[-1][1:-1]
                             if not os.path.isabs(ccmx):
@@ -14787,20 +14757,20 @@ class MainFrame(ReportFrame, BaseFrame):
                             # comport_ctrl_handler already did
                             update_ccmx_items = True
                             continue
-                        if o[0] == "I":
-                            if "b" in o[1:]:
+                        if o[0:1] == b"I":
+                            if b"b" in o[1:]:
                                 setcfg("drift_compensation.blacklevel", 1)
-                            if "w" in o[1:]:
+                            if b"w" in o[1:]:
                                 setcfg("drift_compensation.whitelevel", 1)
                             continue
-                        if o[0] == "Q":
+                        if o[0:1] == b"Q":
                             setcfg("observer", o[1:])
                             # Need to update ccmx items again even if
                             # comport_ctrl_handler already did because CCMX
                             # observer may override calibration observer
                             update_ccmx_items = True
                             continue
-                        if o[0] == "E":
+                        if o[0:1] == b"E":
                             setcfg("patterngenerator.use_video_levels", 1)
                             self.update_output_levels_ctrl()
                             continue
@@ -14808,7 +14778,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         setcfg("calibration.black_point_correction.auto", 1)
                 if getcfg("whitepoint.colortemp", False):
                     # Color temperature
-                    if getcfg("whitepoint.colortemp.locus") == "T":
+                    if getcfg("whitepoint.colortemp.locus") == b"T":
                         # Planckian locus
                         xyY = planckianCT2xyY(getcfg("whitepoint.colortemp"))
                     else:
@@ -14839,41 +14809,40 @@ class MainFrame(ReportFrame, BaseFrame):
                         exclude=("3dlut.tab.enable.backup", "profile.update",
                                  "profile.name", "gamap_default_intent"))
                     for o in options_colprof:
-                        if o[0] == "q":
+                        if o[0:1] == b"q":
                             setcfg("profile.quality", o[1])
                             continue
-                        if o[0] == "b":
+                        if o[0:1] == b"b":
                             setcfg("profile.quality.b2a", o[1] or "l")
                             continue
-                        if o[0] == "a":
-                            if (is_preset and not is_3dlut_preset and
-                                    sys.platform == "darwin"):
+                        if o[0:1] == b"a":
+                            if is_preset and not is_3dlut_preset and sys.platform == "darwin":
                                 # Force profile type to single shaper + matrix
                                 # due to OS X bugs with cLUT profiles and
                                 # matrix profiles with individual shaper curves
-                                o = "aS"
+                                o = b"aS"
                                 # Force black point compensation due to OS X
                                 # bugs with non BPC profiles
                                 setcfg("profile.black_point_compensation", 1)
                             setcfg("profile.type", o[1])
                             continue
-                        if o[0] in ("s", "S"):
+                        if o[0:1] in (b"s", b"S"):
                             o = o.split(None, 1)
                             setcfg("gamap_profile", o[-1][1:-1])
                             setcfg("gamap_perceptual", 1)
-                            if o[0] == "S":
+                            if o[0:1] == b"S":
                                 setcfg("gamap_saturation", 1)
                             continue
-                        if o[0] == "c":
+                        if o[0:1] == b"c":
                             setcfg("gamap_src_viewcond", o[1:])
                             continue
-                        if o[0] == "d":
+                        if o[0:1] == b"d":
                             setcfg("gamap_out_viewcond", o[1:])
                             continue
-                        if o[0] == "t":
+                        if o[0:1] == b"t":
                             setcfg("gamap_perceptual_intent", o[1:])
                             continue
-                        if o[0] == "T":
+                        if o[0:1] == b"T":
                             setcfg("gamap_saturation_intent", o[1:])
                             continue
                 setcfg("calibration.file", path)
@@ -14902,8 +14871,8 @@ class MainFrame(ReportFrame, BaseFrame):
                         setcfg("profile.b2a.hires", 0)
                     setcfg("profile.b2a.hires.smooth", 0)
                 if 'BEGIN_DATA_FORMAT' in ti3_lines:
-                    cfgend = ti3_lines.index('BEGIN_DATA_FORMAT')
-                    cfgpart = CGATS.CGATS("\n".join(ti3_lines[:cfgend]))
+                    cfgend = ti3_lines.index(b'BEGIN_DATA_FORMAT')
+                    cfgpart = CGATS.CGATS(b"\n".join(ti3_lines[:cfgend]))
                     lut3d_trc_set = False
                     simset = False  # Only HDR 3D LUTs will have this set
                     config_lut = {
@@ -14991,17 +14960,17 @@ class MainFrame(ReportFrame, BaseFrame):
                                     pass
                                 else:
                                     if cfgvalue < 0:
-                                        gamma_type = "B"
+                                        gamma_type = b"B"
                                         cfgvalue = abs(cfgvalue)
                                     else:
-                                        gamma_type = "b"
+                                        gamma_type = b"b"
                                     setcfg("3dlut.trc_gamma_type", gamma_type)
                                     # Sync measurement report settings
                                     setcfg("measurement_report.trc_gamma_type", gamma_type)
                                     setcfg("measurement_report.apply_black_offset", 0)
                                     setcfg("measurement_report.apply_trc", 1)
                             elif keyword == "3DLUT_GAMUT_MAPPING_MODE":
-                                if cfgvalue == "G":
+                                if cfgvalue == b"G":
                                     cfgvalue = 0
                                 else:
                                     cfgvalue = 1
@@ -15039,16 +15008,16 @@ class MainFrame(ReportFrame, BaseFrame):
                                 cfgname = cfgname.replace("3dlut", "measurement_report")
                                 setcfg(cfgname, cfgvalue)
                             elif cfgname == "3dlut.format":
-                                if cfgvalue == "madVR" and not simset:
+                                if cfgvalue == b"madVR" and not simset:
                                     setcfg("3dlut.enable", 1)
-                                if (cfgvalue == "madVR" and
-                                    not simset) or cfgvalue == "eeColor":
+                                if (cfgvalue == b"madVR" and
+                                    not simset) or cfgvalue == b"eeColor":
                                     setcfg("measurement_report.use_devlink_profile", 0)
                             elif cfgname == "3dlut.trc":
                                 lut3d_trc_set = True
                     # Content color space (currently only used for HDR)
-                    for color in ("white", "red", "green", "blue"):
-                        for coord in "xy":
+                    for color in (b"white", b"red", b"green", b"blue"):
+                        for coord in b"xy":
                             keyword = ("3DLUT_CONTENT_COLORSPACE_%s_%s" %
                                        (color.upper(), coord.upper()))
                             cfgvalue = cfgpart.queryv1(keyword)
@@ -15064,29 +15033,29 @@ class MainFrame(ReportFrame, BaseFrame):
                     # Make sure 3D LUT TRC enumeration matches parameters for
                     # older profiles not containing 3DLUT_TRC
                     if not lut3d_trc_set:
-                        if (getcfg("3dlut.trc_gamma_type") == "B" and
+                        if (getcfg("3dlut.trc_gamma_type") == b"B" and
                                 getcfg("3dlut.trc_output_offset") == 0 and
                                 getcfg("3dlut.trc_gamma") == 2.4):
-                            setcfg("3dlut.trc", "bt1886")  # BT.1886
-                        elif (getcfg("3dlut.trc_gamma_type") == "b" and
+                            setcfg("3dlut.trc", b"bt1886")  # BT.1886
+                        elif (getcfg("3dlut.trc_gamma_type") == b"b" and
                               getcfg("3dlut.trc_output_offset") == 1 and
                               getcfg("3dlut.trc_gamma") == 2.2):
-                            setcfg("3dlut.trc", "gamma2.2")  # Pure power gamma 2.2
+                            setcfg("3dlut.trc", b"gamma2.2")  # Pure power gamma 2.2
                         else:
-                            setcfg("3dlut.trc", "customgamma")  # Custom
+                            setcfg("3dlut.trc", b"customgamma")  # Custom
                 if not display_changed:
                     self.update_menus()
                     if not update_ccmx_items:
                         self.update_estimated_measurement_time("cal")
                 self.lut3d_set_path()
-                if config.get_display_name() == "Resolve":
+                if config.get_display_name() == b"Resolve":
                     setcfg("3dlut.enable", 0)
                     setcfg("measurement_report.use_devlink_profile", 1)
-                elif config.get_display_name(None, True) == "Prisma":
+                elif config.get_display_name(None, True) == b"Prisma":
                     setcfg("3dlut.enable", 1)
                     setcfg("measurement_report.use_devlink_profile", 0)
-                if getcfg("3dlut.format") == "madVR" and simset:
-                    # Currently not possible to verify HDR 3D LUTs
+                if getcfg("3dlut.format") == b"madVR" and simset:
+                    # Currently, it is not possible to verify HDR 3D LUTs
                     # through madVR in another way
                     setcfg("3dlut.enable", 0)
                     setcfg("measurement_report.use_devlink_profile", 1)

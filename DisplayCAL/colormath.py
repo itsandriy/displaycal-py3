@@ -314,7 +314,7 @@ rgb_spaces = {
     "Bruce RGB":        (2.2,             "D65",                   (0.6400, 0.3300, 0.240995), (0.2800, 0.6500, 0.683554), (0.1500, 0.0600, 0.075452)),
     "CIE RGB":          (2.2,             "E",                     (0.7350, 0.2650, 0.176204), (0.2740, 0.7170, 0.812985), (0.1670, 0.0090, 0.010811)),
     "ColorMatch RGB":   (1.8,             "D50",                   (0.6300, 0.3400, 0.274884), (0.2950, 0.6050, 0.658132), (0.1500, 0.0750, 0.066985)),
-    #	"DCDM X'Y'Z'":      (2.6,             "E",                     (1.0000, 0.0000, 0.000000), (0.0000, 1.0000, 1.000000), (0.0000, 0.0000, 0.000000)),
+    # "DCDM X'Y'Z'":      (2.6,             "E",                     (1.0000, 0.0000, 0.000000), (0.0000, 1.0000, 1.000000), (0.0000, 0.0000, 0.000000)),
     "DCI P3":           (2.6,             (0.89459, 1.0, 0.95442), (0.6800, 0.3200, 0.209475), (0.2650, 0.6900, 0.721592), (0.1500, 0.0600, 0.068903)),
     "DCI P3 D65":       (2.6,             "D65",                   (0.6800, 0.3200, 0.209475), (0.2650, 0.6900, 0.721592), (0.1500, 0.0600, 0.068903)),
     "Don RGB 4":        (2.2,             "D50",                   (0.6960, 0.3000, 0.278350), (0.2150, 0.7650, 0.687970), (0.1300, 0.0350, 0.033680)),
@@ -336,6 +336,8 @@ rgb_spaces = {
 def get_cat_matrix(cat="Bradford"):
     if isinstance(cat, str):
         cat = cat_matrices[cat]
+    elif isinstance(cat, bytes):
+        cat = cat_matrices[cat.decode()]
     if not isinstance(cat, Matrix3x3):
         cat = Matrix3x3(cat)
     return cat
@@ -362,15 +364,19 @@ def var(a):
 
 
 def XYZ2LMS(X, Y, Z, cat="Bradford"):
-    """ Convert from XYZ to cone response domain """
+    """Convert from XYZ to cone response domain
+
+    :param X:
+    :param Y:
+    :param Z:
+    :param str, Matrix3x3 cat:
+    """
     cat = get_cat_matrix(cat)
     p, y, b = cat * [X, Y, Z]
     return p, y, b
 
 
-def LMS_wp_adaption_matrix(whitepoint_source=None,
-                           whitepoint_destination=None,
-                           cat="Bradford"):
+def LMS_wp_adaption_matrix(whitepoint_source=None, whitepoint_destination=None, cat="Bradford"):
     """ Prepare a matrix to match the whitepoints in cone response domain """
     # chromatic adaption
     # based on formula http://brucelindbloom.com/Eqn_ChromAdapt.html
@@ -390,8 +396,7 @@ def LMS_wp_adaption_matrix(whitepoint_source=None,
     return Matrix3x3([[Ld/Ls, 0, 0], [0, Md/Ms, 0], [0, 0, Sd/Ss]])
 
 
-def wp_adaption_matrix(whitepoint_source=None, whitepoint_destination=None,
-                       cat="Bradford"):
+def wp_adaption_matrix(whitepoint_source=None, whitepoint_destination=None, cat="Bradford"):
     """Prepare a matrix to match the whitepoints in cone response doamin and
     transform back to XYZ
 
@@ -400,19 +405,14 @@ def wp_adaption_matrix(whitepoint_source=None, whitepoint_destination=None,
     # based on formula http://brucelindbloom.com/Eqn_ChromAdapt.html
     # cat = adaption matrix or predefined choice ('CAT02', 'Bradford',
     # 'Von Kries', 'XYZ Scaling', see cat_matrices), defaults to 'Bradford'
-    cachehash = (tuple(whitepoint_source) if isinstance(whitepoint_source,
-                                                        (list, tuple))
+    cachehash = (tuple(whitepoint_source) if isinstance(whitepoint_source, (list, tuple))
                  else whitepoint_source,
-                 tuple(whitepoint_destination) if isinstance(whitepoint_destination,
-                                                             (list, tuple))
-                 else whitepoint_destination,
-                 cat if isinstance(cat, str) else id(cat))
+                 tuple(whitepoint_destination) if isinstance(whitepoint_destination, (list, tuple))
+                 else whitepoint_destination, cat if isinstance(cat, str) else id(cat))
     if cachehash in wp_adaption_matrix.cache:
         return wp_adaption_matrix.cache[cachehash]
     cat = get_cat_matrix(cat)
-    wpam = cat.inverted() * LMS_wp_adaption_matrix(whitepoint_source,
-                                                   whitepoint_destination,
-                                                   cat) * cat
+    wpam = cat.inverted() * LMS_wp_adaption_matrix(whitepoint_source, whitepoint_destination, cat) * cat
     wp_adaption_matrix.cache[cachehash] = wpam
     return wpam
 
@@ -1584,12 +1584,10 @@ def rgb_to_xyz_matrix(rx, ry, gx, gy, bx, by, whitepoint=None, scale=1.0):
                       (Sr * Zr, Sg * Zg, Sb * Zb)))
 
 
-def find_primaries_wp_xy_rgb_space_name(xy, rgb_space_names=None,
-                                        digits=4):
+def find_primaries_wp_xy_rgb_space_name(xy, rgb_space_names=None, digits=4):
     """Given primaries and whitepoint xy as list, find matching RGB space by
     comparing primaries and whitepoint (fuzzy match rounded to n digits) and
     return its name (or None if no match)
-
     """
     for i, rgb_space_name in enumerate(rgb_space_names or iter(rgb_spaces.keys())):
         if not rgb_space_names and rgb_space_name in ("ECI RGB", "ECI RGB v2", "SMPTE 240M", "sRGB"):
@@ -3519,22 +3517,18 @@ def test():
         elif i == 3:
             XYZ = get_standard_illuminant("D65", ("ASTM E308-01", ))
             wp = " ".join([str(v) for v in XYZ])
-        print(("RGB and corresponding XYZ (nominal range 0.0 - 1.0) with "
-               "whitepoint %s" % wp))
+        print(("RGB and corresponding XYZ (nominal range 0.0 - 1.0) with whitepoint %s" % wp))
         for name in rgb_spaces:
             spc = rgb_spaces[name]
             if i == 0:
                 XYZ = CIEDCCT2XYZ(spc[1])
             spc = spc[0], XYZ, spc[2], spc[3], spc[4]
-            print("%s 1.0, 1.0, 1.0 = XYZ" % name, \
-                  [str(round(v, 4)) for v in RGB2XYZ(1.0, 1.0, 1.0, spc)])
-            print("%s 1.0, 0.0, 0.0 = XYZ" % name, \
-                  [str(round(v, 4)) for v in RGB2XYZ(1.0, 0.0, 0.0, spc)])
-            print("%s 0.0, 1.0, 0.0 = XYZ" % name, \
-                  [str(round(v, 4)) for v in RGB2XYZ(0.0, 1.0, 0.0, spc)])
-            print("%s 0.0, 0.0, 1.0 = XYZ" % name, \
-                  [str(round(v, 4)) for v in RGB2XYZ(0.0, 0.0, 1.0, spc)])
+            print("%s 1.0, 1.0, 1.0 = XYZ" % name, [str(round(v, 4)) for v in RGB2XYZ(1.0, 1.0, 1.0, spc)])
+            print("%s 1.0, 0.0, 0.0 = XYZ" % name, [str(round(v, 4)) for v in RGB2XYZ(1.0, 0.0, 0.0, spc)])
+            print("%s 0.0, 1.0, 0.0 = XYZ" % name, [str(round(v, 4)) for v in RGB2XYZ(0.0, 1.0, 0.0, spc)])
+            print("%s 0.0, 0.0, 1.0 = XYZ" % name, [str(round(v, 4)) for v in RGB2XYZ(0.0, 0.0, 1.0, spc)])
         print("")
+
 
 if __name__ == '__main__':
     test()

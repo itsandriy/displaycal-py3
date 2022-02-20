@@ -1420,13 +1420,12 @@ class LUTFrame(BaseFrame):
             try:
                 profile = ICCP.ICCProfile(profile)
             except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                show_result_dialog(Error(lang.getstr("profile.invalid") +
-                                         "\n" + profile), self)
+                show_result_dialog(Error(lang.getstr("profile.invalid") + "\n" + profile), self)
                 profile = None
         if not profile:
             profile = ICCP.ICCProfile()
             profile._data = "\0" * 128
-            profile._tags.desc = ICCP.TextDescriptionType("", "desc")
+            profile._tags.desc = ICCP.TextDescriptionType(b"", "desc")
             profile.size = len(profile.data)
             profile.is_loaded = True
         center = False
