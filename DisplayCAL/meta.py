@@ -55,15 +55,15 @@ wx_recversion = (4, 1, 1)
 def get_latest_changelog_entry(readme):
     """Get changelog entry for latest version from ReadMe HTML
     """
-    chglog = re.search(r'<div id="(?:changelog|history)">'
-                       '.+?<h2>.+?</h2>'
-                       '.+?<dl>.+?</dd>', readme, re.S)
-    if chglog:
-        chglog = chglog.group()
-        chglog = re.sub(r'\s*<div id="(?:changelog|history)">\n?', "", chglog)
-        chglog = re.sub(r"\s*</?d[ld]>\n?", "", chglog)
-        chglog = re.sub(r"\s*<(h[23])>.+?</\1>\n?", "", chglog)
-    return chglog
+    changelog = re.search(r'<div id="(?:changelog|history)">.+?<h2>.+?</h2>.+?<dl>.+?</dd>', readme, re.S)
+
+    if changelog:
+        changelog = changelog.group()
+        changelog = re.sub(r'\s*<div id="(?:changelog|history)">\n?', "", changelog)
+        changelog = re.sub(r"\s*</?d[ld]>\n?", "", changelog)
+        changelog = re.sub(r"\s*<(h[23])>.+?</\1>\n?", "", changelog)
+
+    return changelog
 
 
 def script2pywname(script):
