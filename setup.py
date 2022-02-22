@@ -429,8 +429,10 @@ def setup():
     global version_src, version_tuple, version_win
     global wx_minversion, appstream_id
 
-    from DisplayCAL.meta import (name, author, lastmod, longdesc, domain, py_minversion,
-                                 version, version_tuple, script2pywname, appstream_id,
+    # Do not remove the following seemingly unused variables, I know that it seems silly, but for now we need them
+    from DisplayCAL.meta import (name, name_html, author, author_email, description, lastmod, longdesc, domain,
+                                 py_maxversion, py_minversion, version, version_lin, version_mac, version_src,
+                                 version_tuple, version_win, wx_minversion, script2pywname, appstream_id,
                                  get_latest_changelog_entry)
     longdesc = fill(longdesc)
 
