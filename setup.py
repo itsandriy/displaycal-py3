@@ -12,6 +12,7 @@ import time
 from configparser import RawConfigParser
 from distutils.util import get_platform
 from hashlib import md5, sha1
+from pathlib import Path
 from textwrap import fill
 from time import gmtime, strftime
 
@@ -20,8 +21,8 @@ if sys.platform == "win32":
 
 sys.path.insert(0, "DisplayCAL")
 
-pypath = os.path.abspath(__file__)
-pydir = os.path.dirname(pypath)
+pypath = Path(__file__).resolve()
+pydir = pypath.parent
 
 
 def create_appdmg(zeroinstall=False):
@@ -32,16 +33,16 @@ def create_appdmg(zeroinstall=False):
         dmgname = name + "-" + version
         srcdir = f"py2app.{get_platform()}-py{sys.version[:3]}"
 
-    retcode = subprocess.call(["hdiutil", "create", os.path.join(pydir, "dist", dmgname + ".dmg"),
+    retcode = subprocess.call(["hdiutil", "create", Path(pydir, "dist", f"{dmgname}.dmg"),
                                "-volname", dmgname, "-srcfolder",
-                               os.path.join(pydir, "dist", srcdir, dmgname)])
+                               Path(pydir, "dist", srcdir, dmgname)])
 
     if retcode != 0:
         sys.exit(retcode)
 
 
-def format_changelog(changelog, format="appstream"):
-    if format.lower() in ("appstream", "rpm"):
+def format_changelog(changelog, fmt="appstream"):
+    if fmt.lower() in ("appstream", "rpm"):
         from xml.etree import ElementTree as ET
 
         # Remove changelog entries of prev versions
@@ -51,7 +52,7 @@ def format_changelog(changelog, format="appstream"):
         # + list items (li)
         allowed_tags = ["p", "ol", "ul", "li"]
 
-        if format == "rpm":
+        if fmt == "rpm":
             allowed_tags.append("a")
 
         changelog = re.sub(r"\s*<dt(?:\s+[^>]*)?>.+?</dt>\n?", "", changelog)
@@ -73,7 +74,7 @@ def format_changelog(changelog, format="appstream"):
         # Remove text "Linux" in item before colon (":")
         changelog = re.sub(r"(<li>[^,:<]*)\s+Linux([^,:<]*):", r"\1\2", changelog)
 
-        if format.lower() == "appstream":
+        if fmt.lower() == "appstream":
             # Conform to appstream-util validate-strict rules
             def truncate(matches, maxlen):
                 return "%s%s%s" % (matches.group(1),
@@ -87,7 +88,7 @@ def format_changelog(changelog, format="appstream"):
             changelog = re.sub(r"([^.])\.\s*</li>", r"\1</li>", changelog)
             # - <li> maximum is 100 chars
             changelog = re.sub(r"(<li>)\s*([^<]{101,}?)\s*(<(?:ol|ul|/li)>)", lambda matches: truncate(matches, 100),
-                            changelog)
+                               changelog)
 
         # Nice formatting
         changelog = re.sub(r"(?m:^\s+)", r"\t" * 4, changelog)  # Multi-line
@@ -99,9 +100,9 @@ def format_changelog(changelog, format="appstream"):
         # Parse into ETree
         tree = ET.fromstring(f"<root>{changelog.encode('UTF-8')}</root>")
     else:
-        raise ValueError(f"Changelog format not supported: {format!r}")
+        raise ValueError(f"Changelog format not supported: {fmt!r}")
 
-    if format.lower() == "rpm":
+    if fmt.lower() == "rpm":
         changelog = ""
 
         for lvl1 in tree:
@@ -206,13 +207,13 @@ def format_changelog(changelog, format="appstream"):
     return changelog
 
 
-def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
+def replace_placeholders(tmpl_path: Path, out_path: Path, lastmod_time=0, iterable=None):
     global longdesc
 
-    with codecs.open(tmpl_path, "r", "UTF-8") as tmpl:
+    with codecs.open(str(tmpl_path), "r", "UTF-8") as tmpl:
         tmpl_data = tmpl.read()
 
-    if os.path.basename(tmpl_path).startswith("debian"):
+    if Path(tmpl_path).name.startswith("debian"):
         longdesc_backup = longdesc
         longdesc = "\n".join([" " + (line if line.strip() else ".") for line in longdesc.splitlines()])
 
@@ -262,19 +263,21 @@ def replace_placeholders(tmpl_path, out_path, lastmod_time=0, iterable=None):
 
     tmpl_data = tmpl_data.replace(f"{mapping['YEAR']}-{mapping['YEAR']}", mapping["YEAR"])
 
-    if os.path.basename(tmpl_path).startswith("debian"):
+    if Path(tmpl_path).name.startswith("debian"):
         longdesc = longdesc_backup
 
-    if os.path.isfile(out_path):
-        with codecs.open(out_path, "r", "UTF-8") as out:
+    out_path = Path(out_path)
+
+    if out_path.is_file():
+        with codecs.open(str(out_path), "r", "UTF-8") as out:
             data = out.read()
 
         if data == tmpl_data:
             return
-    elif not os.path.isdir(os.path.dirname(out_path)):
-        os.makedirs(os.path.dirname(out_path))
+    elif not out_path.parent.is_dir():
+        os.makedirs(out_path.parent)
 
-    with codecs.open(out_path, "w", "UTF-8") as out:
+    with codecs.open(str(out_path), "w", "UTF-8") as out:
         out.write(tmpl_data)
 
 
@@ -352,8 +355,8 @@ def setup():
 
     from DisplayCAL.util_os import which
 
-    if os.path.isdir(os.path.join(pydir, ".git")) and (which("git") or which("git.exe")) and \
-            (not sys.argv[1:] or (len(non_build_args) < len(sys.argv[1:]) and not help)):
+    if Path(pydir, ".git").is_dir() and (which("git") or which("git.exe")) and \
+        (not sys.argv[1:] or (len(non_build_args) < len(sys.argv[1:]) and not help)):
         print("Trying to get git version information...")
         git_version = None
 
@@ -363,11 +366,11 @@ def setup():
             print("...failed:", exception)
         else:
             git_version = p.communicate()[0].strip().decode()
-            version_base_filename = os.path.join(pydir, "VERSION_BASE")
+            version_base_file_path = Path(pydir, "VERSION_BASE")
             version_base = "0.0.0.0".split(".")
 
-            if os.path.isfile(version_base_filename):
-                with open(version_base_filename) as version_base_file:
+            if version_base_file_path.is_file():
+                with open(version_base_file_path) as version_base_file:
                     version_base = version_base_file.read().strip().split(".")
 
         print("Trying to get git information...")
@@ -389,7 +392,7 @@ def setup():
         if not dry_run:
             print("Generating __version__.py")
 
-            with open(os.path.join(pydir, "DisplayCAL", "__version__.py"), "w") as versionpy:
+            with open(Path(pydir, "DisplayCAL", "__version__.py"), "w") as versionpy:
                 versionpy.write("# generated by setup.py\n\n")
                 build_time = time.time()
                 versionpy.write(
@@ -405,14 +408,17 @@ def setup():
                     versionpy.write("VERSION_BASE = (%s)\n" % ", ".join(version_base))
                     versionpy.write("VERSION_STRING = %r\n" % ".".join(version_base))
 
-                    with open(os.path.join(pydir, "VERSION"), "w") as versiontxt:
+                    with open(Path(pydir, "VERSION"), "w") as versiontxt:
                         versiontxt.write(".".join(version_base))
+
+    backup_setup_path = Path(pydir, "setup.cfg.backup")
+    setup_path = Path(pydir, "setup.cfg")
 
     if not help and not dry_run:
         # Restore setup.cfg.backup if it exists
-        if os.path.isfile(os.path.join(pydir, "setup.cfg.backup")) and \
-                not os.path.isfile(os.path.join(pydir, "setup.cfg")):
-            shutil.copy2(os.path.join(pydir, "setup.cfg.backup"), os.path.join(pydir, "setup.cfg"))
+
+        if backup_setup_path.is_file() and not setup_path.is_file():
+            shutil.copy2(backup_setup_path, setup_path)
 
     if not sys.argv[1:]:
         return
@@ -438,17 +444,16 @@ def setup():
 
     if not dry_run and not help:
         if setup_cfg or ("bdist_msi" in sys.argv[1:] and use_setuptools):
-            if not os.path.exists(os.path.join(pydir, "setup.cfg.backup")):
-                shutil.copy2(os.path.join(pydir, "setup.cfg"), os.path.join(pydir, "setup.cfg.backup"))
+            if not backup_setup_path.exists():
+                shutil.copy2(setup_path, backup_setup_path)
 
         if "bdist_msi" in sys.argv[1:] and use_setuptools:
             # setuptools parses options globally even if they're not under the
             # section of the currently run command
-            os.remove(os.path.join(pydir, "setup.cfg"))
+            os.remove(setup_path)
 
         if setup_cfg:
-            shutil.copy2(os.path.join(pydir, "misc", f"setup.{setup_cfg}.cfg"),
-                         os.path.join(pydir, "setup.cfg"))
+            shutil.copy2(Path(pydir, "misc", f"setup.{setup_cfg}.cfg"), setup_path)
 
     if purge or purge_dist:
         # remove the "build", "DisplayCAL.egg-info" and
@@ -460,26 +465,29 @@ def setup():
         paths = []
 
         if purge:
-            paths += glob.glob(os.path.join(pydir, "build")) + glob.glob(
-                os.path.join(pydir, name + ".egg-info")) + glob.glob(
-                os.path.join(pydir, "pyinstaller", "bincache*"))
+            paths += glob.glob(str(Path(pydir, "build"))) + glob.glob(
+                str(Path(pydir, name + ".egg-info"))) + glob.glob(
+                str(Path(pydir, "pyinstaller", "bincache*")))
             sys.argv.remove("purge")
 
         if purge_dist:
-            paths += glob.glob(os.path.join(pydir, "dist"))
+            paths += glob.glob(str(Path(pydir, "dist")))
             sys.argv.remove("purge_dist")
 
         for path in paths:
-            if os.path.exists(path):
+            path = Path(path)
+
+            if path.exists():
                 if dry_run:
                     print(path)
                     continue
+
                 try:
                     shutil.rmtree(path)
-                except Exception as exception:
-                    print(exception)
+                except Exception as e:
+                    print(e)
                 else:
-                    print("removed", path)
+                    print(f"Removed: {path}")
 
         if len(sys.argv) == 1 or (len(sys.argv) == 2 and dry_run):
             return
@@ -494,9 +502,8 @@ def setup():
                         else:
                             continue
 
-                    replace_placeholders(os.path.join(pydir, "misc",
-                                                      tmpl_name + ".template.html"),
-                                         os.path.join(pydir, tmpl_name + ".html"),
+                    replace_placeholders(Path(pydir, "misc", f"{tmpl_name}.template.html"),
+                                         Path(pydir, tmpl_name + ".html"),
                                          lastmod_time,
                                          {"STABILITY": "Beta" if stability != "stable" else ""})
         sys.argv.remove("readme")
@@ -508,14 +515,13 @@ def setup():
                        "install" in sys.argv[1:]) and
                       not help and not dry_run)
 
-    if (("sdist" in sys.argv[1:] or "install" in sys.argv[1:] or "bdist_deb" in sys.argv[1:]) and not help):
+    if ("sdist" in sys.argv[1:] or "install" in sys.argv[1:] or "bdist_deb" in sys.argv[1:]) and not help:
         buildservice = True
 
     if create_appdata or buildservice:
-        with codecs.open(os.path.join(pydir, "CHANGES.html"), "r", "UTF-8") as readme:
-            readme = readme.read()
-
-        changelog = get_latest_changelog_entry(readme)
+        with codecs.open(str(Path(pydir, "CHANGES.html")), "r", "UTF-8") as f:
+            readme = f.read()
+            changelog = get_latest_changelog_entry(readme)
 
     if create_appdata:
         from DisplayCAL.setup import get_scripts
@@ -546,8 +552,8 @@ def setup():
 
         languages = "\n\t\t".join(languages)
         tmpl_name = appstream_id + ".appdata.xml"
-        replace_placeholders(os.path.join(pydir, "misc", tmpl_name),
-                             os.path.join(pydir, "dist", tmpl_name),
+        replace_placeholders(Path(pydir, "misc", tmpl_name),
+                             Path(pydir, "dist", tmpl_name),
                              lastmod_time,
                              {
                                  "APPDATAPROVIDES": provides,
@@ -558,8 +564,8 @@ def setup():
         sys.argv.remove("appdata")
 
     if buildservice and not dry_run:
-        replace_placeholders(os.path.join(pydir, "misc", "debian.copyright"),
-                             os.path.join(pydir, "dist", "copyright"), lastmod_time)
+        replace_placeholders(Path(pydir, "misc", "debian.copyright"),
+                             Path(pydir, "dist", "copyright"), lastmod_time)
 
     if "buildservice" in sys.argv[1:]:
         sys.argv.remove("buildservice")
@@ -594,7 +600,7 @@ def setup():
             tmpl_types.extend(["0install", "0install-per-user"])
 
         for tmpl_type in tmpl_types:
-            inno_template_path = os.path.join(pydir, "misc", f"{name}-Setup-{tmpl_type}.iss")
+            inno_template_path = Path(pydir, "misc", f"{name}-Setup-{tmpl_type}.iss")
             inno_template = open(inno_template_path, "r")
             inno_script = inno_template.read() % {
                 "AppCopyright": "© %s %s" % (strftime("%Y"), author),
@@ -613,16 +619,18 @@ def setup():
                 "HTTPURL": f"http://{domain.lower()}/",
             }
             inno_template.close()
-            inno_path = os.path.join("dist",
-                                     os.path.basename(inno_template_path).replace(
-                                         bdist_cmd, "%s.%s-py%s" % (bdist_cmd, get_platform(), sys.version[:3])
-                                     ))
+            inno_path = Path("dist",
+                             inno_template_path.name.replace(
+                                 bdist_cmd, "%s.%s-py%s" % (bdist_cmd, get_platform(), sys.version[:3])
+                             ))
 
             if not dry_run:
-                if not os.path.exists("dist"):
-                    os.makedirs("dist")
+                dist_path = Path("dist")
 
-                inno_file = open(inno_path, "w")
+                if not dist_path.exists():
+                    os.makedirs(dist_path)
+
+                inno_file = open(inno_path, "wb")
                 inno_file.write(inno_script.encode("MBCS", "replace"))
                 inno_file.close()
 
@@ -645,13 +653,13 @@ def setup():
                                            "ProgramMenuFolder",  # Parent
                                            name.upper()[:6] + "~1|" + name)])  # DefaultDir
         msilib.add_data(db, "Icon", [(name + ".ico",  # Name
-                                      msilib.Binary(os.path.join(pydir, name,
-                                                                 "theme", "icons",
-                                                                 name + ".ico")))])  # Data
+                                      msilib.Binary(str(Path(pydir, name,
+                                                             "theme", "icons",
+                                                             name + ".ico"))))])  # Data
         msilib.add_data(db, "Icon", [("uninstall.ico",  # Name
-                                      msilib.Binary(os.path.join(pydir, name,
-                                                                 "theme", "icons",
-                                                                 name + "-uninstall.ico")))])  # Data
+                                      msilib.Binary(str(Path(pydir, name,
+                                                             "theme", "icons",
+                                                             name + "-uninstall.ico"))))])  # Data
         msilib.add_data(db, "RemoveFile", [("MenuDir",  # FileKey
                                             name,  # Component
                                             None,  # FileName
@@ -752,57 +760,38 @@ def setup():
     if buildservice:
         # Create control files
         mapping = {
-            "POST": open(os.path.join(pydir, "util", "rpm_postinstall.sh"), "r").read().strip(),
-            "POSTUN": open(os.path.join(pydir, "util", "rpm_postuninstall.sh"), "r").read().strip(),
+            "POST": open(Path(pydir, "util", "rpm_postinstall.sh"), "r").read().strip(),
+            "POSTUN": open(Path(pydir, "util", "rpm_postuninstall.sh"), "r").read().strip(),
             "CHANGELOG": format_changelog(changelog, "rpm")
         }
-        tgz = os.path.join(pydir, "dist", f"{name}-{version}.tar.gz")
+        tgz_file_path = Path(pydir, "dist", f"{name}-{version}.tar.gz")
 
-        if os.path.isfile(tgz):
-            with open(tgz, "rb") as tgzfile:
-                mapping["MD5"] = md5(tgzfile.read()).hexdigest()
+        if tgz_file_path.is_file():
+            with open(tgz_file_path, "rb") as f:
+                mapping["MD5"] = md5(f.read()).hexdigest()
 
         for tmpl_name in ("PKGBUILD", "debian.changelog", "debian.control",
                           "debian.copyright",
                           "debian.rules", f"{name}.changes",
                           f"{name}.dsc", f"{name}.spec",
                           "appimage.yml",
-                          os.path.join("0install", "PKGBUILD"),
-                          os.path.join("0install", "debian.changelog"),
-                          os.path.join("0install", "debian.control"),
-                          os.path.join("0install", "debian.rules"),
-                          os.path.join("0install", f"{name}.dsc"),
-                          os.path.join("0install", f"{name}.spec")):
-            tmpl_path = os.path.join(pydir, "misc", tmpl_name)
+                          Path("0install", "PKGBUILD"),
+                          Path("0install", "debian.changelog"),
+                          Path("0install", "debian.control"),
+                          Path("0install", "debian.rules"),
+                          Path("0install", f"{name}.dsc"),
+                          Path("0install", f"{name}.spec")):
+            tmpl_path = Path(pydir, "misc", tmpl_name)
             replace_placeholders(tmpl_path,
-                                 os.path.join(pydir, "dist", tmpl_name),
+                                 Path(pydir, "dist", tmpl_name),
                                  lastmod_time, mapping)
 
     if bdist_deb:
         # Read setup.cfg
         cfg = RawConfigParser()
-        cfg.read(os.path.join(pydir, "setup.cfg"))
+        cfg.read(Path(pydir, "setup.cfg"))
         # Get dependencies
-        dependencies = [val.strip().split(None, 1) for val in
-                        cfg.get("bdist_rpm", "Requires").split(",")]
-
-        # Get group
-        if cfg.has_option("bdist_rpm", "group"):
-            group = cfg.get("bdist_rpm", "group")
-        else:
-            group = None
-
-        # Get maintainer
-        if cfg.has_option("bdist_rpm", "maintainer"):
-            maintainer = cfg.get("bdist_rpm", "maintainer")
-        else:
-            maintainer = None
-
-        # Get packager
-        if cfg.has_option("bdist_rpm", "packager"):
-            packager = cfg.get("bdist_rpm", "packager")
-        else:
-            packager = None
+        dependencies = [val.strip().split(None, 1) for val in cfg.get("bdist_rpm", "Requires").split(",")]
 
         # Convert dependency format:
         # 'package >= version' to 'package (>= version)'
@@ -813,64 +802,35 @@ def setup():
             dependencies[i] = " ".join(dependencies[i])
 
         release = 1  # TODO: parse setup.cfg
-        rpm_filename = os.path.join(pydir, "dist", f"{name}-{version}-{release}.{arch}.rpm")
+        rpm_filename = Path(pydir, "dist", f"{name}-{version}-{release}.{arch}.rpm")
 
         if not dry_run:
             # remove target directory (and contents) if it already exists
-            target_dir = os.path.join(pydir, "dist", f"{name}-{version}")
+            target_dir = Path(pydir, "dist", f"{name}-{version}")
 
-            if os.path.exists(target_dir):
+            if target_dir.exists():
                 shutil.rmtree(target_dir)
 
-            if os.path.exists(f"{target_dir}.orig"):
+            if Path(f"{target_dir}.orig").exists():
                 shutil.rmtree(f"{target_dir}.orig")
 
             # use alien to create deb dir from rpm package
             retcode = subprocess.call(
-                ["alien", "-c", "-g", "-k", os.path.basename(rpm_filename)], cwd=os.path.join(pydir, "dist")
+                ["alien", "-c", "-g", "-k", rpm_filename.name], cwd=Path(pydir, "dist")
             )
 
             if retcode != 0:
                 sys.exit(retcode)
 
             # update changelog
-            shutil.copy2(os.path.join(pydir, "dist", "debian.changelog"),
-                         os.path.join(pydir, "dist", f"{name}-{version}", "debian", "changelog"))
+            shutil.copy2(Path(pydir, "dist", "debian.changelog"),
+                         Path(pydir, "dist", f"{name}-{version}", "debian", "changelog"))
             # update rules
-            shutil.copy2(os.path.join(pydir, "misc", "alien.rules"),
-                         os.path.join(pydir, "dist", f"{name}-{version}", "debian", "rules"))
+            shutil.copy2(Path(pydir, "misc", "alien.rules"),
+                         Path(pydir, "dist", f"{name}-{version}", "debian", "rules"))
             # update control
-            control_filename = os.path.join(pydir, "dist", f"{name}-{version}", "debian", "control")
-            shutil.copy2(os.path.join(pydir, "dist", "debian.control"), control_filename)
-            # # read control file from deb dir
-            # control = open(control_filename, "r")
-            # lines = [line.rstrip("\n") for line in control.readlines()]
-            # control.close()
-            # # update control with info from setup.cfg
-            # for i in range(len(lines)):
-            #     if lines[i].startswith("Depends:"):
-            #         # add dependencies
-            #         lines[i] += ", python"
-            #         lines[i] += ", python" + sys.version[:3]
-            #         lines[i] += ", " + ", ".join(dependencies)
-            #     elif lines[i].startswith("Maintainer:") and (maintainer or packager):
-            #         # set maintainer
-            #         lines[i] = "Maintainer: " + (maintainer or packager)
-            #     elif lines[i].startswith("Section:") and group:
-            #         # set section
-            #         lines[i] = "Section: " + group
-            #     elif lines[i].startswith("Description:"):
-            #         lines.pop()
-            #         lines.pop()
-            #         break
-            # # write updated control file
-            # control = open(control_filename, "w")
-            # control.write("\n".join(lines))
-            # control.close()
-            # # run strip on shared libraries
-            # sos = os.path.join(change_root(target_dir, get_python_lib(True)), name, "*.so")
-            # for so in glob.glob(sos):
-            #     retcode = call(["strip", "--strip-unneeded", so])
+            control_filename = Path(pydir, "dist", f"{name}-{version}", "debian", "control")
+            shutil.copy2(Path(pydir, "dist", "debian.control"), control_filename)
 
             # create deb package
             retcode = subprocess.call(["chmod", "+x", "./debian/rules"], cwd=target_dir)
@@ -880,16 +840,16 @@ def setup():
                 sys.exit(retcode)
 
     if setup_cfg or ("bdist_msi" in sys.argv[1:] and use_setuptools):
-        shutil.copy2(os.path.join(pydir, "setup.cfg.backup"), os.path.join(pydir, "setup.cfg"))
+        shutil.copy2(Path(pydir, "setup.cfg.backup"), Path(pydir, "setup.cfg"))
 
     if bdist_pyi:
         # create an executable using pyinstaller
-        retcode = subprocess.call([sys.executable, os.path.join(pydir, "pyinstaller", "pyinstaller.py"),
+        retcode = subprocess.call([sys.executable, Path(pydir, "pyinstaller", "pyinstaller.py"),
                                    "--workpath",
-                                   os.path.join(pydir, "build", f"pyi.{get_platform()}-{sys.version[:3]}"),
+                                   Path(pydir, "build", f"pyi.{get_platform()}-{sys.version[:3]}"),
                                    "--distpath",
-                                   os.path.join(pydir, "dist", f"pyi.{get_platform()}-{sys.version[:3]}"),
-                                   os.path.join(pydir, "misc", "%s.pyi.spec" % name)])
+                                   Path(pydir, "dist", f"pyi.{get_platform()}-{sys.version[:3]}"),
+                                   Path(pydir, "misc", "%s.pyi.spec" % name)])
 
         if retcode != 0:
             sys.exit(retcode)
@@ -908,20 +868,16 @@ def setup():
                 cmdname += "-" + script.replace(name + "-", "")
 
             cmds.append((cmdname, script, desc))
-            # if script.endswith("-apply-profiles"):
-            #     # Add forced calibration loading entry
-            #     cmds.append((cmdname + "-force", script, desc))
 
         # Get archive digest
         extract = f"{name}-{version}"
         archive_name = f"{extract}.tar.gz"
-        archive_path = os.path.join(pydir, "dist", archive_name)
+        archive_path = Path(pydir, "dist", archive_name)
 
         from DisplayCAL.util_os import fs_enc
 
         p = subprocess.Popen(
-            ["0install", "digest", archive_path.encode(fs_enc), extract],
-            stdout=subprocess.PIPE, cwd=pydir
+            ["0install", "digest", str(archive_path).encode(fs_enc), extract], stdout=subprocess.PIPE, cwd=pydir
         )
         stdout, stderr = p.communicate()
         print(stdout)
@@ -940,11 +896,11 @@ def setup():
                           "faulthandler.xml", "netifaces.xml", "protobuf.xml",
                           "pychromecast.xml", "requests.xml", "six.xml",
                           "zeroconf.xml"):
-            dist_path = os.path.join(pydir, "dist", "0install", tmpl_name)
-            create = not os.path.isfile(dist_path)
+            dist_path = Path(pydir, "dist", "0install", tmpl_name)
+            create = not dist_path.is_file()
 
             if create:
-                tmpl_path = os.path.join(pydir, "misc", "0install", tmpl_name)
+                tmpl_path = Path(pydir, "misc", "0install", tmpl_name)
                 replace_placeholders(tmpl_path, dist_path, lastmod_time)
 
             if tmpl_name.startswith(name):
@@ -955,8 +911,7 @@ def setup():
                 # Get interface
                 interface = domtree.getElementsByTagName("interface")[0]
                 # Get languages
-                langs = [os.path.splitext(os.path.basename(lang))[0] for lang in
-                         glob.glob(os.path.join(name, "lang", "*.json"))]
+                langs = [Path(lang).suffix[0] for lang in glob.glob(str(Path(name, "lang", "*.json")))]
                 # Get architecture groups
                 groups = domtree.getElementsByTagName("group")
 
@@ -993,10 +948,6 @@ def setup():
                             cmd = domtree.createElement("command")
                             cmd.setAttribute("name", cmdname)
                             cmd.setAttribute("path", f"{script}.pyw")
-                            ##if cmdname.endswith("-apply-profiles"):
-                            ### Autostart
-                            ##arg = domtree.createElement("suggest-auto-start")
-                            ##cmd.appendChild(arg)
 
                             if cmdname.endswith("-apply-profiles-force"):
                                 # Forced calibration loading
@@ -1055,7 +1006,7 @@ def setup():
                 if create:
                     for cmdname, script, desc in cmds:
                         # Add entry-points to interface
-                        if script == name + "-eeColor-to-madVR-converter" or script.endswith("-console"):
+                        if script ==  f"{name}-eeColor-to-madVR-converter" or script.endswith("-console"):
                             continue
 
                         entry_point = domtree.createElement("entry-point")
@@ -1063,7 +1014,7 @@ def setup():
                         binname = script
 
                         if cmdname.endswith("-force"):
-                            binname += "-force"
+                            binname = f"{binname}-force"
 
                         entry_point.setAttribute("binary-name", binname)
                         cfg = RawConfigParser()
@@ -1072,7 +1023,7 @@ def setup():
                         if cmdname.endswith("-apply-profiles"):
                             desktopbasename = "z-" + desktopbasename
 
-                        cfg.read(os.path.join(pydir, "misc", desktopbasename))
+                        cfg.read(Path(pydir, "misc", desktopbasename))
 
                         for option, tagname in (("Name", "name"),
                                                 ("GenericName", "summary"),
@@ -1134,15 +1085,16 @@ def setup():
                         args = ["run", "--command", "0publish", "--", "http://0install.de/feeds/ZeroInstall_Tools.xml"]
 
                 if zeropublish:
-                    passphrase_path = os.path.join(pydir, "gpg", "passphrase.txt")
+                    passphrase_path = Path(pydir, "gpg", "passphrase.txt")
                     print("Signing", dist_path)
 
-                    if os.path.isfile(passphrase_path):
+                    if passphrase_path.is_file():
                         from DisplayCAL import wexpect
+
                         with open(passphrase_path) as passphrase_file:
                             passphrase = passphrase_file.read().strip()
 
-                        p = wexpect.spawn(zeropublish.encode(fs_enc), args + ["-x", dist_path.encode(fs_enc)])
+                        p = wexpect.spawn(zeropublish.encode(fs_enc), args + ["-x", str(dist_path).encode(fs_enc)])
                         p.expect(":")
                         p.send(passphrase)
                         p.send("\n")
@@ -1152,15 +1104,15 @@ def setup():
                         except:
                             p.terminate()
                     else:
-                        subprocess.call([zeropublish] + args + ["-x", dist_path.encode(fs_enc)])
+                        subprocess.call([zeropublish] + args + ["-x", str(dist_path).encode(fs_enc)])
                 else:
                     print("WARNING: 0publish not found, please sign the feed!")
 
         # Create 0install app bundles
-        bundletemplate = os.path.join("0install", "template.app", "Contents")
-        bundletemplatepath = os.path.join(pydir, bundletemplate)
+        bundle_template = Path("0install", "template.app", "Contents")
+        bundle_template_path = Path(pydir, bundle_template)
 
-        if os.path.isdir(bundletemplatepath):
+        if bundle_template_path.is_dir():
             p = subprocess.Popen(["0install", "-V"], stdout=subprocess.PIPE)
             stdout, stderr = p.communicate()
             zeroinstall_version = re.search(r" (\d(?:\.\d+)+)", stdout.decode())
@@ -1171,8 +1123,8 @@ def setup():
             if zeroinstall_version < "2.8":
                 zeroinstall_version = "2.8"
 
-            feeduri = f"http://{domain.lower()}/0install/{name}.xml"
-            dist_dir = os.path.join(pydir, "dist", "0install", name + "-0install")
+            feed_uri = f"http://{domain.lower()}/0install/{name}.xml"
+            dist_dir = Path(pydir, "dist", "0install", name + "-0install")
 
             for script, desc in scripts + [("0install-launcher", "0install Launcher"),
                                            ("0install-cache-manager", "0install Cache Manager")]:
@@ -1186,9 +1138,9 @@ def setup():
                 else:
                     bundlename = desc
 
-                bundledistpath = os.path.join(dist_dir, desc + ".app", "Contents")
-                replace_placeholders(os.path.join(bundletemplatepath, "Info.plist"),
-                                     os.path.join(bundledistpath, "Info.plist"), lastmod_time,
+                bundledistpath = Path(dist_dir, desc + ".app", "Contents")
+                replace_placeholders(Path(bundle_template_path, "Info.plist"),
+                                     Path(bundledistpath, "Info.plist"), lastmod_time,
                                      {
                                          "NAME": bundlename,
                                          "EXECUTABLE": script,
@@ -1196,54 +1148,54 @@ def setup():
                                      })
 
                 if script.startswith(name):
-                    run = "0launch%s -- %s" % (re.sub(r"^%s" % name, " --command=run", script), feeduri)
+                    run = "0launch%s -- %s" % (re.sub(r"^%s" % name, " --command=run", script), feed_uri)
                 else:
-                    run = {"0install-launcher": "0launch --gui " + feeduri,
+                    run = {"0install-launcher": "0launch --gui " + feed_uri,
                            "0install-cache-manager": "0store manage"}.get(script)
 
                 replace_placeholders(
-                    os.path.join(bundletemplatepath, "MacOS", "template"),
-                    os.path.join(bundledistpath, "MacOS", script),
+                    Path(bundle_template_path, "MacOS", "template"),
+                    Path(bundledistpath, "MacOS", script),
                     lastmod_time,
                     {"EXEC": run, "ZEROINSTALL_VERSION": zeroinstall_version}
                 )
-                os.chmod(os.path.join(bundledistpath, "MacOS", script), 0o755)
+                os.chmod(Path(bundledistpath, "MacOS", script), 0o755)
 
-                for binary in os.listdir(os.path.join(bundletemplatepath, "MacOS")):
+                for binary in os.listdir(Path(bundle_template_path, "MacOS")):
                     if binary == "template":
                         continue
 
-                    src = os.path.join(bundletemplatepath, "MacOS", binary)
-                    dst = os.path.join(bundledistpath, "MacOS", binary)
+                    src = Path(bundle_template_path, "MacOS", binary)
+                    dst = Path(bundledistpath, "MacOS", binary)
 
-                    if os.path.islink(src):
+                    if src.is_symlink():
                         linkto = os.readlink(src)
 
-                        if os.path.islink(dst) and os.readlink(dst) != linkto:
+                        if dst.is_symlink() and os.readlink(dst) != linkto:
                             os.remove(dst)
 
-                        if not os.path.islink(dst):
+                        if not dst.is_symlink():
                             os.symlink(linkto, dst)
                     else:
                         shutil.copy2(src, dst)
 
-                resdir = os.path.join(bundledistpath, "Resources")
+                resource_dir_path = Path(bundledistpath, "Resources")
 
-                if not os.path.isdir(resdir):
-                    os.mkdir(resdir)
+                if not resource_dir_path.is_dir():
+                    os.mkdir(resource_dir_path)
 
                 if script.startswith(name):
-                    iconsrc = os.path.join(pydir, name, "theme", "icons", script + ".icns")
+                    iconsrc = Path(pydir, name, "theme", "icons", script + ".icns")
                 else:
-                    iconsrc = os.path.join(pydir, "0install", "ZeroInstall.icns")
+                    iconsrc = Path(pydir, "0install", "ZeroInstall.icns")
 
-                icondst = os.path.join(resdir, script + ".icns")
+                icondst = Path(resource_dir_path, script + ".icns")
 
-                if os.path.isfile(iconsrc) and not os.path.isfile(icondst):
+                if iconsrc.is_file() and not icondst.is_file():
                     shutil.copy2(iconsrc, icondst)
 
             # README as .webloc file (link to homepage)
-            with codecs.open(os.path.join(dist_dir, "README.webloc"), "w", "UTF-8") as readme:
+            with codecs.open(str(Path(dist_dir, "README.webloc")), "w", "UTF-8") as readme:
                 readme.write(f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -1254,34 +1206,27 @@ def setup():
 </plist>
 """)
             # Copy LICENSE.txt
-            shutil.copy2(os.path.join(pydir, "LICENSE.txt"), os.path.join(dist_dir, "LICENSE.txt"))
+            shutil.copy2(Path(pydir, "LICENSE.txt"), Path(dist_dir, "LICENSE.txt"))
 
     if bdist_appdmg:
         create_appdmg(zeroinstall)
 
     if bdist_pkg:
-        version_dir = os.path.join(pydir, "dist", version)
+        version_dir = Path(pydir, "dist", version)
         replace_placeholders(
-            os.path.join(pydir, "misc", name + ".pkgproj"),
-            os.path.join(version_dir, name + "-" + version + ".pkgproj"),
+            Path(pydir, "misc", name + ".pkgproj"),
+            Path(version_dir, name + "-" + version + ".pkgproj"),
             lastmod_time, {"PYDIR": pydir}
         )
         shutil.move(
-            os.path.join(pydir, "dist", f"py2app.{get_platform()}-py{sys.version[:3]}", f"{name}-{version}"),
+            Path(pydir, "dist", f"py2app.{get_platform()}-py{sys.version[:3]}", f"{name}-{version}"),
             version_dir
         )
-        os.rename(
-            os.path.join(version_dir, f"{name}-{version}"),
-            os.path.join(version_dir, name)
-        )
+        os.rename(Path(version_dir, f"{name}-{version}"), Path(version_dir, name))
 
-        if subprocess.call(["/usr/local/bin/packagesbuild", "-v",
-                            os.path.join(version_dir, f"{name}-{version}.pkgproj")]) == 0:
+        if subprocess.call(["/usr/local/bin/packagesbuild", "-v", Path(version_dir, f"{name}-{version}.pkgproj")]) == 0:
             # Success
-            os.rename(
-                os.path.join(version_dir, f"{name}.pkg"),
-                os.path.join(version_dir, f"{name}-{version}.pkg")
-            )
+            os.rename(Path(version_dir, f"{name}.pkg"), Path(version_dir, f"{name}-{version}.pkg"))
 
 
 if __name__ == "__main__":
