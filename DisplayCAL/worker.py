@@ -13,6 +13,8 @@ import math
 import mimetypes
 import os
 import pipes
+from io import BytesIO
+
 import distro
 import platform
 import re
@@ -944,38 +946,43 @@ def get_cfg_option_from_args(option_name, argmatch, args, whole=False):
     return option
 
 
-def get_options_from_args(dispcal_args=None, colprof_args=None):
+def get_options_from_args(dispcal_args=None, colprof_args=None) -> ([str], [str]):
     """Extract options used for dispcal and colprof from argument strings.
     """
     re_options_dispcal = [
-        "[moupHVFE]",
-        "d(?:\d+(?:,\d+)?|madvr|web)",
-        "[cv]\d+",
-        "q(?:%s)" % "|".join(config.valid_values["calibration.quality"]),
-        "y(?:%s)" % "|".join([_f for _f in config.valid_values["measurement_mode"] if _f]),
-        "[tT](?:\d+(?:\.\d+)?)?",
-        "w\d+(?:\.\d+)?,\d+(?:\.\d+)?",
-        "[bfakAB]\d+(?:\.\d+)?",
-        "(?:g(?:240|709|l|s)|[gG]\d+(?:\.\d+)?)",
-        "[pP]\d+(?:\.\d+)?,\d+(?:\.\d+)?,\d+(?:\.\d+)?",
-        'X(?:\s*\d+|\s+["\'][^"\']+?["\'])',  # Argyll >= 1.3.0 colorimeter correction matrix / Argyll >= 1.3.4 calibration spectral sample
-        "I[bw]{,2}",  # Argyll >= 1.3.0 drift compensation
-        "YA",  # Argyll >= 1.5.0 disable adaptive mode
-        "Q\w+"
+        r"[moupHVFE]",
+        r"d(?:\d+(?:,\d+)?|madvr|web)",
+        r"[cv]\d+",
+        r"q(?:%s)" % "|".join(config.valid_values["calibration.quality"]),
+        r"y(?:%s)" % "|".join([_f for _f in config.valid_values["measurement_mode"] if _f]),
+        r"[tT](?:\d+(?:\.\d+)?)?",
+        r"w\d+(?:\.\d+)?,\d+(?:\.\d+)?",
+        r"[bfakAB]\d+(?:\.\d+)?",
+        r"(?:g(?:240|709|l|s)|[gG]\d+(?:\.\d+)?)",
+        r"[pP]\d+(?:\.\d+)?,\d+(?:\.\d+)?,\d+(?:\.\d+)?",
+        r'X(?:\s*\d+|\s+["\'][^"\']+?["\'])',  # Argyll >= 1.3.0 colorimeter correction matrix / Argyll >= 1.3.4 calibration spectral sample
+        r"I[bw]{,2}",  # Argyll >= 1.3.0 drift compensation
+        r"YA",  # Argyll >= 1.5.0 disable adaptive mode
+        r"Q\w+"
     ]
     re_options_colprof = [
-        "q[lmh]",
-        "b[lmh]",  # B2A quality
-        "a(?:%s)" % "|".join(config.valid_values["profile.type"]),
-        '[sSMA]\s+["\'][^"\']+?["\']',
-        "[cd](?:%s)(?=\W|$)" % "|".join(viewconds),
-        "[tT](?:%s)(?=\W|$)" % "|".join(intents)
+        r"q[lmh]",
+        r"b[lmh]",  # B2A quality
+        r"a(?:%s)" % "|".join(config.valid_values["profile.type"]),
+        r'[sSMA]\s+["\'][^"\']+?["\']',
+        r"[cd](?:%s)(?=\W|$)" % "|".join(viewconds),
+        r"[tT](?:%s)(?=\W|$)" % "|".join(intents)
     ]
     options_dispcal = []
     options_colprof = []
+
     if dispcal_args:
-        options_dispcal = re.findall(r" -(" + "|".join(re_options_dispcal) + ")", " " + dispcal_args)
+        if isinstance(dispcal_args, bytes):
+            dispcal_args = dispcal_args.decode("UTF-8")
+        options_dispcal = re.findall(r" -(%s)" % "|".join(re_options_dispcal), " %s" % dispcal_args)
     if colprof_args:
+        if isinstance(colprof_args, bytes):
+            colprof_args = colprof_args.decode("UTF-8")
         options_colprof = re.findall(r" -(" + "|".join(re_options_colprof) + ")", " " + colprof_args)
     return options_dispcal, options_colprof
 
@@ -1006,12 +1013,12 @@ def get_options_from_cprt(cprt):
     return dispcal_args, colprof_args
 
 
-def get_options_from_cal(cal):
+def get_options_from_cal(cal) -> ([str], [str]):
     if not isinstance(cal, CGATS.CGATS):
         cal = CGATS.CGATS(cal)
     if 0 in cal:
         cal = cal[0]
-    if not cal or b"ARGYLL_DISPCAL_ARGS" not in cal or not cal.ARGYLL_DISPCAL_ARGS:
+    if not cal or "ARGYLL_DISPCAL_ARGS" not in cal or not cal.ARGYLL_DISPCAL_ARGS:
         return [], []
     dispcal_args = cal.ARGYLL_DISPCAL_ARGS[0]
     return get_options_from_args(dispcal_args)
@@ -1027,9 +1034,6 @@ def get_options_from_profile(profile):
     dispcal_args = None
     colprof_args = None
     if "targ" in profile.tags:
-        import pathlib
-        with open(pathlib.Path().home() / 'profile_tags_targ', 'wb') as f:
-            f.write(profile.tags.targ.data)
         ti3 = CGATS.CGATS(profile.tags.targ)
         if 1 in ti3 and "ARGYLL_DISPCAL_ARGS" in ti3[1] and \
                 ti3[1].ARGYLL_DISPCAL_ARGS:
@@ -1045,17 +1049,16 @@ def get_options_from_profile(profile):
 
 
 def get_options_from_ti3(ti3):
-    """ Try and get options from TI3 file by looking for the special
-    DisplayCAL sections 'ARGYLL_DISPCAL_ARGS' and 'ARGYLL_COLPROF_ARGS'. """
+    """Try and get options from TI3 file by looking for the special
+    DisplayCAL sections 'ARGYLL_DISPCAL_ARGS' and 'ARGYLL_COLPROF_ARGS'.
+    """
     if not isinstance(ti3, CGATS.CGATS):
         ti3 = CGATS.CGATS(ti3)
     dispcal_args = None
     colprof_args = None
-    if 1 in ti3 and "ARGYLL_DISPCAL_ARGS" in ti3[1] and \
-            ti3[1].ARGYLL_DISPCAL_ARGS:
+    if 1 in ti3 and "ARGYLL_DISPCAL_ARGS" in ti3[1] and ti3[1].ARGYLL_DISPCAL_ARGS:
         dispcal_args = ti3[1].ARGYLL_DISPCAL_ARGS[0]
-    if 0 in ti3 and "ARGYLL_COLPROF_ARGS" in ti3[0] and \
-            ti3[0].ARGYLL_COLPROF_ARGS:
+    if 0 in ti3 and "ARGYLL_COLPROF_ARGS" in ti3[0] and ti3[0].ARGYLL_COLPROF_ARGS:
         colprof_args = ti3[0].ARGYLL_COLPROF_ARGS[0]
     return get_options_from_args(dispcal_args, colprof_args)
 
@@ -1217,7 +1220,7 @@ def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path, logfn=print):
     data.parent.DATA_FORMAT.key = "DATA_FORMAT"
     data.parent.DATA_FORMAT.parent = data
     data.parent.DATA_FORMAT.root = data.root
-    data.parent.DATA_FORMAT.type = "DATA_FORMAT"
+    data.parent.DATA_FORMAT.type = b"DATA_FORMAT"
     for i, label in enumerate(("RGB_R", "RGB_G", "RGB_B")):
         data.parent.DATA_FORMAT[i] = label
     cgats1_data.parent.DATA_FORMAT = data.parent.DATA_FORMAT
@@ -2048,7 +2051,7 @@ class Worker(WorkerBase):
                     ccmxcopy = os.path.join(tempdir,
                                             os.path.basename(ccmx))
                     if not os.path.isfile(ccmxcopy):
-                        if 0 in cgats and cgats[0].type.strip() == "CCMX":
+                        if 0 in cgats and cgats[0].type.strip() == b"CCMX":
                             # Add display base ID if missing
                             cbid_added = self.check_add_display_type_base_id(cgats)
                         else:
@@ -2780,7 +2783,7 @@ class Worker(WorkerBase):
         ti1_path = os.path.join(tempdir, "0_16.ti1")
         try:
             with open(ti1_path, "wb") as ti1:
-                ti1.write("""CTI1   
+                ti1.write("""CTI1
 
 DESCRIPTOR "Argyll Calibration Target chart information 1"
 ORIGINATOR "Argyll targen"
@@ -2790,12 +2793,12 @@ COLOR_REP "RGB"
 
 NUMBER_OF_FIELDS 7
 BEGIN_DATA_FORMAT
-SAMPLE_ID RGB_R RGB_G RGB_B XYZ_X XYZ_Y XYZ_Z 
+SAMPLE_ID RGB_R RGB_G RGB_B XYZ_X XYZ_Y XYZ_Z
 END_DATA_FORMAT
 
 NUMBER_OF_SETS 3
 BEGIN_DATA
-1 100.00 100.00 100.00 95.046 100.00 108.91 
+1 100.00 100.00 100.00 95.046 100.00 108.91
 2 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
 3 6.2500 6.2500 6.2500 0.2132 0.2241 0.2443
 END_DATA
@@ -5211,7 +5214,7 @@ END_DATA
                                 if not ramp:
                                     self.madtpg_disconnect(False)
                                     return Error("madVR_GetDeviceGammaRamp failed")
-                                cal = """CAL    
+                                cal = """CAL
 
 KEYWORD "DEVICE_CLASS"
 DEVICE_CLASS "DISPLAY"
@@ -5737,8 +5740,7 @@ while 1:
                 del os.environ["ARGYLL_NOT_INTERACTIVE"]
             if debug:
                 self.log("[D] argyll_version", self.argyll_version)
-                self.log("[D] ARGYLL_NOT_INTERACTIVE",
-                         os.environ.get("ARGYLL_NOT_INTERACTIVE"))
+                self.log("[D] ARGYLL_NOT_INTERACTIVE", os.environ.get("ARGYLL_NOT_INTERACTIVE"))
             if self.measure_cmd:
                 if isinstance(self.measurement_sound, audio.DummySound):
                     self._init_sounds(dummy=False)
@@ -8118,8 +8120,7 @@ usage: spotread [-options] [logfile]
                 if resp:
                     argyll_version_string = resp.read().strip()
 
-            installer_basename = ("Argyll_V%s_USB_driver_installer.exe" %
-                                  argyll_version_string)
+            installer_basename = ("Argyll_V%s_USB_driver_installer.exe" % argyll_version_string)
 
             download_dir = os.path.join(config.datahome, "dl")
             installer = os.path.join(download_dir, installer_basename)
@@ -9103,7 +9104,7 @@ usage: spotread [-options] [logfile]
 
                     # Check if we have calibration, if so, add vcgt
                     for cgats in ti3.values():
-                        if cgats.type == "CAL":
+                        if cgats.type == b"CAL":
                             profile.tags.vcgt = cal_to_vcgt(cgats)
                 else:
                     # Add matrix tags to cLUT profile
@@ -9771,7 +9772,7 @@ usage: spotread [-options] [logfile]
         options_dispcal = []
         is_hq_cal = False
         for cgats in ti3.values():
-            if cgats.type == "CAL":
+            if cgats.type == b"CAL":
                 vcgt = cal_to_vcgt(cgats)
                 options_dispcal = get_options_from_cal(cgats)[0]
                 is_hq_cal = "qh" in options_dispcal
@@ -9786,8 +9787,7 @@ usage: spotread [-options] [logfile]
                 dE = colormath.delta(L, 0, 0, L, a, b, "00")["E"]
                 dEs.append(dE)
                 if debug or verbose > 1:
-                    self.log("L* %5.2f a* %5.2f b* %5.2f dE*00 %4.2f" %
-                             (L, a, b, dE))
+                    self.log("L* %5.2f a* %5.2f b* %5.2f dE*00 %4.2f" % (L, a, b, dE))
         dE_avg = sum(dEs) / len(dEs)
         dE_max = max(dEs)
         self.log("R=G=B (>= 1% luminance) dE*00 avg", dE_avg, "peak", dE_max)
@@ -12251,7 +12251,7 @@ usage: spotread [-options] [logfile]
             resized.key = 'DATA'
             resized.parent = data.parent
             resized.root = cgats
-            resized.type = 'DATA'
+            resized.type = b'DATA'
             for i in range(256):
                 entry = {"RGB_I": i / 255.0}
                 for column in ("R", "G", "B"):
@@ -12383,9 +12383,9 @@ usage: spotread [-options] [logfile]
               pauseable=False, cancelable=True, show_remaining_time=True,
               fancy=True):
         """Start a worker process.
-        
+
         Also show a progress dialog while the process is running.
-        
+
         consumer            consumer function.
         producer            producer function.
         cargs               consumer arguments.
@@ -12406,7 +12406,7 @@ usage: spotread [-options] [logfile]
                             progress dialog)
         fancy               Use fancy progress dialog with animated throbber &
                             sound fx
-        
+
         """ % appname
         if ckwargs is None:
             ckwargs = {}
@@ -13103,7 +13103,7 @@ usage: spotread [-options] [logfile]
                            tuple(RGBscaled[-1]))
         else:
             bp_out = (0, 0, 0)
-        cal = """CAL    
+        cal = """CAL
 
 KEYWORD "DEVICE_CLASS"
 DEVICE_CLASS "DISPLAY"
@@ -13143,7 +13143,7 @@ BEGIN_DATA
                 except (IOError, CGATS.CGATSError):
                     pass
                 else:
-                    if 0 not in cti3 or cti3[0].type.strip() != "CTI3":
+                    if 0 not in cti3 or cti3[0].type.strip() != b"CTI3":
                         # Not Argyll measurement data
                         cti3 = None
             if not cti3:
@@ -13174,7 +13174,7 @@ BEGIN_DATA
                 # Undo original calibration
                 RGBscaled = self.xicclu(ocal, RGBscaled, direction="b", scale=100)
             # Update CAL in ti3 file
-            if 1 in cti3 and cti3[1].type.strip() == "CAL":
+            if 1 in cti3 and cti3[1].type.strip() == b"CAL":
                 cti3[1].DATA = cal[0].DATA
             else:
                 cti3[1] = cal[0]
@@ -13231,7 +13231,7 @@ BEGIN_DATA
             primaries = cgats.queryi(labels)
             if primaries and not as_ti3:
                 primaries.fix_device_values_scaling(profile.colorSpace)
-                cgats.type = 'CTI1'
+                cgats.type = b'CTI1'
                 cgats.COLOR_REP = profile.colorSpace
                 ti1, ti3_ref, gray = self.ti1_lookup_to_ti3(cgats, profile,
                                                             function, pcs,
@@ -13267,8 +13267,7 @@ BEGIN_DATA
                 if not primaries and check_missing_fields:
                     raise ValueError(lang.getstr("error.testchart.missing_fields",
                                                  (cgats.filename, ", ".join(labels))))
-                ti1, ti3_ref = self.ti3_lookup_to_ti1(cgats, profile, fields,
-                                                      intent, white_patches)
+                ti1, ti3_ref = self.ti3_lookup_to_ti1(cgats, profile, fields, intent, white_patches)
         except Exception as exception:
             if raise_exceptions:
                 raise exception
@@ -13569,12 +13568,10 @@ BEGIN_DATA
             print(ti3)
         return ti1, ti3, list(map(list, gray))
 
-    def ti3_lookup_to_ti1(self, ti3, profile, fields=None, intent="r",
-                          add_white_patches=4):
+    def ti3_lookup_to_ti1(self, ti3, profile, fields=None, intent="r", add_white_patches=4):
         """Read TI3 (filename or CGATS instance), lookup cie->device values
         colorimetrically through profile using Argyll's xicclu
         utility and return TI1 and compatible TI3 (CGATS instances)
-
         """
 
         # ti3
@@ -13583,8 +13580,7 @@ BEGIN_DATA
             copy = False
             ti3 = CGATS.CGATS(ti3)
         if not isinstance(ti3, CGATS.CGATS):
-            raise TypeError('Wrong type for ti3, needs to be CGATS.CGATS '
-                            'instance')
+            raise TypeError('Wrong type for ti3, needs to be CGATS.CGATS ' 'instance')
         ti3_filename = ti3.filename
         if copy:
             # Make a copy and do not alter a passed in CGATS instance!
@@ -13598,9 +13594,7 @@ BEGIN_DATA
         try:
             ti3v = verify_cgats(ti3, labels, True)
         except CGATS.CGATSInvalidError as exception:
-            raise ValueError(lang.getstr("error.testchart.invalid",
-                                         ti3_filename) + "\n" +
-                             lang.getstr(str(exception)))
+            raise ValueError(lang.getstr("error.testchart.invalid", ti3_filename) + "\n" + lang.getstr(str(exception)))
         except CGATS.CGATSKeyError:
             try:
                 if fields:
@@ -13623,8 +13617,7 @@ BEGIN_DATA
         if isinstance(profile, str):
             profile = ICCP.ICCProfile(profile)
         if not isinstance(profile, ICCP.ICCProfile):
-            raise TypeError('Wrong type for profile, needs to be '
-                            'ICCP.ICCProfile instance')
+            raise TypeError('Wrong type for profile, needs to be ICCP.ICCProfile instance')
 
         # determine pcs for lookup
         if color_rep == 'LAB':
@@ -13642,8 +13635,7 @@ BEGIN_DATA
         # read cie values from ti3
         data = ti3v.queryv1("DATA")
         if not data:
-            raise ValueError(lang.getstr("error.testchart.invalid",
-                                         ti3_filename))
+            raise ValueError(lang.getstr("error.testchart.invalid", ti3_filename))
         cie_data = data.queryv(required)
         if not cie_data:
             raise ValueError(lang.getstr("error.testchart.missing_fields",
@@ -13671,8 +13663,7 @@ BEGIN_DATA
             idata.append(cie)
 
         if debug:
-            print("ti3_lookup_to_ti1 %s -> %s idata" % (color_rep,
-                                                             profile.colorSpace))
+            print("ti3_lookup_to_ti1 %s -> %s idata" % (color_rep, profile.colorSpace))
             for v in idata:
                 print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
 
@@ -13680,24 +13671,24 @@ BEGIN_DATA
         odata = self.xicclu(profile, idata, intent, "b", pcs=pcs, scale=100)
 
         # write output ti1/ti3
-        ti1out = StringIO()
-        ti1out.write('CTI1\n')
-        ti1out.write('\n')
-        ti1out.write('DESCRIPTOR "Argyll Calibration Target chart information 1"\n')
+        ti1out = BytesIO()
+        ti1out.write(b'CTI1\n')
+        ti1out.write(b'\n')
+        ti1out.write(b'DESCRIPTOR "Argyll Calibration Target chart information 1"\n')
         include_sample_name = False
         for i, device in enumerate(odata):
             if i == 0:
-                if color_rep == 'LAB':
-                    ilabel = 'LAB_L LAB_A LAB_B'
-                elif color_rep == 'XYZ':
-                    ilabel = 'XYZ_X XYZ_Y XYZ_Z'
+                if color_rep == b'LAB':
+                    ilabel = b'LAB_L LAB_A LAB_B'
+                elif color_rep == b'XYZ':
+                    ilabel = b'XYZ_X XYZ_Y XYZ_Z'
                 else:
                     raise ValueError('Unknown CIE color representation ' + color_rep)
                 ocolor = profile.colorSpace.upper()
-                if ocolor == 'RGB':
-                    olabel = 'RGB_R RGB_G RGB_B'
-                elif ocolor == 'CMYK':
-                    olabel = 'CMYK_C CMYK_M CMYK_Y CMYK_K'
+                if ocolor == b'RGB':
+                    olabel = b'RGB_R RGB_G RGB_B'
+                elif ocolor == b'CMYK':
+                    olabel = b'CMYK_C CMYK_M CMYK_Y CMYK_K'
                 else:
                     raise ValueError('Unknown color representation ' + ocolor)
                 olabels = olabel.split()
@@ -13705,7 +13696,7 @@ BEGIN_DATA
                 if olabels[0] not in list(ti3v.DATA_FORMAT.values()) and \
                         olabels[1] not in list(ti3v.DATA_FORMAT.values()) and \
                         not olabels[2] in list(ti3v.DATA_FORMAT.values()) and \
-                        (ocolor == 'RGB' or (ocolor == 'CMYK' and
+                        (ocolor == b'RGB' or (ocolor == b'CMYK' and
                                              not olabels[3] in list(ti3v.DATA_FORMAT.values()))):
                     ti3v.DATA_FORMAT.add_data(olabels)
                 # add required fields to DATA_FORMAT if not yet present
@@ -13713,39 +13704,39 @@ BEGIN_DATA
                         not required[1] in list(ti3v.DATA_FORMAT.values()) and \
                         not required[2] in list(ti3v.DATA_FORMAT.values()):
                     ti3v.DATA_FORMAT.add_data(required)
-                ti1out.write('KEYWORD "COLOR_REP"\n')
-                ti1out.write('COLOR_REP "' + ocolor + '"\n')
-                ti1out.write('\n')
-                ti1out.write('NUMBER_OF_FIELDS ')
+                ti1out.write(b'KEYWORD "COLOR_REP"\n')
+                ti1out.write(b'COLOR_REP "%s"\n' % ocolor)
+                ti1out.write(b'\n')
+                ti1out.write(b'NUMBER_OF_FIELDS ')
                 if include_sample_name:
-                    ti1out.write(str(2 + len(color_rep) + len(ocolor)) + '\n')
+                    ti1out.write(bytes(str(2 + len(color_rep) + len(ocolor)), "utf-8") + b'\n')
                 else:
-                    ti1out.write(str(1 + len(color_rep) + len(ocolor)) + '\n')
-                ti1out.write('BEGIN_DATA_FORMAT\n')
-                ti1out.write('SAMPLE_ID ')
+                    ti1out.write(bytes(str(1 + len(color_rep) + len(ocolor)), "utf-8") + b'\n')
+                ti1out.write(b'BEGIN_DATA_FORMAT\n')
+                ti1out.write(b'SAMPLE_ID ')
                 if include_sample_name:
-                    ti1out.write('SAMPLE_NAME ' + olabel + ' ' + ilabel + '\n')
+                    ti1out.write(b'SAMPLE_NAME %s %s\n' % (olabel, ilabel))
                 else:
-                    ti1out.write(olabel + ' ' + ilabel + '\n')
-                ti1out.write('END_DATA_FORMAT\n')
-                ti1out.write('\n')
-                ti1out.write('NUMBER_OF_SETS ' + str(len(odata)) + '\n')
-                ti1out.write('BEGIN_DATA\n')
+                    ti1out.write(b'%s %s\n' % (olabel, ilabel))
+                ti1out.write(b'END_DATA_FORMAT\n')
+                ti1out.write(b'\n')
+                ti1out.write(b'NUMBER_OF_SETS %s\n' % bytes(str(len(odata)), "utf-8"))
+                ti1out.write(b'BEGIN_DATA\n')
             if i < len(wp):
-                if ocolor == 'RGB':
+                if ocolor == b'RGB':
                     device = [100.00, 100.00, 100.00]
                 else:
                     device = [0, 0, 0, 0]
             # Make sure device values do not exceed valid range of 0..100
-            device = [str(max(0, min(v, 100))) for v in device]
+            device = [bytes(str(max(0, min(v, 100))), "utf-8") for v in device]
             cie = list((wp + list(cie_data.values()))[i].values())
-            cie = [str(n) for n in cie]
+            cie = [bytes(str(n), "utf-8") for n in cie]
             if include_sample_name:
-                ti1out.write(str(i + 1) + ' ' + data[i][1].strip('"') + ' ' +
-                             ' '.join(device) + ' ' + ' '.join(cie) + '\n')
+                cie_ = '%s %s %s %s\n' % (str(i + 1), data[i][1].strip('"'), ' '.join(device), ' '.join(cie))
+                ti1out.write(cie_.encode("utf-8"))
             else:
-                ti1out.write(str(i + 1) + ' ' + ' '.join(device) + ' ' +
-                             ' '.join(cie) + '\n')
+                cie_ = "%s %s %s\n" % (str(i + 1), ' '.join(device), ' '.join(cie))
+                ti1out.write(cie_.encode("utf-8"))
             if i > len(wp) - 1:  # don't include whitepoint patches in ti3
                 # set device values in ti3
                 for n, v in enumerate(olabels):
@@ -13756,7 +13747,7 @@ BEGIN_DATA
                 # set PCS values in ti3
                 for n, v in enumerate(cie):
                     ti3v.DATA[i - len(wp)][required[n]] = float(v)
-        ti1out.write('END_DATA\n')
+        ti1out.write(b'END_DATA\n')
         ti1out.seek(0)
         ti1 = CGATS.CGATS(ti1out)
         if debug:
@@ -14086,12 +14077,12 @@ BEGIN_DATA
             if (result.lower().endswith(".zip") or
                     result.lower().endswith(".tgz")):
                 self.start(self.set_argyll_bin, self.extract_archive,
-                           cargs=(result, ), wargs=(result, ), \
+                           cargs=(result, ), wargs=(result, ),
                            progress_msg=lang.getstr("please_wait"),
                            fancy=False)
             else:
-                show_result_dialog(lang.getstr("error.file_type_unsupported") +
-                                   "\n" + result, self.owner)
+                show_result_dialog(lang.getstr("error.file_type_unsupported") + "\n" + result, self.owner)
+
     def extract_archive(self, filename):
         extracted = []
         if filename.lower().endswith(".zip"):
@@ -14115,10 +14106,8 @@ BEGIN_DATA
             if names:
                 name0 = os.path.normpath(names[0])
             for outpath in extracted:
-                if not os.path.realpath(outpath).startswith(os.path.join(outdir,
-                                                                         name0)):
-                    return Error(lang.getstr("file.invalid") + "\n" +
-                                 filename)
+                if not os.path.realpath(outpath).startswith(os.path.join(outdir, name0)):
+                    return Error(lang.getstr("file.invalid") + "\n" + filename)
             if cls is not zipfile.ZipFile:
                 z.extractall(outdir)
             else:

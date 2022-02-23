@@ -2,9 +2,11 @@
 
 # import decimal
 # Decimal = decimal.Decimal
+import decimal
 from decimal import Decimal
 import os
 import traceback
+from io import BytesIO
 from time import strftime
 
 from DisplayCAL.debughelpers import Error
@@ -25,8 +27,11 @@ def quote_nonoption_args(args):
     """
     args = list(args)
     for i, arg in enumerate(args):
-        if arg[0] != b"-":
-            args[i] = b'"' + arg + b'"'
+        # first convert eveything to bytes
+        if not isinstance(arg, bytes):
+            arg = bytes(arg, "utf-8")
+        if arg[0:1] != b"-":
+            args[i] = b'"%s"' % arg
     return args
 
 
@@ -296,94 +301,83 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
         return exception
     if "CIED" in profile.tags or "targ" in profile.tags:
         cal_lines = []
-        ti3 = StringIO(profile.tags.get("CIED", "") or
-                       profile.tags.get("targ", ""))
+        ti3 = BytesIO(profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
         ti3_lines = [line.strip() for line in ti3]
         ti3.close()
         cal_found = False
         for line in ti3_lines:
             line = line.strip()
-            if line == "CAL":
-                line = "CAL    "  # Make sure CGATS file identifiers are
-                                  #always a minimum of 7 characters
+            if line == b"CAL":
+                line = b"CAL    "  # Make sure CGATS file identifiers are always a minimum of 7 characters
                 cal_found = True
             if cal_found:
                 cal_lines.append(line)
-                if line == 'DEVICE_CLASS "DISPLAY"':
+                if line == b'DEVICE_CLASS "DISPLAY"':
                     options_dispcal = get_options_from_profile(profile)[0]
                     if options_dispcal:
                         whitepoint = False
                         b = profile.tags.lumi.Y
                         for o in options_dispcal:
-                            if o[0] == "y":
-                                cal_lines.append('KEYWORD "DEVICE_TYPE"')
-                                if o[1] == "c":
-                                    cal_lines.append('DEVICE_TYPE "CRT"')
+                            if o[0] == b"y":
+                                cal_lines.append(b'KEYWORD "DEVICE_TYPE"')
+                                if o[1] == b"c":
+                                    cal_lines.append(b'DEVICE_TYPE "CRT"')
                                 else:
-                                    cal_lines.append('DEVICE_TYPE "LCD"')
+                                    cal_lines.append(b'DEVICE_TYPE "LCD"')
                                 continue
-                            if o[0] in ("t", "T"):
+                            if o[0] in (b"t", b"T"):
                                 continue
-                            if o[0] == "w":
+                            if o[0] == b"w":
                                 continue
-                            if o[0] in ("g", "G"):
-                                if o[1:] == "240":
-                                    trc = "SMPTE240M"
-                                elif o[1:] == "709":
-                                    trc = "REC709"
-                                elif o[1:] == "l":
-                                    trc = "L_STAR"
-                                elif o[1:] == "s":
-                                    trc = "sRGB"
+                            if o[0] in (b"g", b"G"):
+                                if o[1:] == b"240":
+                                    trc = b"SMPTE240M"
+                                elif o[1:] == b"709":
+                                    trc = b"REC709"
+                                elif o[1:] == b"l":
+                                    trc = b"L_STAR"
+                                elif o[1:] == b"s":
+                                    trc = b"sRGB"
                                 else:
                                     trc = o[1:]
-                                    if o[0] == "G":
+                                    if o[0] == b"G":
                                         try:
                                             trc = 0 - Decimal(trc)
-                                        except decimal.InvalidOperation as \
-                                               exception:
+                                        except decimal.InvalidOperation as e:
                                             continue
-                                cal_lines.append('KEYWORD "TARGET_GAMMA"')
-                                cal_lines.append('TARGET_GAMMA "%s"' % trc)
+                                cal_lines.append(b'KEYWORD "TARGET_GAMMA"')
+                                cal_lines.append(b'TARGET_GAMMA "%s"' % trc)
                                 continue
-                            if o[0] == "f":
-                                cal_lines.append('KEYWORD '
-                                    '"DEGREE_OF_BLACK_OUTPUT_OFFSET"')
-                                cal_lines.append(
-                                    'DEGREE_OF_BLACK_OUTPUT_OFFSET "%s"' %
-                                    o[1:])
+                            if o[0] == b"f":
+                                cal_lines.append(b'KEYWORD "DEGREE_OF_BLACK_OUTPUT_OFFSET"')
+                                cal_lines.append(b'DEGREE_OF_BLACK_OUTPUT_OFFSET "%s"' % o[1:])
                                 continue
-                            if o[0] == "k":
-                                cal_lines.append('KEYWORD '
-                                    '"BLACK_POINT_CORRECTION"')
-                                cal_lines.append(
-                                    'BLACK_POINT_CORRECTION "%s"' % o[1:])
+                            if o[0] == b"k":
+                                cal_lines.append(b'KEYWORD "BLACK_POINT_CORRECTION"')
+                                cal_lines.append(b'BLACK_POINT_CORRECTION "%s"' % o[1:])
                                 continue
-                            if o[0] == "B":
-                                cal_lines.append('KEYWORD '
-                                    '"TARGET_BLACK_BRIGHTNESS"')
-                                cal_lines.append(
-                                    'TARGET_BLACK_BRIGHTNESS "%s"' % o[1:])
+                            if o[0] == b"B":
+                                cal_lines.append(b'KEYWORD "TARGET_BLACK_BRIGHTNESS"')
+                                cal_lines.append(b'TARGET_BLACK_BRIGHTNESS "%s"' % o[1:])
                                 continue
-                            if o[0] == "q":
-                                if o[1] == "l":
-                                    q = "low"
-                                elif o[1] == "m":
-                                    q = "medium"
+                            if o[0] == b"q":
+                                if o[1] == b"l":
+                                    q = b"low"
+                                elif o[1] == b"m":
+                                    q = b"medium"
                                 else:
-                                    q = "high"
-                                cal_lines.append('KEYWORD "QUALITY"')
-                                cal_lines.append('QUALITY "%s"' % q)
+                                    q = b"high"
+                                cal_lines.append(b'KEYWORD "QUALITY"')
+                                cal_lines.append(b'QUALITY "%s"' % q)
                                 continue
                         if not whitepoint:
-                            cal_lines.append('KEYWORD "NATIVE_TARGET_WHITE"')
-                            cal_lines.append('NATIVE_TARGET_WHITE ""')
+                            cal_lines.append(b'KEYWORD "NATIVE_TARGET_WHITE"')
+                            cal_lines.append(b'NATIVE_TARGET_WHITE ""')
         if cal_lines:
             if target_filename:
                 try:
-                    f = open(target_filename, "w")
-                    f.write("\n".join(cal_lines))
-                    f.close()
+                    with open(target_filename, "wb") as f:
+                        f.write(b"\n".join(cal_lines))
                 except Exception as exception:
                     return exception
             return cal_lines
@@ -554,7 +548,7 @@ def verify_cgats(cgats, required, ignore_unknown=True):
         if cgats_1.queryv1("NUMBER_OF_SETS"):
             if cgats_1.queryv1("DATA_FORMAT"):
                 for field in required:
-                    if field not in list(cgats_1.queryv1("DATA_FORMAT").values()):
+                    if field.encode("utf-8") not in list(cgats_1.queryv1("DATA_FORMAT").values()):
                         raise CGATS.CGATSKeyError("Missing required field: %s" % field)
                 if not ignore_unknown:
                     for field in list(cgats_1.queryv1("DATA_FORMAT").values()):
@@ -569,8 +563,8 @@ def verify_cgats(cgats, required, ignore_unknown=True):
         cgats_1.modified = modified
         return cgats_1
     else:
-        raise CGATS.CGATSKeyError("Missing required fields: %s" %
-                                  ", ".join(required))
+        raise CGATS.CGATSKeyError("Missing required fields: %s" % ", ".join(required))
+
 
 def verify_ti1_rgb_xyz(cgats):
     """Verify and return a CGATS instance or None on failure.
@@ -580,5 +574,4 @@ def verify_ti1_rgb_xyz(cgats):
     None on failure.
 
     """
-    return verify_cgats(cgats, ("RGB_R", "RGB_B", "RGB_G",
-                                "XYZ_X", "XYZ_Y", "XYZ_Z"))
+    return verify_cgats(cgats, ("RGB_R", "RGB_B", "RGB_G", "XYZ_X", "XYZ_Y", "XYZ_Z"))

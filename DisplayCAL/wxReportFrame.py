@@ -291,7 +291,7 @@ class ReportFrame(BaseFrame):
             if data_format:
                 basename, ext = os.path.splitext(chart)
                 for column in data_format.values():
-                    column_prefix = column.split("_")[0]
+                    column_prefix = column.split(b"_")[0].decode("utf-8")
                     if (column_prefix in ("CMYK", "LAB", "RGB", "XYZ") and
                             column_prefix not in values and
                             (((ext.lower() == ".cie" or accurate) and

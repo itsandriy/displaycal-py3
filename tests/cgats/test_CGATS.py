@@ -1817,3 +1817,43 @@ def test_cgats_with_sample_targ_data(data_files):
     for i in values:
         for j, k in enumerate(keys):
             assert cgats[0]['DATA'][i][k] == values[i][j]
+
+
+def test_cgats_with_sample_ti3_data(data_files):
+    """tests ``DisplayCAL.CGATS.CGATS`` class with data coming from the ti3 file
+    """
+    cgats = CGATS.CGATS(cgats=data_files["0_16.ti3"].absolute())
+
+    assert isinstance(cgats, CGATS.CGATS)
+    print(cgats[0])
+    assert cgats[0]["DESCRIPTOR"] == b'Argyll Calibration Target chart information 3'
+    assert cgats[0]["ORIGINATOR"] == b'Argyll dispread'
+    assert cgats[0]["DEVICE_CLASS"] == b'DISPLAY'
+    assert cgats[0]["COLOR_REP"] == b'RGB_XYZ'
+    assert cgats[0]["TARGET_INSTRUMENT"] == b'X-Rite i1 DisplayPro, ColorMunki Display'
+    assert cgats[0]["DISPLAY_TYPE_REFRESH"] == b'NO'
+    assert cgats[0]["DISPLAY_TYPE_BASE_ID"] == 1
+    assert cgats[0]["INSTRUMENT_TYPE_SPECTRAL"] == b'NO'
+    assert cgats[0]["LUMINANCE_XYZ_CDM2"] == b'115.916977 124.824509 138.575988'
+    assert cgats[0]["NORMALIZED_TO_Y_100"] == b'YES'
+    assert cgats[0]["VIDEO_LUT_CALIBRATION_POSSIBLE"] == b'YES'
+    assert cgats[0]["NUMBER_OF_FIELDS"] == 7
+    assert isinstance(cgats[0]["DATA_FORMAT"], CGATS.CGATS)
+    assert isinstance(cgats[0]["DATA"], CGATS.CGATS)
+
+    keys = ['SAMPLE_ID', 'RGB_R', 'RGB_G', 'RGB_B', 'XYZ_X', 'XYZ_Y', 'XYZ_Z']
+
+    # TO GENERATE DATA
+    # for i in range(cgats[0]['NUMBER_OF_SETS']):
+    #     values = ", ".join([str(x) for x in cgats[0]['DATA'][i].values()])
+    #     print(f"        {i}: [{values}],")
+
+    values = {
+        0: [1, 100.00, 100.00, 100.00, 92.86396, 100.00, 111.0166],
+        1: [2, 0.0000, 0.0000, 0.0000, 0.120939, 0.131765, 0.238725],
+        2: [3, 6.25, 6.25, 6.25, 0.327466, 0.353322, 0.485422],
+    }
+
+    for i in values:
+        for j, k in enumerate(keys):
+            assert cgats[0]['DATA'][i][k] == values[i][j]

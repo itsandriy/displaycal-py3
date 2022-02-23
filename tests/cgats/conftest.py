@@ -13,7 +13,7 @@ def data_files():
     """generates data file list
     """
     #  test/data
-    extensions = ["*.txt", "*.tsv", "*.lin", "*.cal", "*.ti1"]
+    extensions = ["*.txt", "*.tsv", "*.lin", "*.cal", "*.ti1", "*.ti3"]
     d_files = {}
     for extension in extensions:
         # add files from "tests/cgats/data" folder

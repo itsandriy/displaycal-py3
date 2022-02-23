@@ -4526,7 +4526,7 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
                         if debug:
                             print("UTF-16 Big endian")
                         unicodeDescription = unicodeDescription[2:]
-                        if len(unicodeDescription.split(" ")) == unicodeDescriptionLength - 1:
+                        if len(unicodeDescription.split(b" ")) == unicodeDescriptionLength - 1:
                             print("Warning (non-critical): '%s' "
                                   "Unicode part starts with UTF-16 big "
                                   "endian BOM, but actual contents seem "
@@ -5964,7 +5964,7 @@ class ICCProfile(object):
                             tagData = self._data[start:end]
                             if len(tagData) < tagDataSize:
                                 print(
-                                    "Warning: Tag data for tag %r is truncated (offet %i, expected size %i, "
+                                    "Warning: Tag data for tag %r is truncated (offset %i, expected size %i, "
                                     "actual size %i)" % (
                                         tagSignature, tagDataOffset, tagDataSize, len(tagData)
                                     )
@@ -5972,7 +5972,7 @@ class ICCProfile(object):
                                 tagDataSize = len(tagData)
                             typeSignature = tagData[:4]
                             if len(typeSignature) < 4:
-                                print("Warning: Tag type signature for tag %r is truncated (offet %i, size %i)" %
+                                print("Warning: Tag type signature for tag %r is truncated (offset %i, size %i)" %
                                       (tagSignature, tagDataOffset, tagDataSize))
                                 typeSignature = typeSignature.ljust(4, b" ")
                             if debug:

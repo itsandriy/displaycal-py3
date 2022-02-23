@@ -701,18 +701,12 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
         dlg_list_ctrl.SetStringItem(index, int(col), created or
                                     lang.getstr("unknown"))
     def show_ccxx_info(event):
-        index = dlg_list_ctrl.GetNextItem(-1, wx.LIST_NEXT_ALL,
-                                          wx.LIST_STATE_SELECTED)
+        index = dlg_list_ctrl.GetNextItem(-1, wx.LIST_NEXT_ALL, wx.LIST_STATE_SELECTED)
         parent.colorimeter_correction_info_handler(event, cgats[index])
     dlg.info.Bind(wx.EVT_BUTTON, show_ccxx_info)
-    dlg.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda event: (dlg.ok.Enable(),
-                                                       dlg.info.Enable()),
-             dlg_list_ctrl)
-    dlg.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda event: (dlg.ok.Disable(),
-                                                         dlg.info.Disable()),
-             dlg_list_ctrl)
-    dlg.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda event: dlg.EndModal(wx.ID_OK),
-             dlg_list_ctrl)
+    dlg.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda event: (dlg.ok.Enable(), dlg.info.Enable()), dlg_list_ctrl)
+    dlg.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda event: (dlg.ok.Disable(), dlg.info.Disable()), dlg_list_ctrl)
+    dlg.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda event: dlg.EndModal(wx.ID_OK), dlg_list_ctrl)
     dlg.sizer3.Add(dlg_list_ctrl, 1, flag=wx.TOP | wx.ALIGN_LEFT, border=12)
     lstr = lang.getstr("colorimeter_correction.web_check.info")
     lstr_en = lang.getstr("colorimeter_correction.web_check.info", lcode="en")
@@ -4052,8 +4046,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                            cal not in self.presets)
         is_profile_ = is_profile(include_display_profile=True)
         self.profile_info_btn.Enable(is_profile_)
-        enable_update = (bool(cal) and os.path.exists(filename + ".cal") and
-                         can_update_cal(filename + ".cal"))
+        enable_update = (bool(cal) and os.path.exists(filename + ".cal") and can_update_cal(filename + ".cal"))
         if not enable_update:
             setcfg("calibration.update", 0)
         update_cal = getcfg("calibration.update")
@@ -4996,11 +4989,8 @@ class MainFrame(ReportFrame, BaseFrame):
     def lut3d_update_apply_cal_control(self):
         profile = not getcfg("3dlut.create") and get_current_profile(True)
         enable_apply_cal = bool(getcfg("3dlut.create") or
-                                (profile and
-                                 isinstance(profile.tags.get("vcgt"),
-                                            ICCP.VideoCardGammaType)))
-        self.lut3d_apply_cal_cb.SetValue(enable_apply_cal and
-                                         bool(getcfg("3dlut.output.profile.apply_cal")))
+                                (profile and isinstance(profile.tags.get("vcgt"), ICCP.VideoCardGammaType)))
+        self.lut3d_apply_cal_cb.SetValue(enable_apply_cal and bool(getcfg("3dlut.output.profile.apply_cal")))
         self.lut3d_apply_cal_cb.Enable(enable_apply_cal)
 
     def lut3d_update_b2a_controls(self):
@@ -6224,20 +6214,14 @@ class MainFrame(ReportFrame, BaseFrame):
             bitmap=geticon(32, appname + "-profile-info"), alt=lang.getstr("save"),
             wrap=100)
         # Description field
-        boxsizer = wx.StaticBoxSizer(wx.StaticBox(dlg, -1,
-                                                  lang.getstr("description")),
-                                     wx.VERTICAL)
+        boxsizer = wx.StaticBoxSizer(wx.StaticBox(dlg, -1, lang.getstr("description")), wx.VERTICAL)
         dlg.sizer3.Add(boxsizer, 1, flag=wx.TOP | wx.EXPAND, border=12)
         if sys.platform not in ("darwin", "win32"):
             boxsizer.Add((1, 8))
-        dlg.description_txt_ctrl = wx.TextCtrl(dlg, -1,
-                                               description)
-        boxsizer.Add(dlg.description_txt_ctrl, 1, flag=wx.ALL | wx.EXPAND,
-                     border=4)
+        dlg.description_txt_ctrl = wx.TextCtrl(dlg, -1, description)
+        boxsizer.Add(dlg.description_txt_ctrl, 1, flag=wx.ALL | wx.EXPAND, border=4)
         # Display properties
-        boxsizer = wx.StaticBoxSizer(wx.StaticBox(dlg, -1,
-                                                  lang.getstr("display.properties")),
-                                     wx.VERTICAL)
+        boxsizer = wx.StaticBoxSizer(wx.StaticBox(dlg, -1, lang.getstr("display.properties")), wx.VERTICAL)
         dlg.sizer3.Add(boxsizer, 1, flag=wx.TOP | wx.EXPAND, border=12)
         if sys.platform not in ("darwin", "win32"):
             boxsizer.Add((1, 8))
@@ -6250,10 +6234,7 @@ class MainFrame(ReportFrame, BaseFrame):
         gridsizer.Add(wx.StaticText(dlg, -1, lang.getstr("panel.surface")), 1,
                       flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
         paneltypes = ["glossy", "matte"]
-        dlg.panel_ctrl = wx.Choice(dlg, -1,
-                                   choices=[""] + [lang.getstr(panel)
-                                                   for panel in
-                                                   paneltypes])
+        dlg.panel_ctrl = wx.Choice(dlg, -1, choices=[""] + [lang.getstr(panel) for panel in paneltypes])
         panel_surface = metadata.getvalue("SCREEN_surface", "")
         try:
             index = dlg.panel_ctrl.GetItems().index(lang.getstr(panel_surface))
@@ -6267,12 +6248,8 @@ class MainFrame(ReportFrame, BaseFrame):
                                     lang.getstr("display.connection.type")), 1,
                       flag=wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
         connections = ["dvi", "displayport", "hdmi", "internal", "vga"]
-        dlg.connection_ctrl = wx.Choice(dlg, -1,
-                                        choices=[lang.getstr(contype)
-                                                 for contype in
-                                                 connections])
-        connection_type = metadata.getvalue("CONNECTION_type",
-                                            "dvi")
+        dlg.connection_ctrl = wx.Choice(dlg, -1, choices=[lang.getstr(contype) for contype in connections])
+        connection_type = metadata.getvalue("CONNECTION_type", "dvi")
         try:
             index = dlg.connection_ctrl.GetItems().index(lang.getstr(connection_type))
         except ValueError:
@@ -6649,6 +6626,7 @@ class MainFrame(ReportFrame, BaseFrame):
                            ok=lang.getstr("ok"),
                            bitmap=geticon(32, "dialog-error"))
                 return
+
             if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
                 InfoDialog(self,
                            msg=lang.getstr("profile.unsupported",
@@ -6681,16 +6659,14 @@ class MainFrame(ReportFrame, BaseFrame):
             self.install_profile_handler(profile_path=path, install_3dlut=False)
 
     def load_profile_cal_handler(self, event):
-        """ Show a dialog for user to select a profile to load calibration
-        (vcgt) from. """
+        """ Show a dialog for user to select a profile to load calibration (vcgt) from. """
         if not check_set_argyll_bin():
             return
         defaultDir, defaultFile = get_verified_path("last_cal_or_icc_path")
         dlg = wx.FileDialog(self,
                             lang.getstr("calibration.load_from_cal_or_profile"),
                             defaultDir=defaultDir, defaultFile=defaultFile,
-                            wildcard=lang.getstr("filetype.cal_icc") +
-                                     "|*.cal;*.icc;*.icm",
+                            wildcard=lang.getstr("filetype.cal_icc") + "|*.cal;*.icc;*.icm",
                             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         dlg.Center(wx.BOTH)
         result = dlg.ShowModal()
@@ -6724,11 +6700,12 @@ class MainFrame(ReportFrame, BaseFrame):
                                     silent=not getcfg("dry_run"),
                                     title=lang.getstr("calibration.load_from_profile")) is True:
                     self.lut_viewer_load_lut(profile=profile)
-                    if verbose >= 1: print(lang.getstr("success"))
+                    if verbose >= 1:
+                        print(lang.getstr("success"))
                 elif not getcfg("dry_run"):
-                    if verbose >= 1: print(lang.getstr("failure"))
-                    InfoDialog(self, msg=lang.getstr("calibration.load_error") +
-                                         "\n" + path,
+                    if verbose >= 1:
+                        print(lang.getstr("failure"))
+                    InfoDialog(self, msg=lang.getstr("calibration.load_error") + "\n" + path,
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
             else:
@@ -6737,9 +6714,11 @@ class MainFrame(ReportFrame, BaseFrame):
                                     skip_scripts=True, silent=not getcfg("dry_run"),
                                     title=lang.getstr("calibration.load_from_cal")) is True:
                     self.lut_viewer_load_lut(profile=cal_to_fake_profile(path))
-                    if verbose >= 1: print(lang.getstr("success"))
+                    if verbose >= 1:
+                        print(lang.getstr("success"))
                 elif not getcfg("dry_run"):
-                    if verbose >= 1: print(lang.getstr("failure"))
+                    if verbose >= 1:
+                        print(lang.getstr("failure"))
 
     def preview_handler(self, event=None, preview=False):
         """ Preview profile calibration (vcgt).
@@ -7226,12 +7205,12 @@ class MainFrame(ReportFrame, BaseFrame):
             report_type = "Self Check"
         else:
             report_type = "Measurement"
-        defaultFile = "%s Report %s — %s — %s" % (report_type, version_short,
-                                                  re.sub(r"[\\/:;*?\"<>|]+", "_",
-                                                         self.display_ctrl.GetStringSelection().replace(" " +
-                                                                                                        lang.getstr("display.primary"),
-                                                                                                        "")),
-                                                  strftime("%Y-%m-%d %H-%M.html"))
+        defaultFile = "%s Report %s — %s — %s" % (
+            report_type, version_short,
+            re.sub(r"[\\/:;*?\"<>|]+", "_",
+                   self.display_ctrl.GetStringSelection().replace(" " + lang.getstr("display.primary"), "")),
+            strftime("%Y-%m-%d %H-%M.html")
+        )
         if not path:
             defaultDir = get_verified_path(None,
                                            os.path.join(getcfg("profile.save_path"),
@@ -7246,8 +7225,7 @@ class MainFrame(ReportFrame, BaseFrame):
             if result == wx.ID_OK:
                 path = make_argyll_compatible_path(dlg.GetPath())
                 if not waccess(path, os.W_OK):
-                    show_result_dialog(Error(lang.getstr("error.access_denied.write",
-                                                         path)),
+                    show_result_dialog(Error(lang.getstr("error.access_denied.write", path)),
                                        getattr(self, "reportframe", self))
                     return
             dlg.Destroy()
@@ -7293,8 +7271,8 @@ class MainFrame(ReportFrame, BaseFrame):
 
             # Check if we need to apply calibration
             if (devlink and "-a" in parse_argument_string(
-                    devlink.tags.get("meta", {}).get("collink.args", {}).get("value",
-                                                                             "-a" if getcfg("3dlut.output.profile.apply_cal") else ""))):
+                    devlink.tags.get("meta", {}).get("collink.args", {})\
+                        .get("value", "-a" if getcfg("3dlut.output.profile.apply_cal") else ""))):
                 oprof_cal_path = os.path.join(temp, name + ".cal")
                 extract_cal_from_profile(oprof, oprof_cal_path)
                 profile_with_cal_path = os.path.join(temp, name + " + cal.icc")
@@ -9027,8 +9005,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 setcfg("calibration.file.previous", None)
                 return
             else:
-                has_cal = isinstance(profile.tags.get("vcgt"),
-                                     ICCP.VideoCardGammaType)
+                has_cal = isinstance(profile.tags.get("vcgt"), ICCP.VideoCardGammaType)
                 if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
                     InfoDialog(self, msg=lang.getstr("profiling.complete"),
                                ok=lang.getstr("ok"),
@@ -11369,18 +11346,12 @@ class MainFrame(ReportFrame, BaseFrame):
                         print("ref Lab %.6f %.6f %.6f, " % Lab_ref,
                                    "col Lab %.6f %.6f %.6f" % Lab_tgt)
                     # For comparison to Argyll DE94 values
-                    deltaE = colormath.delta(*Lab_ref +
-                                              Lab_tgt +
-                                              ("94", ))["E"]
+                    deltaE = colormath.delta(*Lab_ref + Lab_tgt + ("94", ))["E"]
                     deltaE_94.append(deltaE)
-                    deltaE = colormath.delta(*Lab_ref +
-                                              Lab_tgt +
-                                              ("00", ))["E"]
+                    deltaE = colormath.delta(*Lab_ref + Lab_tgt + ("00", ))["E"]
                     deltaE_00.append(deltaE)
-                    print(" %.6f %.6f %8.4f |"
-                               " %.6f %.6f %8.4f | %.6f | %.6f " %
-                               (tuple(xyYabs[0]) + tuple(xyYabs[1]) +
-                                (deltaE_94[-1], deltaE_00[-1])))
+                    print(" %.6f %.6f %8.4f | %.6f %.6f %8.4f | %.6f | %.6f " %
+                          (tuple(xyYabs[0]) + tuple(xyYabs[1]) + (deltaE_94[-1], deltaE_00[-1])))
                     grid.SetCellValue(row, 8, "%.4f" % deltaE)
                 print("")
                 print(appname + ": Fit error is max %.6f, avg %.6f DE94" %
@@ -11450,8 +11421,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                 metadata.append(label + '_DATA_%i_%s "%s"' %
                                                 (i + 1, column, sample[column]))
             if colorimeter_ti3 and getcfg("ccmx.use_four_color_matrix_method"):
-                cgats = re.sub(r'(\nORIGINATOR\s+)"Argyll[^"]+"',
-                               r'\1"%s %s"' % (appname, version), cgats)
+                cgats = re.sub(r'(\nORIGINATOR\s+)"Argyll[^"]+"', r'\1"%s %s"' % (appname, version), cgats)
                 metadata.append('FIT_METHOD "xy"')
             else:
                 metadata.append('FIT_METHOD "ΔE*94"'.encode("UTF-8"))
@@ -11460,8 +11430,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                '\\1%s\n' %
                                "\n".join(metadata).replace("\\", "\\\\"), cgats)
             if event:
-                if colorimeter_correction_check_overwrite(self, cgats,
-                                                          bool(colorimeter_ti3)):
+                if colorimeter_correction_check_overwrite(self, cgats, bool(colorimeter_ti3)):
                     self.upload_colorimeter_correction(cgats)
             else:
                 path = get_cgats_path(cgats)
@@ -11471,8 +11440,7 @@ class MainFrame(ReportFrame, BaseFrame):
         elif result is not None:
             InfoDialog(self,
                        title=lang.getstr("colorimeter_correction.create"),
-                       msg=lang.getstr("colorimeter_correction.create.failure") +
-                           "\n" + "".join(self.worker.errors),
+                       msg=lang.getstr("colorimeter_correction.create.failure") + "\n" + "".join(self.worker.errors),
                        ok=lang.getstr("cancel"),
                        bitmap=geticon(32, "dialog-error"), log=False)
         self.worker.wrapup(False)
@@ -12125,8 +12093,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         # Otherwise, it'll either be 7-bit ASCII or (legacy)
                         # cp437 encoding
                         outname = str(name)
-                        with open(os.path.join(temp, os.path.basename(outname)),
-                                  "wb") as outfile:
+                        with open(os.path.join(temp, os.path.basename(outname)), "wb") as outfile:
                             outfile.write(archive.read(name))
             except Exception as exception:
                 from traceback import format_exc
@@ -12864,8 +12831,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 archive = TarFileProper.open(archive_path, "w:gz", encoding="UTF-8")
                 writefile = archive.add
             else:
-                archive = zipfile.ZipFile(archive_path, "w",
-                                          zipfile.ZIP_DEFLATED)
+                archive = zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED)
                 writefile = archive.write
             try:
                 with archive:
@@ -12890,8 +12856,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def profile_save_path_btn_handler(self, event):
         defaultPath = os.path.join(*get_verified_path("profile.save_path"))
         profile_name = getcfg("profile.name.expanded")
-        dlg = wx.DirDialog(self, lang.getstr("dialog.set_profile_save_path",
-                                             profile_name),
+        dlg = wx.DirDialog(self, lang.getstr("dialog.set_profile_save_path", profile_name),
                            defaultPath=defaultPath)
         dlg.Center(wx.BOTH)
         if dlg.ShowModal() == wx.ID_OK:
@@ -12904,8 +12869,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     pass
             if not waccess(os.path.join(profile_save_dir, profile_name),
                            os.W_OK):
-                show_result_dialog(Error(lang.getstr("error.access_denied.write",
-                                                     path)), self)
+                show_result_dialog(Error(lang.getstr("error.access_denied.write", path)), self)
                 return
             try:
                 os.rmdir(profile_save_dir)
@@ -12953,8 +12917,7 @@ class MainFrame(ReportFrame, BaseFrame):
                      "%pq	" + lang.getstr("profile.quality"),
                      "%pt	" + lang.getstr("profile.type"),
                      "%tpa	" + lang.getstr("testchart.info")])
-        return lang.getstr("profile.name.placeholders") + "\n" + \
-               "\n".join(info)
+        return lang.getstr("profile.name.placeholders") + "\n" + "\n".join(info)
 
     def check_profile_b2a_hires(self, profile):
         """Check if profile is a LUT-type, and if yes, if LUT is of high
@@ -12965,8 +12928,7 @@ class MainFrame(ReportFrame, BaseFrame):
         Return True if hires B2A or no B2A, False otherwise
 
         """
-        if ("B2A0" in profile.tags and isinstance(profile.tags.B2A0,
-                                                  ICCP.LUT16Type) and
+        if ("B2A0" in profile.tags and isinstance(profile.tags.B2A0, ICCP.LUT16Type) and
                 profile.tags.B2A0.clut_grid_steps < 17 and
                 profile.creator == "argl"):
             # Nope. Not allowing to install. Offer to re-generate B2A
@@ -13150,10 +13112,8 @@ class MainFrame(ReportFrame, BaseFrame):
             # let the user choose a location for the profile
             dlg = wx.FileDialog(self, lang.getstr("save_as"),
                                 defaultDir,
-                                os.path.basename(source_filename) +
-                                profile_ext,
-                                wildcard=lang.getstr("filetype.icc") +
-                                         "|*" + profile_ext,
+                                os.path.basename(source_filename) + profile_ext,
+                                wildcard=lang.getstr("filetype.icc") + "|*" + profile_ext,
                                 style=wx.SAVE | wx.FD_OVERWRITE_PROMPT)
             dlg.Center(wx.BOTH)
             result = dlg.ShowModal()
@@ -13163,17 +13123,16 @@ class MainFrame(ReportFrame, BaseFrame):
             dlg.Destroy()
             if result == wx.ID_OK:
                 if not waccess(profile_save_path, os.W_OK):
-                    show_result_dialog(Error(lang.getstr("error.access_denied.write",
-                                                         profile_save_path)),
-                                       self)
+                    show_result_dialog(
+                        Error(lang.getstr("error.access_denied.write", profile_save_path)), self
+                    )
                     return
                 filename, ext = os.path.splitext(profile_save_path)
                 if ext.lower() not in (".icc", ".icm"):
                     profile_save_path += profile_ext
                     if os.path.exists(profile_save_path):
                         dlg = ConfirmDialog(
-                            self, msg=lang.getstr("dialog.confirm_overwrite",
-                                                  (profile_save_path)),
+                            self, msg=lang.getstr("dialog.confirm_overwrite", (profile_save_path)),
                             ok=lang.getstr("overwrite"),
                             cancel=lang.getstr("cancel"),
                             bitmap=geticon(32, "dialog-warning"))
@@ -13193,15 +13152,12 @@ class MainFrame(ReportFrame, BaseFrame):
                     show_result_dialog(tmp_working_dir, self)
                     return
                 # Copy ti3 to temp dir
-                ti3_tmp_path = os.path.join(tmp_working_dir,
-                                            make_argyll_compatible_path(profile_name +
-                                                                        ".ti3"))
+                ti3_tmp_path = os.path.join(tmp_working_dir, make_argyll_compatible_path(profile_name + ".ti3"))
                 if len(collected_ti3s) > 1:
                     # Collect files for averaging
                     collected_paths = []
                     for ti3_path, ti3_lines in collected_ti3s:
-                        collected_path = os.path.join(tmp_working_dir,
-                                                      os.path.basename(ti3_path))
+                        collected_path = os.path.join(tmp_working_dir, os.path.basename(ti3_path))
                         with open(collected_path, "w") as ti3_file:
                             ti3_file.write("\n".join(ti3_lines))
                         collected_paths.append(collected_path)
@@ -13242,8 +13198,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         # Binary mode because we want to avoid automatic
                         # newlines conversion
                         ti3 = open(ti3_tmp_path, "wb")
-                        ti3.write(profile.tags.get("CIED", "") or
-                                  profile.tags.get("targ", ""))
+                        ti3.write(profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
                         ti3.close()
                         # Get dispcal options if present
                         self.worker.options_dispcal = [
@@ -13851,14 +13806,14 @@ class MainFrame(ReportFrame, BaseFrame):
         return self.quality_ab[self.profile_quality_ctrl.GetValue() + 1]
 
     def profile_settings_changed(self):
-        ##cal = getcfg("calibration.file", False)
-        ##if cal:
-        ##filename, ext = os.path.splitext(cal)
-        ##if ext.lower() in (".icc", ".icm"):
-        ##if not os.path.exists(filename + ".cal") and \
-        ##not cal in self.presets:
-        ##self.cal_changed()
-        ##return
+        # cal = getcfg("calibration.file", False)
+        # if cal:
+        # filename, ext = os.path.splitext(cal)
+        # if ext.lower() in (".icc", ".icm"):
+        # if not os.path.exists(filename + ".cal") and \
+        # not cal in self.presets:
+        # self.cal_changed()
+        # return
         if not self.updatingctrls:
             setcfg("settings.changed", 1)
             if not self.calibration_file_ctrl.GetStringSelection().startswith("*"):
@@ -14153,8 +14108,7 @@ class MainFrame(ReportFrame, BaseFrame):
         except Exception as exception:
             error = traceback.format_exc() if debug else exception
             InfoDialog(self,
-                       msg=lang.getstr("error.testchart.read", path) +
-                           "\n\n" + str(error),
+                       msg=lang.getstr("error.testchart.read", path) + "\n\n" + str(error),
                        ok=lang.getstr("ok"),
                        bitmap=geticon(32, "dialog-error"))
             self.set_default_testchart(force=True)
@@ -14190,8 +14144,7 @@ class MainFrame(ReportFrame, BaseFrame):
                                         r"\.(?:icc|icm|ti1|ti3)$")
             except Exception as exception:
                 print("Error - directory '%s' listing failed: %s" %
-                           tuple(str(s) for s in (testchart_dir,
-                                                           exception)))
+                           tuple(str(s) for s in (testchart_dir, exception)))
             else:
                 for testchart_name in testcharts:
                     if testchart_name not in testchart_names:
@@ -14495,7 +14448,7 @@ class MainFrame(ReportFrame, BaseFrame):
             if ext.lower() in (".icc", ".icm"):
                 try:
                     profile = ICCP.ICCProfile(path)
-                except (IOError, ICCP.ICCProfileInvalidError) as exception:
+                except (IOError, ICCP.ICCProfileInvalidError) as e:
                     InfoDialog(self,
                                msg=lang.getstr("profile.invalid") + "\n" + path,
                                ok=lang.getstr("ok"),
@@ -14508,7 +14461,6 @@ class MainFrame(ReportFrame, BaseFrame):
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
-
 
                 cied = profile.tags.get("CIED")
                 if cied:
@@ -14553,6 +14505,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 # Second try to find the correct display by comparing
                 # the EDID hash (if present)
                 profile_tags_meta = profile.tags.get("meta", {})
+                print(f"display_name: {display_name}")
                 print(f"profile_tags_meta: {profile_tags_meta}")
                 print(f"type(profile_tags_meta): {type(profile_tags_meta)}")
                 print(f"type(profile_tags_meta): {type(profile_tags_meta)}")
@@ -14594,7 +14547,7 @@ class MainFrame(ReportFrame, BaseFrame):
                             setcfg("3dlut.tab.enable", 1)
                             setcfg("3dlut.tab.enable.backup", 1)
                 # Get and set the instrument
-                instrument_id = profile.tags.get("meta", {}).get(b"MEASUREMENT_device", {}).get(b"value")
+                instrument_id = profile.tags.get("meta", {}).get("MEASUREMENT_device", {}).get("value")
                 if instrument_id:
                     for i, instrument in enumerate(self.worker.instruments):
                         if instrument.lower() == instrument_id:
@@ -14613,10 +14566,10 @@ class MainFrame(ReportFrame, BaseFrame):
                             break
             else:
                 try:
-                    (options_dispcal, options_colprof) = get_options_from_cal(path)
-                except (IOError, CGATS.CGATSError) as exception:
+                    options_dispcal, options_colprof = get_options_from_cal(path)
+                except (IOError, CGATS.CGATSError) as e:
                     InfoDialog(self,
-                               msg=lang.getstr("calibration.file.invalid") + "\n" + path,
+                               msg="{}\n{}".format(lang.getstr("calibration.file.invalid"), path),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                     return
@@ -14632,7 +14585,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 trc = False
                 if options_dispcal:
                     for o in options_dispcal:
-                        if o[0:1] in (b"g", b"G"):
+                        if o[0:1] in ("g", "G"):
                             trc = True
                 # Restore defaults
                 self.restore_defaults_handler(
@@ -15148,7 +15101,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.worker.options_dispcal = []
             settings = []
             for line in ti3_lines:
-                line = line.strip().split(" ", 1)
+                line = line.strip().split(b" ", 1)
                 if len(line) > 1:
                     value = line[1][1:-1] # strip quotes
                     if line[0] == "DEVICE_CLASS":
@@ -15376,18 +15329,16 @@ class MainFrame(ReportFrame, BaseFrame):
                         return
                 except TrashcanUnavailableError as exception:
                     InfoDialog(self,
-                               msg=lang.getstr("error.trashcan_unavailable",
-                                               trashcan),
+                               msg=lang.getstr("error.trashcan_unavailable", trashcan),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                 except Exception as exception:
                     InfoDialog(self,
-                               msg=lang.getstr("error.deletion", trashcan) +
-                                   "\n\n" + str(exception),
+                               msg=lang.getstr("error.deletion", trashcan) + "\n\n" + str(exception),
                                ok=lang.getstr("ok"),
                                bitmap=geticon(32, "dialog-error"))
                 # The case-sensitive index could fail because of
-                # case insensitive file systems, e.g. if the
+                # case-insensitive file systems, e.g. if the
                 # stored filename string is
                 # "C:\Users\Name\AppData\DisplayCAL\storage\MyFile"
                 # but the actual filename is
