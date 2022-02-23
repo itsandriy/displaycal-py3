@@ -1775,3 +1775,45 @@ def test_cgats_with_sample_data_2(data_files):
     for i in values:
         for j, k in enumerate(keys):
             assert cgats[0]['DATA'][i][k] == values[i][j]
+
+
+def test_cgats_with_sample_targ_data(data_files):
+    """tests ``DisplayCAL.CGATS.CGATS`` class with data coming from the ``Text`` class
+    """
+    from DisplayCAL.ICCProfile import Text
+    with open(data_files["ccxx.ti1"].absolute(), "rb") as f:
+        targ_data = f.read()
+    targ_tag = Text(targ_data)
+    targ_tag.tagSignature = "targ"
+    targ_tag.tagData = targ_data
+    cgats = CGATS.CGATS(cgats=targ_tag)
+
+    assert isinstance(cgats, CGATS.CGATS)
+    assert cgats[0]["DESCRIPTOR"] == b"Argyll Calibration Target chart information 1 for creating .ti3 for ccxxmake"
+    assert cgats[0]["ORIGINATOR"] == b"Argyll targen"
+    assert cgats[0]["KEYWORDS"] == {0: b'APPROX_WHITE_POINT', 1: b'COLOR_REP'}
+    assert cgats[0]["APPROX_WHITE_POINT"] == b"95.045781 100.000003 108.905751"
+    assert cgats[0]["COLOR_REP"] == b"RGB"
+    assert cgats[0]["NUMBER_OF_FIELDS"] == 7
+    assert cgats[0]["NUMBER_OF_SETS"] == 4
+
+    assert isinstance(cgats[0]["DATA_FORMAT"], CGATS.CGATS)
+    assert isinstance(cgats[0]["DATA"], CGATS.CGATS)
+
+    keys = ['SAMPLE_ID', 'RGB_R', 'RGB_G', 'RGB_B', 'XYZ_X', 'XYZ_Y', 'XYZ_Z']
+
+    # TO GENERATE DATA
+    # for i in range(cgats[0]['NUMBER_OF_SETS']):
+    #     values = ", ".join([str(x) for x in cgats[0]['DATA'][i].values()])
+    #     print(f"        {i}: [{values}],")
+
+    values = {
+        0: [1, 100.00, 100.00, 100.00, 95.046, 100.00, 108.91],
+        1: [2, 100.00, 0.0000, 0.0000, 41.238, 21.260, 1.9306],
+        2: [3, 0.0000, 100.00, 0.0000, 35.757, 71.520, 11.921],
+        3: [4, 0.0000, 0.0000, 100.00, 18.050, 7.2205, 95.055],
+    }
+
+    for i in values:
+        for j, k in enumerate(keys):
+            assert cgats[0]['DATA'][i][k] == values[i][j]

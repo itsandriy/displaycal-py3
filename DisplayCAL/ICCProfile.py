@@ -2754,14 +2754,14 @@ class ICCProfileTag(object):
             return "%s.%s(%r)" % (self.__class__.__module__, self.__class__.__name__, self.tagData)
 
 
-class Text(ICCProfileTag, UserString):
+class Text(ICCProfileTag, bytes):
 
     def __init__(self, seq):
-        UserString.__init__(self, seq)
+        super(Text, self).__init__(tagData=seq, tagSignature=b"")
+        self.data = seq
 
     def __str__(self):
-        # return str(self.data, fs_enc, errors="replace")
-        return self.data
+        return self.data.decode(fs_enc, errors="replace")
 
 
 class Colorant(object):
@@ -6823,12 +6823,12 @@ class ICCProfile(object):
                             info[" " * 8 + tags[desc_type]] = description
             elif isinstance(tag, Text):
                 if sig == "cprt":
-                    info[name] = str(tag)[2:-1]  # I can't remove the  "b'" in "b'{copyright_data}'" otherwise...
+                    info[name] = str(tag)
                 elif sig == "ciis":
                     info[name] = ciis.get(tag, "'%s'" % tag)
                 elif sig == "tech":
                     info[name] = tech.get(tag, "'%s'" % tag)
-                elif tag.find("\n") > -1 or tag.find("\r") > -1:
+                elif tag.find(b"\n") > -1 or tag.find(b"\r") > -1:
                     info[name] = "[%i Bytes]" % len(tag)
                 else:
                     info[name] = (tag[:60 - len(name)] +
@@ -6979,7 +6979,7 @@ class ICCProfile(object):
         return rgb_space
 
     def get_chardata_bkpt(self, illuminant_relative=False):
-        """ Get blackpoint from embedd characterization data ('targ' tag) """
+        """Get blackpoint from embeded characterization data ('targ' tag) """
         if isinstance(self.tags.get("targ"), Text):
             from DisplayCAL import CGATS
             ti3 = CGATS.CGATS(self.tags.targ)

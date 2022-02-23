@@ -300,7 +300,7 @@ def test_sample_icc_file_1(data_files):
         ['    Transfer function', 'Gamma 2.20 100%'],
         ['    Minimum Y', '0.0000'],
         ['    Maximum Y', '100.00'],
-        ['Characterization target', 'b\'CTI3   \\r\\n\\r\\nDESCRIPTOR "Argyll Cb\'...[18462 more Bytes]\''],
+        ['Characterization target', '[17538 Bytes]'],
         ['Absolute to media relative transform', 'Bradford'],
         ['    Matrix', '0.8951 0.2664 -0.1614'],
         ['        ', '-0.7502 1.7135 0.0367'],
@@ -351,3 +351,15 @@ def test_icc_profile_tag_is_working_properly():
     assert tag is not None
     assert tag.tagData == tag_data
     assert tag.tagSignature == tag_signature
+
+
+def test_text_tag_is_working_properly():
+    """testing if the ``Text`` Tag is working properly
+    """
+    from DisplayCAL.ICCProfile import Text
+    test_data = b"some text"
+    t = Text(test_data)
+    t.tagData = test_data
+    t.tagSignature = "targ"
+
+    assert str(t) == test_data.decode("UTF-8", "replace")
