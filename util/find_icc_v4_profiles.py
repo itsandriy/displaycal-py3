@@ -15,10 +15,14 @@ for p in set(iccprofiles_home + iccprofiles):
         for f in os.listdir(p):
             try:
                 profile = iccp.ICCProfile(os.path.join(p, f))
-            except:
+            except Exception:
                 pass
             else:
                 if profile.version >= 4:
                     print(os.path.join(p, f))
-                    print("Descriptions:", profile.tags.desc.keys(), profile.tags.desc.values()[0].keys())
+                    print(
+                        "Descriptions:",
+                        profile.tags.desc.keys(),
+                        profile.tags.desc.values()[0].keys(),
+                    )
                     print("")

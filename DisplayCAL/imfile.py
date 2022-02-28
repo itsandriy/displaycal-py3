@@ -50,12 +50,13 @@ def tiff_get_header(w, h, samples_per_pixel, bitdepth):
         tag_type_h = TIFF_TAG_TYPE_DWORD
     else:
         tag_type_h = TIFF_TAG_TYPE_WORD
-    ifd = [(0x100, tag_type_w, 1, w, True),  # ImageWidth
-           (0x101, tag_type_h, 1, h, True),  # ImageLength
-           (0x106, TIFF_TAG_TYPE_WORD, 1, pmi, True),  # PhotometricInterpretation
-           (0x115, TIFF_TAG_TYPE_WORD, 1, samples_per_pixel, True),  # SamplesPerPixel
-           (0x117, TIFF_TAG_TYPE_DWORD, 1, bytecount, True)  # StripByteCounts
-           ]
+    ifd = [
+        (0x100, tag_type_w, 1, w, True),  # ImageWidth
+        (0x101, tag_type_h, 1, h, True),  # ImageLength
+        (0x106, TIFF_TAG_TYPE_WORD, 1, pmi, True),  # PhotometricInterpretation
+        (0x115, TIFF_TAG_TYPE_WORD, 1, samples_per_pixel, True),  # SamplesPerPixel
+        (0x117, TIFF_TAG_TYPE_DWORD, 1, bytecount, True),  # StripByteCounts
+    ]
     # BitsPerSample
     ifd.append((0x102, TIFF_TAG_TYPE_WORD, 3, 10 + (len(ifd) + 2) * 12 + 4, False))
     # StripOffsets
@@ -87,7 +88,9 @@ def tiff_get_header(w, h, samples_per_pixel, bitdepth):
     return b"".join(header)
 
 
-def write(data, stream_or_filename, bitdepth=16, format=None, dimensions=None, extrainfo=None):
+def write(
+    data, stream_or_filename, bitdepth=16, format=None, dimensions=None, extrainfo=None
+):
     Image(data, bitdepth, extrainfo).write(stream_or_filename, format, dimensions)
 
 
@@ -98,13 +101,13 @@ def write_rgb_clut(stream_or_filename, clutres=33, bitdepth=16, format=None):
             clut.append([])
             for B in range(clutres):
                 RGB = [v * (1.0 / (clutres - 1)) for v in (R, G, B)]
-                clut[-1].append([v * (2 ** bitdepth - 1) for v in RGB])
+                clut[-1].append([v * (2**bitdepth - 1) for v in RGB])
     write(clut, stream_or_filename, bitdepth, format)
 
 
 class Image(object):
 
-    """ Write 8 or 16 bit image files in DPX, PNG or TIFF format.
+    """Write 8 or 16 bit image files in DPX, PNG or TIFF format.
 
     Writing of single color images is highly optimized when using a single
     pixel as image data and setting dimensions explicitly.
@@ -143,20 +146,24 @@ class Image(object):
         # 10-bit code adapted from GraphicsMagick dpx.c:WriteSamples
         if self.bitdepth == 10:
             shifts = (22, 12, 2)  # RGB
-        for i, scanline in enumerate(self.data):
+        for _i, scanline in enumerate(self.data):
             if self.bitdepth == 10:
                 packed = []
                 for RGB in scanline:
                     packed_u32 = 0
                     for datum, sample in enumerate(RGB):
-                        packed_u32 |= (sample << shifts[datum])
+                        packed_u32 |= sample << shifts[datum]
                     packed.append(struct.pack(">I", packed_u32))
                 scanline = b"".join(packed)
             else:
-                scanline = b"".join(b"".join(self._pack(v) for v in RGB) for RGB in scanline)
+                scanline = b"".join(
+                    b"".join(self._pack(v) for v in RGB) for RGB in scanline
+                )
             if not optimize:
                 # Pad lines with binary zeros so they end on 4-byte boundaries
-                scanline = scanline.ljust(int(math.ceil(len(scanline) / 4.0)) * 4, b"\0")
+                scanline = scanline.ljust(
+                    int(math.ceil(len(scanline) / 4.0)) * 4, b"\0"
+                )
             imgdata.append(scanline)
         imgdata = "".join(imgdata)
         if optimize:
@@ -172,19 +179,28 @@ class Image(object):
         # Generic file header (cont.)
         stream.write(struct.pack(">I", 8192 + len(imgdata)))  # File size
         stream.write(b"\0\0\0\1")  # DittoKey (1 = not same as previous frame)
-        stream.write(struct.pack(">I", 768 + 640 + 256))  # Generic section header length
-        stream.write(struct.pack(">I", 256 + 128))  # Industry-specific section header length
+        stream.write(
+            struct.pack(">I", 768 + 640 + 256)
+        )  # Generic section header length
+        stream.write(
+            struct.pack(">I", 256 + 128)
+        )  # Industry-specific section header length
         stream.write(struct.pack(">I", 0))  # User-defined data length
         stream.write(safe_str(stream.name or b"").ljust(100, b"\0")[-100:])  # File name
         # Date & timestamp
-        tzoffset = round((time.mktime(time.localtime()) -
-                          time.mktime(time.gmtime())) / 60.0 / 60.0)
+        tzoffset = round(
+            (time.mktime(time.localtime()) - time.mktime(time.gmtime())) / 60.0 / 60.0
+        )
         if tzoffset < 0:
             tzoffset = b"%.2i" % tzoffset
         else:
             tzoffset = b"+%.2i" % tzoffset
-        stream.write(time.strftime("%Y:%m:%d:%H:%M:%S").encode() + tzoffset.encode() + b"\0\0")
-        stream.write(safe_str(b"%s %s" % (appname, version)).ljust(100, b"\0"))  # Creator
+        stream.write(
+            time.strftime("%Y:%m:%d:%H:%M:%S").encode() + tzoffset.encode() + b"\0\0"
+        )
+        stream.write(
+            safe_str(b"%s %s" % (appname, version)).ljust(100, b"\0")
+        )  # Creator
         stream.write(b"\0" * 200)  # Project
         stream.write(b"\0" * 200)  # Copyright
         stream.write(b"\xff" * 4)  # EncryptKey 0xffffffff = not encrypted
@@ -200,7 +216,9 @@ class Image(object):
         stream.write(b"\0" * 4)  # 0 = unsigned data
         stream.write(b"\0" * 4)  # Reference low data code value
         stream.write(b"\xff" * 4)  # Reference low quantity
-        stream.write(struct.pack(">I", 2 ** self.bitdepth - 1))  # Reference high data code value
+        stream.write(
+            struct.pack(">I", 2**self.bitdepth - 1)
+        )  # Reference high data code value
         stream.write(b"\xff" * 4)  # Reference high quantity
         stream.write(chr(50).encode())  # Descriptor 50 = RGB
         stream.write(b"\2")  # Transfer 2 = linear
@@ -220,8 +238,10 @@ class Image(object):
         stream.write(b"\0" * 52)  # Reserved
 
         # Generic image source header (256 bytes)
-        sw, sh = [self.extrainfo.get("original_" + dim,
-                                     locals()[dim[0]]) for dim in ("width", "height")]
+        sw, sh = [
+            self.extrainfo.get("original_" + dim, locals()[dim[0]])
+            for dim in ("width", "height")
+        ]
         # X offset
         stream.write(struct.pack(">I", self.extrainfo.get("offset_x", (sw - w) / 2)))
         # Y offset
@@ -250,9 +270,13 @@ class Image(object):
         stream.write(b"\0" * 4)  # Count
         stream.write(b"\0" * 32)  # Format
         # Frame position in sequence
-        stream.write(struct.pack(">I", self.extrainfo.get("frame_position", 2 ** 32 - 1)))
+        stream.write(
+            struct.pack(">I", self.extrainfo.get("frame_position", 2**32 - 1))
+        )
         # Sequence length
-        stream.write(struct.pack(">I", self.extrainfo.get("sequence_length", 2 ** 32 - 1)))
+        stream.write(
+            struct.pack(">I", self.extrainfo.get("sequence_length", 2**32 - 1))
+        )
         # Held count
         stream.write(struct.pack(">I", self.extrainfo.get("held_count", 1)))
         # Frame rate of original
@@ -268,8 +292,12 @@ class Image(object):
 
         # Industry-specific TV info header (128 bytes)
         # SMPTE time code
-        stream.write(b"".join(chr(int(str(v), 16)).encode() for v in
-                             self.extrainfo.get("timecode", [b"ff"] * 4)))
+        stream.write(
+            b"".join(
+                chr(int(str(v), 16)).encode()
+                for v in self.extrainfo.get("timecode", [b"ff"] * 4)
+            )
+        )
         stream.write(b"\xff" * 4)  # User bits
         stream.write(b"\xff")  # Interlace
         stream.write(b"\xff")  # Field number
@@ -327,7 +355,7 @@ class Image(object):
         stream.write(struct.pack(">I", zlib.crc32(ihdr) & 0xFFFFFFFF))
         # IDAT image data chunk type
         imgdata = []
-        for i, scanline in enumerate(self.data):
+        for _i, scanline in enumerate(self.data):
             # Add a scanline, filter type 0
             imgdata.append(b"\0")
             for RGB in scanline:
@@ -370,7 +398,7 @@ class Image(object):
         stream.write(tiff_get_header(w, h, samples_per_pixel, self.bitdepth))
 
         # Write image data
-        for i, scanline in enumerate(imgdata):
+        for _i, scanline in enumerate(imgdata):
             for sample in scanline:
                 stream.write(b"".join(self._pack(v) for v in sample))
 

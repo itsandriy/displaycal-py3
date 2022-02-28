@@ -26,25 +26,36 @@ RESPONSECOLOR = "#CCCCCC"
 
 
 class ScriptingClientFrame(SimpleTerminal):
-
     def __init__(self):
-        SimpleTerminal.__init__(self, None, wx.ID_ANY,
-                                lang.getstr("scripting-client"),
-                                start_timer=False,
-                                pos=(getcfg("position.scripting.x"), getcfg("position.scripting.y")),
-                                size=(getcfg("size.scripting.w"), getcfg("size.scripting.h")),
-                                consolestyle=wx.TE_CHARWRAP | wx.TE_MULTILINE |
-                                             wx.TE_PROCESS_ENTER | wx.TE_RICH |
-                                             wx.VSCROLL | wx.NO_BORDER,
-                                show=False, name="scriptingframe")
-        self.SetIcons(config.get_icon_bundle([256, 48, 32, 16], appname + "-scripting-client"))
+        SimpleTerminal.__init__(
+            self,
+            None,
+            wx.ID_ANY,
+            lang.getstr("scripting-client"),
+            start_timer=False,
+            pos=(getcfg("position.scripting.x"), getcfg("position.scripting.y")),
+            size=(getcfg("size.scripting.w"), getcfg("size.scripting.h")),
+            consolestyle=wx.TE_CHARWRAP
+            | wx.TE_MULTILINE
+            | wx.TE_PROCESS_ENTER
+            | wx.TE_RICH
+            | wx.VSCROLL
+            | wx.NO_BORDER,
+            show=False,
+            name="scriptingframe",
+        )
+        self.SetIcons(
+            config.get_icon_bundle([256, 48, 32, 16], appname + "-scripting-client")
+        )
         self.console.SetForegroundColour("#EEEEEE")
         self.console.SetDefaultStyle(wx.TextAttr("#EEEEEE"))
 
         self.busy = False
         self.commands = []
         self.history = []
-        self.historyfilename = os.path.join(confighome, "%s-scripting-client.history" % config.appbasename)
+        self.historyfilename = os.path.join(
+            confighome, "%s-scripting-client.history" % config.appbasename
+        )
         if os.path.isfile(self.historyfilename):
             try:
                 with open(self.historyfilename) as historyfile:
@@ -94,8 +105,7 @@ class ScriptingClientFrame(SimpleTerminal):
         lastline = self.console.GetLineText(linecount - 1)
         lastpos = self.console.GetLastPosition()
         start, end = self.console.GetSelection()
-        if (start == end and
-                self.console.GetInsertionPoint() < lastpos - len(lastline)):
+        if start == end and self.console.GetInsertionPoint() < lastpos - len(lastline):
             self.console.SetInsertionPoint(lastpos)
 
     def OnClose(self, event):
@@ -103,7 +113,7 @@ class ScriptingClientFrame(SimpleTerminal):
         # the wx main loop
         while self.busy:
             wx.Yield()
-            sleep(.05)
+            sleep(0.05)
         # Hide first (looks nicer)
         self.Hide()
         try:
@@ -118,8 +128,7 @@ class ScriptingClientFrame(SimpleTerminal):
         wx.CallAfter(self.Destroy)
 
     def OnMove(self, event=None):
-        if self.IsShownOnScreen() and not self.IsMaximized() and not \
-                self.IsIconized():
+        if self.IsShownOnScreen() and not self.IsMaximized() and not self.IsIconized():
             x, y = self.GetScreenPosition()
             setcfg("position.scripting.x", x)
             setcfg("position.scripting.y", y)
@@ -127,8 +136,7 @@ class ScriptingClientFrame(SimpleTerminal):
             event.Skip()
 
     def OnSize(self, event=None):
-        if self.IsShownOnScreen() and not self.IsMaximized() and not \
-                self.IsIconized():
+        if self.IsShownOnScreen() and not self.IsMaximized() and not self.IsIconized():
             w, h = self.ClientSize
             setcfg("size.scripting.w", w)
             setcfg("size.scripting.h", h)
@@ -141,8 +149,9 @@ class ScriptingClientFrame(SimpleTerminal):
         start = end - len(text)
         self.mark_text(start, end, ERRORCOLOR)
 
-    def check_result(self, delayedResult, get_response=False,
-                     additional_commands=None, colorize=True):
+    def check_result(
+        self, delayedResult, get_response=False, additional_commands=None, colorize=True
+    ):
         try:
             result = delayedResult.get()
         except Exception as exception:
@@ -164,15 +173,17 @@ class ScriptingClientFrame(SimpleTerminal):
                     color = RESPONSECOLOR
                 self.mark_text(start, end, color)
         if get_response and not isinstance(result, Exception):
-            delayedresult.startWorker(self.check_result, get_response,
-                                      cargs=(False, additional_commands))
+            delayedresult.startWorker(
+                self.check_result, get_response, cargs=(False, additional_commands)
+            )
         else:
             self.add_text("> ")
             if additional_commands:
                 self.add_text(additional_commands[0].rstrip("\n"))
                 if additional_commands[0].endswith("\n"):
-                    self.send_command_handler(additional_commands[0],
-                                              additional_commands[1:])
+                    self.send_command_handler(
+                        additional_commands[0], additional_commands[1:]
+                    )
                     return
             self.console.SetFocus()
             self.busy = False
@@ -194,9 +205,12 @@ class ScriptingClientFrame(SimpleTerminal):
             self.disconnect()
         self.add_text(lang.getstr("connecting.to", (ip, port)) + "\n")
         self.busy = True
-        delayedresult.startWorker(self.check_result, self.connect,
-                                  cargs=(self.get_app_info, None, False),
-                                  wargs=(ip, port))
+        delayedresult.startWorker(
+            self.check_result,
+            self.connect,
+            cargs=(self.get_app_info, None, False),
+            wargs=(ip, port),
+        )
 
     def copy_text_handler(self, event):
         # Override native copy to clipboard because reading the text back
@@ -238,19 +252,24 @@ class ScriptingClientFrame(SimpleTerminal):
                 if command == "getcommands":
                     self.commands = response.splitlines()
                 elif command == "getappname":
-                    wx.CallAfter(self.add_text,
-                                 lang.getstr("connected.to.at",
-                                             ((response, ) +
-                                              self.conn.getpeername())) +
-                                 "\n%s\n" %
-                                 lang.getstr("scripting-client.cmdhelptext"))
+                    wx.CallAfter(
+                        self.add_text,
+                        lang.getstr(
+                            "connected.to.at", ((response,) + self.conn.getpeername())
+                        )
+                        + "\n%s\n" % lang.getstr("scripting-client.cmdhelptext"),
+                    )
         except socket.error as exception:
             return exception
 
     def get_commands(self):
-        return self.get_common_commands() + ["clear", "connect <ip>:<port>",
-                                             "disconnect", "echo <string>",
-                                             "getscriptinghosts"]
+        return self.get_common_commands() + [
+            "clear",
+            "connect <ip>:<port>",
+            "disconnect",
+            "echo <string>",
+            "getscriptinghosts",
+        ]
 
     def get_common_commands(self):
         cmds = SimpleTerminal.get_common_commands(self)
@@ -278,19 +297,18 @@ class ScriptingClientFrame(SimpleTerminal):
             return exception
 
     def key_handler(self, event):
-        ##safe_print("KeyCode", event.KeyCode, "UnicodeKey", event.UnicodeKey,
-        ##"AltDown:", event.AltDown(),
-        ##"CmdDown:", event.CmdDown(),
-        ##"ControlDown:", event.ControlDown(),
-        ##"MetaDown:", event.MetaDown(),
-        ##"ShiftDown:", event.ShiftDown(),
-        ##"console.CanUndo:", self.console.CanUndo(),
-        ##"console.CanRedo:", self.console.CanRedo())
+        # safe_print("KeyCode", event.KeyCode, "UnicodeKey", event.UnicodeKey,
+        # "AltDown:", event.AltDown(),
+        # "CmdDown:", event.CmdDown(),
+        # "ControlDown:", event.ControlDown(),
+        # "MetaDown:", event.MetaDown(),
+        # "ShiftDown:", event.ShiftDown(),
+        # "console.CanUndo:", self.console.CanUndo(),
+        # "console.CanRedo:", self.console.CanRedo())
         insertionpoint = self.console.GetInsertionPoint()
         lastline, lastpos, startcol, endcol = self.get_last_line()
-        ##safe_print(insertionpoint, lastline, lastpos, startcol, endcol)
-        cmd_or_ctrl = (event.ControlDown() or
-                       event.CmdDown()) and not event.AltDown()
+        # safe_print(insertionpoint, lastline, lastpos, startcol, endcol)
+        cmd_or_ctrl = (event.ControlDown() or event.CmdDown()) and not event.AltDown()
         if cmd_or_ctrl and event.KeyCode == 65:
             # A
             self.console.SelectAll()
@@ -304,8 +322,9 @@ class ScriptingClientFrame(SimpleTerminal):
                     self.paste_text_handler(None)
                 elif event.KeyCode in (89, 90):
                     # Y / Z
-                    if (event.KeyCode == 89 or (sys.platform != "win32" and
-                                                event.ShiftDown())):
+                    if event.KeyCode == 89 or (
+                        sys.platform != "win32" and event.ShiftDown()
+                    ):
                         if self.console.CanRedo():
                             self.console.Redo()
                         else:
@@ -328,30 +347,33 @@ class ScriptingClientFrame(SimpleTerminal):
                     if endcol > startcol:
                         # TextCtrl.WriteText would be optimal, but it doesn't
                         # do anything under wxGTK with wxPython 2.8.12
-                        self.add_text("\r" + lastline[:startcol] +
-                                      lastline[endcol:])
-                        self.console.SetInsertionPoint(lastpos - len(lastline) +
-                                                       startcol)
+                        self.add_text("\r" + lastline[:startcol] + lastline[endcol:])
+                        self.console.SetInsertionPoint(
+                            lastpos - len(lastline) + startcol
+                        )
                     else:
                         event.Skip()
                 else:
                     wx.Bell()
             elif event.KeyCode in (wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE):
-                if startcol > 1 and (endcol < len(lastline) or
-                                     startcol < endcol):
+                if startcol > 1 and (endcol < len(lastline) or startcol < endcol):
                     if endcol > startcol:
                         # TextCtrl.WriteText would be optimal, but it doesn't
                         # do anything under wxGTK with wxPython 2.8.12
-                        self.add_text("\r" + lastline[:startcol] +
-                                      lastline[endcol:])
-                        self.console.SetInsertionPoint(lastpos - len(lastline) +
-                                                       startcol)
+                        self.add_text("\r" + lastline[:startcol] + lastline[endcol:])
+                        self.console.SetInsertionPoint(
+                            lastpos - len(lastline) + startcol
+                        )
                     else:
                         event.Skip()
                 else:
                     wx.Bell()
-            elif event.KeyCode in (wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN,
-                                   wx.WXK_NUMPAD_PAGEDOWN, wx.WXK_PAGEDOWN):
+            elif event.KeyCode in (
+                wx.WXK_DOWN,
+                wx.WXK_NUMPAD_DOWN,
+                wx.WXK_NUMPAD_PAGEDOWN,
+                wx.WXK_PAGEDOWN,
+            ):
                 if self.historypos < len(self.history) - 1:
                     self.historypos += 1
                     self.add_text("\r> " + self.history[self.historypos])
@@ -364,7 +386,7 @@ class ScriptingClientFrame(SimpleTerminal):
             elif event.KeyCode in (wx.WXK_INSERT, wx.WXK_NUMPAD_INSERT):
                 self.overwrite = not self.overwrite
             elif event.KeyCode in (wx.WXK_LEFT, wx.WXK_NUMPAD_LEFT):
-                if (startcol > 2):
+                if startcol > 2:
                     event.Skip()
                 else:
                     wx.Bell()
@@ -373,8 +395,12 @@ class ScriptingClientFrame(SimpleTerminal):
                     event.Skip()
                 else:
                     wx.Bell()
-            elif event.KeyCode in (wx.WXK_UP, wx.WXK_NUMPAD_UP,
-                                   wx.WXK_NUMPAD_PAGEUP, wx.WXK_PAGEUP):
+            elif event.KeyCode in (
+                wx.WXK_UP,
+                wx.WXK_NUMPAD_UP,
+                wx.WXK_NUMPAD_PAGEUP,
+                wx.WXK_PAGEUP,
+            ):
                 if self.historypos > 0:
                     self.historypos -= 1
                     self.add_text("\r> " + self.history[self.historypos])
@@ -386,8 +412,7 @@ class ScriptingClientFrame(SimpleTerminal):
                 # works for single-line TextCtrls
                 commonpart = lastline[2:endcol]
                 candidates = []
-                for command in sorted(list(set(self.commands +
-                                               self.get_commands()))):
+                for command in sorted(list(set(self.commands + self.get_commands()))):
                     command = command.split()[0]
                     if command.startswith(commonpart):
                         candidates.append(command)
@@ -404,20 +429,26 @@ class ScriptingClientFrame(SimpleTerminal):
                 if len(candidates) > 1:
                     self.add_text("\n%s\n" % " ".join(candidates))
                 self.add_text("\r> " + commonpart + lastline[endcol:])
-                self.console.SetInsertionPoint(self.console.GetLastPosition() -
-                                               len(lastline[endcol:]))
+                self.console.SetInsertionPoint(
+                    self.console.GetLastPosition() - len(lastline[endcol:])
+                )
             elif event.UnicodeKey or event.KeyCode in numpad_keycodes:
                 if startcol > 1:
                     event.Skip()
                     if self.overwrite and startcol == endcol:
-                        self.add_text("\r> " + lastline[2:startcol] +
-                                      lastline[endcol + 1:])
+                        self.add_text(
+                            "\r> " + lastline[2:startcol] + lastline[endcol + 1:]
+                        )
                         self.console.SetInsertionPoint(insertionpoint)
                 else:
                     wx.Bell()
                     self.console.SetInsertionPoint(lastpos)
-        elif event.KeyCode not in (wx.WXK_ALT, wx.WXK_COMMAND, wx.WXK_CONTROL,
-                                   wx.WXK_SHIFT):
+        elif event.KeyCode not in (
+            wx.WXK_ALT,
+            wx.WXK_COMMAND,
+            wx.WXK_CONTROL,
+            wx.WXK_SHIFT,
+        ):
             wx.Bell()
             self.console.SetInsertionPoint(lastpos)
 
@@ -434,15 +465,12 @@ class ScriptingClientFrame(SimpleTerminal):
             lastline, lastpos, startcol, endcol = self.get_last_line()
             cliptext = universal_newlines(do.GetText())
             lines = cliptext.replace("\n", "\n\0").split("\0")
-            command1 = (lastline[2:startcol] +
-                        lines[0].rstrip("\n") +
-                        lastline[endcol:])
+            command1 = lastline[2:startcol] + lines[0].rstrip("\n") + lastline[endcol:]
             self.add_text("\r> " + command1)
             if "\n" in cliptext:
                 self.send_command_handler(command1, lines[1:])
             else:
-                self.console.SetInsertionPoint(insertionpoint +
-                                               len(cliptext))
+                self.console.SetInsertionPoint(insertionpoint + len(cliptext))
 
     def process_data(self, data):
         if data[0] == "echo" and len(data) > 1:
@@ -461,15 +489,14 @@ class ScriptingClientFrame(SimpleTerminal):
     def process_data_local(self, data):
         if data[0] == "clear" and len(data) == 1:
             self.clear()
-        elif (data[0] == "connect" and len(data) == 2 and
-              len(data[1].split(":")) == 2):
+        elif data[0] == "connect" and len(data) == 2 and len(data[1].split(":")) == 2:
             wx.CallAfter(self.connect_handler, data[1])
         elif data[0] == "disconnect" and len(data) == 1:
             self.disconnect()
             self.add_text("> ")
-        #elif data[0] == "echo" and len(data) > 1:
-        #self.add_text(" ".join(data[1:]) + "\n")
-        #return
+        # elif data[0] == "echo" and len(data) > 1:
+        # self.add_text(" ".join(data[1:]) + "\n")
+        # return
         elif data[0] == "getscriptinghosts" and len(data) == 1:
             return self.get_scripting_hosts()
         else:
@@ -502,10 +529,12 @@ class ScriptingClientFrame(SimpleTerminal):
             self.add_text("> ")
         else:
             self.busy = True
-            delayedresult.startWorker(self.check_result, self.send_command,
-                                      cargs=(self.get_response,
-                                             additional_commands),
-                                      wargs=(command, ))
+            delayedresult.startWorker(
+                self.check_result,
+                self.send_command,
+                cargs=(self.get_response, additional_commands),
+                wargs=(command,),
+            )
         self.history.insert(len(self.history) - 1, command)
         if len(self.history) > 1000:
             del self.history[0]
@@ -522,8 +551,9 @@ def main():
     app.TopWindow.listen()
     app.TopWindow.Show()
     app.MainLoop()
-    writecfg(module="scripting-client", options=("position.scripting",
-                                                 "size.scripting"))
+    writecfg(
+        module="scripting-client", options=("position.scripting", "size.scripting")
+    )
 
 
 if __name__ == "__main__":

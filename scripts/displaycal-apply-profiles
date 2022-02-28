@@ -4,9 +4,9 @@
 import sys
 
 
-if sys.platform == "win32" and not ("--help" in sys.argv[1:] or
-                                    "-V" in sys.argv[1:] or
-                                    "--version" in sys.argv[1:]):
+if sys.platform == "win32" and not (
+    "--help" in sys.argv[1:] or "-V" in sys.argv[1:] or "--version" in sys.argv[1:]
+):
     from DisplayCAL.main import main
 
     main("apply-profiles")

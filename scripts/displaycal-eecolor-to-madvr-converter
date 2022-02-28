@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import multiprocessing as mp, os, signal, struct, sys, time
-from StringIO import StringIO
+import multiprocessing as mp
+import os
+import signal
+import sys
 
 from DisplayCAL import ICCProfile as ICCP, config, colormath, madvr, worker_base
-from DisplayCAL.log import safe_print
 from DisplayCAL.madvr import icc_device_link_to_madvr
 
 
 def sigbreak_handler(sig, frame):
     sys._sigbreak = True
+
 
 # SIGBREAK is Windows only. Use SIGINT as fallback
 signal.signal(getattr(signal, "SIGBREAK", signal.SIGINT), sigbreak_handler)
@@ -63,10 +65,10 @@ def eecolor_to_icc_devicelink(eecolor_3dlut_filename, unity=False):
 
         # Fill cLUT
         row = 0
-        for a in range(clutres):
-            for b in range(clutres):
+        for _a in range(clutres):
+            for _b in range(clutres):
                 link.tags.A2B0.clut.append([])
-                for c in range(clutres):
+                for _c in range(clutres):
                     values = [v * 65535 for v in eecolor_3dlut_data[row][3:]]
                     link.tags.A2B0.clut[-1].append(values)
                     row += 1
@@ -77,9 +79,15 @@ def eecolor_to_icc_devicelink(eecolor_3dlut_filename, unity=False):
     return icc_filename
 
 
-def eecolor_to_madvr(eecolor_3dlut_filename, unity=False, colorspace=None,
-                     hdr=None, logfile=sys.stdout,
-                     convert_video_rgb_to_clut65=False, append_linear_cal=True):
+def eecolor_to_madvr(
+    eecolor_3dlut_filename,
+    unity=False,
+    colorspace=None,
+    hdr=None,
+    logfile=sys.stdout,
+    convert_video_rgb_to_clut65=False,
+    append_linear_cal=True,
+):
     """Convert eeColor 65^3 3D LUT to madVR 256^3 3D LUT using interpolation
 
     madvr 3D LUT will be written to:
@@ -89,17 +97,21 @@ def eecolor_to_madvr(eecolor_3dlut_filename, unity=False, colorspace=None,
 
     icc_filename = eecolor_to_icc_devicelink(eecolor_3dlut_filename, unity)
 
-    return icc_device_link_to_madvr(icc_filename, unity=unity,
-                                    colorspace=colorspace, hdr=hdr,
-                                    logfile=logfile,
-                                    convert_video_rgb_to_clut65=convert_video_rgb_to_clut65,
-                                    append_linear_cal=append_linear_cal)
+    return icc_device_link_to_madvr(
+        icc_filename,
+        unity=unity,
+        colorspace=colorspace,
+        hdr=hdr,
+        logfile=logfile,
+        convert_video_rgb_to_clut65=convert_video_rgb_to_clut65,
+        append_linear_cal=append_linear_cal,
+    )
 
 
 if __name__ == "__main__":
     mp.freeze_support()
     result = None
-    if sys.argv[1:] and not "--help" in sys.argv[1:]:
+    if sys.argv[1:] and "--help" not in sys.argv[1:]:
         config.initcfg()
         colorspace = None
         hdr = None
@@ -116,7 +128,7 @@ if __name__ == "__main__":
                 continue
             if not os.path.isabs(arg):
                 arg = os.path.abspath(arg)
-            if not os.path.isfile(arg) and not "--unity" in sys.argv[1:]:
+            if not os.path.isfile(arg) and "--unity" not in sys.argv[1:]:
                 safe_print("Error: File not found:", arg)
                 result = False
                 break
@@ -124,20 +136,32 @@ if __name__ == "__main__":
                 # Already processed some input file(s)
                 safe_print("")
             try:
-                result = fn(arg, unity="--unity" in sys.argv[1:],
-                            colorspace=colorspace, hdr=hdr,
-                            convert_video_rgb_to_clut65="--convert-video-rgb-to-clut65" in sys.argv[1:],
-                            append_linear_cal="--append-linear-cal" in sys.argv[1:])
+                result = fn(
+                    arg,
+                    unity="--unity" in sys.argv[1:],
+                    colorspace=colorspace,
+                    hdr=hdr,
+                    convert_video_rgb_to_clut65="--convert-video-rgb-to-clut65"
+                    in sys.argv[1:],
+                    append_linear_cal="--append-linear-cal" in sys.argv[1:],
+                )
             except Exception as exception:
                 safe_print(exception)
                 result = exception
         if result is None:
             safe_print("No filename given.")
     else:
-        safe_print("Convert eeColor 65^3 to madVR 256^3 3D LUT (video levels in, video levels out)")
+        safe_print(
+            "Convert eeColor 65^3 to madVR 256^3 3D LUT (video levels in, video levels out)"
+        )
         safe_print("Author: Florian Hoech, licensed under the GPL version 3")
-        safe_print("Usage: %s [--unity] [--batch] <name>.<target color space>.txt" % os.path.basename(sys.argv[0]))
-        safe_print("Possible target color spaces: BT709, SMPTE_C, EBU_PAL, BT2020, DCI_P3")
+        safe_print(
+            "Usage: %s [--unity] [--batch] <name>.<target color space>.txt"
+            % os.path.basename(sys.argv[0])
+        )
+        safe_print(
+            "Possible target color spaces: BT709, SMPTE_C, EBU_PAL, BT2020, DCI_P3"
+        )
         safe_print("Write output to <name>.<target color space>.3dlut")
         safe_print("")
         safe_print("  --unity                  Create unity (in = out) 3D LUT")
@@ -146,13 +170,13 @@ if __name__ == "__main__":
         safe_print("")
         safe_print("Examples:")
         safe_print("  Convert SDR BT709 eeColor 3D LUT")
-        safe_print("  %s eeColor.BT709.txt"  % os.path.basename(sys.argv[0]))
+        safe_print("  %s eeColor.BT709.txt" % os.path.basename(sys.argv[0]))
         safe_print("")
         safe_print("  Convert HDR BT2020 eeColor 3D LUT")
-        safe_print("  %s eeColor.BT2020.HDR.txt"  % os.path.basename(sys.argv[0]))
+        safe_print("  %s eeColor.BT2020.HDR.txt" % os.path.basename(sys.argv[0]))
         safe_print("")
         safe_print("  Convert HDR to SDR BT2020 eeColor 3D LUT")
-        safe_print("  %s eeColor.BT2020.HDR2SDR.txt"  % os.path.basename(sys.argv[0]))
-    if sys.stdout.isatty() and not "--batch" in sys.argv[1:]:
-        raw_input("Press RETURN to exit")
+        safe_print("  %s eeColor.BT2020.HDR2SDR.txt" % os.path.basename(sys.argv[0]))
+    if sys.stdout.isatty() and "--batch" not in sys.argv[1:]:
+        input("Press RETURN to exit")
     sys.exit(int(not result))

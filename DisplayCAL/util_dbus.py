@@ -39,7 +39,6 @@ BUSTYPE_SYSTEM = 2
 
 
 class DBusObjectInterfaceMethod(object):
-
     def __init__(self, iface, method_name):
         self._iface = iface
         self._method_name = method_name
@@ -69,7 +68,6 @@ class DBusObjectInterfaceMethod(object):
 
 
 class DBusObject(object):
-
     def __init__(self, bus_type, bus_name, object_path=None, iface_name=None):
         self._bus_type = bus_type
         self._bus_name = bus_name
@@ -90,18 +88,20 @@ class DBusObject(object):
                 interface += "." + self._iface_name
             try:
                 if USE_GI:
-                    self._proxy = Gio.DBusProxy.new_sync(bus,
-                                                         Gio.DBusProxyFlags.NONE,
-                                                         None, bus_name,
-                                                         object_path,
-                                                         interface, None)
+                    self._proxy = Gio.DBusProxy.new_sync(
+                        bus,
+                        Gio.DBusProxyFlags.NONE,
+                        None,
+                        bus_name,
+                        object_path,
+                        interface,
+                        None,
+                    )
                     self._iface = self._proxy
                 else:
                     self._proxy = bus.get_object(bus_name, object_path)
-                    self._iface = dbus.Interface(self._proxy,
-                                                 dbus_interface=interface)
-            except (TypeError, ValueError,
-                    DBusException) as exception:
+                    self._iface = dbus.Interface(self._proxy, dbus_interface=interface)
+            except (TypeError, ValueError, DBusException) as exception:
                 raise DBusObjectError(exception, self._bus_name)
         self._introspectable = None
 
@@ -109,8 +109,7 @@ class DBusObject(object):
         name = "".join(part.capitalize() for part in name.split("_"))
         try:
             return DBusObjectInterfaceMethod(self._iface, name)
-        except (AttributeError, TypeError, ValueError,
-                DBusException) as exception:
+        except (AttributeError, TypeError, ValueError, DBusException) as exception:
             raise DBusObjectError(exception, self._bus_name)
 
     @property
@@ -122,35 +121,36 @@ class DBusObject(object):
             interface += "." + self._iface_name
         try:
             if USE_GI:
-                iface = Gio.DBusProxy.new_sync(self._bus,
-                                               Gio.DBusProxyFlags.NONE,
-                                               None, self._bus_name,
-                                               self._object_path,
-                                               "org.freedesktop.DBus.Properties",
-                                               None)
+                iface = Gio.DBusProxy.new_sync(
+                    self._bus,
+                    Gio.DBusProxyFlags.NONE,
+                    None,
+                    self._bus_name,
+                    self._object_path,
+                    "org.freedesktop.DBus.Properties",
+                    None,
+                )
             else:
-                iface = dbus.Interface(self._proxy,
-                                       "org.freedesktop.DBus.Properties")
+                iface = dbus.Interface(self._proxy, "org.freedesktop.DBus.Properties")
             return DBusObjectInterfaceMethod(iface, "GetAll")(interface)
-        except (TypeError, ValueError,
-                DBusException) as exception:
+        except (TypeError, ValueError, DBusException) as exception:
             raise DBusObjectError(exception, self._bus_name)
 
     def introspect(self):
         if not self._introspectable:
-            self._introspectable = DBusObject(self._bus_type,
-                                              "org.freedesktop.DBus",
-                                              "/" + self._bus_name.replace(".", "/"),
-                                              "Introspectable")
+            self._introspectable = DBusObject(
+                self._bus_type,
+                "org.freedesktop.DBus",
+                "/" + self._bus_name.replace(".", "/"),
+                "Introspectable",
+            )
         xml = self._introspectable.Introspect()
         return XMLDict(xml)
 
 
 class DBusObjectError(DBusException):
-
     def __init__(self, exception, bus_name=None):
-        self._dbus_error_name = getattr(exception, "get_dbus_name",
-                                        lambda: None)()
+        self._dbus_error_name = getattr(exception, "get_dbus_name", lambda: None)()
         if self._dbus_error_name == "org.freedesktop.DBus.Error.ServiceUnknown":
             exception = "%s: %s" % (exception, bus_name)
         DBusException.__init__(self, safe_str(exception))

@@ -4,7 +4,12 @@ import os
 import sys
 import tempfile
 
-sys.path.insert(1, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "DisplayCAL"))
+sys.path.insert(
+    1,
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "DisplayCAL"
+    ),
+)
 
 
 from DisplayCAL.meta import description, name, version_tuple

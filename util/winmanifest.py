@@ -20,11 +20,11 @@
 #
 # Currently not implemented in the Manifest class:
 # * Validation (only very basic sanity checks are currently in place)
-# * comClass, typelib, comInterfaceProxyStub and windowClass child elements of 
+# * comClass, typelib, comInterfaceProxyStub and windowClass child elements of
 #   the file element
-# * comInterfaceExternalProxyStub and windowClass child elements of the 
+# * comInterfaceExternalProxyStub and windowClass child elements of the
 #   assembly element
-# * Application Configuration File and Multilanguage User Interface (MUI) 
+# * Application Configuration File and Multilanguage User Interface (MUI)
 #   support when searching for assembly files
 #
 # Isolated Applications and Side-by-side Assemblies:
@@ -33,14 +33,14 @@
 # Changelog:
 # 2009-12-17  fix: small glitch in toxml / toprettyxml methods (xml declaration
 #                  wasn't replaced when a different encodig than UTF-8 was used)
-#             chg: catch xml.parsers.expat.ExpatError and re-raise as 
+#             chg: catch xml.parsers.expat.ExpatError and re-raise as
 #                  ManifestXMLParseError
 #             chg: support initialize option in parse method also
 #
 # 2009-12-13  fix: fixed os import
 #             fix: skip invalid / empty dependent assemblies
 #
-# 2009-08-21  fix: Corrected assembly searching sequence for localized 
+# 2009-08-21  fix: Corrected assembly searching sequence for localized
 #                  assemblies
 #             fix: Allow assemblies with no dependent files
 #
@@ -50,11 +50,11 @@
 #
 # 2009-07-30  fix: Potential failure in File.calc_hash method if hash
 #                  algorythm not supported
-#             add: Publisher configuration (policy) support when searching for 
+#             add: Publisher configuration (policy) support when searching for
 #                  assembly files
 #             fix: Private assemblies are now actually found if present (and no
 #                  shared assembly exists)
-#             add: Python 2.3 compatibility (oldest version supported by 
+#             add: Python 2.3 compatibility (oldest version supported by
 #                  pyinstaller)
 #
 # 2009-07-28  chg: Code cleanup, removed a bit of redundancy
@@ -64,14 +64,14 @@
 # 2009-06-18  chg: Use glob instead of regular expression in Manifest.find_files
 #
 # 2009-05-04  fix: Don't fail if manifest has empty description
-#             fix: Manifests created by the toxml, toprettyxml, writexml or 
-#                  writeprettyxml methods are now correctly recognized by 
+#             fix: Manifests created by the toxml, toprettyxml, writexml or
+#                  writeprettyxml methods are now correctly recognized by
 #                  Windows, which expects the XML declaration to be ordered
 #                  version-encoding-standalone (standalone being optional)
-#             add: 'encoding' keyword argument in toxml, toprettyxml, writexml 
+#             add: 'encoding' keyword argument in toxml, toprettyxml, writexml
 #                  and writeprettyxml methods
-#             chg: UpdateManifestResourcesFromXML and 
-#                  UpdateManifestResourcesFromXMLFile: set resource name 
+#             chg: UpdateManifestResourcesFromXML and
+#                  UpdateManifestResourcesFromXMLFile: set resource name
 #                  depending on file type ie. exe or dll
 #             fix: typo in __main__: UpdateManifestResourcesFromDataFile
 #                  should have been UpdateManifestResourcesFromXMLFile
@@ -82,7 +82,7 @@
 winmanifest.py
 
 Create, parse and write MS Windows Manifest files.
-Find files which are part of an assembly, by searching shared and 
+Find files which are part of an assembly, by searching shared and
 private assemblies.
 Update or add manifest resources in Win32 PE files.
 
@@ -94,7 +94,7 @@ Updates or adds manifest <xmlpath> as resource in Win32 PE file <dstpath>.
 
 try:
     import hashlib
-except ImportError as detail:
+except ImportError:
     hashlib = None
     import md5
     import sha
@@ -132,7 +132,7 @@ Element.setA = Element.setAttribute
 
 
 def getChildElementsByTagName(self, tagName):
-    """ Return child elements of type tagName if found, else [] """
+    """Return child elements of type tagName if found, else []"""
     result = []
     for child in self.childNodes:
         if isinstance(child, Element):
@@ -142,7 +142,7 @@ def getChildElementsByTagName(self, tagName):
 
 
 def getFirstChildElementByTagName(self, tagName):
-    """ Return the first element of type tagName if found, else None """
+    """Return the first element of type tagName if found, else None"""
     for child in self.childNodes:
         if isinstance(child, Element):
             if child.tagName == tagName:
@@ -157,10 +157,10 @@ Element.getFCEByTN = getFirstChildElementByTagName
 
 
 class _Hash(object):
-
     def __init__(self):
         self.md5 = md5.new
         self.sha = sha.new
+
 
 if hashlib is None:
     hashlib = _Hash()
@@ -175,14 +175,21 @@ if winresource:
 else:
     _File = _Dummy
 
-    
+
 class File(_File):
 
-    """ A file referenced by an assembly inside a manifest. """
-    
-    def __init__(self, filename="", hashalg=None, hash=None, comClasses=None, 
-                 typelibs=None, comInterfaceProxyStubs=None, 
-                 windowClasses=None):
+    """A file referenced by an assembly inside a manifest."""
+
+    def __init__(
+        self,
+        filename="",
+        hashalg=None,
+        hash=None,
+        comClasses=None,
+        typelibs=None,
+        comInterfaceProxyStubs=None,
+        windowClasses=None,
+    ):
         if winresource:
             winresource.File.__init__(self, filename)
         else:
@@ -192,23 +199,27 @@ class File(_File):
             self.hashalg = hashalg.upper()
         else:
             self.hashalg = None
-        if os.path.isfile(filename) and hashalg and hashlib and \
-           hasattr(hashlib, hashalg.lower()):
+        if (
+            os.path.isfile(filename)
+            and hashalg
+            and hashlib
+            and hasattr(hashlib, hashalg.lower())
+        ):
             self.calc_hash()
         else:
             self.hash = hash
-        self.comClasses = comClasses or [] # TO-DO: implement
-        self.typelibs = typelibs or [] # TO-DO: implement
-        self.comInterfaceProxyStubs = comInterfaceProxyStubs or [] # TO-DO: implement
-        self.windowClasses = windowClasses or [] # TO-DO: implement
+        self.comClasses = comClasses or []  # TO-DO: implement
+        self.typelibs = typelibs or []  # TO-DO: implement
+        self.comInterfaceProxyStubs = comInterfaceProxyStubs or []  # TO-DO: implement
+        self.windowClasses = windowClasses or []  # TO-DO: implement
 
     def calc_hash(self, hashalg=None):
         """Calculate the hash of the file.
-        
-        Will be called automatically from the constructor if the file exists 
-        and hashalg is given (and supported), but may also be called manually 
+
+        Will be called automatically from the constructor if the file exists
+        and hashalg is given (and supported), but may also be called manually
         e.g. to update the hash if the file has changed.
-        
+
         """
         fd = open(self.filename, "rb")
         buf = fd.read()
@@ -240,31 +251,42 @@ class ManifestXMLParseError(InvalidManifestError):
 
 
 class Manifest(object):
-    
+
     # Manifests:
     # http://msdn.microsoft.com/en-us/library/aa375365%28VS.85%29.aspx
 
     """
     Manifest constructor.
-    
+
     To build a basic manifest for your application:
-      mf = Manifest(type='win32', name='YourAppName', language='*', 
+      mf = Manifest(type='win32', name='YourAppName', language='*',
                     processorArchitecture='x86', version=[1, 0, 0, 0])
-    
+
     To write the XML to a manifest file:
       mf.writexml("YourAppName.exe.manifest")
     or
       mf.writeprettyxml("YourAppName.exe.manifest")
-    
+
     """
 
-    def __init__(self, manifestVersion=None, noInheritable=False, 
-                 noInherit=False, type_=None, name=None, language=None, 
-                 processorArchitecture=None, version=None, 
-                 publicKeyToken=None, description=None, 
-                 requestedExecutionLevel=None, uiAccess=None, 
-                 dependentAssemblies=None, files=None, 
-                 comInterfaceExternalProxyStubs=None):
+    def __init__(
+        self,
+        manifestVersion=None,
+        noInheritable=False,
+        noInherit=False,
+        type_=None,
+        name=None,
+        language=None,
+        processorArchitecture=None,
+        version=None,
+        publicKeyToken=None,
+        description=None,
+        requestedExecutionLevel=None,
+        uiAccess=None,
+        dependentAssemblies=None,
+        files=None,
+        comInterfaceExternalProxyStubs=None,
+    ):
         self.filename = None
         self.optional = None
         self.manifestType = "assembly"
@@ -278,9 +300,9 @@ class Manifest(object):
         self.version = version
         self.publicKeyToken = publicKeyToken
         # publicKeyToken:
-        # A 16-character hexadecimal string that represents the last 8 bytes 
-        # of the SHA-1 hash of the public key under which the assembly is 
-        # signed. The public key used to sign the catalog must be 2048 bits 
+        # A 16-character hexadecimal string that represents the last 8 bytes
+        # of the SHA-1 hash of the public key under which the assembly is
+        # signed. The public key used to sign the catalog must be 2048 bits
         # or greater. Required for all shared side-by-side assemblies.
         # http://msdn.microsoft.com/en-us/library/aa375692(VS.85).aspx
         self.applyPublisherPolicy = None
@@ -290,50 +312,89 @@ class Manifest(object):
         self.dependentAssemblies = dependentAssemblies or []
         self.bindingRedirects = []
         self.files = files or []
-        self.comInterfaceExternalProxyStubs = comInterfaceExternalProxyStubs or [] # TO-DO: implement
-    
-    def add_dependent_assembly(self, manifestVersion=None, noInheritable=False, 
-                 noInherit=False, type_=None, name=None, language=None, 
-                 processorArchitecture=None, version=None, 
-                 publicKeyToken=None, description=None, 
-                 requestedExecutionLevel=None, uiAccess=None, 
-                 dependentAssemblies=None, files=None, 
-                 comInterfaceExternalProxyStubs=None):
-        """Shortcut for self.dependentAssemblies.append(Manifest(*args, **kwargs))
-        """
-        self.dependentAssemblies.append(Manifest(manifestVersion, 
-                                        noInheritable, noInherit, type_, name, 
-                                        language, processorArchitecture, 
-                                        version, publicKeyToken, description, 
-                                        requestedExecutionLevel, uiAccess, 
-                                        dependentAssemblies, files, 
-                                        comInterfaceExternalProxyStubs))
+        self.comInterfaceExternalProxyStubs = (
+            comInterfaceExternalProxyStubs or []
+        )  # TO-DO: implement
+
+    def add_dependent_assembly(
+        self,
+        manifestVersion=None,
+        noInheritable=False,
+        noInherit=False,
+        type_=None,
+        name=None,
+        language=None,
+        processorArchitecture=None,
+        version=None,
+        publicKeyToken=None,
+        description=None,
+        requestedExecutionLevel=None,
+        uiAccess=None,
+        dependentAssemblies=None,
+        files=None,
+        comInterfaceExternalProxyStubs=None,
+    ):
+        """Shortcut for self.dependentAssemblies.append(Manifest(*args, **kwargs))"""
+        self.dependentAssemblies.append(
+            Manifest(
+                manifestVersion,
+                noInheritable,
+                noInherit,
+                type_,
+                name,
+                language,
+                processorArchitecture,
+                version,
+                publicKeyToken,
+                description,
+                requestedExecutionLevel,
+                uiAccess,
+                dependentAssemblies,
+                files,
+                comInterfaceExternalProxyStubs,
+            )
+        )
         if self.filename:
             # Enable search for private assembly by assigning bogus filename
             # (only the directory has to be correct)
-            self.dependentAssemblies[-1].filename = ":".join((self.filename, 
-                                                              name))
-    
-    def add_file(self, name="", hashalg="", hash="", comClasses=None, 
-                 typelibs=None, comInterfaceProxyStubs=None, 
-                 windowClasses=None):
-        """ Shortcut for manifest.files.append """
-        self.files.append(File(name, hashalg, hash, comClasses, 
-                          typelibs, comInterfaceProxyStubs, windowClasses))
-    
+            self.dependentAssemblies[-1].filename = ":".join((self.filename, name))
+
+    def add_file(
+        self,
+        name="",
+        hashalg="",
+        hash="",
+        comClasses=None,
+        typelibs=None,
+        comInterfaceProxyStubs=None,
+        windowClasses=None,
+    ):
+        """Shortcut for manifest.files.append"""
+        self.files.append(
+            File(
+                name,
+                hashalg,
+                hash,
+                comClasses,
+                typelibs,
+                comInterfaceProxyStubs,
+                windowClasses,
+            )
+        )
+
     def find_files(self, ignore_policies=True):
-        """ Search shared and private assemblies and return a list of files.
-        
+        """Search shared and private assemblies and return a list of files.
+
         If any files are not found, return an empty list.
-        
-        IMPORTANT NOTE: For the purpose of getting the dependent assembly 
+
+        IMPORTANT NOTE: For the purpose of getting the dependent assembly
         files of an executable, the publisher configuration (aka policy)
-        should be ignored (which is the default). Setting ignore_policies=False 
+        should be ignored (which is the default). Setting ignore_policies=False
         is only useful to find out which files are actually loaded at
         runtime.
-        
+
         """
-        
+
         # Shared Assemblies:
         # http://msdn.microsoft.com/en-us/library/aa375996%28VS.85%29.aspx
         #
@@ -345,9 +406,9 @@ class Manifest(object):
         #
         # NOTE:
         # Multilanguage User Interface (MUI) support not yet implemented
-        
+
         files = []
-        
+
         languages = []
         if self.language not in (None, "", "*", "neutral"):
             languages.append(self.getlanguage())
@@ -360,7 +421,7 @@ class Manifest(object):
             if self.language != "en":
                 languages.append("en")
         languages.append(self.getlanguage("*"))
-        
+
         winsxs = os.path.join(os.getenv("SystemRoot"), "WinSxS")
         if not os.path.isdir(winsxs) and not silent:
             print("W: No such dir", winsxs)
@@ -368,7 +429,7 @@ class Manifest(object):
         if not os.path.isdir(manifests) and not silent:
             print("W: No such dir", manifests)
         if not ignore_policies and self.version:
-            if sys.getwindowsversion() < (6, ):
+            if sys.getwindowsversion() < (6,):
                 # Windows XP
                 pcfiles = os.path.join(winsxs, "Policies")
                 if not os.path.isdir(pcfiles) and not silent:
@@ -376,43 +437,45 @@ class Manifest(object):
             else:
                 # Vista or later
                 pcfiles = manifests
-        
+
         for language in languages:
             version = self.version
-            
+
             # Search for publisher configuration
             if not ignore_policies and version:
                 # Publisher Configuration (aka policy)
-                # A publisher configuration file globally redirects 
-                # applications and assemblies having a dependence on one 
-                # version of a side-by-side assembly to use another version of 
-                # the same assembly. This enables applications and assemblies 
-                # to use the updated assembly without having to rebuild all of 
+                # A publisher configuration file globally redirects
+                # applications and assemblies having a dependence on one
+                # version of a side-by-side assembly to use another version of
+                # the same assembly. This enables applications and assemblies
+                # to use the updated assembly without having to rebuild all of
                 # the affected applications.
                 # http://msdn.microsoft.com/en-us/library/aa375680%28VS.85%29.aspx
                 #
-                # Under Windows XP and 2003, policies are stored as 
-                # <version>.policy files inside 
+                # Under Windows XP and 2003, policies are stored as
+                # <version>.policy files inside
                 # %SystemRoot%\WinSxS\Policies\<name>
-                # Under Vista and later, policies are stored as 
+                # Under Vista and later, policies are stored as
                 # <name>.manifest files inside %SystemRoot%\winsxs\Manifests
                 redirected = False
                 if os.path.isdir(pcfiles):
                     if not silent:
-                        print ("I: Searching for publisher configuration %s..." %
-                               self.getpolicyid(True, language=language))
-                    if sys.getwindowsversion() < (6, ):
+                        print(
+                            "I: Searching for publisher configuration %s..."
+                            % self.getpolicyid(True, language=language)
+                        )
+                    if sys.getwindowsversion() < (6,):
                         # Windows XP
-                        policies = os.path.join(pcfiles, 
-                                                self.getpolicyid(True,
-                                                                 language=language) + 
-                                                ".policy")
+                        policies = os.path.join(
+                            pcfiles,
+                            self.getpolicyid(True, language=language) + ".policy",
+                        )
                     else:
                         # Vista or later
-                        policies = os.path.join(pcfiles, 
-                                                self.getpolicyid(True,
-                                                                 language=language) + 
-                                                ".manifest")
+                        policies = os.path.join(
+                            pcfiles,
+                            self.getpolicyid(True, language=language) + ".manifest",
+                        )
                     for manifestpth in glob(policies):
                         if not os.path.isfile(manifestpth):
                             if not silent:
@@ -427,70 +490,93 @@ class Manifest(object):
                             print("E:", str(exc))
                         else:
                             if not silent:
-                                print ("I: Checking publisher policy for "
-                                       "binding redirects")
+                                print(
+                                    "I: Checking publisher policy for "
+                                    "binding redirects"
+                                )
                             for assembly in policy.dependentAssemblies:
-                                if not assembly.same_id(self, True) or \
-                                   assembly.optional:
+                                if (
+                                    not assembly.same_id(self, True)
+                                    or assembly.optional
+                                ):
                                     continue
-                                for redirect in \
-                                    assembly.bindingRedirects:
+                                for redirect in assembly.bindingRedirects:
                                     if not silent:
-                                        old = "-".join([".".join([str(i) 
-                                                                  for i in 
-                                                                  part]) 
-                                                        for part in 
-                                                        redirect[0]])
-                                        new = ".".join([str(i) 
-                                                        for i in
-                                                        redirect[1]])
-                                        print("I: Found redirect for version(s)", old, "->", new)
-                                    if redirect[0][0] <= version <= redirect[0][-1] and \
-                                       version != redirect[1]:
+                                        old = "-".join(
+                                            [
+                                                ".".join([str(i) for i in part])
+                                                for part in redirect[0]
+                                            ]
+                                        )
+                                        new = ".".join([str(i) for i in redirect[1]])
+                                        print(
+                                            "I: Found redirect for version(s)",
+                                            old,
+                                            "->",
+                                            new,
+                                        )
+                                    if (
+                                        redirect[0][0] <= version <= redirect[0][-1]
+                                        and version != redirect[1]
+                                    ):
                                         if not silent:
-                                            print("I: Applying redirect",
-                                                  ".".join([str(i) for i in version]),
-                                                  "->", new)
+                                            print(
+                                                "I: Applying redirect",
+                                                ".".join([str(i) for i in version]),
+                                                "->",
+                                                new,
+                                            )
                                         version = redirect[1]
                                         redirected = True
                     if not redirected and not silent:
                         print("I: Publisher configuration not used")
-            
+
             # Search for assemblies according to assembly searching sequence
             paths = []
             if os.path.isdir(manifests):
                 # Add winsxs search paths
-                paths.extend(glob(os.path.join(manifests, 
-                                               self.getid(language=language, 
-                                                          version=version) + 
-                                               "_*.manifest")))
+                paths.extend(
+                    glob(
+                        os.path.join(
+                            manifests,
+                            self.getid(language=language, version=version)
+                            + "_*.manifest",
+                        )
+                    )
+                )
             if self.filename:
                 # Add private assembly search paths
                 dirnm = os.path.dirname(self.filename)
-                if language in (LANGUAGE_NEUTRAL_NT5, 
-                                LANGUAGE_NEUTRAL_NT6):
+                if language in (LANGUAGE_NEUTRAL_NT5, LANGUAGE_NEUTRAL_NT6):
                     for ext in (".dll", ".manifest"):
                         paths.extend(glob(os.path.join(dirnm, self.name + ext)))
-                        paths.extend(glob(os.path.join(dirnm, self.name, 
-                                                       self.name + ext)))
+                        paths.extend(
+                            glob(os.path.join(dirnm, self.name, self.name + ext))
+                        )
                 else:
                     for ext in (".dll", ".manifest"):
-                        paths.extend(glob(os.path.join(dirnm, language, 
-                                                       self.name + ext)))
+                        paths.extend(
+                            glob(os.path.join(dirnm, language, self.name + ext))
+                        )
                     for ext in (".dll", ".manifest"):
-                        paths.extend(glob(os.path.join(dirnm, language, 
-                                                       self.name, 
-                                                       self.name + ext)))
+                        paths.extend(
+                            glob(
+                                os.path.join(
+                                    dirnm, language, self.name, self.name + ext
+                                )
+                            )
+                        )
             if not silent:
-                print("I: Searching for assembly %s..." %
-                      self.getid(language=language, version=version))
+                print(
+                    "I: Searching for assembly %s..."
+                    % self.getid(language=language, version=version)
+                )
             for manifestpth in paths:
                 if not os.path.isfile(manifestpth):
                     if not silent:
                         print("W: Not a file", manifestpth)
                     continue
-                assemblynm = os.path.basename(
-                    os.path.splitext(manifestpth)[0])
+                assemblynm = os.path.basename(os.path.splitext(manifestpth)[0])
                 if not silent:
                     if manifestpth.endswith(".dll"):
                         print("I: Found manifest in", manifestpth)
@@ -533,14 +619,14 @@ class Manifest(object):
     def getid(self, language=None, version=None):
         """Return an identification string which uniquely names a manifest.
 
-        This string is a combination of the manifest's processorArchitecture, 
+        This string is a combination of the manifest's processorArchitecture,
         name, publicKeyToken, version and language.
-        
+
         Arguments:
-        version (tuple or list of integers) - If version is given, use it 
-                                              instead of the manifest's 
+        version (tuple or list of integers) - If version is given, use it
+                                              instead of the manifest's
                                               version.
-        
+
         """
         if not self.name:
             if not silent:
@@ -559,35 +645,35 @@ class Manifest(object):
         if language:
             id.append(language)
         return "_".join(id)
-    
+
     def getlanguage(self, language=None, windowsversion=None):
         """Get and return the manifest's language as string.
-        
-        Can be either language-culture e.g. 'en-us' or a string indicating 
-        language neutrality, e.g. 'x-ww' on Windows XP or 'none' on Vista 
+
+        Can be either language-culture e.g. 'en-us' or a string indicating
+        language neutrality, e.g. 'x-ww' on Windows XP or 'none' on Vista
         and later.
-        
+
         """
         if not language:
             language = self.language
         if language in (None, "", "*", "neutral"):
-            return (LANGUAGE_NEUTRAL_NT5,
-                    LANGUAGE_NEUTRAL_NT6)[(windowsversion or 
-                                           sys.getwindowsversion()) >= (6, )]
+            return (LANGUAGE_NEUTRAL_NT5, LANGUAGE_NEUTRAL_NT6)[
+                (windowsversion or sys.getwindowsversion()) >= (6,)
+            ]
         return language
-    
+
     def getpolicyid(self, fuzzy=True, language=None, windowsversion=None):
         """Return an identification string which can be used to find a policy.
 
-        This string is a combination of the manifest's processorArchitecture, 
+        This string is a combination of the manifest's processorArchitecture,
         major and minor version, name, publicKeyToken and language.
-        
+
         Arguments:
-        fuzzy (boolean)             - If False, insert the full version in 
+        fuzzy (boolean)             - If False, insert the full version in
                                       the id string. Default is True (omit).
-        windowsversion              - If not specified (or None), default to 
+        windowsversion              - If not specified (or None), default to
         (tuple or list of integers)   sys.getwindowsversion().
-        
+
         """
         if not self.name:
             if not silent:
@@ -605,7 +691,7 @@ class Manifest(object):
         id.append(".".join(name))
         if self.publicKeyToken:
             id.append(self.publicKeyToken)
-        if self.version and (windowsversion or sys.getwindowsversion()) >= (6, ):
+        if self.version and (windowsversion or sys.getwindowsversion()) >= (6,):
             # Vista and later
             if fuzzy:
                 id.append("*")
@@ -617,7 +703,7 @@ class Manifest(object):
             id.append(language)
         id.append("*")
         id = "_".join(id)
-        if self.version and (windowsversion or sys.getwindowsversion()) < (6, ):
+        if self.version and (windowsversion or sys.getwindowsversion()) < (6,):
             # Windows XP
             if fuzzy:
                 id = os.path.join(id, "*")
@@ -627,9 +713,9 @@ class Manifest(object):
 
     def load_dom(self, domtree, initialize=True):
         """Load manifest from DOM tree.
-        
+
         If initialize is True (default), reset existing attributes first.
-        
+
         """
         if domtree.nodeType == Node.DOCUMENT_NODE:
             rootElement = domtree.documentElement
@@ -640,14 +726,19 @@ class Manifest(object):
                 "Invalid root element node type %s - has to be one of "
                 "(DOCUMENT_NODE, ELEMENT_NODE)" % domtree
             )
-        allowed_names = ("assembly", "assemblyBinding", "configuration", "dependentAssembly")
+        allowed_names = (
+            "assembly",
+            "assemblyBinding",
+            "configuration",
+            "dependentAssembly",
+        )
         if rootElement.tagName not in allowed_names:
             raise InvalidManifestError(
-                "Invalid root element <%s> - has to be one of <%s>" %
-                (rootElement.tagName, ">, <".join(allowed_names))
+                "Invalid root element <%s> - has to be one of <%s>"
+                % (rootElement.tagName, ">, <".join(allowed_names))
             )
         # print "I: loading manifest metadata from element <%s>" % \
-              # rootElement.tagName
+        # rootElement.tagName
         if rootElement.tagName == "configuration":
             for windows in rootElement.getCEByTN("windows"):
                 for assemblyBinding in windows.getCEByTN("assemblyBinding"):
@@ -656,74 +747,82 @@ class Manifest(object):
             if initialize:
                 self.__init__()
             self.manifestType = rootElement.tagName
-            self.manifestVersion = [int(i) 
-                                    for i in 
-                                    (rootElement.getA("manifestVersion") or 
-                                     "1.0").split(".")]
+            self.manifestVersion = [
+                int(i)
+                for i in (rootElement.getA("manifestVersion") or "1.0").split(".")
+            ]
             self.noInheritable = bool(rootElement.getFCEByTN("noInheritable"))
             self.noInherit = bool(rootElement.getFCEByTN("noInherit"))
             for assemblyIdentity in rootElement.getCEByTN("assemblyIdentity"):
                 self.type = assemblyIdentity.getA("type") or None
                 self.name = assemblyIdentity.getA("name") or None
                 self.language = assemblyIdentity.getA("language") or None
-                self.processorArchitecture = assemblyIdentity.getA(
-                    "processorArchitecture") or None
+                self.processorArchitecture = (
+                    assemblyIdentity.getA("processorArchitecture") or None
+                )
                 version = assemblyIdentity.getA("version")
                 if version:
                     self.version = [int(i) for i in version.split(".")]
                 self.publicKeyToken = assemblyIdentity.getA("publicKeyToken") or None
             for publisherPolicy in rootElement.getCEByTN("publisherPolicy"):
-                self.applyPublisherPolicy = (publisherPolicy.getA("apply") or 
-                                             "").lower() == "yes"
+                self.applyPublisherPolicy = (
+                    publisherPolicy.getA("apply") or ""
+                ).lower() == "yes"
             for description in rootElement.getCEByTN("description"):
                 if description.firstChild:
                     self.description = description.firstChild.wholeText
             for trustInfo in rootElement.getCEByTN("trustInfo"):
                 for security in trustInfo.getCEByTN("security"):
-                    for requestedPrivileges in \
-                        security.getCEByTN("requestedPrivileges"):
-                        for requestedExecutionLevel in \
-                            requestedPrivileges.getCEByTN(
-                                "requestedExecutionLevel"):
-                            self.requestedExecutionLevel = \
-                                requestedExecutionLevel.getA("level")
+                    for requestedPrivileges in security.getCEByTN(
+                        "requestedPrivileges"
+                    ):
+                        for requestedExecutionLevel in requestedPrivileges.getCEByTN(
+                            "requestedExecutionLevel"
+                        ):
+                            self.requestedExecutionLevel = requestedExecutionLevel.getA(
+                                "level"
+                            )
                             self.uiAccess = (
-                                requestedExecutionLevel.getA("uiAccess") or 
-                                "").lower() == "true"
+                                requestedExecutionLevel.getA("uiAccess") or ""
+                            ).lower() == "true"
             if rootElement.tagName == "assemblyBinding":
                 dependencies = [rootElement]
             else:
                 dependencies = rootElement.getCEByTN("dependency")
             for dependency in dependencies:
-                for dependentAssembly in dependency.getCEByTN(
-                    "dependentAssembly"):
+                for dependentAssembly in dependency.getCEByTN("dependentAssembly"):
                     manifest = ManifestFromDOM(dependentAssembly)
                     if not manifest.name:
                         # invalid, skip
                         continue
-                    manifest.optional = (dependency.getA("optional") or 
-                                         "").lower() == "yes"
+                    manifest.optional = (
+                        dependency.getA("optional") or ""
+                    ).lower() == "yes"
                     self.dependentAssemblies.append(manifest)
                     if self.filename:
-                        # Enable search for private assembly by assigning bogus 
+                        # Enable search for private assembly by assigning bogus
                         # filename (only the directory has to be correct)
                         self.dependentAssemblies[-1].filename = ":".join(
-                            (self.filename, manifest.name))
+                            (self.filename, manifest.name)
+                        )
             for bindingRedirect in rootElement.getCEByTN("bindingRedirect"):
-                oldVersion = [[int(i) for i in part.split(".")] 
-                              for part in 
-                              bindingRedirect.getA("oldVersion").split("-")]
-                newVersion = [int(i) 
-                              for i in 
-                              bindingRedirect.getA("newVersion").split(".")]
+                oldVersion = [
+                    [int(i) for i in part.split(".")]
+                    for part in bindingRedirect.getA("oldVersion").split("-")
+                ]
+                newVersion = [
+                    int(i) for i in bindingRedirect.getA("newVersion").split(".")
+                ]
                 self.bindingRedirects.append((oldVersion, newVersion))
             for file_ in rootElement.getCEByTN("file"):
-                self.add_file(name=file_.getA("name"),
-                              hashalg=file_.getA("hashalg"),
-                              hash=file_.getA("hash"))
-    
+                self.add_file(
+                    name=file_.getA("name"),
+                    hashalg=file_.getA("hashalg"),
+                    hash=file_.getA("hash"),
+                )
+
     def parse(self, filename_or_file, initialize=True):
-        """ Load manifest from file or file object """
+        """Load manifest from file or file object"""
         if isinstance(filename_or_file, str):
             filename = filename_or_file
         else:
@@ -740,35 +839,37 @@ class Manifest(object):
             self.__init__()
         self.filename = filename
         self.load_dom(domtree, False)
-    
+
     def parse_string(self, xmlstr, initialize=True):
-        """ Load manifest from XML string """
+        """Load manifest from XML string"""
         try:
             domtree = minidom.parseString(xmlstr)
         except xml.parsers.expat.ExpatError as e:
             raise ManifestXMLParseError(e)
         self.load_dom(domtree, initialize)
-    
+
     def same_id(self, manifest, skip_version_check=False):
         """Return a bool indicating if another manifest has the same identitiy.
-        
-        This is done by comparing language, name, processorArchitecture, 
+
+        This is done by comparing language, name, processorArchitecture,
         publicKeyToken, type and version.
-        
+
         """
         if skip_version_check:
             version_check = True
         else:
             version_check = self.version == manifest.version
-        return (self.language == manifest.language and
-                self.name == manifest.name and
-                self.processorArchitecture == manifest.processorArchitecture and
-                self.publicKeyToken == manifest.publicKeyToken and
-                self.type == manifest.type and
-                version_check)
-    
+        return (
+            self.language == manifest.language
+            and self.name == manifest.name
+            and self.processorArchitecture == manifest.processorArchitecture
+            and self.publicKeyToken == manifest.publicKeyToken
+            and self.type == manifest.type
+            and version_check
+        )
+
     def todom(self):
-        """ Return the manifest as DOM tree """
+        """Return the manifest as DOM tree"""
         doc = Document()
         docE = doc.cE(self.manifestType)
         if self.manifestType == "assemblyBinding":
@@ -782,8 +883,9 @@ class Manifest(object):
         if self.manifestType != "dependentAssembly":
             docE.setA("xmlns", "urn:schemas-microsoft-com:asm.v1")
             if self.manifestType != "assemblyBinding":
-                docE.setA("manifestVersion", 
-                          ".".join([str(i) for i in self.manifestVersion]))
+                docE.setA(
+                    "manifestVersion", ".".join([str(i) for i in self.manifestVersion])
+                )
         if self.noInheritable:
             docE.aChild(doc.cE("noInheritable"))
         if self.noInherit:
@@ -796,11 +898,9 @@ class Manifest(object):
         if self.language:
             aId.setAttribute("language", self.language)
         if self.processorArchitecture:
-            aId.setAttribute("processorArchitecture", 
-                             self.processorArchitecture)
+            aId.setAttribute("processorArchitecture", self.processorArchitecture)
         if self.version:
-            aId.setAttribute("version", 
-                             ".".join([str(i) for i in self.version]))
+            aId.setAttribute("version", ".".join([str(i) for i in self.version]))
         if self.publicKeyToken:
             aId.setAttribute("publicKeyToken", self.publicKeyToken)
         if aId.hasAttributes():
@@ -818,8 +918,11 @@ class Manifest(object):
             descE = doc.cE("description")
             descE.aChild(doc.cT(self.description))
             docE.aChild(descE)
-        if self.requestedExecutionLevel in ("asInvoker", "highestAvailable", 
-                                            "requireAdministrator"):
+        if self.requestedExecutionLevel in (
+            "asInvoker",
+            "highestAvailable",
+            "requireAdministrator",
+        ):
             tE = doc.cE("trustInfo")
             tE.setA("xmlns", "urn:schemas-microsoft-com:asm.v3")
             sE = doc.cE("security")
@@ -853,14 +956,18 @@ class Manifest(object):
         if self.bindingRedirects:
             for bindingRedirect in self.bindingRedirects:
                 brE = doc.cE("bindingRedirect")
-                brE.setAttribute("oldVersion", 
-                                 "-".join([".".join([str(i) 
-                                                     for i in 
-                                                     part]) 
-                                           for part in 
-                                           bindingRedirect[0]]))
-                brE.setAttribute("newVersion", 
-                                 ".".join([str(i) for i in bindingRedirect[1]]))
+                brE.setAttribute(
+                    "oldVersion",
+                    "-".join(
+                        [
+                            ".".join([str(i) for i in part])
+                            for part in bindingRedirect[0]
+                        ]
+                    ),
+                )
+                brE.setAttribute(
+                    "newVersion", ".".join([str(i) for i in bindingRedirect[1]])
+                )
                 docE.aChild(brE)
         if self.files:
             for file_ in self.files:
@@ -871,46 +978,47 @@ class Manifest(object):
                         fE.setA(attr, val)
                 docE.aChild(fE)
         return doc
-    
+
     def toprettyxml(self, indent="  ", newl=os.linesep, encoding="UTF-8"):
-        """ Return the manifest as pretty-printed XML """
+        """Return the manifest as pretty-printed XML"""
         domtree = self.todom()
-        # WARNING: The XML declaration has to follow the order 
-        # version-encoding-standalone (standalone being optional), otherwise 
-        # if it is embedded in an exe the exe will fail to launch! 
+        # WARNING: The XML declaration has to follow the order
+        # version-encoding-standalone (standalone being optional), otherwise
+        # if it is embedded in an exe the exe will fail to launch!
         # ('application configuration incorrect')
-        if sys.version_info >= (2,3):
+        if sys.version_info >= (2, 3):
             xmlstr = domtree.toprettyxml(indent, newl, encoding)
         else:
             xmlstr = domtree.toprettyxml(indent, newl)
         xmlstr = xmlstr.strip(os.linesep).replace(
-                '<?xml version="1.0" encoding="%s"?>' % encoding, 
-                '<?xml version="1.0" encoding="%s" standalone="yes"?>' % 
-                encoding)
+            '<?xml version="1.0" encoding="%s"?>' % encoding,
+            '<?xml version="1.0" encoding="%s" standalone="yes"?>' % encoding,
+        )
         domtree.unlink()
         return xmlstr
-    
+
     def toxml(self, encoding="UTF-8"):
-        """ Return the manifest as XML """
+        """Return the manifest as XML"""
         domtree = self.todom()
-        # WARNING: The XML declaration has to follow the order 
-        # version-encoding-standalone (standalone being optional), otherwise 
-        # if it is embedded in an exe the exe will fail to launch! 
+        # WARNING: The XML declaration has to follow the order
+        # version-encoding-standalone (standalone being optional), otherwise
+        # if it is embedded in an exe the exe will fail to launch!
         # ('application configuration incorrect')
         xmlstr = domtree.toxml(encoding).replace(
-            '<?xml version="1.0" encoding="%s"?>' % encoding, 
-            '<?xml version="1.0" encoding="%s" standalone="yes"?>' % encoding)
+            '<?xml version="1.0" encoding="%s"?>' % encoding,
+            '<?xml version="1.0" encoding="%s" standalone="yes"?>' % encoding,
+        )
         domtree.unlink()
         return xmlstr
 
     def update_resources(self, dstpath, names=None, languages=None):
-        """ Update or add manifest resource in dll/exe file dstpath """
-        UpdateManifestResourcesFromXML(dstpath, self.toprettyxml(), names, 
-                                       languages)
-    
-    def writeprettyxml(self, filename_or_file=None, indent="  ", newl=os.linesep, 
-                       encoding="UTF-8"):
-        """ Write the manifest as XML to a file or file object """
+        """Update or add manifest resource in dll/exe file dstpath"""
+        UpdateManifestResourcesFromXML(dstpath, self.toprettyxml(), names, languages)
+
+    def writeprettyxml(
+        self, filename_or_file=None, indent="  ", newl=os.linesep, encoding="UTF-8"
+    ):
+        """Write the manifest as XML to a file or file object"""
         if not filename_or_file:
             filename_or_file = self.filename
         if isinstance(filename_or_file, str):
@@ -918,10 +1026,11 @@ class Manifest(object):
         xmlstr = self.toprettyxml(indent, newl, encoding)
         filename_or_file.write(xmlstr)
         filename_or_file.close()
-    
-    def writexml(self, filename_or_file=None, indent="  ", newl=os.linesep, 
-                 encoding="UTF-8"):
-        """ Write the manifest as XML to a file or file object """
+
+    def writexml(
+        self, filename_or_file=None, indent="  ", newl=os.linesep, encoding="UTF-8"
+    ):
+        """Write the manifest as XML to a file or file object"""
         if not filename_or_file:
             filename_or_file = self.filename
         if isinstance(filename_or_file, str):
@@ -932,7 +1041,7 @@ class Manifest(object):
 
 
 def ManifestFromResFile(filename, names=None, languages=None):
-    """ Create and return manifest instance from resource in dll/exe file """
+    """Create and return manifest instance from resource in dll/exe file"""
     res = GetManifestResources(filename, names, languages)
     pth = []
     if res and res[RT_MANIFEST]:
@@ -941,8 +1050,9 @@ def ManifestFromResFile(filename, names=None, languages=None):
             pth.append(str(key))
             res = res[key]
     if isinstance(res, dict):
-        raise InvalidManifestError("No matching manifest resource found in '%s'" % 
-                                   filename)
+        raise InvalidManifestError(
+            "No matching manifest resource found in '%s'" % filename
+        )
     manifest = Manifest()
     manifest.filename = ":".join([filename] + pth)
     manifest.parse_string(res, False)
@@ -950,59 +1060,58 @@ def ManifestFromResFile(filename, names=None, languages=None):
 
 
 def ManifestFromDOM(domtree):
-    """ Create and return manifest instance from DOM tree """
+    """Create and return manifest instance from DOM tree"""
     manifest = Manifest()
     manifest.load_dom(domtree)
     return manifest
 
 
 def ManifestFromXML(xmlstr):
-    """ Create and return manifest instance from XML """
+    """Create and return manifest instance from XML"""
     manifest = Manifest()
     manifest.parse_string(xmlstr)
     return manifest
 
 
 def ManifestFromXMLFile(filename_or_file):
-    """ Create and return manifest instance from file """
+    """Create and return manifest instance from file"""
     manifest = Manifest()
     manifest.parse(filename_or_file)
     return manifest
 
 
 def GetManifestResources(filename, names=None, languages=None):
-    """ Get manifest resources from file """
+    """Get manifest resources from file"""
     return winresource.GetResources(filename, [RT_MANIFEST], names, languages)
 
 
-def UpdateManifestResourcesFromXML(dstpath, xmlstr, names=None, 
-                                   languages=None):
-    """ Update or add manifest XML as resource in dstpath """
+def UpdateManifestResourcesFromXML(dstpath, xmlstr, names=None, languages=None):
+    """Update or add manifest XML as resource in dstpath"""
     if not silent:
         print("I: Updating manifest in", dstpath)
     if dstpath.lower().endswith(".exe"):
-        name = 1 
+        name = 1
     else:
         name = 2
-    winresource.UpdateResources(dstpath, xmlstr, RT_MANIFEST, names or [name], 
-                             languages or [0, "*"])
+    winresource.UpdateResources(
+        dstpath, xmlstr, RT_MANIFEST, names or [name], languages or [0, "*"]
+    )
 
 
-def UpdateManifestResourcesFromXMLFile(dstpath, srcpath, names=None, 
-                                       languages=None):
-    """ Update or add manifest XML from srcpath as resource in dstpath """
+def UpdateManifestResourcesFromXMLFile(dstpath, srcpath, names=None, languages=None):
+    """Update or add manifest XML from srcpath as resource in dstpath"""
     if not silent:
         print("I: Updating manifest from", srcpath, "in", dstpath)
     if dstpath.lower().endswith(".exe"):
-        name = 1 
+        name = 1
     else:
         name = 2
-    winresource.UpdateResourcesFromDataFile(dstpath, srcpath, RT_MANIFEST, 
-                                         names or [name], 
-                                         languages or [0, "*"])
+    winresource.UpdateResourcesFromDataFile(
+        dstpath, srcpath, RT_MANIFEST, names or [name], languages or [0, "*"]
+    )
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     dstpath = sys.argv[1]
     srcpath = sys.argv[2]
     UpdateManifestResourcesFromXMLFile(dstpath, srcpath)

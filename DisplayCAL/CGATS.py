@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-
 """
 Simple CGATS file parser class
 
 Copyright (C) 2008 Florian Hoech
 """
+
 import functools
 import io
 import math
 import re
 import os
-import sys
 from pathlib import Path
 
 from DisplayCAL import colormath
@@ -20,9 +19,18 @@ from DisplayCAL.util_io import GzipFileProper, StringIOu as StringIO
 
 def get_device_value_labels(color_rep=None):
     # TODO: Avoid using filter...
-    return list(filter(bool, [v[1] if not color_rep or v[0] == color_rep
-                                      else False for v in {b"CMYK": (b"CMYK_C", b"CMYK_M", b"CMYK_Y", b"CMYK_K"),
-                             b"RGB": (b"RGB_R", b"RGB_G", b"RGB_B")}]))
+    return list(
+        filter(
+            bool,
+            [
+                v[1] if not color_rep or v[0] == color_rep else False
+                for v in {
+                    b"CMYK": (b"CMYK_C", b"CMYK_M", b"CMYK_Y", b"CMYK_K"),
+                    b"RGB": (b"RGB_R", b"RGB_G", b"RGB_B"),
+                }
+            ],
+        )
+    )
 
 
 def rpad(value, width) -> bytes:
@@ -41,7 +49,7 @@ def rpad(value, width) -> bytes:
         # Also need to escape single quote -> double quote
         return b'"%s"' % strval.replace(b'"', b'""')
 
-    if value < 1e+16:
+    if value < 1e16:
         i = strval.find(b".")
         if i > -1:
             if i < width - 1:
@@ -70,6 +78,7 @@ def sort_RGB_to_top_factory(i1, i2, i3, i4):
             return -1
         else:
             return 0
+
     return sort_RGB_to_top
 
 
@@ -149,7 +158,7 @@ def sort_by_RGB_sum(a, b):
 
 
 def sort_by_RGB_pow_sum(a, b):
-    sum1, sum2 = sum(v ** 2.2 for v in a[:3]), sum(v ** 2.2 for v in b[:3])
+    sum1, sum2 = sum(v**2.2 for v in a[:3]), sum(v**2.2 for v in b[:3])
     if sum1 > sum2:
         return 1
     elif sum1 < sum2:
@@ -179,6 +188,7 @@ def sort_by_luma_factory(RY, GY, BY, gamma=1):
             return -1
         else:
             return 0
+
     return sort_by_luma
 
 
@@ -232,10 +242,17 @@ class CGATS(dict):
     mtime = None
     parent = None
     root = None
-    type = b'ROOT'
+    type = b"ROOT"
     vmaxlen = 0
 
-    def __init__(self, cgats=None, normalize_fields=False, file_identifier="CTI3", emit_keywords=False, strict=False):
+    def __init__(
+        self,
+        cgats=None,
+        normalize_fields=False,
+        file_identifier="CTI3",
+        emit_keywords=False,
+        strict=False,
+    ):
         """Return a CGATS instance.
 
         cgats can be a path, a string holding CGATS data, or a file object.
@@ -261,13 +278,14 @@ class CGATS(dict):
                 if isinstance(cgats, str):
                     if "\n" not in cgats or "\r" not in cgats:
                         # assume filename
-                        cgats = open(cgats, 'rb')
+                        cgats = open(cgats, "rb")
                         self.filename = cgats.name
                     else:
                         # assume text
                         cgats = io.StringIO(cgats)
 
                 from DisplayCAL.ICCProfile import ICCProfileTag
+
                 if isinstance(cgats, bytes):
                     # assume text
                     cgats = io.BytesIO(cgats)
@@ -275,9 +293,9 @@ class CGATS(dict):
                     cgats = io.BytesIO(cgats.tagData)
                 elif isinstance(cgats, Path):
                     self.filename = cgats.absolute()
-                    cgats = open(cgats, 'rb')
+                    cgats = open(cgats, "rb")
                 elif not isinstance(cgats, (StringIO, io.BytesIO, io.BufferedReader)):
-                    raise CGATSInvalidError('Unsupported type: %s' % type(cgats))
+                    raise CGATSInvalidError("Unsupported type: %s" % type(cgats))
 
                 if self.filename:
                     self.mtime = os.stat(self.filename).st_mtime
@@ -289,19 +307,19 @@ class CGATS(dict):
             context = self
             for raw_line in raw_lines:
                 # Replace 1.#IND00 with NaN
-                raw_line = raw_line.replace(b'1.#IND00', b'NaN')
+                raw_line = raw_line.replace(b"1.#IND00", b"NaN")
 
                 # strip control chars and leading/trailing whitespace
-                line = re.sub(b'[^\x09\x20-\x7E\x80-\xFF]', b'', raw_line.strip())
+                line = re.sub(b"[^\x09\x20-\x7E\x80-\xFF]", b"", raw_line.strip())
 
-                if b'#' in line or b'"' in line:
+                if b"#" in line or b'"' in line:
                     # Deal with comments and quotes
                     quoted = False
                     values = []
                     token_start = 0
                     end = len(line) - 1
                     for i in range(len(line)):
-                        char = line[i:i+1]
+                        char = line[i: i + 1]
                         if char == b'"':
                             if quoted is False:
                                 if not line[token_start:i]:
@@ -309,7 +327,7 @@ class CGATS(dict):
                                 quoted = True
                             else:
                                 quoted = False
-                        if (quoted is False and char in b'# \t') or i == end:
+                        if (quoted is False and char in b"# \t") or i == end:
                             if i == end:
                                 i += 1
                             value = line[token_start:i]
@@ -319,63 +337,63 @@ class CGATS(dict):
                                     value = value[1:-1]
                                 # Need to unescape double quote -> single quote
                                 values.append(value.replace(b'""', b'"'))
-                            if char == b'#':
+                            if char == b"#":
                                 # Strip comment
                                 line = line[:i].strip()
                                 break
-                            elif char in b' \t':
+                            elif char in b" \t":
                                 token_start = i + 1
                 else:
                     # no comments or quotes
                     values = line.split()
 
-                if line[:6] == b'BEGIN_':
+                if line[:6] == b"BEGIN_":
                     key = line[6:].decode()
                     if key in context:
                         # Start new CGATS
                         new = len(self)
                         self[new] = CGATS()
-                        self[new].key = ''
+                        self[new].key = ""
                         self[new].parent = self
                         self[new].root = self.root
-                        self[new].type = b''
+                        self[new].type = b""
                         context = self[new]
 
-                if line == b'BEGIN_DATA_FORMAT':
-                    context['DATA_FORMAT'] = CGATS()
-                    context['DATA_FORMAT'].key = 'DATA_FORMAT'
-                    context['DATA_FORMAT'].parent = context
-                    context['DATA_FORMAT'].root = self
-                    context['DATA_FORMAT'].type = b'DATA_FORMAT'
-                    context = context['DATA_FORMAT']
-                elif line == b'END_DATA_FORMAT':
+                if line == b"BEGIN_DATA_FORMAT":
+                    context["DATA_FORMAT"] = CGATS()
+                    context["DATA_FORMAT"].key = "DATA_FORMAT"
+                    context["DATA_FORMAT"].parent = context
+                    context["DATA_FORMAT"].root = self
+                    context["DATA_FORMAT"].type = b"DATA_FORMAT"
+                    context = context["DATA_FORMAT"]
+                elif line == b"END_DATA_FORMAT":
                     context = context.parent
-                elif line == b'BEGIN_DATA':
-                    context['DATA'] = CGATS()
-                    context['DATA'].key = 'DATA'
-                    context['DATA'].parent = context
-                    context['DATA'].root = self
-                    context['DATA'].type = b'DATA'
-                    context = context['DATA']
-                elif line == b'END_DATA':
+                elif line == b"BEGIN_DATA":
+                    context["DATA"] = CGATS()
+                    context["DATA"].key = "DATA"
+                    context["DATA"].parent = context
+                    context["DATA"].root = self
+                    context["DATA"].type = b"DATA"
+                    context = context["DATA"]
+                elif line == b"END_DATA":
                     context = context.parent
-                elif line[:6] == b'BEGIN_':
+                elif line[:6] == b"BEGIN_":
                     key = line[6:].decode()
                     context[key] = CGATS()
                     context[key].key = key
                     context[key].parent = context
                     context[key].root = self
-                    context[key].type = b'SECTION'
+                    context[key].type = b"SECTION"
                     context = context[key]
-                elif line[:4] == b'END_':
+                elif line[:4] == b"END_":
                     context = context.parent
-                elif context.type in (b'DATA_FORMAT', b'DATA'):
+                elif context.type in (b"DATA_FORMAT", b"DATA"):
                     if len(values):
                         context = context.add_data(values)
-                elif context.type == b'SECTION':
+                elif context.type == b"SECTION":
                     context = context.add_data(line)
                 elif len(values) > 1:
-                    if values[0] == b'Date:':
+                    if values[0] == b"Date:":
                         context.datetime = line
                     else:
                         if len(values) == 2 and b'"' not in values[0]:
@@ -383,21 +401,29 @@ class CGATS(dict):
                             if value is not None:
                                 context = context.add_data({key: value.strip(b'"')})
                             else:
-                                context = context.add_data({key: b''})
+                                context = context.add_data({key: b""})
                         elif strict:
                             raise CGATSInvalidError(
-                                'Malformed %s file: {}'.format(
-                                    context.parent and context.type or "CGATS", self.filename or self
+                                "Malformed {} file: {}".format(
+                                    context.parent and context.type or "CGATS",
+                                    self.filename or self,
                                 )
                             )
-                elif values and values[0] not in (b'Comment:', b'Date:') \
-                     and len(line) >= 3 and not re.search(b"[^ 0-9A-Za-z/.]", line):
+                elif (
+                    values
+                    and values[0] not in (b"Comment:", b"Date:")
+                    and len(line) >= 3
+                    and not re.search(b"[^ 0-9A-Za-z/.]", line)
+                ):
                     context = self.add_data(line)
 
             if 0 in self and self[0].get("NORMALIZED_TO_Y_100") == b"NO":
                 # Always normalize to Y = 100
-                reprstr = (self.filename or "<%s.%s instance at 0x%016x>" %
-                                            (self.__module__, self.__class__.__name__, id(self)))
+                reprstr = self.filename or "<%s.%s instance at 0x%016x>" % (
+                    self.__module__,
+                    self.__class__.__name__,
+                    id(self),
+                )
                 if self[0].normalize_to_y_100():
                     print("Normalized to Y = 100:", reprstr)
                 else:
@@ -409,7 +435,10 @@ class CGATS(dict):
         self.setmodified()
 
     def __delitem__(self, name):
-        if self.type not in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION') and name in self._keys:
+        if (
+            self.type not in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION")
+            and name in self._keys
+        ):
             self._keys.remove(name)
         dict.__delitem__(self, name)
         self.setmodified()
@@ -423,13 +452,13 @@ class CGATS(dict):
     def __getitem__(self, name):
         if name == -1:
             return self.get(len(self) - 1)
-        elif name in ('NUMBER_OF_FIELDS', 'NUMBER_OF_SETS'):
+        elif name in ("NUMBER_OF_FIELDS", "NUMBER_OF_SETS"):
             return getattr(self, name)
         elif name in self:
-            if str(name).upper() in ('INDEX', 'SAMPLE_ID', 'SAMPLEID'):
+            if str(name).upper() in ("INDEX", "SAMPLE_ID", "SAMPLEID"):
                 if not isinstance(self.get(name), (int, float)):
                     return self.get(name)
-                if str(name).upper() == 'INDEX':
+                if str(name).upper() == "INDEX":
                     return self.key
                 if isinstance(self.get(name), float):
                     return 1.0 / (self.NUMBER_OF_SETS - 1) * self.key
@@ -440,7 +469,7 @@ class CGATS(dict):
     def get(self, name, default=None):
         if name == -1:
             return dict.get(self, len(self) - 1, default)
-        elif name in ('NUMBER_OF_FIELDS', 'NUMBER_OF_SETS'):
+        elif name in ("NUMBER_OF_FIELDS", "NUMBER_OF_SETS"):
             return getattr(self, name, default)
         else:
             return dict.get(self, name, default)
@@ -475,12 +504,17 @@ class CGATS(dict):
             else:
                 tech = self.queryv1("TECHNOLOGY")
                 if tech:
-                    if desc and desc != b"Not specified" and desc != b"CCSS for %s" % tech:
+                    if (
+                        desc
+                        and desc != b"Not specified"
+                        and desc != b"CCSS for %s" % tech
+                    ):
                         display = desc
                     else:
                         display = self.queryv1("DISPLAY")
                     if localized:
                         from DisplayCAL import localization as lang
+
                         tech = tech.decode()
                         tech = lang.getstr("display.tech." + tech, default=tech)
                         if display:
@@ -494,134 +528,169 @@ class CGATS(dict):
             # Filesystem encoding can be different from UTF-8 (depending on
             # platform), by default str will use FS enc
             # This is not True anymore, after Python 3.6 even Windows switched to UTF-8
-            desc = bytes(str(os.path.splitext(os.path.basename(self.filename))[0]), "UTF-8")
+            desc = bytes(
+                str(os.path.splitext(os.path.basename(self.filename))[0]), "UTF-8"
+            )
         else:
             desc = bytes(str(desc or ""), "UTF-8")
         return desc
 
     def __setattr__(self, name, value):
-        if name in ('_keys', '_lvl'):
+        if name in ("_keys", "_lvl"):
             object.__setattr__(self, name, value)
-        elif name == 'modified':
+        elif name == "modified":
             self.setmodified(value)
-        elif name in ('datetime', 'filename', 'fileName', 'file_identifier', 'key',
-                      'mtime', 'normalize_fields', 'parent', 'root', 'type',
-                      'vmaxlen', 'emit_keywords'):
+        elif name in (
+            "datetime",
+            "filename",
+            "fileName",
+            "file_identifier",
+            "key",
+            "mtime",
+            "normalize_fields",
+            "parent",
+            "root",
+            "type",
+            "vmaxlen",
+            "emit_keywords",
+        ):
             object.__setattr__(self, name, value)
             self.setmodified()
         else:
             self[name] = value
 
     def __setitem__(self, name, value):
-        if self.type not in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION') and name not in self:
+        if (
+            self.type not in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION")
+            and name not in self
+        ):
             self._keys.append(name)
         dict.__setitem__(self, name, value)
         self.setmodified()
 
     def setmodified(self, modified=True):
-        """ Set 'modified' state on the 'root' object. """
+        """Set 'modified' state on the 'root' object."""
         if self.root and self.root._modified != modified:
-            object.__setattr__(self.root, '_modified', modified)
+            object.__setattr__(self.root, "_modified", modified)
 
     def __bytes__(self):
         result = []
         lvl = self.root._lvl
         self.root._lvl += 1
         data = None
-        if self.type == b'SAMPLE':
-            result.append(b' '.join(rpad(self[item],
-                                        self.parent.vmaxlen +
-                                        (1 if self[item] < 0 else 0))
-                                   for item in
-                                   list(self.parent.parent['DATA_FORMAT'].values())))
-        elif self.type == b'DATA':
+        if self.type == b"SAMPLE":
+            result.append(
+                b" ".join(
+                    rpad(self[item], self.parent.vmaxlen + (1 if self[item] < 0 else 0))
+                    for item in list(self.parent.parent["DATA_FORMAT"].values())
+                )
+            )
+        elif self.type == b"DATA":
             data = self
-        elif self.type == b'DATA_FORMAT':
-            result.append(' '.join(list(self.values())))
+        elif self.type == b"DATA_FORMAT":
+            result.append(" ".join(list(self.values())))
         else:
             if self.datetime:
                 result.append(self.datetime)
-            if self.type == b'SECTION':
-                result.append(b'BEGIN_' + self.key.encode())
-            elif self.parent and self.parent.type == b'ROOT':
+            if self.type == b"SECTION":
+                result.append(b"BEGIN_" + self.key.encode())
+            elif self.parent and self.parent.type == b"ROOT":
                 result.append(self.type.ljust(7))  # Make sure CGATS file
-                                                   # identifiers are always
-                                                   # a minimum of 7 characters
-                result.append(b'')
-            if self.type in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION'):
+                #                                    identifiers are always
+                #                                    a minimum of 7 characters
+                result.append(b"")
+            if self.type in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION"):
                 iterable = self
             else:
                 iterable = self._keys
             for key in iterable:
                 value = self[key]
-                if key == 'DATA':
+                if key == "DATA":
                     data = value
                 elif isinstance(value, (float, int, str)):
-                    if key not in ('NUMBER_OF_FIELDS', 'NUMBER_OF_SETS'):
+                    if key not in ("NUMBER_OF_FIELDS", "NUMBER_OF_SETS"):
                         if isinstance(key, int):
                             result.append(bytes(value))
                         else:
-                            if 'KEYWORDS' in self and key in list(self['KEYWORDS'].values()):
+                            if "KEYWORDS" in self and key in list(
+                                self["KEYWORDS"].values()
+                            ):
                                 if self.emit_keywords:
                                     result.append(b'KEYWORD "%s"' % key.encode())
                             if isinstance(value, str):
                                 # Need to escape single quote -> double quote
                                 value = value.replace('"', '""').encode()
                             result.append(b'%s "%s"' % (key.encode(), value))
-                elif key not in ('DATA_FORMAT', 'KEYWORDS'):
-                    if value.type == b'SECTION' and result[-1:] and result[-1:][0] != b'':
-                        result.append(b'')
+                elif key not in ("DATA_FORMAT", "KEYWORDS"):
+                    if (
+                        value.type == b"SECTION"
+                        and result[-1:]
+                        and result[-1:][0] != b""
+                    ):
+                        result.append(b"")
                     result.append(value)
-            if self.type == b'SECTION':
-                result.append(b'END_' + self.key.encode())
-            if self.type == b'SECTION' or data:
-                result.append(b'')
-        if data and data.parent['DATA_FORMAT']:
-            if 'KEYWORDS' in data.parent and self.emit_keywords:
-                for item in list(data.parent['DATA_FORMAT'].values()):
-                    if item in list(data.parent['KEYWORDS'].values()):
+            if self.type == b"SECTION":
+                result.append(b"END_" + self.key.encode())
+            if self.type == b"SECTION" or data:
+                result.append(b"")
+        if data and data.parent["DATA_FORMAT"]:
+            if "KEYWORDS" in data.parent and self.emit_keywords:
+                for item in list(data.parent["DATA_FORMAT"].values()):
+                    if item in list(data.parent["KEYWORDS"].values()):
                         result.append(b'KEYWORD "%s"' % item)
-            result.append(b'NUMBER_OF_FIELDS %s' % len(data.parent['DATA_FORMAT']))
-            result.append(b'BEGIN_DATA_FORMAT')
-            result.append(b' '.join(list(data.parent['DATA_FORMAT'].values())))
-            result.append(b'END_DATA_FORMAT')
-            result.append(b'')
-            result.append(b'NUMBER_OF_SETS %s' % (len(data)))
-            result.append(b'BEGIN_DATA')
+            result.append(b"NUMBER_OF_FIELDS %s" % len(data.parent["DATA_FORMAT"]))
+            result.append(b"BEGIN_DATA_FORMAT")
+            result.append(b" ".join(list(data.parent["DATA_FORMAT"].values())))
+            result.append(b"END_DATA_FORMAT")
+            result.append(b"")
+            result.append(b"NUMBER_OF_SETS %s" % (len(data)))
+            result.append(b"BEGIN_DATA")
             for key in data:
-                result.append(b' '.join([rpad(data[key][item],
-                                              data.vmaxlen + (1 if data[key][item] < 0 else 0))
-                                              for item in
-                                              list(data.parent['DATA_FORMAT'].values())]))
-            result.append(b'END_DATA')
-        if (self.parent and self.parent.type or self.type) == b'ROOT' and result and result[-1] != b'' and lvl == 0:
+                result.append(
+                    b" ".join(
+                        [
+                            rpad(
+                                data[key][item],
+                                data.vmaxlen + (1 if data[key][item] < 0 else 0),
+                            )
+                            for item in list(data.parent["DATA_FORMAT"].values())
+                        ]
+                    )
+                )
+            result.append(b"END_DATA")
+        if (
+            (self.parent and self.parent.type or self.type) == b"ROOT"
+            and result
+            and result[-1] != b""
+            and lvl == 0
+        ):
             # Add empty line at end if not yet present
-            result.append(b'')
+            result.append(b"")
         self.root._lvl -= 1
-        return b'\n'.join(result)
+        return b"\n".join(result)
 
     def add_keyword(self, keyword, value=None):
-        """ Add a keyword to the list of keyword values. """
+        """Add a keyword to the list of keyword values."""
         if isinstance(keyword, bytes):
             keyword = keyword.decode()
 
-        if self.type in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION'):
+        if self.type in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION"):
             context = self.parent
-        elif self.type == b'SAMPLE':
+        elif self.type == b"SAMPLE":
             context = self.parent.parent
         else:
             context = self
-        if 'KEYWORDS' not in context:
-            context['KEYWORDS'] = CGATS()
-            context['KEYWORDS'].key = 'KEYWORDS'
-            context['KEYWORDS'].parent = context
-            context['KEYWORDS'].root = self.root
-            context['KEYWORDS'].type = b'KEYWORDS'
-        if keyword.encode() not in list(context['KEYWORDS'].values()):
-            newkey = len(context['KEYWORDS'])
-            while newkey in context['KEYWORDS']:
+        if "KEYWORDS" not in context:
+            context["KEYWORDS"] = CGATS()
+            context["KEYWORDS"].key = "KEYWORDS"
+            context["KEYWORDS"].parent = context
+            context["KEYWORDS"].root = self.root
+            context["KEYWORDS"].type = b"KEYWORDS"
+        if keyword.encode() not in list(context["KEYWORDS"].values()):
+            newkey = len(context["KEYWORDS"])
+            while newkey in context["KEYWORDS"]:
                 newkey += 1
-            context['KEYWORDS'][newkey] = keyword.encode()
+            context["KEYWORDS"][newkey] = keyword.encode()
         if value is not None:
             context[keyword] = value
 
@@ -630,32 +699,29 @@ class CGATS(dict):
         self[key].key = key
         self[key].parent = self
         self[key].root = self
-        self[key].type = b'SECTION'
+        self[key].type = b"SECTION"
         self[key].add_data(value)
 
     def remove_keyword(self, keyword, remove_value=True):
-        """Remove a keyword from the list of keyword values.
-        """
-        if self.type in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION'):
+        """Remove a keyword from the list of keyword values."""
+        if self.type in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION"):
             context = self.parent
-        elif self.type == b'SAMPLE':
+        elif self.type == b"SAMPLE":
             context = self.parent.parent
         else:
             context = self
-        for key in list(context['KEYWORDS'].keys()):
-            if context['KEYWORDS'][key] == keyword.encode():
-                del context['KEYWORDS'][key]
+        for key in list(context["KEYWORDS"].keys()):
+            if context["KEYWORDS"][key] == keyword.encode():
+                del context["KEYWORDS"][key]
         if remove_value:
             del context[keyword]
 
     def insert(self, key=None, data=None):
-        """Insert data at index key. Also see add_data method.
-        """
+        """Insert data at index key. Also see add_data method."""
         self.add_data(data, key)
 
     def append(self, data):
-        """Append data. Also see add_data method.
-        """
+        """Append data. Also see add_data method."""
         self.add_data(data)
 
     def get_data(self, field_names=None):
@@ -672,7 +738,7 @@ class CGATS(dict):
         if not data:
             return False, False
         valueslist = []
-        for key, item in data.items():
+        for _key, item in data.items():
             values = []
             for field_name in field_names:
                 values.append(item[field_name])
@@ -686,8 +752,13 @@ class CGATS(dict):
                 self[i][field_name] = values[j]
         return True
 
-    def checkerboard(self, sort1=sort_by_L, sort2=sort_RGB_white_to_top,
-                     split_grays=False, shift=False):
+    def checkerboard(
+        self,
+        sort1=sort_by_L,
+        sort2=sort_RGB_white_to_top,
+        split_grays=False,
+        shift=False,
+    ):
         data, valueslist = self.get_RGB_XYZ_values()
         if not valueslist:
             return False
@@ -721,32 +792,50 @@ class CGATS(dict):
                         cur = gray
                         if prev_i not in added:
                             if debug:
-                                print("INFO - appending prev %s to color because prev was same gray but got skipped" %
-                                      prev_values[:3])
+                                print(
+                                    "INFO - appending prev %s to color because prev was"
+                                    " same gray but got skipped" % prev_values[:3]
+                                )
                         if debug:
-                            print("INFO - appending cur to gray because prev %s was same gray" % prev_values[:3])
+                            print(
+                                "INFO - appending cur to gray because prev %s was same "
+                                "gray" % prev_values[:3]
+                            )
                     elif prev_values[:3] == [prev_values[:3][0]] * 3:
                         # Prev value was different gray
                         prev = gray
                         cur = gray
                         if prev_i not in added:
                             if debug:
-                                print("INFO - appending prev %s to gray because prev was different gray "
-                                      "but got skipped" % prev_values[:3])
+                                print(
+                                    "INFO - appending prev %s to gray because prev was "
+                                    "different gray but got skipped" % prev_values[:3]
+                                )
                         if debug:
-                            print("INFO - appending cur to gray because prev %s was different gray" % prev_values[:3])
+                            print(
+                                "INFO - appending cur to gray because prev %s was "
+                                "different gray" % prev_values[:3]
+                            )
                     elif i < numvalues - 1:
                         if debug:
-                            print("WARNING - skipping gray because prev %s was not gray" % prev_values[:3])
+                            print(
+                                "WARNING - skipping gray because prev %s was not gray"
+                                % prev_values[:3]
+                            )
                     else:
                         # Last
                         if debug:
-                            print("INFO - appending cur to color because prev %s was not gray but cur is last" %
-                                  prev_values[:3])
+                            print(
+                                "INFO - appending cur to color because prev %s was not "
+                                "gray but cur is last" % prev_values[:3]
+                            )
                 if not is_gray or cur is gray or i == numvalues - 1:
                     if prev_i not in added:
                         if debug and prev is cur is color:
-                            print("INFO - appending prev %s to color because prev got skipped" % prev_values[:3])
+                            print(
+                                "INFO - appending prev %s to color because prev got "
+                                "skipped" % prev_values[:3]
+                            )
                         prev.append(prev_values)
                         added[prev_i] = True
                     if debug and not is_gray and cur is color:
@@ -755,10 +844,16 @@ class CGATS(dict):
                     added[i] = True
                 prev_i = i
                 prev_values = values
-            if (len(color) == 2 and color[0][:3] == [0, 0, 0] and
-                color[1][:3] == [100, 100, 100]):
+            if (
+                len(color) == 2
+                and color[0][:3] == [0, 0, 0]
+                and color[1][:3] == [100, 100, 100]
+            ):
                 if debug:
-                    print("INFO - appending color to gray because color is only black and white")
+                    print(
+                        "INFO - appending color to gray because color is only black "
+                        "and white"
+                    )
                 gray.extend(color)
                 color = []
                 if sort1:
@@ -816,7 +911,8 @@ class CGATS(dict):
         if len(checkerboard) != numvalues:
             # This should never happen
             print(
-                "Number of patches incorrect after re-ordering (is %i, should be %i)" % (len(checkerboard), numvalues)
+                "Number of patches incorrect after re-ordering (is %i, should be %i)"
+                % (len(checkerboard), numvalues)
             )
             return False
         return data.set_RGB_XYZ_values(checkerboard)
@@ -878,8 +974,7 @@ class CGATS(dict):
         return self.sort_data_RGB_XYZ(sort_by_rec709_luma)
 
     def sort_data_RGB_XYZ(self, cmp=None, key=None, reverse=False):
-        """Sort RGB/XYZ data
-        """
+        """Sort RGB/XYZ data"""
         data, valueslist = self.get_RGB_XYZ_values()
         if not valueslist:
             return False
@@ -893,8 +988,7 @@ class CGATS(dict):
         return self._modified
 
     def moveby1(self, start, inc=1):
-        """Move items from start by incrementing or decrementing their key by inc.
-        """
+        """Move items from start by incrementing or decrementing their key by inc."""
         r = range(start, len(self) + 1)
         if inc > 0:
             r = reversed(r)
@@ -915,17 +1009,17 @@ class CGATS(dict):
         unicode instance.
         """
         context = self
-        if self.type == b'DATA':
+        if self.type == b"DATA":
             if isinstance(data, (dict, list, tuple)):
-                if self.parent['DATA_FORMAT']:
-                    fl, il = len(self.parent['DATA_FORMAT']), len(data)
+                if self.parent["DATA_FORMAT"]:
+                    fl, il = len(self.parent["DATA_FORMAT"]), len(data)
                     if fl != il:
                         raise CGATSTypeError(
-                            'DATA entries take exactly %s values (%s given)' % (fl, il)
+                            "DATA entries take exactly %s values (%s given)" % (fl, il)
                         )
                     dataset = CGATS()
                     i = -1
-                    for item in list(self.parent['DATA_FORMAT'].values()):
+                    for item in list(self.parent["DATA_FORMAT"].values()):
                         i += 1
                         if isinstance(data, dict):
                             try:
@@ -934,29 +1028,41 @@ class CGATS(dict):
                                 raise CGATSKeyError(item)
                         else:
                             value = data[i]
-                        if item.upper() in (b'INDEX', b'SAMPLE_ID', b'SAMPLEID'):
-                            if self.root.normalize_fields and \
-                               item.upper() == b'SAMPLEID':
-                                item = b'SAMPLE_ID'
+                        if item.upper() in (b"INDEX", b"SAMPLE_ID", b"SAMPLEID"):
+                            if (
+                                self.root.normalize_fields
+                                and item.upper() == b"SAMPLEID"
+                            ):
+                                item = b"SAMPLE_ID"
                             # allow alphanumeric INDEX / SAMPLE_ID
                             if isinstance(value, bytes):
-                                match = re.match(rb'(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$', value)
+                                match = re.match(
+                                    rb"(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$", value
+                                )
                                 if match:
                                     if match.groups()[0]:
                                         value = float(value)
                                     else:
                                         value = int(value)
-                        elif item.upper() not in (b'SAMPLE_NAME', b'SAMPLE_LOC', b'SAMPLENAME'):
+                        elif item.upper() not in (
+                            b"SAMPLE_NAME",
+                            b"SAMPLE_LOC",
+                            b"SAMPLENAME",
+                        ):
                             try:
                                 value = float(value)
                             except ValueError:
                                 raise CGATSValueError(
-                                    'Invalid data type for %s (expected float, got %s)' % (item, type(value))
+                                    "Invalid data type for %s (expected float, got %s)"
+                                    % (item, type(value))
                                 )
                             else:
                                 strval = bytes(str(abs(value)), "UTF-8")
-                                if (self.parent.type != b"CAL" and
-                                    item.startswith(b"RGB_") or item.startswith(b"CMYK_")):
+                                if (
+                                    self.parent.type != b"CAL"
+                                    and item.startswith(b"RGB_")
+                                    or item.startswith(b"CMYK_")
+                                ):
                                     # Assuming 0..100, 4 decimal digits is
                                     # enough for roughly 19 bits integer
                                     # device values
@@ -970,8 +1076,10 @@ class CGATS(dict):
                                     lencheck += abs(int(parts[1]))
                                 if lencheck > self.vmaxlen:
                                     self.vmaxlen = lencheck
-                        elif self.root.normalize_fields and item.upper() == b'SAMPLENAME':
-                            item = b'SAMPLE_NAME'
+                        elif (
+                            self.root.normalize_fields and item.upper() == b"SAMPLENAME"
+                        ):
+                            item = b"SAMPLE_NAME"
                         dataset[item.decode()] = value
                     if isinstance(key, int):
                         # accept only integer keys.
@@ -982,16 +1090,23 @@ class CGATS(dict):
                     dataset.key = key
                     dataset.parent = self
                     dataset.root = self.root
-                    dataset.type = b'SAMPLE'
+                    dataset.type = b"SAMPLE"
                     self[key] = dataset
                 else:
-                    raise CGATSInvalidOperationError("Cannot add to DATA because of missing DATA_FORMAT")
+                    raise CGATSInvalidOperationError(
+                        "Cannot add to DATA because of missing DATA_FORMAT"
+                    )
             else:
                 raise CGATSTypeError(
-                    "Invalid data type for %s (expected CGATS, dict, list or tuple, got %s)" % (self.type, type(data))
+                    "Invalid data type for %s (expected CGATS, dict, list or tuple, got %s)"
+                    % (self.type, type(data))
                 )
-        elif self.type == b'ROOT':
-            if isinstance(data, bytes) and data.find(b'\n') < 0 and data.find(b'\r') < 0:
+        elif self.type == b"ROOT":
+            if (
+                isinstance(data, bytes)
+                and data.find(b"\n") < 0
+                and data.find(b"\r") < 0
+            ):
                 if isinstance(key, int):
                     # accept only integer keys.
                     # move existing items
@@ -1009,9 +1124,11 @@ class CGATS(dict):
                 context = context.add_data(data, key)
             else:
                 raise CGATSTypeError(
-                    'Invalid data type for %s '
-                    '(expected str or unicode without line endings, got %s)' % (self.type, type(data)))
-        elif self.type == b'SECTION':
+                    "Invalid data type for %s "
+                    "(expected str or unicode without line endings, got %s)"
+                    % (self.type, type(data))
+                )
+        elif self.type == b"SECTION":
             if isinstance(data, bytes):
                 if isinstance(key, int):
                     # accept only integer keys.
@@ -1022,78 +1139,122 @@ class CGATS(dict):
                 self[key] = data
             else:
                 raise CGATSTypeError(
-                    'Invalid data type for %s '
-                    '(expected bytes or str, got %s)' % (self.type, type(data))
+                    "Invalid data type for %s "
+                    "(expected bytes or str, got %s)" % (self.type, type(data))
                 )
-        elif self.type in (b'DATA_FORMAT', b'KEYWORDS') or (self.parent and self.parent.type == b'ROOT'):
+        elif self.type in (b"DATA_FORMAT", b"KEYWORDS") or (
+            self.parent and self.parent.type == b"ROOT"
+        ):
             if isinstance(data, (dict, list, tuple)):
                 for var in data:
                     if isinstance(var, bytes):
                         var = var.decode()
-                    if var in ('NUMBER_OF_FIELDS', 'NUMBER_OF_SETS'):
+                    if var in ("NUMBER_OF_FIELDS", "NUMBER_OF_SETS"):
                         self[var] = None
                     else:
                         if isinstance(data, dict):
-                            if self.type in (b'DATA_FORMAT', b'KEYWORDS'):
+                            if self.type in (b"DATA_FORMAT", b"KEYWORDS"):
                                 key, value = len(self), data[var]
                             else:
                                 key, value = var, data[var]
                         else:
                             key, value = len(self), var.encode()
-                        if (self.root.normalize_fields and
-                            (self.type in (b'DATA_FORMAT', b'KEYWORDS') or var == 'KEYWORD')
-                                and isinstance(value, bytes)):
+                        if (
+                            self.root.normalize_fields
+                            and (
+                                self.type in (b"DATA_FORMAT", b"KEYWORDS")
+                                or var == "KEYWORD"
+                            )
+                            and isinstance(value, bytes)
+                        ):
                             value = value.upper()
-                            if value == b'SAMPLEID':
-                                value = b'SAMPLE_ID'
-                            elif value == b'SAMPLENAME':
-                                value = b'SAMPLE_NAME'
-                        if var == 'KEYWORD':
+                            if value == b"SAMPLEID":
+                                value = b"SAMPLE_ID"
+                            elif value == b"SAMPLENAME":
+                                value = b"SAMPLE_NAME"
+                        if var == "KEYWORD":
                             self.emit_keywords = True
-                            if value != b'KEYWORD':
+                            if value != b"KEYWORD":
                                 self.add_keyword(value)
                             else:
                                 print('Warning: cannot add keyword "KEYWORD"')
                         else:
-                            if (isinstance(value, bytes) and
-                                key not in ("DESCRIPTOR", "ORIGINATOR",
-                                            "CREATED", "DEVICE_CLASS",
-                                            "COLOR_REP", "TARGET_INSTRUMENT",
-                                            "LUMINANCE_XYZ_CDM2", "OBSERVER",
-                                            "INSTRUMENT", "MANUFACTURER_ID",
-                                            "MANUFACTURER", "REFERENCE",
-                                            "REFERENCE_OBSERVER", "DISPLAY",
-                                            "TECHNOLOGY", "REFERENCE_FILENAME",
-                                            "REFERENCE_HASH", "TARGET_FILENAME",
-                                            "TARGET_HASH", "FIT_METHOD")):
-                                match = re.match(rb'(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$', value)
+                            if isinstance(value, bytes) and key not in (
+                                "DESCRIPTOR",
+                                "ORIGINATOR",
+                                "CREATED",
+                                "DEVICE_CLASS",
+                                "COLOR_REP",
+                                "TARGET_INSTRUMENT",
+                                "LUMINANCE_XYZ_CDM2",
+                                "OBSERVER",
+                                "INSTRUMENT",
+                                "MANUFACTURER_ID",
+                                "MANUFACTURER",
+                                "REFERENCE",
+                                "REFERENCE_OBSERVER",
+                                "DISPLAY",
+                                "TECHNOLOGY",
+                                "REFERENCE_FILENAME",
+                                "REFERENCE_HASH",
+                                "TARGET_FILENAME",
+                                "TARGET_HASH",
+                                "FIT_METHOD",
+                            ):
+                                match = re.match(
+                                    rb"(?:\d+|((?:\d*\.\d+|\d+)(?:e[+-]?\d+)?))$", value
+                                )
                                 if match:
                                     if match.groups()[0]:
                                         value = float(value)
                                     else:
                                         value = int(value)
-                                    if self.type in (b'DATA_FORMAT', b'KEYWORDS'):
+                                    if self.type in (b"DATA_FORMAT", b"KEYWORDS"):
                                         raise CGATSTypeError(
-                                            'Invalid data type for %s (expected bytes or str, got %s)' %
-                                            (self.type, type(value))
+                                            "Invalid data type for %s (expected bytes "
+                                            "or str, got %s)" % (self.type, type(value))
                                         )
                             self[key] = value
             else:
                 raise CGATSTypeError(
-                    'Invalid data type for %s (expected '
-                    'CGATS, dict, list or tuple, got %s)' % (self.type, type(data))
+                    "Invalid data type for %s (expected "
+                    "CGATS, dict, list or tuple, got %s)" % (self.type, type(data))
                 )
         else:
-            raise CGATSInvalidOperationError('Cannot add data to %s' % self.type)
+            raise CGATSInvalidOperationError("Cannot add data to %s" % self.type)
         return context
 
-    def export_3d(self, filename, colorspace="RGB", RGB_black_offset=40,
-                  normalize_RGB_white=False, compress=True, format="VRML"):
-        if colorspace not in ("DIN99", "DIN99b", "DIN99c", "DIN99d", "LCH(ab)",
-                              "LCH(uv)", "Lab", "Luv", "Lu'v'", "RGB", "xyY",
-                              "HSI", "HSL", "HSV", "ICtCp", "IPT", "Lpt"):
+    def export_3d(
+        self,
+        filename,
+        colorspace="RGB",
+        RGB_black_offset=40,
+        normalize_RGB_white=False,
+        compress=True,
+        format="VRML",
+    ):
+        if colorspace not in (
+            "DIN99",
+            "DIN99b",
+            "DIN99c",
+            "DIN99d",
+            "LCH(ab)",
+            "LCH(uv)",
+            "Lab",
+            "Luv",
+            "Lu'v'",
+            "RGB",
+            "xyY",
+            "HSI",
+            "HSL",
+            "HSV",
+            "ICtCp",
+            "IPT",
+            "Lpt",
+        ):
             raise ValueError("export_3d: Unknown colorspace %r" % colorspace)
         from DisplayCAL import x3dom
+
         data = self.queryv1("DATA")
         if self.queryv1("ACCURATE_EXPECTED_VALUES") == "true":
             cat = "Bradford"
@@ -1142,7 +1303,7 @@ Transform {
     ]
 }
 """
-        child = """		# Sphere
+        child = """     # Sphere
         Transform {
             translation %(x).6f %(y).6f %(z).6f
             children [
@@ -1154,30 +1315,44 @@ Transform {
         }
 """
         axes = ""
-        if (colorspace not in ("Lab", "Luv", "ICtCp", "IPT", "Lpt") and
-            not colorspace.startswith("DIN99")):
+        if colorspace not in (
+            "Lab",
+            "Luv",
+            "ICtCp",
+            "IPT",
+            "Lpt",
+        ) and not colorspace.startswith("DIN99"):
             if colorspace in ("Lu'v'", "xyY"):
                 maxz = scale = 100
                 maxxy = 200
                 radius /= 2.0
                 if colorspace == "Lu'v'":
                     xlabel, ylabel, zlabel = "u' 0.6", "v' 0.6", "L* 100"
-                    offsetx, offsety = -.3, -.3
-                    scale = maxxy / .6
+                    offsetx, offsety = -0.3, -0.3
+                    scale = maxxy / 0.6
                 else:
                     xlabel, ylabel, zlabel = "x 0.8", "y 0.8", "Y 100"
-                    offsetx, offsety = -.4, -.4
-                    scale = maxxy / .8
-                axes = x3dom.get_vrml_axes(xlabel, ylabel, zlabel,
-                                           offsetx * scale, offsety * scale,
-                                           0, maxxy, maxxy, maxz)
+                    offsetx, offsety = -0.4, -0.4
+                    scale = maxxy / 0.8
+                axes = x3dom.get_vrml_axes(
+                    xlabel,
+                    ylabel,
+                    zlabel,
+                    offsetx * scale,
+                    offsety * scale,
+                    0,
+                    maxxy,
+                    maxxy,
+                    maxz,
+                )
             elif colorspace in ("LCH(ab)", "LCH(uv)"):
                 if colorspace == "LCH(ab)":
                     xlabel, ylabel, zlabel = "H(ab)", "C(ab)", "L*"
                 else:
                     xlabel, ylabel, zlabel = "H(uv)", "C(uv)", "L*"
-                axes = x3dom.get_vrml_axes(xlabel, ylabel, zlabel,
-                                           -180, -100, 0, 360, 200, 100, False)
+                axes = x3dom.get_vrml_axes(
+                    xlabel, ylabel, zlabel, -180, -100, 0, 360, 200, 100, False
+                )
         else:
             pxcolor = "1.0 0.0 0.0"
             nxcolor = "0.0 1.0 0.0"
@@ -1198,42 +1373,41 @@ Transform {
                 }
             ]
         }
-""" % (100 / scale, 100 / scale, colorspace, 10.0 / scale)
-                (pxlabel,
-                 nxlabel,
-                 pylabel,
-                 nylabel,
-                 pllabel) = ('"a", "+%i"' % (100 / scale),
-                             '"a", "-%i"' % (100 / scale),
-                             '"b +%i"' % (100 / scale),
-                             '"b -%i"' % (100 / scale),
-                             '"L", "+100"')
+""" % (
+                    100 / scale,
+                    100 / scale,
+                    colorspace,
+                    10.0 / scale,
+                )
+                (pxlabel, nxlabel, pylabel, nylabel, pllabel) = (
+                    '"a", "+%i"' % (100 / scale),
+                    '"a", "-%i"' % (100 / scale),
+                    '"b +%i"' % (100 / scale),
+                    '"b -%i"' % (100 / scale),
+                    '"L", "+100"',
+                )
             elif colorspace == "ICtCp":
                 scale = 2.0
                 radius /= 2.0
-                (pxlabel,
-                 nxlabel,
-                 pylabel,
-                 nylabel,
-                 pllabel) = ('"Ct", "+%.1f"' % .5,
-                             '"Ct", "-%.1f"' % .5,
-                             '"Cp +%.1f"' % .5,
-                             '"Cp -%.1f"' % .5,
-                             '"I"')
+                (pxlabel, nxlabel, pylabel, nylabel, pllabel) = (
+                    '"Ct", "+%.1f"' % 0.5,
+                    '"Ct", "-%.1f"' % 0.5,
+                    '"Cp +%.1f"' % 0.5,
+                    '"Cp -%.1f"' % 0.5,
+                    '"I"',
+                )
                 pxcolor = "0.5 0.0 1.0"
                 nxcolor = "0.8 1.0 0.0"
                 pycolor = "1.0 0.0 0.25"
                 nycolor = "0.0 1.0 1.0"
             elif colorspace == "IPT":
-                (pxlabel,
-                 nxlabel,
-                 pylabel,
-                 nylabel,
-                 pllabel) = ('"P", "+%.1f"' % 1,
-                             '"P", "-%.1f"' % 1,
-                             '"T +%.1f"' % 1,
-                             '"T -%.1f"' % 1,
-                             '"I"')
+                (pxlabel, nxlabel, pylabel, nylabel, pllabel) = (
+                    '"P", "+%.1f"' % 1,
+                    '"P", "-%.1f"' % 1,
+                    '"T +%.1f"' % 1,
+                    '"T -%.1f"' % 1,
+                    '"I"',
+                )
             else:
                 if colorspace == "Luv":
                     x = "u"
@@ -1244,36 +1418,37 @@ Transform {
                 else:
                     x = "a"
                     y = "b"
-                (pxlabel,
-                 nxlabel,
-                 pylabel,
-                 nylabel,
-                 pllabel) = ('"%s*", "+100"' % x,
-                             '"%s*", "-100"' % x,
-                             '"%s* +100"' % y,
-                             '"%s* -100"' % y,
-                             '"L*", "+100"')
-            values = {"wh": 2.0 / scale,
-                      "ab": 100.0 / scale,
-                      "aboffset": 50.0 / scale,
-                      "fontsize": 10.0 / scale,
-                      "ap": 102.0 / scale,
-                      "an": 108.0 / scale,
-                      "Ln": 3.0,
-                      "bp0": 3.0,
-                      "bp1": 103.0 / scale,
-                      "bn0": 3.0,
-                      "bn1": 107.0 / scale,
-                      "pxlabel": pxlabel,
-                      "nxlabel": nxlabel,
-                      "pylabel": pylabel,
-                      "nylabel": nylabel,
-                      "pllabel": pllabel,
-                      "pxcolor": pxcolor,
-                      "nxcolor": nxcolor,
-                      "pycolor": pycolor,
-                      "nycolor": nycolor}
-            axes += """# L* axis
+                (pxlabel, nxlabel, pylabel, nylabel, pllabel) = (
+                    '"%s*", "+100"' % x,
+                    '"%s*", "-100"' % x,
+                    '"%s* +100"' % y,
+                    '"%s* -100"' % y,
+                    '"L*", "+100"',
+                )
+            values = {
+                "wh": 2.0 / scale,
+                "ab": 100.0 / scale,
+                "aboffset": 50.0 / scale,
+                "fontsize": 10.0 / scale,
+                "ap": 102.0 / scale,
+                "an": 108.0 / scale,
+                "Ln": 3.0,
+                "bp0": 3.0,
+                "bp1": 103.0 / scale,
+                "bn0": 3.0,
+                "bn1": 107.0 / scale,
+                "pxlabel": pxlabel,
+                "nxlabel": nxlabel,
+                "pylabel": pylabel,
+                "nylabel": nylabel,
+                "pllabel": pllabel,
+                "pxcolor": pxcolor,
+                "nxcolor": nxcolor,
+                "pycolor": pycolor,
+                "nycolor": nycolor,
+            }
+            axes += (
+                """# L* axis
         Transform {
             translation 0.0 0.0 0.0
             children [
@@ -1423,38 +1598,47 @@ Transform {
                 }
             ]
         }
-""" % values
+"""
+                % values
+            )
         children = []
         sqrt3_100 = math.sqrt(3) * 100
         sqrt3_50 = math.sqrt(3) * 50
         for entry in data.values():
-            X, Y, Z = colormath.adapt(entry["XYZ_X"],
-                                      entry["XYZ_Y"],
-                                      entry["XYZ_Z"],
-                                      white,
-                                      "D65" if colorspace in ("ICtCp", "IPT")
-                                      else "D50",
-                                      cat=cat)
+            X, Y, Z = colormath.adapt(
+                entry["XYZ_X"],
+                entry["XYZ_Y"],
+                entry["XYZ_Z"],
+                white,
+                "D65" if colorspace in ("ICtCp", "IPT") else "D50",
+                cat=cat,
+            )
             L, a, b = colormath.XYZ2Lab(X, Y, Z)
             if colorspace == "RGB":
                 # Fudge device locations into Lab space
-                x, y, z = (entry["RGB_G"] - 50,
-                           entry["RGB_B"] - 50,
-                           entry["RGB_R"] - 50)
+                x, y, z = (
+                    entry["RGB_G"] - 50,
+                    entry["RGB_B"] - 50,
+                    entry["RGB_R"] - 50,
+                )
             elif colorspace == "HSI":
-                H, S, z = colormath.RGB2HSI(entry["RGB_R"] / 100.0,
-                                            entry["RGB_G"] / 100.0,
-                                            entry["RGB_B"] / 100.0)
+                H, S, z = colormath.RGB2HSI(
+                    entry["RGB_R"] / 100.0,
+                    entry["RGB_G"] / 100.0,
+                    entry["RGB_B"] / 100.0,
+                )
                 rad = H * 360 * math.pi / 180
                 x, y = S * z * math.cos(rad), S * z * math.sin(rad)
                 # Fudge device locations into Lab space
                 x, y, z = x * sqrt3_100, y * sqrt3_100, z * sqrt3_100 - sqrt3_50
             elif colorspace == "HSL":
-                H, S, z = colormath.RGB2HSL(entry["RGB_R"] / 100.0,
-                                            entry["RGB_G"] / 100.0,
-                                            entry["RGB_B"] / 100.0)
+                H, S, z = colormath.RGB2HSL(
+                    entry["RGB_R"] / 100.0,
+                    entry["RGB_G"] / 100.0,
+                    entry["RGB_B"] / 100.0,
+                )
                 rad = H * 360 * math.pi / 180
-                if z > .5:
+                if z > 0.5:
                     S *= 1 - z
                 else:
                     S *= z
@@ -1462,9 +1646,11 @@ Transform {
                 # Fudge device locations into Lab space
                 x, y, z = x * sqrt3_100, y * sqrt3_100, z * sqrt3_100 - sqrt3_50
             elif colorspace == "HSV":
-                H, S, z = colormath.RGB2HSV(entry["RGB_R"] / 100.0,
-                                            entry["RGB_G"] / 100.0,
-                                            entry["RGB_B"] / 100.0)
+                H, S, z = colormath.RGB2HSV(
+                    entry["RGB_R"] / 100.0,
+                    entry["RGB_G"] / 100.0,
+                    entry["RGB_B"] / 100.0,
+                )
                 rad = H * 360 * math.pi / 180
                 x, y = S * z * math.cos(rad), S * z * math.sin(rad)
                 # Fudge device locations into Lab space
@@ -1495,16 +1681,22 @@ Transform {
                 x, y, z = u, v, L - 50
             elif colorspace == "Lu'v'":
                 L, u_, v_ = colormath.XYZ2Lu_v_(X, Y, Z)
-                x, y, z = ((u_ + offsetx) * scale,
-                           (v_ + offsety) * scale, L / 100.0 * maxz - 50)
+                x, y, z = (
+                    (u_ + offsetx) * scale,
+                    (v_ + offsety) * scale,
+                    L / 100.0 * maxz - 50,
+                )
             elif colorspace == "xyY":
                 x, y, Y = colormath.XYZ2xyY(X, Y, Z)
-                x, y, z = ((x + offsetx) * scale,
-                           (y + offsety) * scale,
-                           Y / 100.0 * maxz - 50)
+                x, y, z = (
+                    (x + offsetx) * scale,
+                    (y + offsety) * scale,
+                    Y / 100.0 * maxz - 50,
+                )
             elif colorspace == "ICtCp":
-                I, Ct, Cp = colormath.XYZ2ICtCp(X / 100.0, Y / 100.0, Z / 100.0,
-                                                clamp=False)
+                I, Ct, Cp = colormath.XYZ2ICtCp(
+                    X / 100.0, Y / 100.0, Z / 100.0, clamp=False
+                )
                 x, y, z = Ct * 100, Cp * 100, I * 100 - 50
             elif colorspace == "IPT":
                 I, P, T = colormath.XYZ2IPT(X / 100.0, Y / 100.0, Z / 100.0)
@@ -1515,25 +1707,38 @@ Transform {
             if RGB_black_offset != 40:
                 # Keep reference hue and saturation
                 # Lab to sRGB using reference black offset of 40 like Argyll CMS
-                R, G, B = colormath.Lab2RGB(L * (100.0 - 40.0) / 100.0 + 40.0,
-                                            a, b, scale=.7,
-                                            noadapt=not normalize_RGB_white)
+                R, G, B = colormath.Lab2RGB(
+                    L * (100.0 - 40.0) / 100.0 + 40.0,
+                    a,
+                    b,
+                    scale=0.7,
+                    noadapt=not normalize_RGB_white,
+                )
                 H_ref, S_ref, V_ref = colormath.RGB2HSV(R, G, B)
             # Lab to sRGB using actual black offset
-            R, G, B = colormath.Lab2RGB(L * (100.0 - RGB_black_offset) / 100.0 +
-                                        RGB_black_offset, a, b, scale=.7,
-                                        noadapt=not normalize_RGB_white)
+            R, G, B = colormath.Lab2RGB(
+                L * (100.0 - RGB_black_offset) / 100.0 + RGB_black_offset,
+                a,
+                b,
+                scale=0.7,
+                noadapt=not normalize_RGB_white,
+            )
             if RGB_black_offset != 40:
                 H, S, V = colormath.RGB2HSV(R, G, B)
                 # Use reference H and S to go back to RGB
                 R, G, B = colormath.HSV2RGB(H_ref, S_ref, V)
-            children.append(child % {"x": x,
-                                     "y": y,
-                                     "z": z,
-                                     "R": R + .05,
-                                     "G": G + .05,
-                                     "B": B + .05,
-                                     "radius": radius})
+            children.append(
+                child
+                % {
+                    "x": x,
+                    "y": y,
+                    "z": z,
+                    "R": R + 0.05,
+                    "G": G + 0.05,
+                    "B": B + 0.05,
+                    "radius": radius,
+                }
+            )
         children = "".join(children)
         # Choose viewpoint fov and z position based on colorspace
         fov = 45
@@ -1544,10 +1749,12 @@ Transform {
             z *= 16
         elif colorspace.startswith("DIN99") or colorspace == "ICtCp":
             fov /= scale
-        out = vrml % {"children": children,
-                      "axes": axes,
-                      "fov": fov / 180.0 * math.pi,
-                      "z": z}
+        out = vrml % {
+            "children": children,
+            "axes": axes,
+            "fov": fov / 180.0 * math.pi,
+            "z": z,
+        }
         if format != "VRML":
             print("Generating", format)
             x3d = x3dom.vrml2x3dom(out)
@@ -1566,19 +1773,18 @@ Transform {
     @property
     def NUMBER_OF_FIELDS(self):
         """Get number of fields"""
-        if 'DATA_FORMAT' in self:
-            return len(self['DATA_FORMAT'])
+        if "DATA_FORMAT" in self:
+            return len(self["DATA_FORMAT"])
         return 0
 
     @property
     def NUMBER_OF_SETS(self):
         """Get number of sets"""
-        if 'DATA' in self:
-            return len(self['DATA'])
+        if "DATA" in self:
+            return len(self["DATA"])
         return 0
 
-    def query(self, query, query_value = None, get_value = False,
-                get_first = False):
+    def query(self, query, query_value=None, get_value=False, get_first=False):
         """Return CGATS object of items or values where query matches.
 
         Query can be a dict with key / value pairs, a tuple or a string.
@@ -1594,7 +1800,7 @@ Transform {
 
         if not isinstance(query, dict):
             if not isinstance(query, (list, tuple)):
-                query = (query, )
+                query = (query,)
 
         items = [self] + [self[key] for key in self]
         for item in items:
@@ -1610,10 +1816,13 @@ Transform {
 
                 match_count = 0
                 for query_key in query:
-                    if query_key in item or (type(item) is CGATS and
-                       ((query_key == 'NUMBER_OF_FIELDS' and 'DATA_FORMAT' in
-                       item) or (query_key == 'NUMBER_OF_SETS' and 'DATA' in
-                       item))):
+                    if query_key in item or (
+                        type(item) is CGATS
+                        and (
+                            (query_key == "NUMBER_OF_FIELDS" and "DATA_FORMAT" in item)
+                            or (query_key == "NUMBER_OF_SETS" and "DATA" in item)
+                        )
+                    ):
                         if query_value is None and isinstance(query, dict):
                             current_query_value = query[query_key]
                         else:
@@ -1632,15 +1841,21 @@ Transform {
                         result_n = item
                     if result_n is not None:
                         if get_first:
-                            if get_value and isinstance(result_n, dict) and \
-                               len(result_n) == 1:
+                            if (
+                                get_value
+                                and isinstance(result_n, dict)
+                                and len(result_n) == 1
+                            ):
                                 result = result_n[0]
                             else:
                                 result = result_n
                             break
                         elif len(result_n):
-                            if get_value and isinstance(result_n, dict) and \
-                               len(result_n) == 1:
+                            if (
+                                get_value
+                                and isinstance(result_n, dict)
+                                and len(result_n) == 1
+                            ):
                                 result[n] = result_n[0]
                             else:
                                 result[n] = result_n
@@ -1662,23 +1877,23 @@ Transform {
         return result
 
     def queryi(self, query, query_value=None):
-        """ Query and return matching items. See also query method. """
+        """Query and return matching items. See also query method."""
         return self.query(query, query_value, get_value=False, get_first=False)
 
     def queryi1(self, query, query_value=None):
-        """ Query and return first matching item. See also query method. """
+        """Query and return first matching item. See also query method."""
         return self.query(query, query_value, get_value=False, get_first=True)
 
     def queryv(self, query, query_value=None):
-        """ Query and return matching values. See also query method. """
+        """Query and return matching values. See also query method."""
         return self.query(query, query_value, get_value=True, get_first=False)
 
     def queryv1(self, query, query_value=None):
-        """ Query and return first matching value. See also query method. """
+        """Query and return first matching value. See also query method."""
         return self.query(query, query_value, get_value=True, get_first=True)
 
     def remove(self, item):
-        """ Remove an item from the internal CGATS structure. """
+        """Remove an item from the internal CGATS structure."""
         if isinstance(item, CGATS):
             key = item.key
         else:
@@ -1688,27 +1903,31 @@ Transform {
         if type(key) == int and key != maxindex:
             self.moveby1(key + 1, -1)
         name = len(self) - 1
-        if (self.type not in (b'DATA', b'DATA_FORMAT', b'KEYWORDS', b'SECTION') and
-            name in self._keys):
+        if (
+            self.type not in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION")
+            and name in self._keys
+        ):
             self._keys.remove(name)
         dict.pop(self, name)
         self.setmodified()
         return result
 
     def convert_XYZ_to_Lab(self):
-        """Convert XYZ to D50 L*a*b* and add it as additional fields
-
-        """
+        """Convert XYZ to D50 L*a*b* and add it as additional fields"""
         color_rep = (self.queryv1("COLOR_REP") or "").split("_")
 
         if color_rep[1] == "LAB":
             # Nothing to do
             return
 
-        if (len(color_rep) != 2 or color_rep[0] not in ("RGB", "CMYK") or
-            color_rep[1] != "XYZ"):
-            raise NotImplementedError("Got unsupported color representation %s"
-                                      % "_".join(color_rep))
+        if (
+            len(color_rep) != 2
+            or color_rep[0] not in ("RGB", "CMYK")
+            or color_rep[1] != "XYZ"
+        ):
+            raise NotImplementedError(
+                "Got unsupported color representation %s" % "_".join(color_rep)
+            )
 
         data = self.queryv1("DATA")
         if not data:
@@ -1717,8 +1936,7 @@ Transform {
         if color_rep[0] == "RGB":
             white = data.queryv1({"RGB_R": 100, "RGB_G": 100, "RGB_B": 100})
         elif color_rep[0] == "CMYK":
-            white = data.queryv1({"CMYK_C": 0, "CMYK_M": 0, "CMYK_Y": 0,
-                                  "CMYK_K": 0})
+            white = data.queryv1({"CMYK_C": 0, "CMYK_M": 0, "CMYK_Y": 0, "CMYK_K": 0})
         if not white:
             raise CGATSError("Missing white patch")
 
@@ -1735,10 +1953,10 @@ Transform {
         Lab_data_format = ("LAB_L", "LAB_A", "LAB_B")
         for label in Lab_data_format:
             if label not in list(data.parent.DATA_FORMAT.values()):
-                data.parent.DATA_FORMAT.add_data((label, ))
+                data.parent.DATA_FORMAT.add_data((label,))
 
         # Add L*a*b* to each sample
-        for key, sample in data.items():
+        for _key, sample in data.items():
             cie_values = [sample[label] for label in cie_labels]
             Lab = colormath.XYZ2Lab(*cie_values)
             for i, label in enumerate(Lab_data_format):
@@ -1767,7 +1985,7 @@ Transform {
             for channel in color_rep[0]:
                 device_labels.append(color_rep[0] + "_" + channel)
             remove = []
-            for key, sample in data.items():
+            for _key, sample in data.items():
                 cie_values = [sample[label] for label in cie_labels]
                 # Check if zero
                 if [v for v in cie_values if v]:
@@ -1777,20 +1995,36 @@ Transform {
                             if sample[label] <= 0:
                                 if warn_only:
                                     if logfile:
-                                        logfile.write("Warning: Sample ID %i (%s %s) has %s <= 0!\n" %
-                                                      (sample.SAMPLE_ID,
-                                                       color_rep[0],
-                                                       " ".join(str(sample.queryv1(device_labels)).split()),
-                                                       label))
+                                        logfile.write(
+                                            "Warning: Sample ID %i (%s %s) has %s <= 0!\n"
+                                            % (
+                                                sample.SAMPLE_ID,
+                                                color_rep[0],
+                                                " ".join(
+                                                    str(
+                                                        sample.queryv1(device_labels)
+                                                    ).split()
+                                                ),
+                                                label,
+                                            )
+                                        )
                                 else:
                                     # Fudge to be nonzero
                                     sample[label] = 0.000001
                                     if logfile:
-                                        logfile.write("Fudged sample ID %i (%s %s) %s to be non-zero\n" %
-                                                      (sample.SAMPLE_ID,
-                                                       color_rep[0],
-                                                       " ".join(str(sample.queryv1(device_labels)).split()),
-                                                       label))
+                                        logfile.write(
+                                            "Fudged sample ID %i (%s %s) %s to be non-zero\n"
+                                            % (
+                                                sample.SAMPLE_ID,
+                                                color_rep[0],
+                                                " ".join(
+                                                    str(
+                                                        sample.queryv1(device_labels)
+                                                    ).split()
+                                                ),
+                                                label,
+                                            )
+                                        )
                     continue
                 # All zero
                 device_values = [sample[label] for label in device_labels]
@@ -1799,20 +2033,28 @@ Transform {
                     continue
                 if warn_only:
                     if logfile:
-                        logfile.write("Warning: Sample ID %i (%s %s) has %s = 0!\n" %
-                                      (sample.SAMPLE_ID,
-                                       color_rep[0],
-                                       " ".join(str(sample.queryv1(device_labels)).split()),
-                                       color_rep[1]))
+                        logfile.write(
+                            "Warning: Sample ID %i (%s %s) has %s = 0!\n"
+                            % (
+                                sample.SAMPLE_ID,
+                                color_rep[0],
+                                " ".join(str(sample.queryv1(device_labels)).split()),
+                                color_rep[1],
+                            )
+                        )
                 else:
                     # Queue sample for removal
                     remove.insert(0, sample)
                     if logfile:
-                        logfile.write("Removed sample ID %i (%s %s) with %s = 0\n" %
-                                      (sample.SAMPLE_ID,
-                                       color_rep[0],
-                                       " ".join(str(sample.queryv1(device_labels)).split()),
-                                       color_rep[1]))
+                        logfile.write(
+                            "Removed sample ID %i (%s %s) with %s = 0\n"
+                            % (
+                                sample.SAMPLE_ID,
+                                color_rep[0],
+                                " ".join(str(sample.queryv1(device_labels)).split()),
+                                color_rep[1],
+                            )
+                        )
             for sample in remove:
                 # Remove sample
                 data.pop(sample)
@@ -1835,16 +2077,17 @@ Transform {
         return fixed
 
     def normalize_to_y_100(self):
-        """ Scale XYZ values so that RGB 100 = Y 100 """
+        """Scale XYZ values so that RGB 100 = Y 100"""
         if "DATA" in self:
             white_cie = self.get_white_cie()
             if white_cie and "XYZ_Y" in white_cie:
                 white_Y = white_cie["XYZ_Y"]
                 if white_Y != 100:
-                    self.add_keyword("LUMINANCE_XYZ_CDM2",
-                                     "%.4f %.4f %.4f" % (white_cie["XYZ_X"],
-                                                         white_cie["XYZ_Y"],
-                                                         white_cie["XYZ_Z"]))
+                    self.add_keyword(
+                        "LUMINANCE_XYZ_CDM2",
+                        "%.4f %.4f %.4f"
+                        % (white_cie["XYZ_X"], white_cie["XYZ_Y"], white_cie["XYZ_Z"]),
+                    )
                     for sample in self.DATA.values():
                         for label in "XYZ":
                             v = sample["XYZ_" + label]
@@ -1854,8 +2097,8 @@ Transform {
         return False
 
     def quantize_device_values(self, bits=8, quantizer=round):
-        """ Quantize device values to n bits """
-        q = 2 ** bits - 1.0
+        """Quantize device values to n bits"""
+        q = 2**bits - 1.0
         for data in self.queryv("DATA").values():
             if data.parent.type == b"CAL":
                 maxv = 1.0
@@ -1870,19 +2113,21 @@ Transform {
             for labels in get_device_value_labels(color_rep):
                 for item in data.queryi(labels).values():
                     for label in labels:
-                        item[label] = round(quantizer(item[label] / maxv * q) /
-                                            q * maxv, digits)
+                        item[label] = round(
+                            quantizer(item[label] / maxv * q) / q * maxv, digits
+                        )
 
     def scale_device_values(self, factor=100.0 / 255, color_rep=None):
-        """ Scales device values by multiplying with factor. """
+        """Scales device values by multiplying with factor."""
         for labels in get_device_value_labels(color_rep):
             for data in self.queryv("DATA").values():
                 for item in data.queryi(labels).values():
                     for label in labels:
                         item[label] *= factor
 
-    def adapt(self, whitepoint_source=None, whitepoint_destination=None,
-              cat="Bradford"):
+    def adapt(
+        self, whitepoint_source=None, whitepoint_destination=None, cat="Bradford"
+    ):
         """Perform chromatic adaptation if possible (needs XYZ or LAB)
 
         Return number of affected DATA sections.
@@ -1900,18 +2145,18 @@ Transform {
                     if "XYZ_X" in item:
                         X, Y, Z = item["XYZ_X"], item["XYZ_Y"], item["XYZ_Z"]
                     else:
-                        X, Y, Z = colormath.Lab2XYZ(item["LAB_L"],
-                                                    item["LAB_A"],
-                                                    item["LAB_B"],
-                                                    scale=100)
-                    X, Y, Z = colormath.adapt(X, Y, Z,
-                                              whitepoint_source,
-                                              whitepoint_destination,
-                                              cat)
+                        X, Y, Z = colormath.Lab2XYZ(
+                            item["LAB_L"], item["LAB_A"], item["LAB_B"], scale=100
+                        )
+                    X, Y, Z = colormath.adapt(
+                        X, Y, Z, whitepoint_source, whitepoint_destination, cat
+                    )
                     if "LAB_L" in item:
-                        (item["LAB_L"],
-                         item["LAB_A"],
-                         item["LAB_B"]) = colormath.XYZ2Lab(X, Y, Z)
+                        (
+                            item["LAB_L"],
+                            item["LAB_A"],
+                            item["LAB_B"],
+                        ) = colormath.XYZ2Lab(X, Y, Z)
                     if "XYZ_X" in item:
                         item["XYZ_X"], item["XYZ_Y"], item["XYZ_Z"] = X, Y, Z
         return n
@@ -1995,13 +2240,13 @@ Transform {
                 else:
                     values = [v / max_v for v in values]
                 if weight:
-                    values = colormath.apply_bpc(values[0], values[1],
-                                                 values[2], black, bp_out,
-                                                 white, weight)
+                    values = colormath.apply_bpc(
+                        values[0], values[1], values[2], black, bp_out, white, weight
+                    )
                 else:
-                    values = colormath.blend_blackpoint(values[0], values[1],
-                                                        values[2], black,
-                                                        bp_out, white)
+                    values = colormath.blend_blackpoint(
+                        values[0], values[1], values[2], black, bp_out, white
+                    )
                 values = [v * max_v for v in values]
                 if is_Lab:
                     values = colormath.XYZ2Lab(*values)
@@ -2014,9 +2259,7 @@ Transform {
         return n
 
     def get_white_cie(self, colorspace=None):
-        """Get the 'white' from the CIE values (if any).
-
-        """
+        """Get the 'white' from the CIE values (if any)."""
         data_format = self.get_cie_data_format()
         if data_format:
             if "RGB_R" in list(data_format.values()):
@@ -2038,34 +2281,34 @@ Transform {
                         else:
                             if len(white) == 3:
                                 white = [v / white[1] * 100 for v in white]
-                                white = {"XYZ_X": white[0],
-                                         "XYZ_Y": white[1],
-                                         "XYZ_Z": white[2]}
+                                white = {
+                                    "XYZ_X": white[0],
+                                    "XYZ_Y": white[1],
+                                    "XYZ_Z": white[2],
+                                }
                                 break
                             else:
                                 white = None
                 if not white:
                     return
-            if white and (("XYZ_X" in white and
-                           "XYZ_Y" in white and
-                           "XYZ_Z" in white) or ("LAB_L" in white and
-                                                 "LAB_B" in white and
-                                                 "LAB_B" in white)):
+            if white and (
+                ("XYZ_X" in white and "XYZ_Y" in white and "XYZ_Z" in white)
+                or ("LAB_L" in white and "LAB_B" in white and "LAB_B" in white)
+            ):
                 if colorspace == "XYZ":
                     if "XYZ_X" in white:
                         return white["XYZ_X"], white["XYZ_Y"], white["XYZ_Z"]
                     else:
-                        return colormath.Lab2XYZ(white["LAB_L"],
-                                                 white["LAB_A"],
-                                                 white["LAB_B"],
-                                                 scale=100)
+                        return colormath.Lab2XYZ(
+                            white["LAB_L"], white["LAB_A"], white["LAB_B"], scale=100
+                        )
                 elif colorspace == "Lab":
                     if "LAB_L" in white:
                         return white["LAB_L"], white["LAB_A"], white["LAB_B"]
                     else:
-                        return colormath.XYZ2Lab(white["XYZ_X"],
-                                                 white["XYZ_Y"],
-                                                 white["XYZ_Z"])
+                        return colormath.XYZ2Lab(
+                            white["XYZ_X"], white["XYZ_Y"], white["XYZ_Z"]
+                        )
                 return white
 
     def get_cie_data_format(self):
@@ -2088,9 +2331,7 @@ Transform {
     pop = remove
 
     def write(self, stream_or_filename=None):
-        """Write CGATS text to stream.
-
-        """
+        """Write CGATS text to stream."""
         if not stream_or_filename:
             stream_or_filename = self.filename
         if isinstance(stream_or_filename, str):
@@ -2100,4 +2341,3 @@ Transform {
         stream.write(str(self))
         if isinstance(stream_or_filename, str):
             stream.close()
-

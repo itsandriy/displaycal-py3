@@ -6,16 +6,14 @@ Re-implementation of Argyll's webwin in pure python.
 """
 
 import http.server
-from io import StringIO
-import shutil
-import threading
 import time
 from urllib.parse import unquote
 
 from DisplayCAL.meta import name as appname, version as appversion
 
 
-WEBDISP_HTML = r"""<!DOCTYPE html>
+WEBDISP_HTML = (
+    r"""<!DOCTYPE html>
 <html>
 <head>
 <title>%s Web Display</title>
@@ -41,7 +39,9 @@ html, body {`
 <div id="pattern"></div>
 </body>
 </html>
-""" % appname
+"""
+    % appname
+)
 
 WEBDISP_JS = r"""if (typeof XMLHttpRequest == "undefined") {
     XMLHttpRequest = function () {
@@ -100,8 +100,7 @@ window.onload = function() {
 
 
 class WebWinHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
-    """Simple HTTP request handler with GET and HEAD commands.
-    """
+    """Simple HTTP request handler with GET and HEAD commands."""
 
     server_version = appname + "-WebWinHTTP/" + appversion
 
@@ -136,8 +135,10 @@ class WebWinHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             ctype = "application/javascript"
         elif self.path.startswith("/ajax/messages?"):
             curpat = "|".join(unquote(self.path.split("?").pop()).split("|")[:6])
-            while (self.server.patterngenerator.listening and
-                   self.server.patterngenerator.pattern == curpat):
+            while (
+                self.server.patterngenerator.listening
+                and self.server.patterngenerator.pattern == curpat
+            ):
                 time.sleep(0.05)
             s = self.server.patterngenerator.pattern
             ctype = "text/plain; charset=UTF-8"

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import glob
 import os
 import sys
 
@@ -25,8 +24,10 @@ def update_preset(name):
         print("ERROR: Preset not found")
         return False
     print("Path:", pth)
-    with open(os.path.join(os.path.dirname(__file__), "..", "misc",
-                           "ti3", "%s.ti3" % name), "rb") as f:
+    with open(
+        os.path.join(os.path.dirname(__file__), "..", "misc", "ti3", "%s.ti3" % name),
+        "rb",
+    ) as f:
         ti3 = f.read()
     prof = ICCP.ICCProfile(pth)
     if prof.tags.targ != ti3:
@@ -50,25 +51,30 @@ def update_preset(name):
                 print("Updating tone response curves...")
                 for chan in ("r", "g", "b"):
                     prof.tags["%sTRC" % chan].set_trc(trc, 256)
-                print("Transfer function:", prof.tags["%sTRC" % chan].get_transfer_function()[0][0])
+                print(
+                    "Transfer function:",
+                    prof.tags["%sTRC" % chan].get_transfer_function()[0][0],
+                )
         elif option[0] in ("t", "T") and option[1:]:
             print("dispcal -t parameter:", option[1:])
             print("Updating white point...")
-            (prof.tags.wtpt.X,
-             prof.tags.wtpt.Y,
-             prof.tags.wtpt.Z) = t_a2b[option[0]](float(option[1:]))
+            (prof.tags.wtpt.X, prof.tags.wtpt.Y, prof.tags.wtpt.Z) = t_a2b[option[0]](
+                float(option[1:])
+            )
         elif option[0] == "w":
             print("dispcal -w parameter:", option[1:])
             x, y = [float(v) for v in option[1:].split(",")]
             print("Updating white point...")
-            (prof.tags.wtpt.X,
-             prof.tags.wtpt.Y,
-             prof.tags.wtpt.Z) = colormath.xyY2XYZ(x, y)
+            (prof.tags.wtpt.X, prof.tags.wtpt.Y, prof.tags.wtpt.Z) = colormath.xyY2XYZ(
+                x, y
+            )
         elif option[0] in ("t", "T"):
             print("Updating white point...")
-            (prof.tags.wtpt.X,
-             prof.tags.wtpt.Y,
-             prof.tags.wtpt.Z) = colormath.get_whitepoint("D65")
+            (
+                prof.tags.wtpt.X,
+                prof.tags.wtpt.Y,
+                prof.tags.wtpt.Z,
+            ) = colormath.get_whitepoint("D65")
     for option in options_colprof:
         if option[0] == "M":
             print("Updating device model description...")
@@ -94,7 +100,7 @@ def update_preset(name):
 
 
 def update_presets():
-    presets = config.get_data_path("presets", "\.icc$")
+    presets = config.get_data_path("presets", r"\.icc$")
     for fn in presets:
         update_preset(os.path.splitext(os.path.basename(fn))[0])
 

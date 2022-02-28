@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 from binascii import hexlify
 import os
-import re
 import subprocess as sp
 import sys
-import time
 import warnings
 from time import sleep
 
@@ -33,8 +31,11 @@ if sys.platform not in ("darwin", "win32"):
 
     if not Colord:
         try:
-            Colord = DBusObject(BUSTYPE_SYSTEM, "org.freedesktop.ColorManager",
-                                "/org/freedesktop/ColorManager")
+            Colord = DBusObject(
+                BUSTYPE_SYSTEM,
+                "org.freedesktop.ColorManager",
+                "/org/freedesktop/ColorManager",
+            )
         except DBusException as exception:
             warnings.warn(safe_str(exception), Warning)
 
@@ -43,16 +44,27 @@ if sys.platform not in ("darwin", "win32"):
 CD_CLIENT_IMPORT_DAEMON_TIMEOUT = 5000  # ms
 
 
-if (not Colord or isinstance(Colord, DBusObject) or
-        not hasattr(Colord, 'quirk_vendor_name')):
-    from DisplayCAL.config import get_data_path
+if (
+    not Colord
+    or isinstance(Colord, DBusObject)
+    or not hasattr(Colord, "quirk_vendor_name")
+):
+    # from DisplayCAL.config import get_data_path
 
     # From colord/lib/colord/cd_quirk.c, cd_quirk_vendor_name
     quirk_cache = {
         "suffixes": [
-            "Co.", "Co", "Inc.", "Inc", "Ltd.", "Ltd",
-            "Corporation", "Incorporated", "Limited",
-            "GmbH", "corp."
+            "Co.",
+            "Co",
+            "Inc.",
+            "Inc",
+            "Ltd.",
+            "Ltd",
+            "Corporation",
+            "Incorporated",
+            "Limited",
+            "GmbH",
+            "corp.",
         ],
         "vendor_names": {
             "Acer, inc.": "Acer",
@@ -105,8 +117,8 @@ if (not Colord or isinstance(Colord, DBusObject) or
             "TOSHIBA": "Toshiba",
             "Unknown vendor": "Unknown",
             "Westinghouse Digital Electronics": "Westinghouse Digital",
-            "Zalman Tech Co., Ltd.": "Zalman"
-        }
+            "Zalman Tech Co., Ltd.": "Zalman",
+        },
     }
 
 
@@ -115,7 +127,7 @@ device_ids = {}
 
 
 def client_connect():
-    """ Connect to colord """
+    """Connect to colord"""
     client = Colord.Client.new()
 
     # Connect to colord
@@ -125,9 +137,9 @@ def client_connect():
 
 
 def device_connect(client, device_id):
-    """ Connect to device """
+    """Connect to device"""
     if isinstance(device_id, str):
-        device_id = device_id.encode('UTF-8')
+        device_id = device_id.encode("UTF-8")
     try:
         device = client.find_device_sync(device_id, cancellable)
     except Exception as exception:
@@ -139,9 +151,15 @@ def device_connect(client, device_id):
     return device
 
 
-def device_id_from_edid(edid, quirk=False, use_serial_32=True, truncate_edid_strings=False, omit_manufacturer=False,
-                        query=False):
-    """ Assemble device key from EDID """
+def device_id_from_edid(
+    edid,
+    quirk=False,
+    use_serial_32=True,
+    truncate_edid_strings=False,
+    omit_manufacturer=False,
+    query=False,
+):
+    """Assemble device key from EDID"""
     # https://github.com/hughsie/colord/blob/master/doc/device-and-profile-naming-spec.txt
     # Should match device ID returned by gcm_session_get_output_id in
     # gnome-settings-daemon/plugins/color/gsd-color-state.c
@@ -150,10 +168,15 @@ def device_id_from_edid(edid, quirk=False, use_serial_32=True, truncate_edid_str
         device_id = device_ids.get(edid["hash"])
         if device_id:
             return device_id
-        elif (sys.platform not in ("darwin", "win32") and query and
-              isinstance(Colord, DBusObject)):
+        elif (
+            sys.platform not in ("darwin", "win32")
+            and query
+            and isinstance(Colord, DBusObject)
+        ):
             try:
-                device = Device(find("device-by-property", ["OutputEdidMd5", edid["hash"]]))
+                device = Device(
+                    find("device-by-property", ["OutputEdidMd5", edid["hash"]])
+                )
                 device_id = device.properties.get("DeviceId")
             except CDError as exception:
                 warnings.warn(safe_str(exception), Warning)
@@ -186,7 +209,7 @@ def device_id_from_edid(edid, quirk=False, use_serial_32=True, truncate_edid_str
 
 
 def find(what, search):
-    """ Find device or profile and return object path """
+    """Find device or profile and return object path"""
     if not isinstance(Colord, DBusObject):
         raise CDError("colord API not available")
     if not isinstance(search, list):
@@ -204,9 +227,7 @@ def find(what, search):
 
 
 def get_default_profile(device_id):
-    """Get default profile for device
-
-    """
+    """Get default profile for device"""
     # Find device object path
     device = Device(get_object_path(device_id, "device"))
 
@@ -222,15 +243,16 @@ def get_default_profile(device_id):
         if profiles:
             return profiles[0]
         else:
-            raise CDError("Couldn't get default profile for device ID %r" %
-                          device_id)
+            raise CDError("Couldn't get default profile for device ID %r" % device_id)
 
 
 def get_devices_by_kind(kind):
     if not isinstance(Colord, DBusObject):
         return []
-    return [Device(str(object_path, "UTF-8"))
-            for object_path in Colord.get_devices_by_kind(kind)]
+    return [
+        Device(str(object_path, "UTF-8"))
+        for object_path in Colord.get_devices_by_kind(kind)
+    ]
 
 
 def get_display_devices():
@@ -238,21 +260,26 @@ def get_display_devices():
 
 
 def get_display_device_ids():
-    return [_f for _f in (display.properties.get("DeviceId")
-                          for display in get_display_devices()) if _f]
+    return [
+        _f
+        for _f in (
+            display.properties.get("DeviceId") for display in get_display_devices()
+        )
+        if _f
+    ]
 
 
 def get_object_path(search, object_type):
-    """ Get object path for profile or device ID """
+    """Get object path for profile or device ID"""
     result = find(object_type + "-by-id", search)
     if not result:
         raise CDObjectNotFoundError("Could not find object path for %s" % search)
     return result
 
 
-def install_profile(device_id, profile,
-                    timeout=CD_CLIENT_IMPORT_DAEMON_TIMEOUT / 1000.0,
-                    logfn=None):
+def install_profile(
+    device_id, profile, timeout=CD_CLIENT_IMPORT_DAEMON_TIMEOUT / 1000.0, logfn=None
+):
     """Install profile for device
 
     timeout				  Time to allow for colord to pick up new profiles
@@ -260,12 +287,12 @@ def install_profile(device_id, profile,
 
     """
 
-    profile_installname = os.path.join(xdg_data_home, 'icc',
-                                       os.path.basename(profile.fileName))
+    profile_installname = os.path.join(
+        xdg_data_home, "icc", os.path.basename(profile.fileName)
+    )
 
     profile_exists = os.path.isfile(profile_installname)
-    if (profile.fileName != profile_installname and
-            profile_exists):
+    if profile.fileName != profile_installname and profile_exists:
         if logfn:
             logfn("About to overwrite existing", profile_installname)
         profile.fileName = None
@@ -296,7 +323,7 @@ def install_profile(device_id, profile,
         # Query colord for profile
         try:
             cdprofile = get_object_path(profile_id, "profile")
-        except CDObjectQueryError as exception:
+        except CDObjectQueryError:
             # Profile not found
             pass
 
@@ -320,7 +347,7 @@ def install_profile(device_id, profile,
             if logfn:
                 logfn("")
 
-            ts = time.time()
+            # ts = time.time()
 
             maxtries = 3
 
@@ -342,19 +369,20 @@ def install_profile(device_id, profile,
                     logfn("...failed!")
 
             if p.returncode != 0 and not os.path.isfile(profile_installname):
-                raise CDTimeout("Trying to import profile '%s' failed after "
-                                "%i tries." % (profile.fileName, n))
+                raise CDTimeout(
+                    "Trying to import profile '%s' failed after "
+                    "%i tries." % (profile.fileName, n)
+                )
 
     if not cdprofile:
         # Query colord for newly added profile
-        for i in range(int(timeout / 1.0)):
+        for _i in range(int(timeout / 1.0)):
             try:
                 if Colord and not isinstance(Colord, DBusObject):
-                    cdprofile = client.find_profile_sync(profile_id,
-                                                         cancellable)
+                    cdprofile = client.find_profile_sync(profile_id, cancellable)
                 else:
                     cdprofile = get_object_path(profile_id, "profile")
-            except CDObjectQueryError as exception:
+            except CDObjectQueryError:
                 # Profile not found
                 pass
             if cdprofile:
@@ -363,11 +391,12 @@ def install_profile(device_id, profile,
             sleep(1)
 
         if not cdprofile:
-            raise CDTimeout("Querying for profile %r returned no result for %s "
-                            "secs" % (profile_id, timeout))
+            raise CDTimeout(
+                "Querying for profile %r returned no result for %s "
+                "secs" % (profile_id, timeout)
+            )
 
-    errmsg = "Could not make profile %s default for device %s" % (profile_id,
-                                                                  device_id)
+    errmsg = "Could not make profile %s default for device %s" % (profile_id, device_id)
 
     if Colord and not isinstance(Colord, DBusObject):
         # Connect to profile
@@ -379,8 +408,7 @@ def install_profile(device_id, profile,
 
         # Add profile to device
         try:
-            device.add_profile_sync(Colord.DeviceRelation.HARD, cdprofile,
-                                    cancellable)
+            device.add_profile_sync(Colord.DeviceRelation.HARD, cdprofile, cancellable)
         except Exception as exception:
             # Profile may already have been added
             warnings.warn(safe_str(exception), Warning)
@@ -432,20 +460,23 @@ def install_profile(device_id, profile,
 
 
 def quirk_manufacturer(manufacturer):
-    if (Colord and not isinstance(Colord, DBusObject) and
-            hasattr(Colord, 'quirk_vendor_name')):
+    if (
+        Colord
+        and not isinstance(Colord, DBusObject)
+        and hasattr(Colord, "quirk_vendor_name")
+    ):
         return Colord.quirk_vendor_name(manufacturer)
 
     # Correct some company names
-    for old, new in quirk_cache['vendor_names'].items():
+    for old, new in quirk_cache["vendor_names"].items():
         if manufacturer.startswith(old):
             manufacturer = new
             break
 
     # Get rid of suffixes
-    for suffix in quirk_cache['suffixes']:
+    for suffix in quirk_cache["suffixes"]:
         if manufacturer.endswith(suffix):
-            manufacturer = manufacturer[0:len(manufacturer) - len(suffix)]
+            manufacturer = manufacturer[0: len(manufacturer) - len(suffix)]
 
     manufacturer = manufacturer.rstrip()
 
@@ -453,12 +484,15 @@ def quirk_manufacturer(manufacturer):
 
 
 class Object(DBusObject):
-
     def __init__(self, object_path, object_type):
         try:
-            DBusObject.__init__(self, BUSTYPE_SYSTEM,
-                                "org.freedesktop.ColorManager", object_path,
-                                object_type)
+            DBusObject.__init__(
+                self,
+                BUSTYPE_SYSTEM,
+                "org.freedesktop.ColorManager",
+                object_path,
+                object_type,
+            )
         except DBusException as exception:
             raise CDError(safe_str(exception))
         self._object_type = object_type
@@ -479,13 +513,11 @@ class Object(DBusObject):
 
 
 class Device(Object):
-
     def __init__(self, object_path):
         Object.__init__(self, object_path, "Device")
 
 
 class Profile(Object):
-
     def __init__(self, object_path):
         Object.__init__(self, object_path, "Profile")
 
@@ -508,5 +540,6 @@ class CDTimeout(CDError):
 
 if __name__ == "__main__":
     import sys
+
     for arg in sys.argv[1:]:
         print(get_default_profile(arg))

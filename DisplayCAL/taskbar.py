@@ -10,13 +10,13 @@ TBPF_NORMAL = 0x2
 TBPF_ERROR = 0x4
 TBPF_PAUSED = 0x8
 
-taskbar = cc.CreateObject("{56FDF344-FD6D-11d0-958A-006097C9A090}",
-                          interface=tbl.ITaskbarList3)
+taskbar = cc.CreateObject(
+    "{56FDF344-FD6D-11d0-958A-006097C9A090}", interface=tbl.ITaskbarList3
+)
 taskbar.HrInit()
 
 
 class Taskbar(object):
-
     def __init__(self, frame, maxv=100):
         self.frame = frame
         self.maxv = maxv

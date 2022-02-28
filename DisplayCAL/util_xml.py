@@ -6,11 +6,11 @@ except ImportError:
     pass
 
 from DisplayCAL.ordereddict import OrderedDict
+
 # from collections import OrderedDict
 
 
-def dict2xml(d, elementname="element", pretty=True, allow_attributes=True,
-             level=0):
+def dict2xml(d, elementname="element", pretty=True, allow_attributes=True, level=0):
     indent = pretty and "\t" * level or ""
     xml = []
     attributes = []
@@ -23,16 +23,18 @@ def dict2xml(d, elementname="element", pretty=True, allow_attributes=True,
         if isinstance(d, dict):
             for key, value in d.items():
                 if isinstance(value, (dict, list)) or not allow_attributes:
-                    children.append(dict2xml(value, key, pretty,
-                                             allow_attributes, level + 1))
+                    children.append(
+                        dict2xml(value, key, pretty, allow_attributes, level + 1)
+                    )
                 else:
                     if pretty:
                         attributes.append("\n" + indent)
                     attributes.append(' %s="%s"' % (key, escape(str(value))))
         else:
             for value in d:
-                children.append(dict2xml(value, "item", pretty,
-                                         allow_attributes, level + 1))
+                children.append(
+                    dict2xml(value, "item", pretty, allow_attributes, level + 1)
+                )
 
         start_tag.extend(attributes)
         start_tag.append(children and ">" or "/>")
@@ -44,21 +46,23 @@ def dict2xml(d, elementname="element", pretty=True, allow_attributes=True,
 
             xml.append("%s</%s>" % (indent, elementname))
     else:
-        xml.append("%s<%s>%s</%s>" % (indent, elementname, escape(str(d)),
-                                      elementname))
+        xml.append("%s<%s>%s</%s>" % (indent, elementname, escape(str(d)), elementname))
 
     return (pretty and "\n" or "").join(xml)
 
 
 def escape(xml):
-    return xml.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    return (
+        xml.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
 
 
 class OrderedDictSimpleRepr(OrderedDict):
-
     def __repr__(self):
-        """od.__repr__() <==> repr(od)
-        """
+        """od.__repr__() <==> repr(od)"""
         l = []
         for k, v in self.items():
             l.append("%r: %r" % (k, v))
@@ -74,14 +78,14 @@ class ETreeDict(OrderedDictSimpleRepr):
         OrderedDictSimpleRepr.__init__(self)
         children = len(etree)
         if etree.attrib or etree.text or children:
-            self[etree.tag] = OrderedDictSimpleRepr(('@' + k, v)
-                                                    for k, v in
-                                                    etree.attrib.items())
+            self[etree.tag] = OrderedDictSimpleRepr(
+                ("@" + k, v) for k, v in etree.attrib.items()
+            )
             if etree.text:
                 text = etree.text.strip()
                 if etree.attrib or children:
                     if text:
-                        self[etree.tag]['#text'] = text
+                        self[etree.tag]["#text"] = text
                 else:
                     self[etree.tag] = text
             if children:
@@ -100,11 +104,11 @@ class ETreeDict(OrderedDictSimpleRepr):
     @property
     def json(self):
         import json
+
         return json.dumps(self)
 
 
 class XMLDict(ETreeDict):
-
     def __init__(self, xml):
         etree = ET.fromstring(xml)
         ETreeDict.__init__(self, etree)

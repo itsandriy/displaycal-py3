@@ -20,7 +20,9 @@ class EncodedWriter(object):
     Either data_encoding or file_encoding can be None.
     """
 
-    def __init__(self, file_obj, data_encoding=None, file_encoding=None, errors="replace"):
+    def __init__(
+        self, file_obj, data_encoding=None, file_encoding=None, errors="replace"
+    ):
         self.file = file_obj
         self.data_encoding = data_encoding
         self.file_encoding = file_encoding
@@ -38,8 +40,7 @@ class EncodedWriter(object):
 
 
 class Files(object):
-    """Read and/or write from/to several files at once.
-    """
+    """Read and/or write from/to several files at once."""
 
     def __init__(self, files, mode="r"):
         """Return a Files object.
@@ -100,8 +101,8 @@ class GzipFileProper(gzip.GzipFile):
     """
 
     def _write_gzip_header(self, compresslevel):
-        self.fileobj.write(b'\037\213')             # magic header
-        self.fileobj.write(b'\010')                 # compression method
+        self.fileobj.write(b"\037\213")  # magic header
+        self.fileobj.write(b"\010")  # compression method
         fname = os.path.basename(self.name)
         if fname.endswith(".gz"):
             fname = fname[:-3]
@@ -114,15 +115,20 @@ class GzipFileProper(gzip.GzipFile):
             flags = gzip.FNAME
         self.fileobj.write(chr(flags).encode())
         gzip.write32u(self.fileobj, int(time()))
-        self.fileobj.write(b'\002')
-        self.fileobj.write(b'\377')
+        self.fileobj.write(b"\002")
+        self.fileobj.write(b"\377")
         if fname:
             if sys.platform == "win32":
                 # Windows is case insensitive by default (although it can be
                 # set to case sensitive), so according to the GZIP spec, we
                 # force the name to lowercase
                 fname = fname.lower()
-            self.fileobj.write(fname.encode("ISO-8859-1", "replace") .replace("?".encode(), "_".encode()) + b'\000')
+            self.fileobj.write(
+                fname.encode("ISO-8859-1", "replace").replace(
+                    "?".encode(), "_".encode()
+                )
+                + b"\000"
+            )
 
     def __enter__(self):
         return self
@@ -132,11 +138,17 @@ class GzipFileProper(gzip.GzipFile):
 
 
 class LineBufferedStream(object):
-    """Buffer lines and only write them to stream if line separator is detected
-    """
+    """Buffer lines and only write them to stream if line separator is detected"""
 
-    def __init__(self, stream, data_encoding=None, file_encoding=None,
-                 errors="replace", linesep_in="\r\n", linesep_out="\n"):
+    def __init__(
+        self,
+        stream,
+        data_encoding=None,
+        file_encoding=None,
+        errors="replace",
+        linesep_in="\r\n",
+        linesep_out="\n",
+    ):
         self.buf = ""
         self.data_encoding = data_encoding
         self.file_encoding = file_encoding
@@ -179,10 +191,10 @@ class LineBufferedStream(object):
                     self.buf += char
 
 
-class LineCache():
+class LineCache:
 
-    """ When written to it, stores only the last n + 1 lines and
-        returns only the last n non-empty lines when read. """
+    """When written to it, stores only the last n + 1 lines and
+    returns only the last n non-empty lines when read."""
 
     def __init__(self, maxlines=1):
         self.clear()
@@ -216,23 +228,22 @@ class LineCache():
                 cache.append("")
             else:
                 cache[-1] += char
-        self.cache = ([line for line in cache[:-1] if line] +
-                      cache[-1:])[-self.maxlines - 1:]
+        self.cache = ([line for line in cache[:-1] if line] + cache[-1:])[
+            -self.maxlines - 1:
+        ]
 
 
 class StringIOu(StringIO):
 
-    """StringIO which converts all new line formats in buf to POSIX newlines.
-    """
+    """StringIO which converts all new line formats in buf to POSIX newlines."""
 
-    def __init__(self, buf=''):
+    def __init__(self, buf=""):
         StringIO.__init__(self, universal_newlines(buf))
 
 
 class Tee(Files):
 
-    """Write to a file and stdout.
-    """
+    """Write to a file and stdout."""
 
     def __init__(self, file_obj):
         Files.__init__((sys.stdout, file_obj))
@@ -251,14 +262,13 @@ class Tee(Files):
 
 
 class TarFileProper(tarfile.TarFile):
-
-    """ Support extracting to unicode location and using base name """
+    """Support extracting to unicode location and using base name"""
 
     def extract(self, member, path="", full=True):
         """Extract a member from the archive to the current working directory,
-           using its full name or base name. Its file information is extracted
-           as accurately as possible. `member' may be a filename or a TarInfo
-           object. You can specify a different directory using `path'.
+        using its full name or base name. Its file information is extracted
+        as accurately as possible. `member' may be a filename or a TarInfo
+        object. You can specify a different directory using `path'.
         """
         self._check("r")
 
@@ -275,7 +285,7 @@ class TarFileProper(tarfile.TarFile):
             tarinfo._link_target = os.path.join(path, name)
 
         try:
-            name =  tarinfo.name.decode(self.encoding)
+            name = tarinfo.name.decode(self.encoding)
             if not full:
                 name = os.path.basename(name)
             self._extract_member(tarinfo, os.path.join(path, name))
@@ -287,7 +297,7 @@ class TarFileProper(tarfile.TarFile):
                     self._dbg(1, "tarfile: %s" % e.strerror)
                 else:
                     self._dbg(1, "tarfile: %s %r" % (e.strerror, e.filename))
-        except ExtractError as e:
+        except tarfile.ExtractError as e:
             if self.errorlevel > 1:
                 raise
             else:
@@ -295,10 +305,10 @@ class TarFileProper(tarfile.TarFile):
 
     def extractall(self, path=".", members=None, full=True):
         """Extract all members from the archive to the current working
-           directory and set owner, modification time and permissions on
-           directories afterwards. `path' specifies a different directory
-           to extract to. `members' is optional and must be a subset of the
-           list returned by getmembers().
+        directory and set owner, modification time and permissions on
+        directories afterwards. `path' specifies a different directory
+        to extract to. `members' is optional and must be a subset of the
+        list returned by getmembers().
         """
         directories = []
 
@@ -314,12 +324,12 @@ class TarFileProper(tarfile.TarFile):
             self.extract(tarinfo, path, full)
 
         # Reverse sort directories.
-        directories.sort(key=operator.attrgetter('name'))
+        directories.sort(key=operator.attrgetter("name"))
         directories.reverse()
 
         # Set correct owner, mtime and filemode on directories.
         for tarinfo in directories:
-            name =  tarinfo.name.decode(self.encoding)
+            name = tarinfo.name.decode(self.encoding)
             if not full:
                 name = os.path.basename(name)
             dirpath = os.path.join(path, name)
@@ -327,7 +337,7 @@ class TarFileProper(tarfile.TarFile):
                 self.chown(tarinfo, dirpath)
                 self.utime(tarinfo, dirpath)
                 self.chmod(tarinfo, dirpath)
-            except ExtractError as e:
+            except tarfile.ExtractError as e:
                 if self.errorlevel > 1:
                     raise
                 else:

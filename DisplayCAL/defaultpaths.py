@@ -3,6 +3,7 @@
 
 import os
 import sys
+
 if sys.platform not in ("darwin", "win32"):
     # Linux
     import codecs
@@ -14,28 +15,39 @@ if sys.platform not in ("darwin", "win32"):
 elif sys.platform == "win32":
     try:
         from win32com.shell.shell import SHGetSpecialFolderPath
-        from win32com.shell.shellcon import (CSIDL_APPDATA,
-                                             CSIDL_COMMON_APPDATA,
-                                             CSIDL_COMMON_STARTUP,
-                                             CSIDL_LOCAL_APPDATA,
-                                             CSIDL_PROFILE,
-                                             CSIDL_PROGRAMS,
-                                             CSIDL_COMMON_PROGRAMS,
-                                             CSIDL_PROGRAM_FILES_COMMON,
-                                             CSIDL_STARTUP, CSIDL_SYSTEM)
+        from win32com.shell.shellcon import (
+            CSIDL_APPDATA,
+            CSIDL_COMMON_APPDATA,
+            CSIDL_COMMON_STARTUP,
+            CSIDL_LOCAL_APPDATA,
+            CSIDL_PROFILE,
+            CSIDL_PROGRAMS,
+            CSIDL_COMMON_PROGRAMS,
+            CSIDL_PROGRAM_FILES_COMMON,
+            CSIDL_STARTUP,
+            CSIDL_SYSTEM,
+        )
     except ImportError:
         import ctypes
-        (CSIDL_APPDATA, CSIDL_COMMON_APPDATA, CSIDL_COMMON_STARTUP,
-         CSIDL_LOCAL_APPDATA, CSIDL_PROFILE, CSIDL_PROGRAMS,
-         CSIDL_COMMON_PROGRAMS, CSIDL_PROGRAM_FILES_COMMON,
-         CSIDL_STARTUP, CSIDL_SYSTEM) = (26, 35, 24, 28, 40, 43, 2, 23, 7, 37)
+
+        (
+            CSIDL_APPDATA,
+            CSIDL_COMMON_APPDATA,
+            CSIDL_COMMON_STARTUP,
+            CSIDL_LOCAL_APPDATA,
+            CSIDL_PROFILE,
+            CSIDL_PROGRAMS,
+            CSIDL_COMMON_PROGRAMS,
+            CSIDL_PROGRAM_FILES_COMMON,
+            CSIDL_STARTUP,
+            CSIDL_SYSTEM,
+        ) = (26, 35, 24, 28, 40, 43, 2, 23, 7, 37)
         MAX_PATH = 260
 
         def SHGetSpecialFolderPath(hwndOwner, nFolder, create=0):
-            """ ctypes wrapper around shell32.SHGetSpecialFolderPathW """
-            buffer = ctypes.create_unicode_buffer('\0' * MAX_PATH)
-            ctypes.windll.shell32.SHGetSpecialFolderPathW(0, buffer, nFolder,
-                                                          create)
+            """ctypes wrapper around shell32.SHGetSpecialFolderPathW"""
+            buffer = ctypes.create_unicode_buffer("\0" * MAX_PATH)
+            ctypes.windll.shell32.SHGetSpecialFolderPathW(0, buffer, nFolder, create)
             return buffer.value
 
 
@@ -57,30 +69,38 @@ def get_known_folder_path(folderid, user=True):
 
     """
     folder_path = os.path.join(home, folderid)
-    if sys.platform == "win32" and sys.getwindowsversion() >= (6, ):
+    if sys.platform == "win32" and sys.getwindowsversion() >= (6,):
         # Windows Vista or newer
         from DisplayCAL import win_knownpaths
+
         try:
-            folder_path = win_knownpaths.get_path(getattr(win_knownpaths.FOLDERID, folderid),
-                                                  getattr(win_knownpaths.UserHandle,
-                                                          "current" if user else "common"))
-        except Exception as exception:
+            folder_path = win_knownpaths.get_path(
+                getattr(win_knownpaths.FOLDERID, folderid),
+                getattr(win_knownpaths.UserHandle, "current" if user else "common"),
+            )
+        except Exception:
             print("Warning: Could not get known folder %r" % folderid)
     elif sys.platform not in ("darwin", "win32"):
         # Linux
         user_dir = folderid
-        folderid = {"Downloads": folderid[:-1],
-                    "Public": folderid + "share"}.get(folderid, folderid).upper()
+        folderid = (
+            {"Downloads": folderid[:-1], "Public": folderid + "share"}
+            .get(folderid, folderid)
+            .upper()
+        )
         if folderid != "DESKTOP" or XDG.UserDirs.enabled:
             user_dir = XDG.UserDirs.default_dirs.get(folderid)
         if user:
             user_dir = XDG.UserDirs.user_dirs.get(folderid, user_dir)
         if user_dir:
             folder_path = os.path.join(home, user_dir)
-        if ((folderid != "DESKTOP" and (not user_dir or
-                                        (not os.path.isdir(folder_path) and
-                                         not XDG.UserDirs.enabled))) or
-                not waccess(folder_path, os.W_OK)):
+        if (
+            folderid != "DESKTOP"
+            and (
+                not user_dir
+                or (not os.path.isdir(folder_path) and not XDG.UserDirs.enabled)
+            )
+        ) or not waccess(folder_path, os.W_OK):
             folder_path = home
     return folder_path
 
@@ -92,11 +112,12 @@ if sys.platform == "win32":
     try:
         library_home = appdata = SHGetSpecialFolderPath(0, CSIDL_APPDATA, 1)
     except Exception as exception:
-        raise Exception("FATAL - Could not get/create user application data folder: %s"
-                        % exception)
+        raise Exception(
+            "FATAL - Could not get/create user application data folder: %s" % exception
+        )
     try:
         localappdata = SHGetSpecialFolderPath(0, CSIDL_LOCAL_APPDATA, 1)
-    except Exception as exception:
+    except Exception:
         localappdata = os.path.join(appdata, "Local")
     cache = localappdata
     # Argyll CMS uses ALLUSERSPROFILE for local system wide app related data
@@ -111,36 +132,41 @@ if sys.platform == "win32":
         try:
             commonappdata = [SHGetSpecialFolderPath(0, CSIDL_COMMON_APPDATA, 1)]
         except Exception as exception:
-            raise Exception("FATAL - Could not get/create common application data folder: %s"
-                            % exception)
+            raise Exception(
+                "FATAL - Could not get/create common application data folder: %s"
+                % exception
+            )
     library = commonappdata[0]
     try:
         commonprogramfiles = SHGetSpecialFolderPath(0, CSIDL_PROGRAM_FILES_COMMON, 1)
     except Exception as exception:
-        raise Exception("FATAL - Could not get/create common program files folder: %s"
-                        % exception)
+        raise Exception(
+            "FATAL - Could not get/create common program files folder: %s" % exception
+        )
     try:
         autostart = SHGetSpecialFolderPath(0, CSIDL_COMMON_STARTUP, 1)
-    except Exception as exception:
+    except Exception:
         autostart = None
     try:
         autostart_home = SHGetSpecialFolderPath(0, CSIDL_STARTUP, 1)
-    except Exception as exception:
+    except Exception:
         autostart_home = None
     try:
-        iccprofiles = [os.path.join(SHGetSpecialFolderPath(0, CSIDL_SYSTEM),
-                                    "spool", "drivers", "color")]
+        iccprofiles = [
+            os.path.join(
+                SHGetSpecialFolderPath(0, CSIDL_SYSTEM), "spool", "drivers", "color"
+            )
+        ]
     except Exception as exception:
-        raise Exception("FATAL - Could not get system folder: %s"
-                        % exception)
+        raise Exception("FATAL - Could not get system folder: %s" % exception)
     iccprofiles_home = iccprofiles
     try:
         programs = SHGetSpecialFolderPath(0, CSIDL_PROGRAMS, 1)
-    except Exception as exception:
+    except Exception:
         programs = None
     try:
         commonprograms = [SHGetSpecialFolderPath(0, CSIDL_COMMON_PROGRAMS, 1)]
-    except Exception as exception:
+    except Exception:
         commonprograms = []
 elif sys.platform == "darwin":
     library_home = os.path.join(home, "Library")
@@ -151,12 +177,11 @@ elif sys.platform == "darwin":
     appdata = os.path.join(home, "Library", "Application Support")
     commonappdata = [os.path.join(os.path.sep, "Library", "Application Support")]
     autostart = autostart_home = None
-    iccprofiles = [os.path.join(os.path.sep, "Library", "ColorSync",
-                                "Profiles"),
-                   os.path.join(os.path.sep, "System", "Library", "ColorSync",
-                                "Profiles")]
-    iccprofiles_home = [os.path.join(home, "Library", "ColorSync",
-                                     "Profiles")]
+    iccprofiles = [
+        os.path.join(os.path.sep, "Library", "ColorSync", "Profiles"),
+        os.path.join(os.path.sep, "System", "Library", "ColorSync", "Profiles"),
+    ]
+    iccprofiles_home = [os.path.join(home, "Library", "ColorSync", "Profiles")]
     programs = os.path.join(os.path.sep, "Applications")
     commonprograms = []
 else:
@@ -167,20 +192,31 @@ else:
         cache_home = getenvu("XDG_CACHE_HOME", expandvarsu("$HOME/.cache"))
         config_home = getenvu("XDG_CONFIG_HOME", expandvarsu("$HOME/.config"))
         config_dir_default = "/etc/xdg"
-        config_dirs = list(map(os.path.normpath,
-                               getenvu("XDG_CONFIG_DIRS",
-                                       config_dir_default).split(os.pathsep)))
+        config_dirs = list(
+            map(
+                os.path.normpath,
+                getenvu("XDG_CONFIG_DIRS", config_dir_default).split(os.pathsep),
+            )
+        )
         if config_dir_default not in config_dirs:
             config_dirs.append(config_dir_default)
         data_home_default = expandvarsu("$HOME/.local/share")
         data_home = getenvu("XDG_DATA_HOME", data_home_default)
         data_dirs_default = "/usr/local/share:/usr/share:/var/lib"
-        data_dirs = list(map(os.path.normpath,
-                             getenvu("XDG_DATA_DIRS",
-                                     data_dirs_default).split(os.pathsep)))
-        data_dirs.extend(list(filter(lambda data_dir, data_dirs=data_dirs:
-                                     data_dir not in data_dirs,
-                                     data_dirs_default.split(os.pathsep))))
+        data_dirs = list(
+            map(
+                os.path.normpath,
+                getenvu("XDG_DATA_DIRS", data_dirs_default).split(os.pathsep),
+            )
+        )
+        data_dirs.extend(
+            list(
+                filter(
+                    lambda data_dir, data_dirs=data_dirs: data_dir not in data_dirs,
+                    data_dirs_default.split(os.pathsep),
+                )
+            )
+        )
 
         @staticmethod
         def set_translation(obj):
@@ -194,9 +230,9 @@ else:
                         break
 
             try:
-                obj.translation = gettext.translation(obj.GETTEXT_PACKAGE,
-                                                      locale_dir,
-                                                      codeset="UTF-8")
+                obj.translation = gettext.translation(
+                    obj.GETTEXT_PACKAGE, locale_dir, codeset="UTF-8"
+                )
             except IOError as exception:
                 print("XDG:", exception)
                 obj.translation = gettext.NullTranslations()
@@ -258,8 +294,7 @@ else:
             _initialized = False
 
             def __getattribute__(self, name):
-                if (name != "init" and not
-                object.__getattribute__(self, "_initialized")):
+                if name != "init" and not object.__getattribute__(self, "_initialized"):
                     object.__getattribute__(self, "init")()
                 return object.__getattribute__(self, name)
 
@@ -300,13 +335,17 @@ else:
                     return False
 
                 def fn(key, value):
-                    if (key.startswith("XDG_") and key.endswith("_DIR") and
-                            value.startswith('"') and value.endswith('"')):
+                    if (
+                        key.startswith("XDG_")
+                        and key.endswith("_DIR")
+                        and value.startswith('"')
+                        and value.endswith('"')
+                    ):
                         name = key[4:-4]
                         if not name:
                             return
                         value = value.strip('"')
-                        if value.startswith('$HOME'):
+                        if value.startswith("$HOME"):
                             value = value[5:]
                             if value.startswith("/"):
                                 value = value[1:]
@@ -316,8 +355,9 @@ else:
                                 return
                         elif not value.startswith("/"):
                             return
-                        self.user_dirs[name] = XDG.shell_unescape(value).decode("UTF-8",
-                                                                                "ignore")
+                        self.user_dirs[name] = XDG.shell_unescape(value).decode(
+                            "UTF-8", "ignore"
+                        )
 
                 return XDG.process_config_file(path, fn)
 
@@ -338,8 +378,10 @@ else:
                 try:
                     codecs.lookup(self.filename_encoding)
                 except LookupError:
-                    print("XDG.UserDirs: Can't convert from UTF-8 to",
-                               self.filename_encoding)
+                    print(
+                        "XDG.UserDirs: Can't convert from UTF-8 to",
+                        self.filename_encoding,
+                    )
                     return False
 
                 self.load_default_dirs()
@@ -370,18 +412,21 @@ else:
         if os.path.isdir(dir_):
             iccprofiles.append(os.path.join(dir_, "color", "icc"))
     iccprofiles.append("/var/lib/color")
-    iccprofiles_home = [os.path.join(XDG.data_home, "color", "icc"),
-                        os.path.join(XDG.data_home, "icc"),
-                        expandvarsu("$HOME/.color/icc")]
+    iccprofiles_home = [
+        os.path.join(XDG.data_home, "color", "icc"),
+        os.path.join(XDG.data_home, "icc"),
+        expandvarsu("$HOME/.color/icc"),
+    ]
     programs = os.path.join(XDG.data_home, "applications")
-    commonprograms = [os.path.join(dir_, "applications")
-                      for dir_ in XDG.data_dirs]
+    commonprograms = [os.path.join(dir_, "applications") for dir_ in XDG.data_dirs]
 if sys.platform in ("darwin", "win32"):
     iccprofiles_display = iccprofiles
     iccprofiles_display_home = iccprofiles_home
 else:
-    iccprofiles_display = [os.path.join(dir_, "devices", "display")
-                           for dir_ in iccprofiles]
-    iccprofiles_display_home = [os.path.join(dir_, "devices", "display")
-                                for dir_ in iccprofiles_home]
+    iccprofiles_display = [
+        os.path.join(dir_, "devices", "display") for dir_ in iccprofiles
+    ]
+    iccprofiles_display_home = [
+        os.path.join(dir_, "devices", "display") for dir_ in iccprofiles_home
+    ]
     del dir_

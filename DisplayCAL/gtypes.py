@@ -15,6 +15,7 @@ class gint(c_int):
 class guint(c_uint):
     pass
 
+
 class guint32(c_uint):
     pass
 
@@ -24,6 +25,4 @@ class GQuark(guint32):
 
 
 class GError(Structure):
-    _fields_ = [("domain", GQuark),
-                ("code", gint),
-                ("message", gchar_p)]
+    _fields_ = [("domain", GQuark), ("code", gint), ("message", gchar_p)]

@@ -5,8 +5,7 @@ import warnings
 
 
 def get_display(display_name=None):
-    """Parse X display name and return (hostname, display number, screen number)
-    """
+    """Parse X display name and return (hostname, display number, screen number)"""
     if not display_name:
         display_name = os.getenv("DISPLAY", ":0.0")
     display_parts = display_name.split(":")
@@ -16,8 +15,7 @@ def get_display(display_name=None):
         try:
             display_screen = tuple(int(n) for n in display_parts[1].split("."))
         except ValueError:
-            warnings.warn("invalid value for display name: %r" %
-                          display_name, Warning)
+            warnings.warn("invalid value for display name: %r" % display_name, Warning)
         else:
             display = display_screen[0]
             if len(display_screen) > 1:

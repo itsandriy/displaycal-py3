@@ -15,21 +15,32 @@ for p in set(iccprofiles_home + iccprofiles):
         for f in os.listdir(p):
             try:
                 profile = iccp.ICCProfile(os.path.join(p, f))
-            except:
+            except Exception:
                 pass
             else:
                 if isinstance(profile.tags.desc, iccp.TextDescriptionType):
-                    if profile.tags.desc.get("Unicode") or profile.tags.desc.get("Macintosh"):
+                    if profile.tags.desc.get("Unicode") or profile.tags.desc.get(
+                        "Macintosh"
+                    ):
                         print(os.path.join(p, f))
                     if profile.tags.desc.get("Unicode"):
-                        print("Unicode Language Code:", profile.tags.desc.unicodeLanguageCode)
+                        print(
+                            "Unicode Language Code:",
+                            profile.tags.desc.unicodeLanguageCode,
+                        )
                         print("Unicode Description:", profile.tags.desc.Unicode)
                     if profile.tags.desc.get("Macintosh"):
-                        print("Macintosh Language Code:", profile.tags.desc.macScriptCode)
+                        print(
+                            "Macintosh Language Code:", profile.tags.desc.macScriptCode
+                        )
                         print("Macintosh Description:", profile.tags.desc.Macintosh)
-                    if profile.tags.desc.get("Unicode") or profile.tags.desc.get("Macintosh"):
+                    if profile.tags.desc.get("Unicode") or profile.tags.desc.get(
+                        "Macintosh"
+                    ):
                         print("")
                 elif not isinstance(profile.tags.desc, iccp.MultiLocalizedUnicodeType):
                     print(os.path.join(p, f))
-                    print("Warning: 'desc' is invalid type (%s)" % type(profile.tags.desc))
+                    print(
+                        "Warning: 'desc' is invalid type (%s)" % type(profile.tags.desc)
+                    )
                     print("")

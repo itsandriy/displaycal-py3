@@ -8,7 +8,13 @@ import sys
 
 
 try:
-    from DisplayCAL.__version__ import BUILD_DATE as build, LASTMOD as lastmod, VERSION, VERSION_BASE, VERSION_STRING
+    from DisplayCAL.__version__ import (
+        BUILD_DATE as build,
+        LASTMOD as lastmod,
+        VERSION,
+        VERSION_BASE,
+        VERSION_STRING,
+    )
 except ImportError:
     build = lastmod = "0000-00-00T00:00:00.0Z"
     VERSION = None
@@ -21,15 +27,19 @@ if not VERSION or test_update:
 
 author = "Florian Höch"
 author_ascii = "Florian Hoech"
-description = "Display calibration and profiling with a focus on accuracy and versatility"
-longdesc = ("Calibrate and characterize your display devices using "
-            "one of many supported measurement instruments, with "
-            "support for multi-display setups and a variety of "
-            "available options for advanced users, such as "
-            "verification and reporting functionality to evaluate "
-            "ICC profiles and display devices, creating video 3D "
-            "LUTs, as well as optional CIECAM02 gamut mapping to "
-            "take into account varying viewing conditions.")
+description = (
+    "Display calibration and profiling with a focus on accuracy and versatility"
+)
+longdesc = (
+    "Calibrate and characterize your display devices using "
+    "one of many supported measurement instruments, with "
+    "support for multi-display setups and a variety of "
+    "available options for advanced users, such as "
+    "verification and reporting functionality to evaluate "
+    "ICC profiles and display devices, creating video 3D "
+    "LUTs, as well as optional CIECAM02 gamut mapping to "
+    "take into account varying viewing conditions."
+)
 domain = "displaycal.net"
 author_email = "florian" + chr(0o100) + domain
 name = "DisplayCAL"
@@ -53,9 +63,10 @@ wx_recversion = (4, 1, 1)
 
 
 def get_latest_changelog_entry(readme):
-    """Get changelog entry for latest version from ReadMe HTML
-    """
-    changelog = re.search(r'<div id="(?:changelog|history)">.+?<h2>.+?</h2>.+?<dl>.+?</dd>', readme, re.S)
+    """Get changelog entry for latest version from ReadMe HTML"""
+    changelog = re.search(
+        r'<div id="(?:changelog|history)">.+?<h2>.+?</h2>.+?<dl>.+?</dd>', readme, re.S
+    )
 
     if changelog:
         changelog = changelog.group()
@@ -67,10 +78,12 @@ def get_latest_changelog_entry(readme):
 
 
 def script2pywname(script):
-    """ Convert all-lowercase script name to mixed-case pyw name """
-    a2b = {name + "-3dlut-maker": name + "-3DLUT-maker",
-           name + "-vrml-to-x3d-converter": name + "-VRML-to-X3D-converter",
-           name + "-eecolor-to-madvr-converter": name + "-eeColor-to-madVR-converter"}
+    """Convert all-lowercase script name to mixed-case pyw name"""
+    a2b = {
+        name + "-3dlut-maker": name + "-3DLUT-maker",
+        name + "-vrml-to-x3d-converter": name + "-VRML-to-X3D-converter",
+        name + "-eecolor-to-madvr-converter": name + "-eeColor-to-madVR-converter",
+    }
     if script.lower().startswith(name.lower()):
         pyw = name + script[len(name):]
         return a2b.get(pyw, pyw)

@@ -17,15 +17,21 @@ if gui:
     from DisplayCAL.wxfixes import GenBitmapButton as BitmapButton
     from DisplayCAL.wxwindows import BaseApp, BaseFrame, FileDrop
 
-
     class VRML2X3DFrame(BaseFrame):
-
         def __init__(self, html, embed, view, force, cache):
-            BaseFrame.__init__(self, None, wx.ID_ANY,
-                               lang.getstr("vrml_to_x3d_converter"),
-                               style=wx.DEFAULT_FRAME_STYLE & ~(wx.MAXIMIZE_BOX | wx.RESIZE_BORDER),
-                               name="vrml2x3dframe")
-            self.SetIcons(config.get_icon_bundle([256, 48, 32, 16], "%s-VRML-to-X3D-converter" % appname))
+            BaseFrame.__init__(
+                self,
+                None,
+                wx.ID_ANY,
+                lang.getstr("vrml_to_x3d_converter"),
+                style=wx.DEFAULT_FRAME_STYLE & ~(wx.MAXIMIZE_BOX | wx.RESIZE_BORDER),
+                name="vrml2x3dframe",
+            )
+            self.SetIcons(
+                config.get_icon_bundle(
+                    [256, 48, 32, 16], "%s-VRML-to-X3D-converter" % appname
+                )
+            )
             self.Bind(wx.EVT_CLOSE, self.OnClose)
             self.cache = cache
             self.embed = embed
@@ -38,32 +44,41 @@ if gui:
             sizer.Add(panel)
             panelsizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(panelsizer)
-            self.btn = BitmapButton(panel, wx.ID_ANY,
-                                    config.geticon(256, "3d-primitives"),
-                                    style=wx.NO_BORDER)
+            self.btn = BitmapButton(
+                panel,
+                wx.ID_ANY,
+                config.geticon(256, "3d-primitives"),
+                style=wx.NO_BORDER,
+            )
             self.btn.SetToolTipString(lang.getstr("file.select"))
-            self.btn.Bind(wx.EVT_BUTTON, lambda event:
-            vrmlfile2x3dfile(None,
-                             html=html,
-                             embed=embed,
-                             view=view,
-                             force=force,
-                             cache=cache,
-                             worker=self.worker))
+            self.btn.Bind(
+                wx.EVT_BUTTON,
+                lambda event: vrmlfile2x3dfile(
+                    None,
+                    html=html,
+                    embed=embed,
+                    view=view,
+                    force=force,
+                    cache=cache,
+                    worker=self.worker,
+                ),
+            )
             self.droptarget = FileDrop(self)
-            vrml_drop_handler = lambda vrmlpath: vrmlfile2x3dfile(vrmlpath,
-                                                                  html=html,
-                                                                  embed=embed,
-                                                                  view=view,
-                                                                  force=force,
-                                                                  cache=cache,
-                                                                  worker=self.worker)
+            vrml_drop_handler = lambda vrmlpath: vrmlfile2x3dfile(
+                vrmlpath,
+                html=html,
+                embed=embed,
+                view=view,
+                force=force,
+                cache=cache,
+                worker=self.worker,
+            )
             self.droptarget.drophandlers = {
                 ".vrml": vrml_drop_handler,
                 ".vrml.gz": vrml_drop_handler,
                 ".wrl": vrml_drop_handler,
                 ".wrl.gz": vrml_drop_handler,
-                ".wrz": vrml_drop_handler
+                ".wrz": vrml_drop_handler,
             }
             self.btn.SetDropTarget(self.droptarget)
             panelsizer.Add(self.btn, flag=wx.ALL, border=12)
@@ -78,9 +93,10 @@ if gui:
             wx.CallAfter(self.Destroy)
 
         def get_commands(self):
-            return (self.get_common_commands() +
-                    ["VRML-to-X3D-converter [filename...]",
-                     "load <filename...>"])
+            return self.get_common_commands() + [
+                "VRML-to-X3D-converter [filename...]",
+                "load <filename...>",
+            ]
 
         def process_data(self, data):
             if data[0] in ("VRML-to-X3D-converter", "load"):
@@ -100,9 +116,13 @@ def main():
         print("Usage: %s [OPTION]... FILE..." % os.path.basename(sys.argv[0]))
         print("The output is written to FILENAME.x3d(.html)")
         print("")
-        print("  --embed      Embed viewer components in HTML instead of referencing them")
+        print(
+            "  --embed      Embed viewer components in HTML instead of referencing them"
+        )
         print("  --force      Force fresh download of viewer components")
-        print("  --no-cache   Don't use viewer components cache (only uses existing cache if")
+        print(
+            "  --no-cache   Don't use viewer components cache (only uses existing cache if"
+        )
         print("               embedding components, can be overridden with --force)")
         if gui:
             print("  --no-gui     Don't use GUI (console mode)")
@@ -126,9 +146,15 @@ def main():
         view = "--view" in sys.argv[1:]
         for arg in sys.argv[1:]:
             if not arg.startswith("--"):
-                result = vrmlfile2x3dfile(str(arg), html=html,
-                                          embed=embed, view=view, force=force,
-                                          cache=cache, gui=gui)
+                result = vrmlfile2x3dfile(
+                    str(arg),
+                    html=html,
+                    embed=embed,
+                    view=view,
+                    force=force,
+                    cache=cache,
+                    gui=gui,
+                )
         if result is None:
             print("No filename given.")
         if sys.stdout.isatty() and "--batch" not in sys.argv[1:]:
@@ -150,12 +176,20 @@ def _main(app):
     app.TopWindow.Show()
 
 
-def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
-                     view=False, force=False, cache=True, worker=None,
-                     gui=True):
-    """ Convert VRML to HTML. Output is written to <vrmlfilename>.x3d.html
+def vrmlfile2x3dfile(
+    vrmlpath=None,
+    x3dpath=None,
+    html=True,
+    embed=False,
+    view=False,
+    force=False,
+    cache=True,
+    worker=None,
+    gui=True,
+):
+    """Convert VRML to HTML. Output is written to <vrmlfilename>.x3d.html
     unless you set x3dpath to desired output path, or False to be prompted
-    for an output path. """
+    for an output path."""
     while not vrmlpath or not os.path.isfile(vrmlpath):
         if not gui:
             if not vrmlpath or vrmlpath.startswith("--"):
@@ -166,12 +200,15 @@ def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
         if not wx.GetApp():
             app = BaseApp(0)
         defaultDir, defaultFile = config.get_verified_path("last_vrml_path")
-        dlg = wx.FileDialog(None, lang.getstr("file.select"),
-                            defaultDir=defaultDir,
-                            defaultFile=defaultFile,
-                            wildcard=lang.getstr("filetype.vrml") +
-                                     "|*.vrml;*.vrml.gz;*.wrl.gz;*.wrl;*.wrz",
-                            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        dlg = wx.FileDialog(
+            None,
+            lang.getstr("file.select"),
+            defaultDir=defaultDir,
+            defaultFile=defaultFile,
+            wildcard=lang.getstr("filetype.vrml")
+            + "|*.vrml;*.vrml.gz;*.wrl.gz;*.wrl;*.wrz",
+            style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
+        )
         dlg.Center(wx.BOTH)
         result = dlg.ShowModal()
         vrmlpath = dlg.GetPath()
@@ -179,8 +216,7 @@ def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
         if result != wx.ID_OK:
             return
         config.setcfg("last_vrml_path", vrmlpath)
-        config.writecfg(module="VRML-to-X3D-converter",
-                        options=("last_vrml_path", ))
+        config.writecfg(module="VRML-to-X3D-converter", options=("last_vrml_path",))
     filename, ext = os.path.splitext(vrmlpath)
     if x3dpath is None:
         x3dpath = filename + ".x3d"
@@ -199,13 +235,14 @@ def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
             defaultDir, defaultFile = os.path.split(x3dpath)
         else:
             defaultFile = os.path.basename(filename) + ".x3d"
-        dlg = wx.FileDialog(None, lang.getstr("error.access_denied.write",
-                                              dirname),
-                            defaultDir=defaultDir,
-                            defaultFile=defaultFile,
-                            wildcard=lang.getstr("filetype.x3d") +
-                                     "|*.x3d",
-                            style=wx.SAVE | wx.FD_OVERWRITE_PROMPT)
+        dlg = wx.FileDialog(
+            None,
+            lang.getstr("error.access_denied.write", dirname),
+            defaultDir=defaultDir,
+            defaultFile=defaultFile,
+            wildcard=lang.getstr("filetype.x3d") + "|*.x3d",
+            style=wx.SAVE | wx.FD_OVERWRITE_PROMPT,
+        )
         dlg.Center(wx.BOTH)
         result = dlg.ShowModal()
         dlg.Destroy()
@@ -226,20 +263,21 @@ def vrmlfile2x3dfile(vrmlpath=None, x3dpath=None, html=True, embed=False,
         finalpath = x3dpath
     if worker:
         worker.clear_cmd_output()
-        worker.start(lambda result:
-                     show_result_dialog(result, wx.GetApp().GetTopWindow())
-                     if isinstance(result, Exception)
-                     else result and view and launch_file(finalpath),
-                     x3dom.vrmlfile2x3dfile,
-                     wargs=(vrmlpath, x3dpath, html, embed, force, cache,
-                            worker),
-                     progress_title=lang.getstr("vrml_to_x3d_converter"),
-                     progress_start=1,
-                     resume=worker.progress_wnd and
-                            worker.progress_wnd.IsShownOnScreen(), fancy=False)
+        worker.start(
+            lambda result: show_result_dialog(result, wx.GetApp().GetTopWindow())
+            if isinstance(result, Exception)
+            else result and view and launch_file(finalpath),
+            x3dom.vrmlfile2x3dfile,
+            wargs=(vrmlpath, x3dpath, html, embed, force, cache, worker),
+            progress_title=lang.getstr("vrml_to_x3d_converter"),
+            progress_start=1,
+            resume=worker.progress_wnd and worker.progress_wnd.IsShownOnScreen(),
+            fancy=False,
+        )
     else:
-        result = x3dom.vrmlfile2x3dfile(vrmlpath, x3dpath, html, embed, force,
-                                        cache, None)
+        result = x3dom.vrmlfile2x3dfile(
+            vrmlpath, x3dpath, html, embed, force, cache, None
+        )
         if not isinstance(result, Exception) and result:
             if view:
                 launch_file(finalpath)

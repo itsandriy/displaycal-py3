@@ -16,19 +16,23 @@ ascii = "--ascii" in sys.argv[1:]
 # Debug level (default: 0 = off). >= 1 prints debug messages
 if "-d2" in sys.argv[1:] or "--debug=2" in sys.argv[1:]:
     debug = 2
-elif ("-d1" in sys.argv[1:] or "--debug=1" in sys.argv[1:] or
-      "-d" in sys.argv[1:] or "--debug" in sys.argv[1:]):
+elif (
+    "-d1" in sys.argv[1:]
+    or "--debug=1" in sys.argv[1:]
+    or "-d" in sys.argv[1:]
+    or "--debug" in sys.argv[1:]
+):
     debug = 1
 else:
     debug = 0
 
 # Debug localization
-debug_localization = ("-dl" in sys.argv[1:] or
-                      "--debug-localization" in sys.argv[1:])
+debug_localization = "-dl" in sys.argv[1:] or "--debug-localization" in sys.argv[1:]
 
 # Use alternate patch preview in the testchart editor?
-tc_use_alternate_preview = ("-ap" in sys.argv[1:] or
-                            "--alternate-preview" in sys.argv[1:])
+tc_use_alternate_preview = (
+    "-ap" in sys.argv[1:] or "--alternate-preview" in sys.argv[1:]
+)
 
 # Test some features even if they are not available normally
 test = "-t" in sys.argv[1:] or "--test" in sys.argv[1:]
@@ -36,8 +40,9 @@ test = "-t" in sys.argv[1:] or "--test" in sys.argv[1:]
 eecolor65 = "--ee65" in sys.argv[1:]
 
 # Test sensor calibration
-test_require_sensor_cal = ("-s" in sys.argv[1:] or
-                           "--test_require_sensor_cal" in sys.argv[1:])
+test_require_sensor_cal = (
+    "-s" in sys.argv[1:] or "--test_require_sensor_cal" in sys.argv[1:]
+)
 
 # Test update functionality
 test_update = "-tu" in sys.argv[1:] or "--test-update" in sys.argv[1:]
@@ -73,5 +78,6 @@ else:
 use_colord_gi = "--use-colord-gi" in sys.argv[1:]
 
 # Skip initial instrument/port detection on startup
-force_skip_initial_instrument_detection = ("--force-skip-initial-instrument-detection" in
-                                           sys.argv[1:])
+force_skip_initial_instrument_detection = (
+    "--force-skip-initial-instrument-detection" in sys.argv[1:]
+)

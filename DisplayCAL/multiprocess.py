@@ -35,17 +35,26 @@ def cpu_count(limit_by_total_vmem=True):
             # smart enough to swap memory used by inactive processes to disk to
             # free up more physical RAM for active processes.
             try:
-                max_cpus = int(psutil.virtual_memory().total / (1024 ** 3) - 1)
-            except:
+                max_cpus = int(psutil.virtual_memory().total / (1024**3) - 1)
+            except Exception:
                 pass
     try:
         return max(min(mp.cpu_count(), max_cpus), 1)
-    except:
+    except Exception:
         return 1
 
 
-def pool_slice(func, data_in, args=None, kwds=None, num_workers=None,
-               thread_abort=None, logfile=None, num_batches=1, progress=0):
+def pool_slice(
+    func,
+    data_in,
+    args=None,
+    kwds=None,
+    num_workers=None,
+    thread_abort=None,
+    logfile=None,
+    num_batches=1,
+    progress=0,
+):
     """Process data in slices using a pool of workers and return the results.
 
     The individual worker results are returned in the same order as the
@@ -87,8 +96,9 @@ def pool_slice(func, data_in, args=None, kwds=None, num_workers=None,
     if num_workers > 1:
         Pool = NonDaemonicPool
         manager = mp.Manager()
-        if thread_abort is not None and not isinstance(thread_abort.event,
-                                                       mp.managers.EventProxy):
+        if thread_abort is not None and not isinstance(
+            thread_abort.event, mp.managers.EventProxy
+        ):
             # Replace the event with a managed instance that is compatible
             # with pool
             event = thread_abort.event
@@ -112,6 +122,7 @@ def pool_slice(func, data_in, args=None, kwds=None, num_workers=None,
     progress_queue = Queue()
 
     if logfile:
+
         def progress_logger(num_workers, progress=0.0):
             eof_count = 0
             prevperc = -1
@@ -134,10 +145,11 @@ def pool_slice(func, data_in, args=None, kwds=None, num_workers=None,
                     logfile.write("\r%i%%" % perc)
                     prevperc = perc
 
-        threading.Thread(target=progress_logger,
-                         args=(num_workers * num_batches,
-                               progress * num_workers * num_batches),
-                         name="ProcessProgressLogger").start()
+        threading.Thread(
+            target=progress_logger,
+            args=(num_workers * num_batches, progress * num_workers * num_batches),
+            name="ProcessProgressLogger",
+        ).start()
 
     pool = Pool(num_workers)
     results = []
@@ -145,11 +157,13 @@ def pool_slice(func, data_in, args=None, kwds=None, num_workers=None,
     for batch in range(num_batches):
         for i in range(batch * num_workers, (batch + 1) * num_workers):
             end = int(math.ceil(chunksize * (i + 1)))
-            results.append(pool.apply_async(WorkerFunc(func,
-                                                       batch == num_batches - 1),
-                                            (data_in[start:end],
-                                             thread_abort_event,
-                                             progress_queue) + args, kwds))
+            results.append(
+                pool.apply_async(
+                    WorkerFunc(func, batch == num_batches - 1),
+                    (data_in[start:end], thread_abort_event, progress_queue) + args,
+                    kwds,
+                )
+            )
             start = end
 
     # Get results
@@ -181,26 +195,27 @@ def pool_slice(func, data_in, args=None, kwds=None, num_workers=None,
 
 
 class WorkerFunc(object):
-
     def __init__(self, func, exit=False):
         self.func = func
         self.exit = exit
 
     def __call__(self, data, thread_abort_event, progress_queue, *args, **kwds):
         try:
-            return self.func(data, thread_abort_event, progress_queue, *args,
-                             **kwds)
+            return self.func(data, thread_abort_event, progress_queue, *args, **kwds)
         except Exception as exception:
-            if (not getattr(sys, "_sigbreak", False) or
-                    not isinstance(exception, IOError) or
-                    exception.args[0] != errno.EPIPE):
+            if (
+                not getattr(sys, "_sigbreak", False)
+                or not isinstance(exception, IOError)
+                or exception.args[0] != errno.EPIPE
+            ):
                 import traceback
+
                 print(traceback.format_exc())
             return exception
         finally:
             progress_queue.put(EOFError())
             if mp.current_process().name != "MainProcess":
-                print("Exiting worker process",  mp.current_process().name)
+                print("Exiting worker process", mp.current_process().name)
                 if sys.platform == "win32" and self.exit:
                     # Exit handlers registered with atexit will not normally
                     # run when a multiprocessing subprocess exits. We are only
@@ -209,8 +224,11 @@ class WorkerFunc(object):
                     # have fork().
                     for func, targs, kargs in atexit._exithandlers:
                         # Find our lockfile removal exit handler
-                        if (targs and isinstance(targs[0], str) and
-                                targs[0].endswith(".lock")):
+                        if (
+                            targs
+                            and isinstance(targs[0], str)
+                            and targs[0].endswith(".lock")
+                        ):
                             print("Removing lockfile", targs[0])
                             try:
                                 func(*targs, **kargs)
@@ -239,7 +257,6 @@ class Mapper(object):
 
 
 class NonDaemonicProcess(mp.Process):
-
     @property
     def daemon(self):
         return False
@@ -250,12 +267,13 @@ class NonDaemonicProcess(mp.Process):
 
 
 class NonDaemonicPool(mp.pool.Pool):
-    """ Pool that has non-daemonic workers """
+    """Pool that has non-daemonic workers"""
+
     Process = NonDaemonicProcess
 
 
 class FakeManager(object):
-    """ Fake manager """
+    """Fake manager"""
 
     def Queue(self):
         return FakeQueue()
@@ -268,10 +286,11 @@ class FakeManager(object):
 
 
 class FakePool(object):
-    """ Fake pool """
+    """Fake pool"""
 
-    def __init__(self, processes=None, initializer=None, initargs=(),
-                 maxtasksperchild=None):
+    def __init__(
+        self, processes=None, initializer=None, initargs=(), maxtasksperchild=None
+    ):
         pass
 
     def apply_async(self, func, args, kwds):
@@ -292,7 +311,7 @@ class FakePool(object):
 
 class FakeQueue(object):
 
-    """ Fake queue """
+    """Fake queue"""
 
     def __init__(self):
         self.queue = []
@@ -300,7 +319,7 @@ class FakeQueue(object):
     def get(self, block=True, timeout=None):
         try:
             return self.queue.pop()
-        except:
+        except Exception:
             raise Empty
 
     def join(self):
@@ -312,7 +331,7 @@ class FakeQueue(object):
 
 class Result(object):
 
-    """ Result proxy """
+    """Result proxy"""
 
     def __init__(self, result):
         self.result = result

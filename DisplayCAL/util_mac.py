@@ -10,17 +10,17 @@ from DisplayCAL.options import verbose
 
 
 def get_osascript_args(applescript):
-    """ Return arguments ready to use for osascript """
+    """Return arguments ready to use for osascript"""
     if isinstance(applescript, str):
         applescript = applescript.splitlines()
     args = []
     for line in applescript:
-        args.extend(['-e', line])
+        args.extend(["-e", line])
     return args
 
 
 def get_osascript_args_or_run(applescript, run=True):
-    """ Return arguments ready to use for osascript or run the AppleScript """
+    """Return arguments ready to use for osascript or run the AppleScript"""
     if run:
         return osascript(applescript)
     else:
@@ -28,15 +28,13 @@ def get_osascript_args_or_run(applescript, run=True):
 
 
 def mac_app_activate(delay=0, mac_app_name="Finder"):
-    """Activate (show & bring to front) an application if it is running.
-
-    """
+    """Activate (show & bring to front) an application if it is running."""
     applescript = [
         'if app "%s" is running then' % mac_app_name,
         # Use 'run script' to prevent the app activating upon script
         # compilation even if not running
         r'run script "tell app \"%s\" to activate"' % mac_app_name,
-        'end if'
+        "end if",
     ]
     if delay:
         sleep(delay)
@@ -44,43 +42,42 @@ def mac_app_activate(delay=0, mac_app_name="Finder"):
 
 
 def mac_terminal_do_script(script=None, do=True):
-    """Run a script in Terminal.
-
-    """
+    """Run a script in Terminal."""
     applescript = [
         'if app "Terminal" is running then',
         'tell app "Terminal"',
-        'activate',
+        "activate",
         'do script ""',  # Terminal is already running, open a new
         # window to make sure it is not blocked by
         # another process
-        'end tell',
-        'else',
+        "end tell",
+        "else",
         'tell app "Terminal" to activate',  # Terminal is not yet running,
         # launch & use first window
-        'end if'
+        "end if",
     ]
     if script:
-        applescript.extend([
-            'tell app "Terminal"',
-            'do script "%s" in first window' % script.replace('"', '\\"'),
-            'end tell'
-        ])
+        applescript.extend(
+            [
+                'tell app "Terminal"',
+                'do script "%s" in first window' % script.replace('"', '\\"'),
+                "end tell",
+            ]
+        )
     return get_osascript_args_or_run(applescript, script and do)
 
 
-def mac_terminal_set_colors(background="black", cursor="gray", text="gray",
-                            text_bold="gray", do=True):
-    """Set Terminal colors.
-
-    """
+def mac_terminal_set_colors(
+    background="black", cursor="gray", text="gray", text_bold="gray", do=True
+):
+    """Set Terminal colors."""
     applescript = [
         'tell app "Terminal"',
         'set background color of first window to "%s"' % background,
         'set cursor color of first window to "%s"' % cursor,
         'set normal text color of first window to "%s"' % text,
         'set bold text color of first window to "%s"' % text_bold,
-        'end tell'
+        "end tell",
     ]
     return get_osascript_args_or_run(applescript, do)
 
@@ -92,8 +89,7 @@ def osascript(applescript):
 
     """
     args = get_osascript_args(applescript)
-    p = sp.Popen(['osascript'] + args, stdin=sp.PIPE, stdout=sp.PIPE,
-                 stderr=sp.PIPE)
+    p = sp.Popen(["osascript"] + args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
     output, errors = p.communicate()
     retcode = p.wait()
     return retcode, output, errors
@@ -120,13 +116,16 @@ def get_model_code(serial=None):
 
 
 def get_serial():
-    """Return this mac's serial number
-    """
+    """Return this mac's serial number"""
     try:
-        p = sp.Popen(["ioreg", "-c", "IOPlatformExpertDevice", "-d", "2"],
-                     stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
+        p = sp.Popen(
+            ["ioreg", "-c", "IOPlatformExpertDevice", "-d", "2"],
+            stdin=sp.PIPE,
+            stdout=sp.PIPE,
+            stderr=sp.PIPE,
+        )
         output, errors = p.communicate()
-    except:
+    except Exception:
         return None
     match = re.search(r'"IOPlatformSerialNumber"\s*=\s*"([^"]*)"', output.decode())
     if match:
@@ -134,11 +133,11 @@ def get_serial():
 
 
 def get_model_id():
-    """Return this mac's model id
-    """
+    """Return this mac's model id"""
     try:
-        p = sp.Popen(["sysctl", "hw.model"], stdin=sp.PIPE, stdout=sp.PIPE,
-                     stderr=sp.PIPE)
+        p = sp.Popen(
+            ["sysctl", "hw.model"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE
+        )
         output, errors = p.communicate()
     except BaseException:
         return None
@@ -166,8 +165,12 @@ def get_machine_attributes(model_id=None):
         # Mac OS X 10.6/10.7
         filename = sk
     try:
-        p = sp.Popen(["defaults", "read", filename, model_id],
-                     stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
+        p = sp.Popen(
+            ["defaults", "read", filename, model_id],
+            stdin=sp.PIPE,
+            stdout=sp.PIPE,
+            stderr=sp.PIPE,
+        )
         output, errors = p.communicate()
     except Exception:
         return None
@@ -176,5 +179,7 @@ def get_machine_attributes(model_id=None):
         match = re.search(r'(\w+)\s*=\s*"?(.*?)"?\s*;', line.decode())
         if match:
             # Need to double unescape backslashes
-            attrs[match.group(1)] = match.group(2).decode("string_escape").decode("string_escape")
+            attrs[match.group(1)] = (
+                match.group(2).decode("string_escape").decode("string_escape")
+            )
     return attrs

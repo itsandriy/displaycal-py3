@@ -2,24 +2,24 @@
 
 
 class Cube3D(object):
-
     def __init__(self, size=65, start=0, end=None):
         orange = start, end
-        numentries = size ** 3
+        numentries = size**3
         if end is None:
             end = numentries
         for name in ("start", "end"):
             v = locals()[name]
             if not isinstance(v, int):
-                raise TypeError("integer %s argument expected, got %s" %
-                                (name, v.__class__.__name__))
+                raise TypeError(
+                    "integer %s argument expected, got %s"
+                    % (name, v.__class__.__name__)
+                )
         start = self._clamp(start, 0, numentries, -1)
         end = self._clamp(end, 0, numentries, -1)
         for i, name in enumerate(("start", "end")):
             v = locals()[name]
             if v == -1:
-                raise ValueError("%s argument %i out of range" %
-                                 (name, orange[i]))
+                raise ValueError("%s argument %i out of range" % (name, orange[i]))
         self._size = size
         self._start = start
         self._len = end - start
@@ -35,7 +35,7 @@ class Cube3D(object):
         (c0, c1, c2) = xxx_todo_changeme
         if (c0, c1, c2) not in self:
             raise ValueError("%r not in %r" % ((c0, c1, c2), self))
-        i = c0 * self._size ** 2 + c1 * self._size + c2
+        i = c0 * self._size**2 + c1 * self._size + c2
         return int(i) - self._start
 
     def _clamp(self, v, lower=0, upper=None, fallback=None):
@@ -52,11 +52,15 @@ class Cube3D(object):
 
     def __contains__(self, xxx_todo_changeme1):
         (c0, c1, c2) = xxx_todo_changeme1
-        return (c0 == int(c0) and c1 == int(c1) and c2 == int(c2) and
-                max(c0, c1, c2) < self._size and
-                self._start <= c0 * self._size ** 2 +
-                c1 * self._size +
-                c2 < self._len + self._start)
+        return (
+            c0 == int(c0)
+            and c1 == int(c1)
+            and c2 == int(c2)
+            and max(c0, c1, c2) < self._size
+            and self._start
+            <= c0 * self._size**2 + c1 * self._size + c2
+            < self._len + self._start
+        )
 
     def __getitem__(self, i):
         oi = i
@@ -65,9 +69,11 @@ class Cube3D(object):
         if i < 0 or i > self._len - 1:
             raise IndexError("index %i out of range" % oi)
         i += self._start
-        return (i // self._size // self._size,
-                i // self._size % self._size,
-                i % self._size)
+        return (
+            i // self._size // self._size,
+            i // self._size % self._size,
+            i % self._size,
+        )
 
     def __getslice__(self, i, j):
         i = self._clamp(i)
@@ -78,8 +84,11 @@ class Cube3D(object):
         return self._len
 
     def __repr__(self):
-        return (self.__class__.__name__ + "(size=%i, start=%i, end=%i)" %
-                (self._size, self._start, self._start + self._len))
+        return self.__class__.__name__ + "(size=%i, start=%i, end=%i)" % (
+            self._size,
+            self._start,
+            self._start + self._len,
+        )
 
 
 class Cube3DIterator(Cube3D):

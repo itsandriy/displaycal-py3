@@ -24,7 +24,7 @@ def main():
         print(module_name)
         try:
             # pkgutil.get_loader(module_info)
-            module = importlib.import_module('DisplayCAL.%s' % module_info.name)
+            module = importlib.import_module("DisplayCAL.%s" % module_info.name)
         except ModuleNotFoundError:
             continue
 
@@ -32,7 +32,7 @@ def main():
         for func_name, func in all_functions:
             source_lines = inspect.getsourcelines(func)[0]
             source_length = len(source_lines)
-            key = '%s.%s' % (module_name, func_name)
+            key = "%s.%s" % (module_name, func_name)
             report[key] = source_length
             print(key)
 
@@ -43,7 +43,7 @@ def main():
                 try:
                     source_lines = inspect.getsourcelines(method)[0]
                     source_length = len(source_lines)
-                    key = '%s.%s.%s' % (module_name, class_name, method_name)
+                    key = "%s.%s.%s" % (module_name, class_name, method_name)
                     report[key] = source_length
                     print(key)
                 except TypeError:

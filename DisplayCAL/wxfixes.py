@@ -25,16 +25,21 @@ else:
         except wxversion.VersionError:
             pass
 import wx
+
 if wx.VERSION < wx_minversion:
     app = wx.GetApp() or wx.App(0)
-    result = wx.MessageBox("This application requires a version of wxPython "
-                           "greater than or equal to %s, but your most recent "
-                           "version is %s.\n\n"
-                           "Would you like to download a new version of wxPython?\n"
-                           % (".".join(str(n) for n in wx_minversion), wx.__version__),
-                           "wxPython Upgrade Needed", style=wx.YES_NO)
+    result = wx.MessageBox(
+        "This application requires a version of wxPython "
+        "greater than or equal to %s, but your most recent "
+        "version is %s.\n\n"
+        "Would you like to download a new version of wxPython?\n"
+        % (".".join(str(n) for n in wx_minversion), wx.__version__),
+        "wxPython Upgrade Needed",
+        style=wx.YES_NO,
+    )
     if result == wx.YES:
         import webbrowser
+
         webbrowser.open("http://wxpython.org/")
     app.MainLoop()
     sys.exit()
@@ -46,7 +51,6 @@ from wx.lib import platebtn
 from wx import xrc
 
 from DisplayCAL.colormath import convert_range
-from DisplayCAL.util_str import safe_str
 
 
 if not hasattr(wx.Window, "HasFocus"):
@@ -76,38 +80,38 @@ if "phoenix" in wx.PlatformInfo:
 
     # Deprecated items
 
-    wx.DEFAULT    = wx.FONTFAMILY_DEFAULT
+    wx.DEFAULT = wx.FONTFAMILY_DEFAULT
     wx.DECORATIVE = wx.FONTFAMILY_DECORATIVE
-    wx.ROMAN      = wx.FONTFAMILY_ROMAN
-    wx.SCRIPT     = wx.FONTFAMILY_SCRIPT
-    wx.SWISS      = wx.FONTFAMILY_SWISS
-    wx.MODERN     = wx.FONTFAMILY_MODERN
-    wx.TELETYPE   = wx.FONTFAMILY_TELETYPE
+    wx.ROMAN = wx.FONTFAMILY_ROMAN
+    wx.SCRIPT = wx.FONTFAMILY_SCRIPT
+    wx.SWISS = wx.FONTFAMILY_SWISS
+    wx.MODERN = wx.FONTFAMILY_MODERN
+    wx.TELETYPE = wx.FONTFAMILY_TELETYPE
 
     wx.NORMAL = wx.FONTWEIGHT_NORMAL | wx.FONTSTYLE_NORMAL
-    wx.LIGHT  = wx.FONTWEIGHT_LIGHT
-    wx.BOLD   = wx.FONTWEIGHT_BOLD
+    wx.LIGHT = wx.FONTWEIGHT_LIGHT
+    wx.BOLD = wx.FONTWEIGHT_BOLD
 
     wx.ITALIC = wx.FONTSTYLE_ITALIC
-    wx.SLANT  = wx.FONTSTYLE_SLANT
+    wx.SLANT = wx.FONTSTYLE_SLANT
 
-    wx.SOLID       = wx.PENSTYLE_SOLID | wx.BRUSHSTYLE_SOLID
-    wx.DOT         = wx.PENSTYLE_DOT
-    wx.LONG_DASH   = wx.PENSTYLE_LONG_DASH
-    wx.SHORT_DASH  = wx.PENSTYLE_SHORT_DASH
-    wx.DOT_DASH    = wx.PENSTYLE_DOT_DASH
-    wx.USER_DASH   = wx.PENSTYLE_USER_DASH
+    wx.SOLID = wx.PENSTYLE_SOLID | wx.BRUSHSTYLE_SOLID
+    wx.DOT = wx.PENSTYLE_DOT
+    wx.LONG_DASH = wx.PENSTYLE_LONG_DASH
+    wx.SHORT_DASH = wx.PENSTYLE_SHORT_DASH
+    wx.DOT_DASH = wx.PENSTYLE_DOT_DASH
+    wx.USER_DASH = wx.PENSTYLE_USER_DASH
     wx.TRANSPARENT = wx.PENSTYLE_TRANSPARENT | wx.BRUSHSTYLE_TRANSPARENT
 
     wx.STIPPLE_MASK_OPAQUE = wx.BRUSHSTYLE_STIPPLE_MASK_OPAQUE
-    wx.STIPPLE_MASK        = wx.BRUSHSTYLE_STIPPLE_MASK
-    wx.STIPPLE             = wx.BRUSHSTYLE_STIPPLE
-    wx.BDIAGONAL_HATCH     = wx.BRUSHSTYLE_BDIAGONAL_HATCH
-    wx.CROSSDIAG_HATCH     = wx.BRUSHSTYLE_CROSSDIAG_HATCH
-    wx.FDIAGONAL_HATCH     = wx.BRUSHSTYLE_FDIAGONAL_HATCH
-    wx.CROSS_HATCH         = wx.BRUSHSTYLE_CROSS_HATCH
-    wx.HORIZONTAL_HATCH    = wx.BRUSHSTYLE_HORIZONTAL_HATCH
-    wx.VERTICAL_HATCH      = wx.BRUSHSTYLE_VERTICAL_HATCH
+    wx.STIPPLE_MASK = wx.BRUSHSTYLE_STIPPLE_MASK
+    wx.STIPPLE = wx.BRUSHSTYLE_STIPPLE
+    wx.BDIAGONAL_HATCH = wx.BRUSHSTYLE_BDIAGONAL_HATCH
+    wx.CROSSDIAG_HATCH = wx.BRUSHSTYLE_CROSSDIAG_HATCH
+    wx.FDIAGONAL_HATCH = wx.BRUSHSTYLE_FDIAGONAL_HATCH
+    wx.CROSS_HATCH = wx.BRUSHSTYLE_CROSS_HATCH
+    wx.HORIZONTAL_HATCH = wx.BRUSHSTYLE_HORIZONTAL_HATCH
+    wx.VERTICAL_HATCH = wx.BRUSHSTYLE_VERTICAL_HATCH
 
     embeddedimage.PyEmbeddedImage.getBitmap = embeddedimage.PyEmbeddedImage.GetBitmap
 
@@ -124,14 +128,20 @@ if "phoenix" in wx.PlatformInfo:
     wx.BitmapFromIcon = BitmapFromIcon
     wx.CursorFromImage = wx.Cursor
     wx.EmptyBitmap = wx.Bitmap
-    wx.EmptyBitmapRGBA = (lambda width, height, red=0, green=0, blue=0, alpha=0:
-                          wx.Bitmap.FromRGBA(width, height, red, green, blue,
-                                             alpha))
+    wx.EmptyBitmapRGBA = (
+        lambda width, height, red=0, green=0, blue=0, alpha=0: wx.Bitmap.FromRGBA(
+            width, height, red, green, blue, alpha
+        )
+    )
     wx.EmptyIcon = wx.Icon
     wx.IconFromBitmap = wx.Icon
     wx.ImageFromStream = wx.Image
-    wx.ListCtrl.InsertStringItem = lambda self, index, label: self.InsertItem(index, label)
-    wx.ListCtrl.SetStringItem = lambda self, index, col, label: self.SetItem(index, col, label)
+    wx.ListCtrl.InsertStringItem = lambda self, index, label: self.InsertItem(
+        index, label
+    )
+    wx.ListCtrl.SetStringItem = lambda self, index, col, label: self.SetItem(
+        index, col, label
+    )
     wx.Menu.RemoveItem = lambda self, item: self.Remove(item)
     wx.NamedColour = wx.Colour
     wx.PyControl = wx.Control
@@ -175,15 +185,18 @@ if "phoenix" in wx.PlatformInfo:
 
     wx.DC.BeginDrawing = lambda self: None
     wx.DC.DrawRectangleRect = lambda dc, rect: dc.DrawRectangle(rect)
-    wx.DC.DrawRoundedRectangleRect = lambda dc, rect, radius: dc.DrawRoundedRectangle(rect, radius)
+    wx.DC.DrawRoundedRectangleRect = lambda dc, rect, radius: dc.DrawRoundedRectangle(
+        rect, radius
+    )
     wx.DC.EndDrawing = lambda self: None
     if not hasattr(wx.DC, "SetClippingRect"):
-        wx.DC.SetClippingRect = lambda dc, rect: dc.SetClippingRegion(rect.x,
-                                                                      rect.y,
-                                                                      rect.width,
-                                                                      rect.height)
+        wx.DC.SetClippingRect = lambda dc, rect: dc.SetClippingRegion(
+            rect.x, rect.y, rect.width, rect.height
+        )
 
-    wx.IconBundle.AddIconFromFile = lambda file, type=wx.BITMAP_TYPE_ANY: wx.IconBundle.AddIcon(file, type)
+    wx.IconBundle.AddIconFromFile = (
+        lambda file, type=wx.BITMAP_TYPE_ANY: wx.IconBundle.AddIcon(file, type)
+    )
 
     def ContainsRect(self, *args):
         if len(args) > 1:
@@ -215,7 +228,7 @@ if "phoenix" in wx.PlatformInfo:
     wx.SystemSettings_GetFont = wx.SystemSettings.GetFont
     wx.SystemSettings_GetMetric = wx.SystemSettings.GetMetric
     wx.grid.EVT_GRID_CELL_CHANGE = wx.grid.EVT_GRID_CELL_CHANGED
-    if hasattr( wx.grid.Grid, "GridSelectRows"):
+    if hasattr(wx.grid.Grid, "GridSelectRows"):
         # wxPython Phoenix 4.0.0a
         wx.grid.Grid.wxGridSelectRows = wx.grid.Grid.GridSelectRows
     else:
@@ -289,6 +302,7 @@ if "gtk3" in wx.PlatformInfo:
             dc.EndDrawing()
 
     from wx import dataview
+
     DataViewListCtrl = dataview.DataViewListCtrl
 
     class ListCtrl(DataViewListCtrl):
@@ -296,14 +310,20 @@ if "gtk3" in wx.PlatformInfo:
         # Implement ListCtrl as DataViewListCtrl
         # Works around header rendering ugliness with GTK3
 
-        def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
-                     size=wx.DefaultSize, style=wx.LC_ICON,
-                     validator=wx.DefaultValidator, name=wx.ListCtrlNameStr):
+        def __init__(
+            self,
+            parent,
+            id=wx.ID_ANY,
+            pos=wx.DefaultPosition,
+            size=wx.DefaultSize,
+            style=wx.LC_ICON,
+            validator=wx.DefaultValidator,
+            name=wx.ListCtrlNameStr,
+        ):
             dv_style = 0
             if style & wx.LC_SINGLE_SEL:
                 dv_style |= dataview.DV_SINGLE
-            DataViewListCtrl.__init__(self, parent, id, pos, size, dv_style,
-                                      validator)
+            DataViewListCtrl.__init__(self, parent, id, pos, size, dv_style, validator)
             self.Name = name
             self._columns = {}
             self._items = {}
@@ -349,17 +369,23 @@ if "gtk3" in wx.PlatformInfo:
             if state == stateMask == wx.LIST_STATE_SELECTED:
                 self.SelectRow(row)
             else:
-                raise NotImplementedError("SetItemState is only implemented for "
-                                          "selecting a single row")
+                raise NotImplementedError(
+                    "SetItemState is only implemented for " "selecting a single row"
+                )
 
-        def GetNextItem(self, row, geometry=wx.LIST_NEXT_ALL,
-                        state=wx.LIST_STATE_DONTCARE):
-            if (row == -1 and geometry == wx.LIST_NEXT_ALL and
-                    state == wx.LIST_STATE_SELECTED):
+        def GetNextItem(
+            self, row, geometry=wx.LIST_NEXT_ALL, state=wx.LIST_STATE_DONTCARE
+        ):
+            if (
+                row == -1
+                and geometry == wx.LIST_NEXT_ALL
+                and state == wx.LIST_STATE_SELECTED
+            ):
                 return self.GetSelectedRow()
             else:
-                raise NotImplementedError("GetNextItem is only implemented for "
-                                          "returning the selected row")
+                raise NotImplementedError(
+                    "GetNextItem is only implemented for " "returning the selected row"
+                )
 
         def GetItemCount(self):
             return len(self._items)
@@ -373,8 +399,9 @@ if "gtk3" in wx.PlatformInfo:
                 else:
                     return 0
             else:
-                raise NotImplementedError("GetItemState is only implemented to "
-                                          "check if a row is selected")
+                raise NotImplementedError(
+                    "GetItemState is only implemented to " "check if a row is selected"
+                )
 
         def Select(self, row, on=1):
             if on:
@@ -388,10 +415,19 @@ if "gtk3" in wx.PlatformInfo:
 
         _spinwidth = 0
 
-        def __init__(self, parent, id=wx.ID_ANY, value="",
-                     pos=wx.DefaultPosition, size=wx.DefaultSize,
-                     style=wx.SP_ARROW_KEYS, min=0, max=100, initial=0,
-                     name="wxSpinCtrl"):
+        def __init__(
+            self,
+            parent,
+            id=wx.ID_ANY,
+            value="",
+            pos=wx.DefaultPosition,
+            size=wx.DefaultSize,
+            style=wx.SP_ARROW_KEYS,
+            min=0,
+            max=100,
+            initial=0,
+            name="wxSpinCtrl",
+        ):
             if size[0] != -1:
                 # Adjust initial size for GTK3 to accomodate spin buttons
                 if not SpinCtrl._spinwidth:
@@ -401,15 +437,15 @@ if "gtk3" in wx.PlatformInfo:
                     spin.Destroy()
                     text.Destroy()
                 size = size[0] + SpinCtrl._spinwidth, size[1]
-            wx._SpinCtrl.__init__(self, parent, id, value, pos, size, style,
-                                  min, max, initial, name)
+            wx._SpinCtrl.__init__(
+                self, parent, id, value, pos, size, style, min, max, initial, name
+            )
 
     wx.SpinCtrl = SpinCtrl
 
     _StaticText_SetLabel = wx._StaticText.SetLabel
 
     class StaticText(wx._StaticText):
-
         def __init__(self, *args, **kwargs):
             wx._StaticText.__init__(self, *args, **kwargs)
 
@@ -446,15 +482,17 @@ else:
 
 wx.BitmapButton._SetBitmapLabel = wx.BitmapButton.SetBitmapLabel
 
+
 def SetBitmapLabel(self, bitmap):
-    """ Replacement for SetBitmapLabel which avoids flickering """
+    """Replacement for SetBitmapLabel which avoids flickering"""
     if self.GetBitmapLabel() != bitmap:
         self._SetBitmapLabel(bitmap)
+
 
 wx.BitmapButton.SetBitmapLabel = SetBitmapLabel
 
 
-def BitmapButtonEnable(self, enable = True):
+def BitmapButtonEnable(self, enable=True):
     """Replacement for BitmapButton.Enable which circumvents repainting issues
 
     (bitmap does not change on button state change)
@@ -488,8 +526,7 @@ if "phoenix" not in wx.PlatformInfo:
 
 
 def FindMenuItem(self, label):
-    """Replacement for wx.Menu.FindItem
-    """
+    """Replacement for wx.Menu.FindItem"""
     label = GTKMenuItemGetFixedLabel(label)
     for menuitem in self.GetMenuItems():
 
@@ -519,6 +556,7 @@ def GTKMenuItemGetFixedLabel(label):
 
 
 if not hasattr(wx.Sizer, "GetItemIndex"):
+
     def GetItemIndex(self, item):
         for i, child in enumerate(self.GetChildren()):
             if child.GetWindow() is item:
@@ -593,12 +631,10 @@ if sys.platform == "darwin":
 
     wx.StaticText.Enabled = StaticTextEnabled
 
-
     def StaticTextDisable(self):
         self.Enable(False)
 
     wx.StaticText.Disable = StaticTextDisable
-
 
     def StaticTextEnable(self, enable=True):
         enable = bool(enable)
@@ -610,18 +646,16 @@ if sys.platform == "darwin":
         color = self._fgcolor
         if not enable:
             bgcolor = self.Parent.BackgroundColour
-            bgblend = .5
-            blend = .5
-            color = wx.Colour(int(round(bgblend * bgcolor.Red() +
-                                        blend * color.Red())),
-                              int(round(bgblend * bgcolor.Green() +
-                                        blend * color.Green())),
-                              int(round(bgblend * bgcolor.Blue() +
-                                        blend * color.Blue())))
+            bgblend = 0.5
+            blend = 0.5
+            color = wx.Colour(
+                int(round(bgblend * bgcolor.Red() + blend * color.Red())),
+                int(round(bgblend * bgcolor.Green() + blend * color.Green())),
+                int(round(bgblend * bgcolor.Blue() + blend * color.Blue())),
+            )
         self.ForegroundColour = color
 
     wx.StaticText.Enable = StaticTextEnable
-
 
     def StaticTextIsEnabled(self):
         return getattr(self, "_enabled", True)
@@ -633,7 +667,7 @@ wx.Window._SetToolTipString = wx.Window.SetToolTipString
 
 
 def SetToolTipString(self, string):
-    """ Replacement for SetToolTipString which updates correctly """
+    """Replacement for SetToolTipString which updates correctly"""
     wx.Window.SetToolTip(self, None)
     wx.Window._SetToolTipString(self, string)
 
@@ -643,15 +677,18 @@ wx.Window.SetToolTipString = SetToolTipString
 
 def _adjust_sizer_args_scaling_for_appdpi(*args, **kwargs):
     from DisplayCAL.config import get_default_dpi, getcfg
+
     scale = getcfg("app.dpi") / get_default_dpi()
     if scale > 1:
         args = list(args)
         if kwargs.get("border"):
             kwargs["border"] = int(round(kwargs["border"] * scale))
         elif "border" not in kwargs:
-            if (isinstance(args[0],
-                           (tuple, wx.Size, wx.Sizer, wx.Window)) and
-                    len(args) > 3 and args[3]):
+            if (
+                isinstance(args[0], (tuple, wx.Size, wx.Sizer, wx.Window))
+                and len(args) > 3
+                and args[3]
+            ):
                 # item, proportion, flag, border, ...
                 args[3] = int(round(args[3] * scale))
             elif isinstance(args[0], int) and len(args) > 4 and args[4]:
@@ -659,11 +696,11 @@ def _adjust_sizer_args_scaling_for_appdpi(*args, **kwargs):
                 args[4] = int(round(args[4] * scale))
         if args and isinstance(args[0], (tuple, wx.Size)):
             spacer = list(args[0])
-            ##print spacer, '->',
+            # print(spacer, '->')
             for i, dimension in enumerate(spacer):
                 if dimension > 0:
                     spacer[i] = int(round(dimension * scale))
-            ##print spacer
+            # print(spacer)
             args = [tuple(spacer)] + args[1:]
     return args, kwargs
 
@@ -672,7 +709,6 @@ wx._Sizer = wx.Sizer
 
 
 class Sizer(wx._Sizer):
-
     def Add(self, *args, **kwargs):
         args, kwargs = _adjust_sizer_args_scaling_for_appdpi(*args, **kwargs)
         return wx._Sizer.Add(self, *args, **kwargs)
@@ -681,46 +717,52 @@ class Sizer(wx._Sizer):
         args, kwargs = _adjust_sizer_args_scaling_for_appdpi(*args, **kwargs)
         return wx._Sizer.Insert(self, index, *args, **kwargs)
 
+
 wx.Sizer = Sizer
 
 
 wx._BoxSizer = wx.BoxSizer
+
 
 class BoxSizer(wx._BoxSizer):
 
     Add = Sizer.__dict__["Add"]
     Insert = Sizer.__dict__["Insert"]
 
+
 wx.BoxSizer = BoxSizer
 
 
 wx._GridSizer = wx.GridSizer
 
-class GridSizer(wx._GridSizer):
 
+class GridSizer(wx._GridSizer):
     def __init__(self, rows=0, cols=0, vgap=0, hgap=0):
         if vgap or hgap:
             from DisplayCAL.config import get_default_dpi, getcfg
+
             scale = getcfg("app.dpi") / get_default_dpi()
             if scale > 1:
-                ##print vgap, hgap, '->',
+                # print(vgap, hgap, '->')
                 vgap, hgap = [int(round(v * scale)) for v in (vgap, hgap)]
-            ##print vgap, hgap
+            # print(vgap, hgap)
         super(GridSizer, self).__init__(rows, cols, vgap, hgap)
 
     Add = Sizer.__dict__["Add"]
     Insert = Sizer.__dict__["Insert"]
+
 
 wx.GridSizer = GridSizer
 
 
 wx._FlexGridSizer = wx.FlexGridSizer
 
-class FlexGridSizer(wx._FlexGridSizer):
 
+class FlexGridSizer(wx._FlexGridSizer):
     def __init__(self, rows=0, cols=0, vgap=0, hgap=0):
         if vgap or hgap:
             from DisplayCAL.config import get_default_dpi, getcfg
+
             scale = getcfg("app.dpi") / get_default_dpi()
             if scale > 1:
                 # print vgap, hgap, '->',
@@ -736,7 +778,7 @@ wx.FlexGridSizer = FlexGridSizer
 
 
 def GridGetSelection(self):
-    """ Return selected rows, cols, block and cells """
+    """Return selected rows, cols, block and cells"""
     sel = []
     numrows = self.GetNumberRows()
     numcols = self.GetNumberCols()
@@ -755,8 +797,8 @@ def GridGetSelection(self):
     br = self.GetSelectionBlockBottomRight()
     if tl and br:
         for n in range(min(len(tl), len(br))):
-            for i in range(tl[n][0], br[n][0] + 1): # rows
-                for j in range(tl[n][1], br[n][1] + 1): # cols
+            for i in range(tl[n][0], br[n][0] + 1):  # rows
+                for j in range(tl[n][1], br[n][1] + 1):  # cols
                     sel.append((i, j))
     # single selected cells
     sel.extend(self.GetSelectedCells())
@@ -771,6 +813,7 @@ def GridGetSelection(self):
     sel.sort()
     return sel
 
+
 wx.grid.Grid.GetSelection = GridGetSelection
 
 
@@ -780,17 +823,19 @@ def adjust_font_size_for_gcdc(font):
 
 
 def get_dc_font_scale(dc):
-    """ Get correct font scaling factor for DC """
+    """Get correct font scaling factor for DC"""
     pointsize = (1.0, 1.0)
     if isinstance(dc, wx.GCDC):
         pointsize = tuple(1.0 / scale for scale in dc.GetLogicalScale())
-    if sys.platform in ("darwin", "win32") or (not isinstance(dc, wx.GCDC) and
-                                               "gtk3" not in wx.PlatformInfo):
+    if sys.platform in ("darwin", "win32") or (
+        not isinstance(dc, wx.GCDC) and "gtk3" not in wx.PlatformInfo
+    ):
         return sum(pointsize) / 2.0
     else:
         # On Linux, we need to correct the font size by a certain factor if
         # wx.GCDC is used, to make text the same size as if wx.GCDC weren't used
         from DisplayCAL.config import get_default_dpi, getcfg, set_default_app_dpi
+
         set_default_app_dpi()
         scale = getcfg("app.dpi") / get_default_dpi()
     if wx.VERSION < (2, 9):
@@ -803,7 +848,7 @@ def get_dc_font_scale(dc):
 
 
 def get_dc_font_size(size, dc):
-    """ Get correct font size for DC """
+    """Get correct font size for DC"""
     return size * get_dc_font_scale(dc)
 
 
@@ -811,21 +856,21 @@ def get_gcdc_font_size(size):
     dc = wx.MemoryDC(wx.EmptyBitmap(1, 1))
     try:
         dc = wx.GCDC(dc)
-    except:
+    except Exception:
         pass
     return get_dc_font_size(size, dc)
 
 
 def get_bitmap_disabled(bitmap):
     # Use Rec. 709 luma coefficients to convert to grayscale
-    image = bitmap.ConvertToImage().ConvertToGreyscale(.2126, .7152, .0722)
+    image = bitmap.ConvertToImage().ConvertToGreyscale(0.2126, 0.7152, 0.0722)
     if image.HasMask() and not image.HasAlpha():
         image.InitAlpha()
     if image.HasAlpha():
         alphabuffer = image.GetAlphaBuffer()
         for i, byte in enumerate(alphabuffer):
             if byte > 0:
-                alphabuffer[i] = int(round(byte * .3))
+                alphabuffer[i] = int(round(byte * 0.3))
     return image.ConvertToBitmap()
 
 
@@ -841,7 +886,7 @@ def get_bitmap_hover(bitmap, ctrl=None):
     G = color[1] / 255.0
     B = color[2] / 255.0
     # Assume Rec. 709 gamma 2.2 to determine rel. luminance
-    lum = .2126 * R ** 2.2 + .7152 * G ** 2.2 + .0722 * B ** 2.2
+    lum = 0.2126 * R**2.2 + 0.7152 * G**2.2 + 0.0722 * B**2.2
     is_bw = image.IsBW()
     if ctrl:
         bgcolor = ctrl.Parent.BackgroundColour
@@ -852,7 +897,7 @@ def get_bitmap_hover(bitmap, ctrl=None):
             G = bgcolor[1] / 255.0
             B = bgcolor[2] / 255.0
             # Assume Rec. 709 gamma 2.2 to determine rel. luminance
-            bglum = .2126 * R ** 2.2 + .7152 * G ** 2.2 + .0722 * B ** 2.2
+            bglum = 0.2126 * R**2.2 + 0.7152 * G**2.2 + 0.0722 * B**2.2
             lumdiff = (max(lum, bglum) - min(lum, bglum)) ** (1 / 2.2)
             if lumdiff < 1.0 / 3.0:
                 if lum > bglum:
@@ -862,8 +907,7 @@ def get_bitmap_hover(bitmap, ctrl=None):
                     newmin = 0
                     newmax = bglum ** (1 / 2.2) * 153  # 60%
                 for i, v in enumerate(color):
-                    color[i] = int(round(convert_range(v, 0, 255, newmin,
-                                                       newmax)))
+                    color[i] = int(round(convert_range(v, 0, 255, newmin, newmax)))
     databuffer = image.GetDataBuffer()
     alphabuffer = image.GetAlphaBuffer()
     minv = 256  # Intentionally above max possible value
@@ -925,7 +969,7 @@ def get_bitmap_pressed(bitmap):
     databuffer = image.GetDataBuffer()
     for i, byte in enumerate(databuffer):
         if byte > 0:
-            databuffer[i] = int(round(byte * .85))
+            databuffer[i] = int(round(byte * 0.85))
     return image.ConvertToBitmap()
 
 
@@ -946,8 +990,7 @@ def set_bitmap_labels(btn, disabled=True, focus=None, pressed=True):
         size = btn.MinSize
         if -1 in size:
             size = (16, 16)
-        bitmap = wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE,
-                                          size=size)
+        bitmap = wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE, size=size)
 
     # Disabled
     if disabled:
@@ -985,11 +1028,15 @@ def set_bitmap_labels(btn, disabled=True, focus=None, pressed=True):
 
 
 def get_dialogs(modal=False):
-    """ If there are any dialogs open, return them """
-    return [window for window in wx.GetTopLevelWindows() if window and
-            isinstance(window, wx.Dialog) and
-            window.IsShown() and
-            (not modal or window.IsModal())]
+    """If there are any dialogs open, return them"""
+    return [
+        window
+        for window in wx.GetTopLevelWindows()
+        if window
+        and isinstance(window, wx.Dialog)
+        and window.IsShown()
+        and (not modal or window.IsModal())
+    ]
 
 
 # wx.DirDialog and wx.FileDialog are normally not returned by
@@ -998,8 +1045,8 @@ def get_dialogs(modal=False):
 _DirDialog = wx.DirDialog
 _FileDialog = wx.FileDialog
 
-class PathDialogBase(wx.Dialog):
 
+class PathDialogBase(wx.Dialog):
     def __init__(self, parent, name):
         wx.Dialog.__init__(self, parent, -1, name=name)
         self._ismodal = False
@@ -1031,23 +1078,25 @@ class PathDialogBase(wx.Dialog):
         self._isshown = False
         return returncode
 
-class DirDialog(PathDialogBase):
 
+class DirDialog(PathDialogBase):
     def __init__(self, *args, **kwargs):
         PathDialogBase.__init__(self, args[0], name="dirdialog")
         self.filedialog = _DirDialog(*args, **kwargs)
 
-class FileDialog(PathDialogBase):
 
+class FileDialog(PathDialogBase):
     def __init__(self, *args, **kwargs):
         PathDialogBase.__init__(self, args[0], name="filedialog")
         self.filedialog = _FileDialog(*args, **kwargs)
+
 
 wx.DirDialog = DirDialog
 wx.FileDialog = FileDialog
 
 
 wx._ScrolledWindow = wx.ScrolledWindow
+
 
 class ScrolledWindow(wx._ScrolledWindow):
 
@@ -1068,10 +1117,9 @@ class ScrolledWindow(wx._ScrolledWindow):
         self.ScrollChildIntoView(child)
 
     def ScrollChildIntoView(self, child):
-        """Scrolls the panel such that the specified child window is in view.
-        """
+        """Scrolls the panel such that the specified child window is in view."""
         sppu_x, sppu_y = self.GetScrollPixelsPerUnit()
-        vs_x, vs_y   = self.GetViewStart()
+        vs_x, vs_y = self.GetViewStart()
         cr = child.GetRect()
         clntsz = self.GetClientSize()
         new_vs_x, new_vs_y = -1, -1
@@ -1106,8 +1154,9 @@ class ScrolledWindow(wx._ScrolledWindow):
 
         # if we need to adjust
         if new_vs_x != -1 or new_vs_y != -1:
-            #print "%s: (%s, %s)" % (self.GetName(), new_vs_x, new_vs_y)
+            # print "%s: (%s, %s)" % (self.GetName(), new_vs_x, new_vs_y)
             self.Scroll(new_vs_x, new_vs_y)
+
 
 wx.ScrolledWindow = ScrolledWindow
 
@@ -1150,8 +1199,8 @@ if "gtk3" not in wx.PlatformInfo:
     # GTK3 doesn't respect NO_BORDER in hovered state when using wx.BitmapButton
     _GenBitmapButton = wx.BitmapButton
 
-class GenBitmapButton(GenButton, _GenBitmapButton):
 
+class GenBitmapButton(GenButton, _GenBitmapButton):
     def __init__(self, *args, **kwargs):
         GenButton.__init__(self)
         _GenBitmapButton.__init__(self, *args, **kwargs)
@@ -1213,7 +1262,7 @@ class GenBitmapButton(GenButton, _GenBitmapButton):
             bmp = self.BitmapFocus
         bw, bh = bmp.GetWidth(), bmp.GetHeight()
         hasMask = bmp.GetMask() is not None
-        dc.DrawBitmap(bmp, (width-bw)/2+dx, (height-bh)/2+dy, hasMask)
+        dc.DrawBitmap(bmp, (width - bw) / 2 + dx, (height - bh) / 2 + dy, hasMask)
 
     def GetBitmapHover(self):
         return self.bmpHover
@@ -1307,7 +1356,7 @@ class ThemedGenButton(GenButton, _ThemedGenButton):
         tw, th = dc.GetTextExtent(label)
         if sys.platform != "win32" and not self.up:
             dx = dy = self.labelDelta
-        dc.DrawText(label, (width-tw)/2+dx, (height-th)/2+dy)
+        dc.DrawText(label, (width - tw) / 2 + dx, (height - th) / 2 + dy)
 
     def Enable(self, enable=True):
         if enable != self.Enabled:
@@ -1347,7 +1396,6 @@ class ThemedGenButton(GenButton, _ThemedGenButton):
         _ThemedGenButton.SetDefault(self)
 
 
-
 class PlateButton(platebtn.PlateButton):
 
     """Fixes wx.lib.platebtn.PlateButton sometimes not reflecting enabled state
@@ -1359,21 +1407,21 @@ class PlateButton(platebtn.PlateButton):
 
     def __init__(self, *args, **kwargs):
         from DisplayCAL.config import get_default_dpi, getcfg
+
         self.dpiscale = getcfg("app.dpi") / get_default_dpi()
         platebtn.PlateButton.__init__(self, *args, **kwargs)
         self._bmp["hilite"] = None
         if sys.platform == "darwin":
             # Use Sierra-like color scheme
             from DisplayCAL.wxaddons import gamma_encode
+
             color = wx.Colour(*gamma_encode(0, 105, 217))
         else:
             color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
-        self._color['hlight'] = color
+        self._color["hlight"] = color
         self.Unbind(wx.EVT_LEAVE_WINDOW)
-        self.Bind(wx.EVT_LEAVE_WINDOW,
-                  lambda evt: wx.CallLater(80, self.__LeaveWindow))
-        if ("gtk2" in wx.PlatformInfo and
-                not isinstance(self.TopLevelParent, wx.Dialog)):
+        self.Bind(wx.EVT_LEAVE_WINDOW, lambda evt: wx.CallLater(80, self.__LeaveWindow))
+        if "gtk2" in wx.PlatformInfo and not isinstance(self.TopLevelParent, wx.Dialog):
             self.BackgroundColour = self.Parent.BackgroundColour
 
     def DoGetBestSize(self):
@@ -1393,9 +1441,9 @@ class PlateButton(platebtn.PlateButton):
             width += lsize[0]
             height += lsize[1]
 
-        if self._bmp['enable'] is not None:
-            bsize = self._bmp['enable'].Size
-            width += (bsize[0] + 10 * self.dpiscale)
+        if self._bmp["enable"] is not None:
+            bsize = self._bmp["enable"].Size
+            width += bsize[0] + 10 * self.dpiscale
             if height <= bsize[1]:
                 height = bsize[1] + 6 * self.dpiscale
             else:
@@ -1419,14 +1467,13 @@ class PlateButton(platebtn.PlateButton):
         """
         return self._bmp["enable"]
 
-
     def SetBitmapHover(self, bmp):
         """Set the bitmap displayed in the button
 
         :param bmp: :class:`wx.Bitmap`
 
         """
-        self._bmp['hilite'] = bmp
+        self._bmp["hilite"] = bmp
 
     def __DrawBitmap(self, gc, interactable):
         """Draw the bitmap if one has been set
@@ -1436,13 +1483,15 @@ class PlateButton(platebtn.PlateButton):
 
         """
         if self.IsEnabled():
-            if self._state['cur'] in (platebtn.PLATE_HIGHLIGHT,
-                                      platebtn.PLATE_PRESSED) and interactable:
-                bmp = self._bmp['hilite']
+            if (
+                self._state["cur"] in (platebtn.PLATE_HIGHLIGHT, platebtn.PLATE_PRESSED)
+                and interactable
+            ):
+                bmp = self._bmp["hilite"]
             else:
-                bmp = self._bmp['enable']
+                bmp = self._bmp["enable"]
         else:
-            bmp = self._bmp['disable']
+            bmp = self._bmp["disable"]
 
         xpos = 4 * self.dpiscale
         if bmp is not None and bmp.IsOk():
@@ -1482,7 +1531,7 @@ class PlateButton(platebtn.PlateButton):
 
         # The background needs some help to look transparent on
         # on Gtk and Windows
-        if wx.Platform in ['__WXGTK__', '__WXMSW__']:
+        if wx.Platform in ["__WXGTK__", "__WXMSW__"]:
             gc.SetBrush(self.GetBackgroundBrush(gc))
             gc.SetPen(wx.TRANSPARENT_PEN)
             gc.DrawRectangle(0, 0, width, height)
@@ -1497,15 +1546,18 @@ class PlateButton(platebtn.PlateButton):
         # would prevent interaction)
         dialogs = get_dialogs()
         interactable = not dialogs or self.TopLevelParent in dialogs
-        if (self._state['cur'] == platebtn.PLATE_HIGHLIGHT and
-                self.IsEnabled() and interactable):
-            gc.SetTextForeground(self._color['htxt'])
+        if (
+            self._state["cur"] == platebtn.PLATE_HIGHLIGHT
+            and self.IsEnabled()
+            and interactable
+        ):
+            gc.SetTextForeground(self._color["htxt"])
             gc.SetPen(wx.TRANSPARENT_PEN)
             self.__DrawHighlight(gc, width, height)
 
-        elif self._state['cur'] == platebtn.PLATE_PRESSED and self.IsEnabled():
-            gc.SetTextForeground(self._color['htxt'])
-            pen = wx.Pen(platebtn.AdjustColour(self._color['press'], -80, 220), 1)
+        elif self._state["cur"] == platebtn.PLATE_PRESSED and self.IsEnabled():
+            gc.SetTextForeground(self._color["htxt"])
+            pen = wx.Pen(platebtn.AdjustColour(self._color["press"], -80, 220), 1)
             gc.SetPen(pen)
 
             self.__DrawHighlight(gc, width, height)
@@ -1522,7 +1574,7 @@ class PlateButton(platebtn.PlateButton):
                 gc.SetTextForeground(txt_c)
 
         # Draw bitmap and text
-        if self._state['cur'] != platebtn.PLATE_PRESSED or not self.IsEnabled():
+        if self._state["cur"] != platebtn.PLATE_PRESSED or not self.IsEnabled():
             txt_x = self.__DrawBitmap(gc, interactable)
             t_x = max((width - tw - (txt_x + space)) // 2, txt_x + space)
             gc.DrawText(self.Label, t_x, txt_y)
@@ -1556,8 +1608,10 @@ class PlateButton(platebtn.PlateButton):
     Enable = ThemedGenButton.__dict__["Enable"]
     Enabled = ThemedGenButton.__dict__["Enabled"]
     IsEnabled = ThemedGenButton.__dict__["IsEnabled"]
-    Label = property(lambda self: self.GetLabel(),
-                     lambda self, label: self.SetLabel(label))
+    Label = property(
+        lambda self: self.GetLabel(), lambda self, label: self.SetLabel(label)
+    )
+
 
 if not hasattr(PlateButton, "_SetState"):
     # wxPython < 3.0
@@ -1570,12 +1624,13 @@ class TempXmlResource(object):
 
     def __init__(self, xmlpath):
         from DisplayCAL.config import get_default_dpi, getcfg
+
         scale = max(getcfg("app.dpi") / get_default_dpi(), 1)
         if scale > 1 or "gtk3" in wx.PlatformInfo:
             if not TempXmlResource._temp:
                 try:
                     TempXmlResource._temp = tempfile.mkdtemp(prefix=appname + "-XRC-")
-                except:
+                except Exception:
                     pass
             if TempXmlResource._temp and os.path.isdir(TempXmlResource._temp):
                 # Read original XML
@@ -1585,16 +1640,23 @@ class TempXmlResource(object):
                 for tag in ("border", "hgap", "vgap"):
                     xml = re.sub(
                         r"<%s>(\d+)</%s>" % (tag, tag),
-                        lambda match: "<%s>%i</%s>" % (tag, round(int(match.group(1)) * scale), tag),
-                        xml
+                        lambda match: "<%s>%i</%s>"
+                        % (tag, round(int(match.group(1)) * scale), tag),
+                        xml,
                     )
-                for tag in ("size", ):
+                for tag in ("size",):
                     xml = re.sub(
                         r"<%s>(-?\d+)\s*,\s*(-?\d+)</%s>" % (tag, tag),
-                        lambda match: "<%s>%i,%i</%s>" % ((tag, ) + tuple(round(int(v) * scale)
-                                                                          if int(v) > 0 else int(v)
-                                                                          for v in match.groups()) + (tag, )),
-                        xml
+                        lambda match: "<%s>%i,%i</%s>"
+                        % (
+                            (tag,)
+                            + tuple(
+                                round(int(v) * scale) if int(v) > 0 else int(v)
+                                for v in match.groups()
+                            )
+                            + (tag,)
+                        ),
+                        xml,
                     )
                 # Set relative paths to absolute
                 basedir = os.path.dirname(os.path.dirname(xmlpath))
@@ -1602,22 +1664,27 @@ class TempXmlResource(object):
                 xml = xml.replace(">../", ">%s/" % basedir)
                 # Fix background color not working for panels under wxGTK3
                 if "gtk3" in wx.PlatformInfo:
-                    xml = xml.replace('class="wxPanel"',
-                                      'class="wxPanel" subclass="DisplayCAL.wxfixes.wx_Panel"')
-                                      # 'class="wxPanel" subclass="wxfixes.wx_Panel"')
+                    xml = xml.replace(
+                        'class="wxPanel"',
+                        'class="wxPanel" subclass="DisplayCAL.wxfixes.wx_Panel"',
+                    )
+                    # 'class="wxPanel" subclass="wxfixes.wx_Panel"')
                 # Write modified XML
                 xmlpath = os.path.join(TempXmlResource._temp, os.path.basename(xmlpath))
                 with open(xmlpath, "wb") as xmlfile:
                     xmlfile.write(xml.encode())
                 from DisplayCAL.wxwindows import BaseApp
+
                 BaseApp.register_exitfunc(self._cleanup)
         self.xmlpath = xmlpath
         self.res = xrc.XmlResource(xmlpath)
 
     def _cleanup(self):
-        if (TempXmlResource._temp and
-                self.xmlpath.startswith(TempXmlResource._temp + os.path.sep) and
-                os.path.isfile(self.xmlpath)):
+        if (
+            TempXmlResource._temp
+            and self.xmlpath.startswith(TempXmlResource._temp + os.path.sep)
+            and os.path.isfile(self.xmlpath)
+        ):
             os.remove(self.xmlpath)
             if not os.listdir(TempXmlResource._temp):
                 shutil.rmtree(TempXmlResource._temp)
@@ -1629,28 +1696,39 @@ class TempXmlResource(object):
 class GenBitmapTextButton(GenButton, _GenBitmapTextButton):
     """A generic bitmapped button with text label"""
 
-    def __init__(self, parent, id=-1, bitmap=wx.NullBitmap, label='',
-                 pos=wx.DefaultPosition, size=wx.DefaultSize, style=0,
-                 validator=wx.DefaultValidator, name="genbutton"):
+    def __init__(
+        self,
+        parent,
+        id=-1,
+        bitmap=wx.NullBitmap,
+        label="",
+        pos=wx.DefaultPosition,
+        size=wx.DefaultSize,
+        style=0,
+        validator=wx.DefaultValidator,
+        name="genbutton",
+    ):
         GenButton.__init__(self)
-        _GenBitmapTextButton.__init__(self, parent, id, bitmap, label, pos, size, style, validator, name)
+        _GenBitmapTextButton.__init__(
+            self, parent, id, bitmap, label, pos, size, style, validator, name
+        )
         self._default = False
 
     def DrawLabel(self, dc, width, height, dx=0, dy=0):
         bmp = self.bmpLabel
-        if bmp is not None:     # if the bitmap is used
+        if bmp is not None:  # if the bitmap is used
             if self.bmpDisabled and not self.IsEnabled():
                 bmp = self.bmpDisabled
             if self.bmpFocus and self.hasFocus:
                 bmp = self.bmpFocus
             if self.bmpSelected and not self.up:
                 bmp = self.bmpSelected
-            bw,bh = bmp.GetWidth(), bmp.GetHeight()
+            bw, bh = bmp.GetWidth(), bmp.GetHeight()
             if sys.platform != "win32" and not self.up:
                 dx = dy = self.labelDelta
             hasMask = bmp.GetMask() is not None
         else:
-            bw = bh = 0     # no bitmap -> size is zero
+            bw = bh = 0  # no bitmap -> size is zero
 
         dc.SetFont(self.GetFont())
         if self.IsEnabled():
@@ -1659,28 +1737,40 @@ class GenBitmapTextButton(GenButton, _GenBitmapTextButton):
             dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
 
         label = self.GetLabel()
-        tw, th = dc.GetTextExtent(label)        # size of text
-        sw, sh = dc.GetTextExtent(" ")   # extra spacing from bitmap
+        tw, th = dc.GetTextExtent(label)  # size of text
+        sw, sh = dc.GetTextExtent(" ")  # extra spacing from bitmap
         if sys.platform != "win32" and not self.up:
             dx = dy = self.labelDelta
 
-        pos_x = (width-bw-sw-tw)/2+dx      # adjust for bitmap and text to centre
+        pos_x = (width - bw - sw - tw) / 2 + dx  # adjust for bitmap and text to centre
         if bmp is not None:
-            dc.DrawBitmap(bmp, pos_x, (height-bh)/2+dy, hasMask) # draw bitmap if available
-            pos_x = pos_x + sw   # extra spacing from bitmap
+            dc.DrawBitmap(
+                bmp, pos_x, (height - bh) / 2 + dy, hasMask
+            )  # draw bitmap if available
+            pos_x = pos_x + sw  # extra spacing from bitmap
 
-        dc.DrawText(label, pos_x + dx+bw, (height-th)/2+dy)      # draw the text
+        dc.DrawText(label, pos_x + dx + bw, (height - th) / 2 + dy)  # draw the text
 
 
 class ThemedGenBitmapTextButton(ThemedGenButton, GenBitmapTextButton):
     """A themed generic bitmapped button with text label"""
+
     pass
 
-class BitmapWithThemedButton(wx.BoxSizer):
 
-    def __init__(self, parent, id=-1, bitmap=wx.NullBitmap, label="",
-                 pos=wx.DefaultPosition, size=wx.DefaultSize, style=0,
-                 validator=wx.DefaultValidator, name="button"):
+class BitmapWithThemedButton(wx.BoxSizer):
+    def __init__(
+        self,
+        parent,
+        id=-1,
+        bitmap=wx.NullBitmap,
+        label="",
+        pos=wx.DefaultPosition,
+        size=wx.DefaultSize,
+        style=0,
+        validator=wx.DefaultValidator,
+        name="button",
+    ):
         wx.BoxSizer.__init__(self, wx.HORIZONTAL)
         self._bmp = wx.StaticBitmap(parent, -1, bitmap)
         # self.Add(self._bmp, flag=wx.ALIGN_CENTER_VERTICAL)

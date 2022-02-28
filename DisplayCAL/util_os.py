@@ -6,6 +6,7 @@ import errno
 import glob
 import locale
 import os
+import pathlib
 import re
 import shutil
 import struct
@@ -32,8 +33,11 @@ else:
     # Module is being reloaded. NOT recommended.
     reloaded += 1
     import warnings
-    warnings.warn("Module %s is being reloaded. This is NOT recommended." %
-                  __name__, RuntimeWarning)
+
+    warnings.warn(
+        "Module %s is being reloaded. This is NOT recommended." % __name__,
+        RuntimeWarning,
+    )
     warnings.warn("Implicitly reloading builtins", RuntimeWarning)
     if sys.platform == "win32":
         importlib.reload(__builtin__)
@@ -76,9 +80,7 @@ if sys.platform == "win32":
 
     _open = builtins.open
 
-
     def retry_sharing_violation_factory(fn, delay=0.25, maxretries=20):
-
         def retry_sharing_violation(*args, **kwargs):
             retries = 0
             while True:
@@ -94,14 +96,11 @@ if sys.platform == "win32":
 
         return retry_sharing_violation
 
-
     def open(path, *args, **kwargs):
-        """ Wrapper around __builtin__.open dealing with win32 long paths """
-        return _open(make_win32_compatible_long_path(path), *args,
-                     **kwargs)
+        """Wrapper around __builtin__.open dealing with win32 long paths"""
+        return _open(make_win32_compatible_long_path(path), *args, **kwargs)
 
     builtins.open = open
-
 
     _access = os.access
 
@@ -110,14 +109,12 @@ if sys.platform == "win32":
 
     os.access = access
 
-
     _exists = os.path.exists
 
     def exists(path):
         return _exists(make_win32_compatible_long_path(path))
 
     os.path.exists = exists
-
 
     _isdir = os.path.isdir
 
@@ -126,7 +123,6 @@ if sys.platform == "win32":
 
     os.path.isdir = isdir
 
-
     _isfile = os.path.isfile
 
     def isfile(path):
@@ -134,10 +130,8 @@ if sys.platform == "win32":
 
     os.path.isfile = isfile
 
-
     def listdir(path):
         return _listdir(make_win32_compatible_long_path(path))
-
 
     _lstat = os.lstat
 
@@ -146,14 +140,12 @@ if sys.platform == "win32":
 
     os.lstat = lstat
 
-
     _mkdir = os.mkdir
 
     def mkdir(path, mode=0o777):
         return _mkdir(make_win32_compatible_long_path(path, 247), mode)
 
     os.mkdir = mkdir
-
 
     _makedirs = os.makedirs
 
@@ -162,7 +154,6 @@ if sys.platform == "win32":
 
     os.makedirs = makedirs
 
-
     _remove = os.remove
 
     def remove(path):
@@ -170,16 +161,13 @@ if sys.platform == "win32":
 
     os.remove = retry_sharing_violation_factory(remove)
 
-
     _rename = os.rename
 
     def rename(src, dst):
-        src, dst = [make_win32_compatible_long_path(path) for path in
-                    (src, dst)]
+        src, dst = [make_win32_compatible_long_path(path) for path in (src, dst)]
         return _rename(src, dst)
 
     os.rename = retry_sharing_violation_factory(rename)
-
 
     _stat = os.stat
 
@@ -188,14 +176,12 @@ if sys.platform == "win32":
 
     os.stat = stat
 
-
     _unlink = os.unlink
 
     def unlink(path):
         return _unlink(make_win32_compatible_long_path(path))
 
     os.unlink = retry_sharing_violation_factory(unlink)
-
 
     _GetShortPathName = win32api.GetShortPathName
 
@@ -204,6 +190,7 @@ if sys.platform == "win32":
 
     win32api.GetShortPathName = GetShortPathName
 else:
+
     def listdir(path):
         paths = _listdir(path)
         if isinstance(path, str):
@@ -211,12 +198,13 @@ else:
             paths = [path for path in paths if isinstance(path, str)]
         return paths
 
+
 os.listdir = listdir
 
 
 def quote_args(args):
-    """ Quote commandline arguments where needed. It quotes all arguments that
-    contain spaces or any of the characters ^!$%&()[]{}=;'+,`~ """
+    """Quote commandline arguments where needed. It quotes all arguments that
+    contain spaces or any of the characters ^!$%&()[]{}=;'+,`~"""
     args_out = []
     for arg in args:
         if re.search(r"[\^!$%&()[\]{}=;'+,`~\s]", arg):
@@ -228,7 +216,7 @@ def quote_args(args):
 def dlopen(name, handle=None):
     try:
         return ctypes.CDLL(name, handle=handle)
-    except:
+    except Exception:
         pass
 
 
@@ -241,7 +229,7 @@ def find_library(pattern, arch=None):
     try:
         p = sp.Popen(["/sbin/ldconfig", "-p"], stdout=sp.PIPE)
         stdout, stderr = p.communicate()
-    except:
+    except Exception:
         return
 
     if not arch:
@@ -250,7 +238,7 @@ def find_library(pattern, arch=None):
             file_stdout, file_stderr = p.communicate()
             file_stdout = file_stdout.decode()
             file_stderr = file_stderr.decode()
-        except:
+        except Exception:
             pass
         else:
             # /usr/bin/python3.7: ELF 64-bit LSB shared object, x86-64,
@@ -278,104 +266,82 @@ def find_library(pattern, arch=None):
 
 
 def expanduseru(path):
-    """ Unicode version of os.path.expanduser """
-    if sys.platform == "win32":
-        # The code in this if-statement is copied from Python 2.7's expanduser
-        # in ntpath.py, but uses getenvu() instead of os.environ[]
-        if path[:1] != '~':
-            return path
-        i, n = 1, len(path)
-        while i < n and path[i] not in '/\\':
-            i = i + 1
-
-        if 'HOME' in os.environ:
-            userhome = getenvu('HOME')
-        elif 'USERPROFILE' in os.environ:
-            userhome = getenvu('USERPROFILE')
-        elif 'HOMEPATH' not in os.environ:
-            return path
-        else:
-            drive = getenvu('HOMEDRIVE', '')
-            userhome = os.path.join(drive, getenvu('HOMEPATH'))
-
-        if i != 1:  #~user
-            userhome = os.path.join(os.path.dirname(userhome), path[1:i])
-
-        return userhome + path[i:]
-    return os.path.expanduser(path)
+    """Unicode version of os.path.expanduser"""
+    return str(pathlib.Path(path).expanduser())
 
 
 def expandvarsu(path):
-    """ Unicode version of os.path.expandvars """
+    """Unicode version of os.path.expandvars"""
     if sys.platform == "win32":
         # The code in this if-statement is copied from Python 2.7's expandvars
         # in ntpath.py, but uses getenvu() instead of os.environ[]
-        if '$' not in path and '%' not in path:
+        if "$" not in path and "%" not in path:
             return path
         import string
-        varchars = string.ascii_letters + string.digits + '_-'
-        res = ''
+
+        varchars = string.ascii_letters + string.digits + "_-"
+        res = ""
         index = 0
         pathlen = len(path)
         while index < pathlen:
             c = path[index]
-            if c == '\'':   # no expansion within single quotes
+            if c == "'":  # no expansion within single quotes
                 path = path[index + 1:]
                 pathlen = len(path)
                 try:
-                    index = path.index('\'')
-                    res = res + '\'' + path[:index + 1]
+                    index = path.index("'")
+                    res = res + "'" + path[: index + 1]
                 except ValueError:
                     res = res + path
                     index = pathlen - 1
-            elif c == '%':  # variable or '%'
-                if path[index + 1:index + 2] == '%':
+            elif c == "%":  # variable or '%'
+                if path[index + 1: index + 2] == "%":
                     res = res + c
                     index = index + 1
                 else:
-                    path = path[index+1:]
+                    path = path[index + 1:]
                     pathlen = len(path)
                     try:
-                        index = path.index('%')
+                        index = path.index("%")
                     except ValueError:
-                        res = res + '%' + path
+                        res = res + "%" + path
                         index = pathlen - 1
                     else:
                         var = path[:index]
                         if var in os.environ:
                             res = res + getenvu(var)
                         else:
-                            res = res + '%' + var + '%'
-            elif c == '$':  # variable or '$$'
-                if path[index + 1:index + 2] == '$':
+                            res = res + "%" + var + "%"
+            elif c == "$":  # variable or '$$'
+                if path[index + 1: index + 2] == "$":
                     res = res + c
                     index = index + 1
-                elif path[index + 1:index + 2] == '{':
-                    path = path[index+2:]
+                elif path[index + 1: index + 2] == "{":
+                    path = path[index + 2:]
                     pathlen = len(path)
                     try:
-                        index = path.index('}')
+                        index = path.index("}")
                         var = path[:index]
                         if var in os.environ:
                             res = res + getenvu(var)
                         else:
-                            res = res + '${' + var + '}'
+                            res = res + "${" + var + "}"
                     except ValueError:
-                        res = res + '${' + path
+                        res = res + "${" + path
                         index = pathlen - 1
                 else:
-                    var = ''
+                    var = ""
                     index = index + 1
-                    c = path[index:index + 1]
-                    while c != '' and c in varchars:
+                    c = path[index: index + 1]
+                    while c != "" and c in varchars:
                         var = var + c
                         index = index + 1
-                        c = path[index:index + 1]
+                        c = path[index: index + 1]
                     if var in os.environ:
                         res = res + getenvu(var)
                     else:
-                        res = res + '$' + var
-                    if c != '':
+                        res = res + "$" + var
+                    if c != "":
                         index = index - 1
             else:
                 res = res + c
@@ -385,18 +351,16 @@ def expandvarsu(path):
 
 
 def fname_ext(path):
-    """ Get filename and extension """
+    """Get filename and extension"""
     return os.path.splitext(os.path.basename(path))
 
 
 def get_program_file(name, foldername):
-    """ Get path to program file """
+    """Get path to program file"""
     if sys.platform == "win32":
         paths = getenvu("PATH", os.defpath).split(os.pathsep)
-        paths += safe_glob(os.path.join(getenvu("PROGRAMFILES", ""),
-                                        foldername))
-        paths += safe_glob(os.path.join(getenvu("PROGRAMW6432", ""),
-                                        foldername))
+        paths += safe_glob(os.path.join(getenvu("PROGRAMFILES", ""), foldername))
+        paths += safe_glob(os.path.join(getenvu("PROGRAMW6432", ""), foldername))
         exe_ext = ".exe"
     else:
         paths = None
@@ -404,15 +368,15 @@ def get_program_file(name, foldername):
     return which(name + exe_ext, paths=paths)
 
 
-def getenvu(name, default = None):
-    """ Unicode version of os.getenv """
+def getenvu(name, default=None):
+    """Unicode version of os.getenv"""
     if sys.platform == "win32":
         name = str(name)
         # http://stackoverflow.com/questions/2608200/problems-with-umlauts-in-python-appdata-environvent-variable
         length = ctypes.windll.kernel32.GetEnvironmentVariableW(name, None, 0)
         if length == 0:
             return default
-        buffer = ctypes.create_unicode_buffer('\0' * length)
+        buffer = ctypes.create_unicode_buffer("\0" * length)
         ctypes.windll.kernel32.GetEnvironmentVariableW(name, buffer, length)
         return buffer.value
     var = os.getenv(name, default)
@@ -444,8 +408,11 @@ def islink(path):
     """
     if sys.platform != "win32" or sys.getwindowsversion()[0] < 6:
         return os.path.islink(path)
-    return bool(os.path.exists(path) and GetFileAttributes(path) &
-                FILE_ATTRIBUTE_REPARSE_POINT == FILE_ATTRIBUTE_REPARSE_POINT)
+    return bool(
+        os.path.exists(path)
+        and GetFileAttributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
+        == FILE_ATTRIBUTE_REPARSE_POINT
+    )
 
 
 def is_superuser():
@@ -471,7 +438,7 @@ def launch_file(filepath):
     retcode = None
     kwargs = dict(stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE)
     if sys.platform == "darwin":
-        retcode = sp.call(['open', filepath], **kwargs)
+        retcode = sp.call(["open", filepath], **kwargs)
     elif sys.platform == "win32":
         # for win32, we could use os.startfile, but then we'd not be able
         # to return exitcode (does it matter?)
@@ -481,13 +448,13 @@ def launch_file(filepath):
         kwargs["shell"] = True
         kwargs["close_fds"] = True
         retcode = sp.call('start "" "%s"' % filepath, **kwargs)
-    elif which('xdg-open'):
-        retcode = sp.call(['xdg-open', filepath], **kwargs)
+    elif which("xdg-open"):
+        retcode = sp.call(["xdg-open", filepath], **kwargs)
     return retcode
 
 
-def listdir_re(path, rex = None):
-    """ Filter directory contents through a regular expression """
+def listdir_re(path, rex=None):
+    """Filter directory contents through a regular expression"""
     files = os.listdir(path)
     if rex:
         rex = re.compile(rex, re.IGNORECASE)
@@ -496,8 +463,12 @@ def listdir_re(path, rex = None):
 
 
 def make_win32_compatible_long_path(path, maxpath=259):
-    if (sys.platform == "win32" and len(path) > maxpath and
-            os.path.isabs(path) and not path.startswith("\\\\?\\")):
+    if (
+        sys.platform == "win32"
+        and len(path) > maxpath
+        and os.path.isabs(path)
+        and not path.startswith("\\\\?\\")
+    ):
         path = "\\\\?\\" + path
     return path
 
@@ -520,9 +491,12 @@ def mkstemp_bypath(path, dir=None, text=False):
 try:
     import fcntl as _fcntl
 except ImportError:
+
     def _set_cloexec(fd):
         pass
+
 else:
+
     def _set_cloexec(fd):
         try:
             flags = _fcntl.fcntl(fd, _fcntl.F_GETFD, 0)
@@ -564,7 +538,7 @@ def mksfile(filename):
 
 
 def movefile(src, dst, overwrite=True):
-    """ Move a file to another location.
+    """Move a file to another location.
 
     dst can be a directory in which case a file with the same basename as src
     will be created in it.
@@ -580,7 +554,7 @@ def movefile(src, dst, overwrite=True):
 
 
 def putenvu(name, value):
-    """ Unicode version of os.putenv (also correctly updates os.environ) """
+    """Unicode version of os.putenv (also correctly updates os.environ)"""
     if sys.platform == "win32" and isinstance(value, str):
         ctypes.windll.kernel32.SetEnvironmentVariableW(str(name), value)
     else:
@@ -588,7 +562,7 @@ def putenvu(name, value):
 
 
 def parse_reparse_buffer(buf):
-    """ Implementing the below in Python:
+    """Implementing the below in Python:
 
     typedef struct _REPARSE_DATA_BUFFER {
         ULONG  ReparseTag;
@@ -619,30 +593,34 @@ def parse_reparse_buffer(buf):
     """
     # See https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntifs/ns-ntifs-_reparse_data_buffer
 
-    data = {'tag': struct.unpack('<I', buf[:4])[0],
-            'data_length': struct.unpack('<H', buf[4:6])[0],
-            'reserved': struct.unpack('<H', buf[6:8])[0]}
+    data = {
+        "tag": struct.unpack("<I", buf[:4])[0],
+        "data_length": struct.unpack("<H", buf[4:6])[0],
+        "reserved": struct.unpack("<H", buf[6:8])[0],
+    }
     buf = buf[8:]
 
-    if data['tag'] in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK):
-        keys = ['substitute_name_offset',
-                'substitute_name_length',
-                'print_name_offset',
-                'print_name_length']
-        if data['tag'] == IO_REPARSE_TAG_SYMLINK:
-            keys.append('flags')
+    if data["tag"] in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK):
+        keys = [
+            "substitute_name_offset",
+            "substitute_name_length",
+            "print_name_offset",
+            "print_name_length",
+        ]
+        if data["tag"] == IO_REPARSE_TAG_SYMLINK:
+            keys.append("flags")
 
         # Parsing
         for k in keys:
-            if k == 'flags':
-                fmt, sz = '<I', 4
+            if k == "flags":
+                fmt, sz = "<I", 4
             else:
-                fmt, sz = '<H', 2
+                fmt, sz = "<H", 2
             data[k] = struct.unpack(fmt, buf[:sz])[0]
             buf = buf[sz:]
 
     # Using the offset and lengths grabbed, we'll set the buffer.
-    data['buffer'] = buf
+    data["buffer"] = buf
 
     return data
 
@@ -659,7 +637,7 @@ def readlink(path):
     # This wouldn't return true if the file didn't exist
     if not islink(path):
         # Mimic POSIX error
-        raise OSError(22, 'Invalid argument', path)
+        raise OSError(22, "Invalid argument", path)
 
     # Open the file correctly depending on the string type.
     if isinstance(path, str):
@@ -670,8 +648,15 @@ def readlink(path):
     # is a symbolic link to a directory or a NTFS junction.
     # We need to set FILE_FLAG_BACKUP_SEMANTICS as well.
     # See https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-createfilea
-    handle = createfilefn(path, GENERIC_READ, 0, None, OPEN_EXISTING,
-                          FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0)
+    handle = createfilefn(
+        path,
+        GENERIC_READ,
+        0,
+        None,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+        0,
+    )
 
     # MAXIMUM_REPARSE_DATA_BUFFER_SIZE = 16384 = (16 * 1024)
     buf = DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, None, 16 * 1024)
@@ -685,26 +670,26 @@ def readlink(path):
         return type(path)()
     # Parse and return our result.
     result = parse_reparse_buffer(buf)
-    if result['tag'] in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK):
-        offset = result['substitute_name_offset']
-        ending = offset + result['substitute_name_length']
-        rpath = result['buffer'][offset:ending].decode('UTF-16-LE')
+    if result["tag"] in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK):
+        offset = result["substitute_name_offset"]
+        ending = offset + result["substitute_name_length"]
+        rpath = result["buffer"][offset:ending].decode("UTF-16-LE")
     else:
-        rpath = result['buffer']
-    if len(rpath) > 4 and rpath[0:4] == '\\??\\':
+        rpath = result["buffer"]
+    if len(rpath) > 4 and rpath[0:4] == "\\??\\":
         rpath = rpath[4:]
     return rpath
 
 
 def relpath(path, start):
-    """ Return a relative version of a path """
+    """Return a relative version of a path"""
     path = os.path.abspath(path).split(os.path.sep)
     start = os.path.abspath(start).split(os.path.sep)
     if path == start:
         return "."
-    elif path[:len(start)] == start:
+    elif path[: len(start)] == start:
         return os.path.sep.join(path[len(start):])
-    elif start[:len(path)] == path:
+    elif start[: len(path)] == path:
         return os.path.sep.join([".."] * (len(start) - len(path)))
 
 
@@ -773,14 +758,13 @@ def safe_glob1(dirname, pattern):
     if not dirname:
         dirname = os.curdir
     if isinstance(pattern, str) and not isinstance(dirname, str):
-        dirname = str(dirname, sys.getfilesystemencoding() or
-                      sys.getdefaultencoding())
+        dirname = str(dirname, sys.getfilesystemencoding() or sys.getdefaultencoding())
     try:
         names = os.listdir(dirname)
     except os.error:
         return []
-    if pattern[0] != '.':
-        names = [x for x in names if x[0] != '.']
+    if pattern[0] != ".":
+        names = [x for x in names if x[0] != "."]
     return safe_shell_filter(names, pattern)
 
 
@@ -794,6 +778,7 @@ def safe_shell_filter(names, pat):
 
     """
     import posixpath
+
     result = []
     pat = os.path.normcase(pat)
     try:
@@ -840,7 +825,7 @@ def safe_translate(pat):
 
 
 def waccess(path, mode):
-    """ Test access to path """
+    """Test access to path"""
     if mode & os.R_OK:
         try:
             test = open(path, "rb")
@@ -866,8 +851,7 @@ def waccess(path, mode):
 
 
 def which(executable, paths=None):
-    """Return the full path of executable
-    """
+    """Return the full path of executable"""
     if not paths:
         paths = getenvu("PATH", os.defpath).split(os.pathsep)
     for cur_dir in paths:
@@ -877,16 +861,23 @@ def which(executable, paths=None):
                 # make sure file is actually executable
                 if os.access(filename, os.X_OK):
                     return filename
-            except Exception as exception:
+            except Exception:
                 pass
     return None
 
 
-def whereis(names, bin=True, bin_paths=None, man=True, man_paths=None, src=True,
-            src_paths=None, unusual=False, list_paths=False):
-    """Wrapper around whereis
-
-    """
+def whereis(
+    names,
+    bin=True,
+    bin_paths=None,
+    man=True,
+    man_paths=None,
+    src=True,
+    src_paths=None,
+    unusual=False,
+    list_paths=False,
+):
+    """Wrapper around whereis"""
     args = []
     if bin:
         args.append("-b")
@@ -976,8 +967,8 @@ class FileLock(object):
             print("FileLock: Code is here C9")
             args = (self._file.fileno(), op)
         print("FileLock: Code is here C10")
-        print('fn:', fn)
-        print('args:', args)
+        print("fn:", fn)
+        print("args:", args)
         self._call(fn, args, FileLock.LockingError)
         print("FileLock: Code is here C11")
 
@@ -1014,7 +1005,8 @@ class FileLock(object):
         pass
 
 
-if sys.platform == "win32" and sys.getwindowsversion() >= (6, ):
+if sys.platform == "win32" and sys.getwindowsversion() >= (6,):
+
     class win64_disable_file_system_redirection:
 
         # http://code.activestate.com/recipes/578035-disable-file-system-redirector/

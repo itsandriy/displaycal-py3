@@ -21,4 +21,7 @@ if __name__ == "__main__":
     if len(sys.argv[1:]) == 5:
         main(*sys.argv[1:])
     else:
-        print("Usage: %s CALFILENAME CALOUTFILENAME R_MAX G_MAX B_MAX" % os.path.basename(__file__))
+        print(
+            "Usage: %s CALFILENAME CALOUTFILENAME R_MAX G_MAX B_MAX"
+            % os.path.basename(__file__)
+        )

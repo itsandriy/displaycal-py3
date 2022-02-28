@@ -8,12 +8,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from DisplayCAL import ICCProfile as ICCP
-from DisplayCAL.colormath import RGB2XYZ, convert_range, get_rgb_space, get_whitepoint, specialpow
+from DisplayCAL.colormath import (
+    RGB2XYZ,
+    convert_range,
+    get_rgb_space,
+    get_whitepoint,
+    specialpow,
+)
 
 
-def create_rendering_intent_test_profile(filename, add_fallback_matrix=True,
-                                          generate_B2A_tables=True,
-                                          swap=False):
+def create_rendering_intent_test_profile(
+    filename, add_fallback_matrix=True, generate_B2A_tables=True, swap=False
+):
     desc = "Rendering Intent Test Profile"
     if not add_fallback_matrix:
         desc += " (cLUT only)"
@@ -66,28 +72,31 @@ def create_rendering_intent_test_profile(filename, add_fallback_matrix=True,
                         tag.clut.append([])
                     for B in range(clutres):
                         if tagname == "B2A":
-                            tag.clut[block].append([v / (clutres - 1.0) * 65535
-                                                    for v in (R, G, B)])
+                            tag.clut[block].append(
+                                [v / (clutres - 1.0) * 65535 for v in (R, G, B)]
+                            )
                         # Everything should be good as long as primaries
                         # are sensible (otherwise, when embedded in a PNG,
                         # some programs like Firefox and XnView will ignore
                         # the profile. This doesn't happen when embedded in
                         # JPEG. Go figure...)
-                        if (R, G, B) in ((f, f, 0),
-                                         (0, f, f),
-                                         (0, f, 0),
-                                         # Magenta 64..223
-                                         (r, 0, r),
-                                         (r, 0, b1),
-                                         (r, 0, b2),
-                                         # Red 64..223
-                                         (r, 0, 0),
-                                         (r, 0, 1),
-                                         (r, 1, 0),
-                                         # CMY 255
-                                         (0, clutres - 1, clutres - 1),
-                                         (clutres - 1, 0, clutres - 1),
-                                         (clutres - 1, clutres - 1, 0)):
+                        if (R, G, B) in (
+                            (f, f, 0),
+                            (0, f, f),
+                            (0, f, 0),
+                            # Magenta 64..223
+                            (r, 0, r),
+                            (r, 0, b1),
+                            (r, 0, b2),
+                            # Red 64..223
+                            (r, 0, 0),
+                            (r, 0, 1),
+                            (r, 1, 0),
+                            # CMY 255
+                            (0, clutres - 1, clutres - 1),
+                            (clutres - 1, 0, clutres - 1),
+                            (clutres - 1, clutres - 1, 0),
+                        ):
                             if (R, G, B) == (0, clutres - 1, clutres - 1):
                                 # Map C -> R
                                 if tagname == "B2A":
@@ -140,5 +149,4 @@ def create_rendering_intent_test_profile(filename, add_fallback_matrix=True,
 
 
 if __name__ == "__main__":
-    create_rendering_intent_test_profile(sys.argv[1],
-                                         add_fallback_matrix=sys.argv[2:3])
+    create_rendering_intent_test_profile(sys.argv[1], add_fallback_matrix=sys.argv[2:3])

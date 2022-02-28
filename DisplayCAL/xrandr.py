@@ -1,6 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from ctypes import POINTER, Structure, c_int, c_long, c_ubyte, c_ulong, cdll, pointer, util
+from ctypes import (
+    POINTER,
+    Structure,
+    c_int,
+    c_long,
+    c_ubyte,
+    c_ulong,
+    cdll,
+    pointer,
+    util,
+)
 
 libx11pth = util.find_library("X11")
 if not libx11pth:
@@ -31,7 +41,7 @@ Atom = c_ulong
 
 class Display(Structure):
     __slots__ = []
-    _fields_ = [('_opaque_struct', c_int)]
+    _fields_ = [("_opaque_struct", c_int)]
 
 
 try:
@@ -39,27 +49,45 @@ try:
     libx11.XOpenDisplay.restype = POINTER(Display)
     libx11.XRootWindow.restype = c_ulong
     libx11.XGetWindowProperty.restype = c_int
-    libx11.XGetWindowProperty.argtypes = [POINTER(Display), c_ulong, Atom, c_long,
-                                          c_long, c_int, c_ulong,
-                                          POINTER(c_ulong), POINTER(c_int),
-                                          POINTER(c_ulong), POINTER(c_ulong),
-                                          POINTER(POINTER(c_ubyte))]
+    libx11.XGetWindowProperty.argtypes = [
+        POINTER(Display),
+        c_ulong,
+        Atom,
+        c_long,
+        c_long,
+        c_int,
+        c_ulong,
+        POINTER(c_ulong),
+        POINTER(c_int),
+        POINTER(c_ulong),
+        POINTER(c_ulong),
+        POINTER(POINTER(c_ubyte)),
+    ]
 except AttributeError as exception:
     raise ImportError("libX11: %s" % exception)
 
 try:
     libxrandr.XRRGetOutputProperty.restype = c_int
-    libxrandr.XRRGetOutputProperty.argtypes = [POINTER(Display), c_ulong, Atom, c_long,
-                                               c_long, c_int, c_int, c_ulong,
-                                               POINTER(c_ulong), POINTER(c_int),
-                                               POINTER(c_ulong), POINTER(c_ulong),
-                                               POINTER(POINTER(c_ubyte))]
+    libxrandr.XRRGetOutputProperty.argtypes = [
+        POINTER(Display),
+        c_ulong,
+        Atom,
+        c_long,
+        c_long,
+        c_int,
+        c_int,
+        c_ulong,
+        POINTER(c_ulong),
+        POINTER(c_int),
+        POINTER(c_ulong),
+        POINTER(c_ulong),
+        POINTER(POINTER(c_ubyte)),
+    ]
 except AttributeError as exception:
     raise ImportError("libXrandr: %s" % exception)
 
 
 class XDisplay(object):
-
     def __init__(self, name=None):
         self.name = name or os.getenv("DISPLAY")
 
@@ -94,17 +122,33 @@ class XDisplay(object):
 
     def get_window_property(self, window, atom_id, atom_type=XA_CARDINAL):
 
-        ret_type, ret_format, ret_len, ret_togo, atomv = (c_ulong(),
-                                                          c_int(),
-                                                          c_ulong(),
-                                                          c_ulong(),
-                                                          pointer(c_ubyte()))
+        ret_type, ret_format, ret_len, ret_togo, atomv = (
+            c_ulong(),
+            c_int(),
+            c_ulong(),
+            c_ulong(),
+            pointer(c_ubyte()),
+        )
 
         property = None
-        if libx11.XGetWindowProperty(self.display, window,
-                                     atom_id, 0, 0x7ffffff, False, atom_type,
-                                     ret_type, ret_format, ret_len, ret_togo,
-                                     atomv) == 0 and ret_len.value > 0:
+        if (
+            libx11.XGetWindowProperty(
+                self.display,
+                window,
+                atom_id,
+                0,
+                0x7FFFFFF,
+                False,
+                atom_type,
+                ret_type,
+                ret_format,
+                ret_len,
+                ret_togo,
+                atomv,
+            )
+            == 0
+            and ret_len.value > 0
+        ):
             if debug:
                 print("ret_type:", ret_type.value)
                 print("ret_format:", ret_format.value)
@@ -118,19 +162,34 @@ class XDisplay(object):
         if not output:
             raise ValueError("Invalid output %r specified" % output)
 
-        ret_type, ret_format, ret_len, ret_togo, atomv = (c_ulong(),
-                                                          c_int(),
-                                                          c_ulong(),
-                                                          c_ulong(),
-                                                          pointer(c_ubyte()))
+        ret_type, ret_format, ret_len, ret_togo, atomv = (
+            c_ulong(),
+            c_int(),
+            c_ulong(),
+            c_ulong(),
+            pointer(c_ubyte()),
+        )
 
         property = None
-        if (libxrandr.XRRGetOutputProperty(self.display,
-                                           output,
-                                           atom_id, 0, 0x7ffffff, False, False,
-                                           atom_type, ret_type, ret_format,
-                                           ret_len, ret_togo, atomv) == 0 and
-                ret_len.value > 0):
+        if (
+            libxrandr.XRRGetOutputProperty(
+                self.display,
+                output,
+                atom_id,
+                0,
+                0x7FFFFFF,
+                False,
+                False,
+                atom_type,
+                ret_type,
+                ret_format,
+                ret_len,
+                ret_togo,
+                atomv,
+            )
+            == 0
+            and ret_len.value > 0
+        ):
             if debug:
                 print("ret_type:", ret_type.value)
                 print("ret_format:", ret_format.value)
@@ -143,6 +202,7 @@ class XDisplay(object):
 
 if __name__ == "__main__":
     with XDisplay() as display:
-        property = display.get_output_property(int(sys.argv[1]), sys.argv[2],
-                                               int(sys.argv[3]))
+        property = display.get_output_property(
+            int(sys.argv[1]), sys.argv[2], int(sys.argv[3])
+        )
         print("%s for display %s: %r" % (sys.argv[2], sys.argv[1], property))

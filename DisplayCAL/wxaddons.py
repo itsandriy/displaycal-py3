@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import functools
 from time import sleep
 import os
 import sys
@@ -15,37 +14,42 @@ from DisplayCAL import floatspin
 
 
 def AdjustMinMax(self, minvalue=0.0, maxvalue=1.0):
-    """ Adjust min/max """
+    """Adjust min/max"""
     buffer = self.GetDataBuffer()
     for i, byte in enumerate(buffer):
         buffer[i] = min(int(round(minvalue * 255 + byte * (maxvalue - minvalue))), 255)
+
 
 wx.Image.AdjustMinMax = AdjustMinMax
 
 
 def Blend(self, bitmap, x, y):
-    """ Blend the given bitmap over the specified position in this bitmap. """
+    """Blend the given bitmap over the specified position in this bitmap."""
     dc = wx.MemoryDC(self)
     dc.DrawBitmap(bitmap, x, y)
+
 
 wx.Bitmap.Blend = Blend
 
 
 def Invert(self):
-    """Invert image colors
-    """
+    """Invert image colors"""
     databuffer = self.GetDataBuffer()
     for i, byte in enumerate(databuffer):
         databuffer[i] = 255 - byte
+
 
 wx.Image.Invert = Invert
 
 
 def GammaCorrect(self, from_gamma=-2.4, to_gamma=1.8):
-    """ Gamma correct """
+    """Gamma correct"""
     buffer = self.GetDataBuffer()
     for i, byte in enumerate(buffer):
-        buffer[i] = int(round(specialpow(byte / 255., from_gamma) ** (1.0 / to_gamma) * 255))
+        buffer[i] = int(
+            round(specialpow(byte / 255.0, from_gamma) ** (1.0 / to_gamma) * 255)
+        )
+
 
 wx.Image.GammaCorrect = GammaCorrect
 
@@ -67,11 +71,12 @@ def IsBW(self):
             triplet = set()
     return True
 
+
 wx.Image.IsBW = IsBW
 
 
 def GetRealClientArea(self):
-    """ Return the real (non-overlapping) client area of a display """
+    """Return the real (non-overlapping) client area of a display"""
     # need to fix overlapping ClientArea on some Linux multi-display setups
     # the client area must be always smaller than the geometry
     clientarea = list(self.ClientArea)
@@ -85,31 +90,33 @@ def GetRealClientArea(self):
         clientarea[3] = self.Geometry[3]
     return wx.Rect(*clientarea)
 
+
 wx.Display.GetRealClientArea = GetRealClientArea
 
 
 def GetAllChildren(self, skip=None):
-    """ Get children of window and its subwindows """
+    """Get children of window and its subwindows"""
     if not isinstance(skip, (list, tuple)):
         skip = [skip]
     children = [child for child in self.GetChildren() if child not in skip]
     allchildren = []
     for child in children:
         allchildren.append(child)
-        if hasattr(child, "GetAllChildren") and hasattr(child.GetAllChildren,
-                                                        "__call__"):
+        if hasattr(child, "GetAllChildren") and callable(child.GetAllChildren):
             allchildren += child.GetAllChildren(skip)
     return allchildren
+
 
 wx.Window.GetAllChildren = GetAllChildren
 
 
 def GetDisplay(self):
-    """ Return the display the window is shown on """
+    """Return the display the window is shown on"""
     display_no = wx.Display.GetFromWindow(self)
-    if display_no < 0: # window outside visible area
+    if display_no < 0:  # window outside visible area
         display_no = 0
     return wx.Display(display_no)
+
 
 wx.Window.GetDisplay = GetDisplay
 
@@ -119,6 +126,7 @@ def SetMaxFontSize(self, pointsize=11):
     if font.GetPointSize() > pointsize:
         font.SetPointSize(pointsize)
         self.SetFont(font)
+
 
 wx.Window.SetMaxFontSize = SetMaxFontSize
 
@@ -141,15 +149,14 @@ wx.TopLevelWindow.RealCenterOnScreen = RealCenterOnScreen
 
 
 def SetSaneGeometry(self, x=None, y=None, w=None, h=None):
-    """Set a 'sane' window position and/or size (within visible screen area).
-    """
+    """Set a 'sane' window position and/or size (within visible screen area)."""
     if None not in (x, y):
         # First, move to coordinates given
         self.SetPosition((x, y))
     # Returns the first display's client area if the window
     # is completely outside the client area of all displays
     display_client_rect = self.GetDisplay().ClientArea
-    if sys.platform not in ("darwin", "win32"): # Linux
+    if sys.platform not in ("darwin", "win32"):  # Linux
         if os.getenv("XDG_SESSION_TYPE") == "wayland":
             # Client-side decorations
             safety_margin = 0
@@ -166,27 +173,32 @@ def SetSaneGeometry(self, x=None, y=None, w=None, h=None):
             min_w, min_h = self.WindowToClientSize(self.MinSize)
         border_lr = self.Size[0] - self.ClientSize[0]
         border_tb = self.Size[1] - self.ClientSize[1]
-        self.ClientSize = (min(display_client_rect[2] - border_lr, max(w, min_w)),
-                           min(display_client_rect[3] - border_tb -
-                               safety_margin, max(h, min_h)))
+        self.ClientSize = (
+            min(display_client_rect[2] - border_lr, max(w, min_w)),
+            min(display_client_rect[3] - border_tb - safety_margin, max(h, min_h)),
+        )
     if None not in (x, y):
-        if (not display_client_rect.ContainsXY(x, y) or
-                not display_client_rect.ContainsRect((x, y,
-                                                      self.Size[0], self.Size[1]))):
+        if not display_client_rect.ContainsXY(
+            x, y
+        ) or not display_client_rect.ContainsRect((x, y, self.Size[0], self.Size[1])):
             # If outside client area, move into client area
             xy = [x, y]
-            for i, pos in enumerate([xy,
-                                     (x + self.Size[0], y + self.Size[1])]):
+            for i, pos in enumerate([xy, (x + self.Size[0], y + self.Size[1])]):
                 for j in range(2):
-                    if (pos[j] > display_client_rect[j] +
-                            display_client_rect[2 + j] or
-                            pos[j] < display_client_rect[j]):
+                    if (
+                        pos[j] > display_client_rect[j] + display_client_rect[2 + j]
+                        or pos[j] < display_client_rect[j]
+                    ):
                         if i:
-                            xy[j] = (display_client_rect[j] +
-                                     display_client_rect[2 + j] - self.Size[j])
+                            xy[j] = (
+                                display_client_rect[j]
+                                + display_client_rect[2 + j]
+                                - self.Size[j]
+                            )
                         else:
                             xy[j] = display_client_rect[j]
             self.SetPosition(tuple(xy))
+
 
 wx.Window.SetSaneGeometry = SetSaneGeometry
 
@@ -211,26 +223,28 @@ def GridGetSelectedRowsFromSelection(self):
             rows.append(row)
     return rows
 
+
 wx.grid.Grid.GetSelectedRowsFromSelection = GridGetSelectedRowsFromSelection
 
 
 def GridGetSelectionRows(self):
-    """Return the selected rows, even if not all cells in a row are selected.
-    """
+    """Return the selected rows, even if not all cells in a row are selected."""
     rows = []
     i = -1
-    for row, col in self.GetSelection():
+    for row, _col in self.GetSelection():
         if row > i:
             i = row
             rows.append(row)
     return rows
 
+
 wx.grid.Grid.GetSelectionRows = GridGetSelectionRows
 
 
 def IsSizer(self):
-    """ Check if the window is a sizer """
+    """Check if the window is a sizer"""
     return isinstance(self, wx.Sizer)
+
 
 wx.Window.IsSizer = IsSizer
 
@@ -248,8 +262,10 @@ def gamma_encode(R, G, B, alpha=wx.ALPHA_OPAQUE):
         # Decode R'G'B' -> linear light using sRGB transfer function, then
         # re-encode to gamma = 1.0 / 1.8 so that when decoded with gamma = 1.8
         # we get the correct sRGB color
-        RGBa = [int(round(specialpow(v / 255., -2.4) ** (1.0 / 1.8) * 255))
-                for v in (R, G, B)]
+        RGBa = [
+            int(round(specialpow(v / 255.0, -2.4) ** (1.0 / 1.8) * 255))
+            for v in (R, G, B)
+        ]
         RGBa.append(alpha)
         return RGBa
     else:
@@ -273,7 +289,7 @@ def get_platform_window_decoration_size():
 
 
 def draw_granger_rainbow(dc, x=0, y=0, width=1920, height=1080):
-    """ Draw a granger rainbow to a DC """
+    """Draw a granger rainbow to a DC"""
     if not isinstance(dc, wx.GCDC):
         raise NotImplementedError("%s lacks alpha transparency support" % dc.__class__)
 
@@ -285,40 +301,52 @@ def draw_granger_rainbow(dc, x=0, y=0, width=1920, height=1080):
     column_width = (width - rainbow_width) / 2
 
     # Gray columns left/right
-    dc.GradientFillLinear(wx.Rect(x, y, width, height),
-                          wx.Colour(0, 0, 0),
-                          wx.Colour(255, 255, 255),
-                          wx.UP)
+    dc.GradientFillLinear(
+        wx.Rect(x, y, width, height),
+        wx.Colour(0, 0, 0),
+        wx.Colour(255, 255, 255),
+        wx.UP,
+    )
 
     # Granger rainbow
-    rainbow = [(255, 0, 255), (0, 0, 255), (0, 255, 255),
-               (0, 255, 0), (255, 255, 0), (255, 0, 0), (255, 0, 255)]
+    rainbow = [
+        (255, 0, 255),
+        (0, 0, 255),
+        (0, 255, 255),
+        (0, 255, 0),
+        (255, 255, 0),
+        (255, 0, 0),
+        (255, 0, 255),
+    ]
     start = rainbow[-2]
     for i, end in enumerate(rainbow):
-        dc.GradientFillLinear(wx.Rect(x + column_width + strip_width * i, y,
-                                      strip_width, height),
-                              wx.Colour(*start),
-                              wx.Colour(*end),
-                              wx.RIGHT)
+        dc.GradientFillLinear(
+            wx.Rect(x + column_width + strip_width * i, y, strip_width, height),
+            wx.Colour(*start),
+            wx.Colour(*end),
+            wx.RIGHT,
+        )
         start = end
 
     # White-to-black gradient with transparency for shading
     # Top half - white to transparent
-    dc.GradientFillLinear(wx.Rect(x + column_width, y,
-                                  rainbow_width, height / 2),
-                          wx.Colour(0, 0, 0, 0),
-                          wx.Colour(255, 255, 255, 255),
-                          wx.UP)
+    dc.GradientFillLinear(
+        wx.Rect(x + column_width, y, rainbow_width, height / 2),
+        wx.Colour(0, 0, 0, 0),
+        wx.Colour(255, 255, 255, 255),
+        wx.UP,
+    )
     # Bottom half - transparent to black
-    dc.GradientFillLinear(wx.Rect(x + column_width, y + height / 2,
-                                  rainbow_width, height / 2),
-                          wx.Colour(0, 0, 0, 255),
-                          wx.Colour(255, 255, 255, 0),
-                          wx.UP)
+    dc.GradientFillLinear(
+        wx.Rect(x + column_width, y + height / 2, rainbow_width, height / 2),
+        wx.Colour(0, 0, 0, 255),
+        wx.Colour(255, 255, 255, 0),
+        wx.UP,
+    )
 
 
 def create_granger_rainbow_bitmap(width=1920, height=1080, filename=None):
-    """ Create a granger rainbow bitmap """
+    """Create a granger rainbow bitmap"""
     # Main bitmap
     bmp = wx.EmptyBitmap(width, height)
     mdc = wx.MemoryDC(bmp)
@@ -331,24 +359,26 @@ def create_granger_rainbow_bitmap(width=1920, height=1080, filename=None):
     if filename:
         name, ext = os.path.splitext(filename)
         ext = ext.lower()
-        bmp_type = {".bmp": wx.BITMAP_TYPE_BMP,
-                    ".jpe": wx.BITMAP_TYPE_JPEG,
-                    ".jpg": wx.BITMAP_TYPE_JPEG,
-                    ".jpeg": wx.BITMAP_TYPE_JPEG,
-                    ".jfif": wx.BITMAP_TYPE_JPEG,
-                    ".pcx": wx.BITMAP_TYPE_PCX,
-                    ".png": wx.BITMAP_TYPE_PNG,
-                    ".tga": wx.BITMAP_TYPE_TGA,
-                    ".tif": wx.BITMAP_TYPE_TIFF,
-                    ".tiff": wx.BITMAP_TYPE_TIFF,
-                    ".xpm": wx.BITMAP_TYPE_XPM}.get(ext, wx.BITMAP_TYPE_PNG)
+        bmp_type = {
+            ".bmp": wx.BITMAP_TYPE_BMP,
+            ".jpe": wx.BITMAP_TYPE_JPEG,
+            ".jpg": wx.BITMAP_TYPE_JPEG,
+            ".jpeg": wx.BITMAP_TYPE_JPEG,
+            ".jfif": wx.BITMAP_TYPE_JPEG,
+            ".pcx": wx.BITMAP_TYPE_PCX,
+            ".png": wx.BITMAP_TYPE_PNG,
+            ".tga": wx.BITMAP_TYPE_TGA,
+            ".tif": wx.BITMAP_TYPE_TIFF,
+            ".tiff": wx.BITMAP_TYPE_TIFF,
+            ".xpm": wx.BITMAP_TYPE_XPM,
+        }.get(ext, wx.BITMAP_TYPE_PNG)
         bmp.SaveFile(filename, bmp_type)
     else:
         return bmp
 
 
 def get_parent_frame(window):
-    """ Get parent frame (if any) """
+    """Get parent frame (if any)"""
     parent = window.Parent
     while parent:
         if isinstance(parent, wx.Frame):
@@ -357,7 +387,6 @@ def get_parent_frame(window):
 
 
 class CustomEvent(wx.PyEvent):
-
     def __init__(self, typeId, object, window=None):
         wx.PyEvent.__init__(self, object.GetId(), typeId)
         self.EventObject = object
@@ -375,7 +404,6 @@ EVT_BETTERTIMER = wx.PyEventBinder(wxEVT_BETTERTIMER, 1)
 
 
 class BetterTimerEvent(wx.PyCommandEvent):
-
     def __init__(self, id=wx.ID_ANY, ms=0):
         wx.PyCommandEvent.__init__(self, wxEVT_BETTERTIMER, id)
         self._ms = ms
@@ -404,14 +432,12 @@ class BetterTimer(wx.Timer):
     def Notify(self):
         if self._owner and _global_timer_lock.acquire(False):
             try:
-                wx.PostEvent(self._owner, BetterTimerEvent(self.Id,
-                                                           self.Interval))
+                wx.PostEvent(self._owner, BetterTimerEvent(self.Id, self.Interval))
             finally:
                 _global_timer_lock.release()
 
 
 class BetterCallLater(wx.CallLater):
-
     def __init__(self, millis, callableObj, *args, **kwargs):
         wx.CallLater.__init__(self, millis, callableObj, *args, **kwargs)
 
@@ -425,8 +451,8 @@ class BetterCallLater(wx.CallLater):
 
 class ThreadedTimer(object):
 
-    """ A wx.Timer replacement that uses threads instead of actual timers
-    which are a limited resource """
+    """A wx.Timer replacement that uses threads instead of actual timers
+    which are a limited resource"""
 
     def __init__(self, owner=None, timerid=wx.ID_ANY):
         self._owner = owner
@@ -458,7 +484,7 @@ class ThreadedTimer(object):
         if hasattr(wx.Window, "UnreserveControlId") and self.Id < 0:
             try:
                 wx.Window.UnreserveControlId(self.Id)
-            except wx.wxAssertionError as exception:
+            except wx.wxAssertionError:
                 pass
 
     def GetId(self):
@@ -494,8 +520,7 @@ class ThreadedTimer(object):
         if milliseconds > -1:
             self._ms = milliseconds
         self._oneshot = oneShot
-        self._thread = threading.Thread(target=self._timer,
-                                        name="ThreadedTimer")
+        self._thread = threading.Thread(target=self._timer, name="ThreadedTimer")
         self._thread.start()
 
     def Stop(self):
@@ -503,7 +528,6 @@ class ThreadedTimer(object):
 
 
 class ThreadedCallLater(ThreadedTimer):
-
     def __init__(self, millis, callableObj, *args, **kwargs):
         ThreadedTimer.__init__(self)
         self._oneshot = True
@@ -575,39 +599,51 @@ class BetterWindowDisabler(object):
             else:
                 toplevel = list(wx.GetTopLevelWindows())
             for w in toplevel:
-                if (w and w not in skip and "Inspection" not in "%s" % w and
-                        w not in BetterWindowDisabler.windows):
+                if (
+                    w
+                    and w not in skip
+                    and "Inspection" not in "%s" % w
+                    and w not in BetterWindowDisabler.windows
+                ):
                     self._windows.append(w)
                     # Selectively add children to our list of handled
                     # windows. This prevents a segfault with wxPython 4
                     # under macOS where GetAllChildren includes sub-controls
                     # of controls, like scrollbars etc.
                     for child in w.GetAllChildren(skip + toplevel):
-                        if (child and isinstance(child, (wx.BitmapButton,
-                                                         wx.Button,
-                                                         wx.CheckBox,
-                                                         wx.Choice,
-                                                         wx.ComboBox,
-                                                         wx.ListBox,
-                                                         wx.ListCtrl,
-                                                         wx.RadioButton,
-                                                         wx.SpinCtrl,
-                                                         wx.Slider,
-                                                         wx.StaticText,
-                                                         wx.TextCtrl,
-                                                         wx.grid.Grid,
-                                                         floatspin.FloatSpin,
-                                                         GenButton,
-                                                         GradientButton,
-                                                         PlateButton)) and
-                                child not in BetterWindowDisabler.windows):
+                        if (
+                            child
+                            and isinstance(
+                                child,
+                                (
+                                    wx.BitmapButton,
+                                    wx.Button,
+                                    wx.CheckBox,
+                                    wx.Choice,
+                                    wx.ComboBox,
+                                    wx.ListBox,
+                                    wx.ListCtrl,
+                                    wx.RadioButton,
+                                    wx.SpinCtrl,
+                                    wx.Slider,
+                                    wx.StaticText,
+                                    wx.TextCtrl,
+                                    wx.grid.Grid,
+                                    floatspin.FloatSpin,
+                                    GenButton,
+                                    GradientButton,
+                                    PlateButton,
+                                ),
+                            )
+                            and child not in BetterWindowDisabler.windows
+                        ):
                             # Don't disable panels, this can have weird side
                             # effects for contained controls
                             self._windows.append(child)
                     if self.include_menus:
                         menubar = w.GetMenuBar()
                         if menubar:
-                            for menu, label in menubar.GetMenus():
+                            for menu, _label in menubar.GetMenus():
                                 for item in menu.GetMenuItems():
                                     self._windows.append(item)
 
@@ -657,9 +693,7 @@ class CustomGridCellEvent(CustomEvent):
 
 class PopupMenu(object):
 
-    """A collection of menus that has a wx.MenuBar-like interface
-
-    """
+    """A collection of menus that has a wx.MenuBar-like interface"""
 
     def __init__(self, parent):
         self.Parent = parent
@@ -674,13 +708,13 @@ class PopupMenu(object):
         self._enabledtop[pos] = enable
 
     def FindItemById(self, id):
-        for menu, label in self._menus:
+        for menu, _label in self._menus:
             item = menu.FindItemById(id)
             if item:
                 return item
 
     def FindMenu(self, title):
-        for i, (menu, label) in enumerate(self._menus):
+        for i, (_menu, label) in enumerate(self._menus):
             if title == label:
                 return i
         return wx.NOT_FOUND
@@ -714,22 +748,24 @@ class PopupMenu(object):
 
     def get_accelerator_entries(self):
         accels = []
-        for menu, label in self._menus:
+        for menu, _label in self._menus:
             for item in menu.MenuItems:
                 accel = item.Accel
                 if accel:
-                    accel = wx.AcceleratorEntry(accel.Flags, accel.KeyCode, accel.Command, item)
+                    accel = wx.AcceleratorEntry(
+                        accel.Flags, accel.KeyCode, accel.Command, item
+                    )
                     accels.append(accel)
         return accels
 
     def key_handler(self, event):
-        """ Handle accelerator keys """
+        """Handle accelerator keys"""
         keycode = event.KeyCode
         flags = wx.ACCEL_NORMAL
         for key in ("ALT", "CMD", "CTRL", "SHIFT"):
             if wx.GetKeyState(getattr(wx, "WXK_" + key.replace("CTRL", "CONTROL"), -1)):
                 flags |= getattr(wx, "ACCEL_" + key.upper())
-        for menu, label in self._menus:
+        for menu, _label in self._menus:
             for item in menu.MenuItems:
                 accel = item.Accel
                 if accel and accel.KeyCode == keycode and accel.Flags == flags:
@@ -742,7 +778,7 @@ class PopupMenu(object):
                     self.TopLevelParent.ProcessEvent(event)
 
     def popup(self):
-        """ Popup the list of menus (with actual menus as submenus) """
+        """Popup the list of menus (with actual menus as submenus)"""
 
         top_menu = wx.Menu()
 
@@ -762,7 +798,6 @@ class PopupMenu(object):
 
 
 class FileDrop(wx.FileDropTarget):
-
     def __init__(self, drophandlers=None):
         wx.FileDropTarget.__init__(self)
         if drophandlers is None:
@@ -772,9 +807,9 @@ class FileDrop(wx.FileDropTarget):
 
     def OnDropFiles(self, x, y, filenames):
         dialogs = get_dialogs()
-        interactable = (not hasattr(self, "parent") or
-                        (self.parent.Enabled and
-                         (not dialogs or self.parent in dialogs)))
+        interactable = not hasattr(self, "parent") or (
+            self.parent.Enabled and (not dialogs or self.parent in dialogs)
+        )
         if not interactable:
             wx.Bell()
             return False
@@ -807,14 +842,14 @@ class FileDrop(wx.FileDropTarget):
 
 
 class IdFactory(object):
-    """ Inspired by wxPython 4 (Phoenix) wx.IdManager """
+    """Inspired by wxPython 4 (Phoenix) wx.IdManager"""
 
     CurrentId = 100
     ReservedIds = set()
 
     @classmethod
     def NewId(cls):
-        """ Replacement for wx.NewId() """
+        """Replacement for wx.NewId()"""
         start_id = cls.CurrentId
 
         while True:
@@ -829,7 +864,9 @@ class IdFactory(object):
             if id not in cls.ReservedIds:
                 break
             elif cls.CurrentId == start_id:
-                raise RuntimeError("Error: Out of IDs. Recommend shutting down application.")
+                raise RuntimeError(
+                    "Error: Out of IDs. Recommend shutting down application."
+                )
 
         cls.ReserveId(id)
 

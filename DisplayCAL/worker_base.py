@@ -18,10 +18,26 @@ import traceback
 if sys.platform == "win32":
     import win32api
 
-from DisplayCAL.argyll_names import names as argyll_names, altnames as argyll_altnames, optional as argyll_optional
-from DisplayCAL.colormath import VidRGB_to_eeColor, VidRGB_to_cLUT65, cLUT65_to_VidRGB, eeColor_to_VidRGB
+from DisplayCAL.argyll_names import (
+    names as argyll_names,
+    altnames as argyll_altnames,
+    optional as argyll_optional,
+)
+from DisplayCAL.colormath import (
+    VidRGB_to_eeColor,
+    VidRGB_to_cLUT65,
+    cLUT65_to_VidRGB,
+    eeColor_to_VidRGB,
+)
 from DisplayCAL.config import exe_ext, fs_enc, get_data_path, getcfg, profile_ext
-from DisplayCAL.debughelpers import Error, Info, UnloggedError, UnloggedInfo, UnloggedWarning, Warn
+from DisplayCAL.debughelpers import (
+    Error,
+    Info,
+    UnloggedError,
+    UnloggedInfo,
+    UnloggedWarning,
+    Warn,
+)
 from DisplayCAL.log import LogFile
 from DisplayCAL.meta import name as appname
 from DisplayCAL.multiprocess import mp, pool_slice
@@ -35,27 +51,62 @@ from DisplayCAL import ICCProfile as ICCP
 from DisplayCAL import localization as lang
 
 
-def _mp_xicclu(chunk, thread_abort_event, progress_queue, profile_filename,
-               intent="r", direction="f", order="n",
-               pcs=None, scale=1, cwd=None, startupinfo=None, use_icclu=False,
-               use_cam_clipping=False, logfile=None,
-               show_actual_if_clipped=False, input_encoding=None,
-               output_encoding=None, abortmessage="Aborted", output_format=None,
-               reverse=False, convert_video_rgb_to_clut65=False, verbose=1):
+def _mp_xicclu(
+    chunk,
+    thread_abort_event,
+    progress_queue,
+    profile_filename,
+    intent="r",
+    direction="f",
+    order="n",
+    pcs=None,
+    scale=1,
+    cwd=None,
+    startupinfo=None,
+    use_icclu=False,
+    use_cam_clipping=False,
+    logfile=None,
+    show_actual_if_clipped=False,
+    input_encoding=None,
+    output_encoding=None,
+    abortmessage="Aborted",
+    output_format=None,
+    reverse=False,
+    convert_video_rgb_to_clut65=False,
+    verbose=1,
+):
     if not config.cfg.items(config.configparser.DEFAULTSECT):
         config.initcfg()
     profile = ICCP.ICCProfile(profile_filename)
-    xicclu = Xicclu(profile, intent, direction, order, pcs, scale, cwd,
-                    startupinfo, use_icclu, use_cam_clipping, logfile,
-                    None, show_actual_if_clipped, input_encoding,
-                    output_encoding, convert_video_rgb_to_clut65, verbose)
+    xicclu = Xicclu(
+        profile,
+        intent,
+        direction,
+        order,
+        pcs,
+        scale,
+        cwd,
+        startupinfo,
+        use_icclu,
+        use_cam_clipping,
+        logfile,
+        None,
+        show_actual_if_clipped,
+        input_encoding,
+        output_encoding,
+        convert_video_rgb_to_clut65,
+        verbose,
+    )
     prevperc = 0
     start = 0
     num_subchunks = 50
     subchunksize = float(len(chunk)) / num_subchunks
     for i in range(num_subchunks):
-        if (thread_abort_event is not None and getattr(sys, "_sigbreak", False) and
-                not thread_abort_event.is_set()):
+        if (
+            thread_abort_event is not None
+            and getattr(sys, "_sigbreak", False)
+            and not thread_abort_event.is_set()
+        ):
             thread_abort_event.set()
             print("Got SIGBREAK, aborting thread...")
         if thread_abort_event is not None and thread_abort_event.is_set():
@@ -72,11 +123,27 @@ def _mp_xicclu(chunk, thread_abort_event, progress_queue, profile_filename,
     return xicclu.get(output_format=output_format, reverse=reverse)
 
 
-def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
-                          profile_filename, intent, direction, pcs,
-                          use_cam_clipping, clutres, step, threshold,
-                          threshold2, interp, Linterp, m2, XYZbp, XYZwp, bpc,
-                          abortmessage="Aborted"):
+def _mp_generate_B2A_clut(
+    chunk,
+    thread_abort_event,
+    progress_queue,
+    profile_filename,
+    intent,
+    direction,
+    pcs,
+    use_cam_clipping,
+    clutres,
+    step,
+    threshold,
+    threshold2,
+    interp,
+    Linterp,
+    m2,
+    XYZbp,
+    XYZwp,
+    bpc,
+    abortmessage="Aborted",
+):
     """B2A cLUT generation worker
 
     This should be spawned as a multiprocessing process
@@ -97,7 +164,9 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
     if use_cam_clipping:
         # Use CAM Jab for clipping for cLUT grid points after a given
         # threshold
-        xicclu2 = Xicclu(profile, intent, direction, "n", pcs, 100, use_cam_clipping=True)
+        xicclu2 = Xicclu(
+            profile, intent, direction, "n", pcs, 100, use_cam_clipping=True
+        )
     prevperc = 0
     count = 0
     chunksize = len(chunk)
@@ -109,8 +178,9 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
             else:
                 interp_list = [interp_tuple]
             for i, ointerp in enumerate(interp_list):
-                interp_list[i] = colormath.Interp(ointerp.xp, ointerp.fp,
-                                                  use_numpy=True)
+                interp_list[i] = colormath.Interp(
+                    ointerp.xp, ointerp.fp, use_numpy=True
+                )
             if interp_tuple is interp:
                 interp = interp_list
             else:
@@ -139,25 +209,25 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
                     # print "%3.6f %3.6f %3.6f" % tuple(v)
                     # raw_input()
                     if intent == "a":
-                        v = colormath.adapt(*v + [XYZwp, list(profile.tags.wtpt.ir.values())])
+                        v = colormath.adapt(
+                            *v + [XYZwp, list(profile.tags.wtpt.ir.values())]
+                        )
                 else:
                     # Legacy CIELAB
                     L = Linterp(d * 100)
                     v = L, -128 + e * abmaxval, -128 + f * abmaxval
                 idata.append("%.6f %.6f %.6f" % tuple(v))
                 # Lookup CIE -> device values through profile using xicclu
-                if not use_cam_clipping or (pcs == "x" and
-                                            a <= threshold and
-                                            b <= threshold and
-                                            c <= threshold):
+                if not use_cam_clipping or (
+                    pcs == "x" and a <= threshold and b <= threshold and c <= threshold
+                ):
                     xicclu1(v)
-                if use_cam_clipping and (pcs == "l" or
-                                         a > threshold2 or
-                                         b > threshold2 or
-                                         c > threshold2):
+                if use_cam_clipping and (
+                    pcs == "l" or a > threshold2 or b > threshold2 or c > threshold2
+                ):
                     xicclu2(v)
                 count += 1.0
-            perc = round(count / (chunksize * clutres ** 2) * 100)
+            perc = round(count / (chunksize * clutres**2) * 100)
             if progress_queue and perc > prevperc:
                 progress_queue.put(perc - prevperc)
                 prevperc = perc
@@ -172,7 +242,7 @@ def _mp_generate_B2A_clut(chunk, thread_abort_event, progress_queue,
 
 
 def check_argyll_bin(paths=None):
-    """ Check if the Argyll binaries can be found. """
+    """Check if the Argyll binaries can be found."""
     prev_dir = None
     cur_dir = os.curdir
     for name in argyll_names:
@@ -186,12 +256,16 @@ def check_argyll_bin(paths=None):
             if cur_dir != prev_dir:
                 if name in argyll_optional:
                     if verbose:
-                        print("Warning: Optional Argyll executable %s is not in the same "
-                              "directory as the main executables (%s)." % (exe, prev_dir))
+                        print(
+                            "Warning: Optional Argyll executable %s is not in the same "
+                            "directory as the main executables (%s)." % (exe, prev_dir)
+                        )
                 else:
                     if verbose:
-                        print("Error: Main Argyll executable %s is not in the same "
-                              "directory as the other executables (%s)." % (exe, prev_dir))
+                        print(
+                            "Error: Main Argyll executable %s is not in the same "
+                            "directory as the other executables (%s)." % (exe, prev_dir)
+                        )
                     return False
         else:
             prev_dir = cur_dir
@@ -209,10 +283,17 @@ def check_argyll_bin(paths=None):
                 paths = [argyll_dir] + paths
         print("[D] Searchpath:\n  ", "\n  ".join(paths))
     # Fedora doesn't ship Rec709.icm
-    config.defaults["3dlut.input.profile"] = \
-        get_data_path(os.path.join("ref", "Rec709.icm")) or get_data_path(os.path.join("ref", "sRGB.icm")) or ""
-    config.defaults["testchart.reference"] = get_data_path(os.path.join("ref", "ColorChecker.cie")) or ""
-    config.defaults["gamap_profile"] = get_data_path(os.path.join("ref", "sRGB.icm")) or ""
+    config.defaults["3dlut.input.profile"] = (
+        get_data_path(os.path.join("ref", "Rec709.icm"))
+        or get_data_path(os.path.join("ref", "sRGB.icm"))
+        or ""
+    )
+    config.defaults["testchart.reference"] = (
+        get_data_path(os.path.join("ref", "ColorChecker.cie")) or ""
+    )
+    config.defaults["gamap_profile"] = (
+        get_data_path(os.path.join("ref", "sRGB.icm")) or ""
+    )
     return True
 
 
@@ -220,7 +301,7 @@ argyll_utils = {}
 
 
 def get_argyll_util(name, paths=None):
-    """ Find a single Argyll utility. Return the full path. """
+    """Find a single Argyll utility. Return the full path."""
     cfg_argyll_dir = getcfg("argyll.dir")
     if not paths:
         paths = getenvu("PATH", os.defpath).split(os.pathsep)
@@ -246,7 +327,12 @@ def get_argyll_util(name, paths=None):
         if exe:
             print("Info:", name, "=", exe)
         else:
-            print("Info:", "|".join(argyll_altnames[name]), "not found in", os.pathsep.join(paths))
+            print(
+                "Info:",
+                "|".join(argyll_altnames[name]),
+                "not found in",
+                os.pathsep.join(paths),
+            )
     if exe:
         if cache_key not in argyll_utils:
             argyll_utils[cache_key] = {}
@@ -255,7 +341,7 @@ def get_argyll_util(name, paths=None):
 
 
 def get_argyll_utilname(name, paths=None):
-    """ Find a single Argyll utility. Return the basename without extension. """
+    """Find a single Argyll utility. Return the basename without extension."""
     exe = get_argyll_util(name, paths)
     if exe:
         exe = os.path.basename(os.path.splitext(exe)[0])
@@ -263,9 +349,7 @@ def get_argyll_utilname(name, paths=None):
 
 
 def get_argyll_version(name, paths=None):
-    """Determine version of a certain Argyll utility.
-
-    """
+    """Determine version of a certain Argyll utility."""
     argyll_version_string = get_argyll_version_string(name, paths)
     return parse_argyll_version_string(argyll_version_string)
 
@@ -280,9 +364,13 @@ def get_argyll_version_string(name, paths=None):
     else:
         startupinfo = None
     try:
-        p = sp.Popen([cmd.encode(fs_enc), "-?"], stdin=sp.PIPE,
-                     stdout=sp.PIPE, stderr=sp.STDOUT,
-                     startupinfo=startupinfo)
+        p = sp.Popen(
+            [cmd.encode(fs_enc), "-?"],
+            stdin=sp.PIPE,
+            stdout=sp.PIPE,
+            stderr=sp.STDOUT,
+            startupinfo=startupinfo,
+        )
     except Exception as exception:
         print(exception)
         return argyll_version_string
@@ -306,8 +394,7 @@ def parse_argyll_version_string(argyll_version_string):
 
 
 def printcmdline(cmd, args=None, fn=None, cwd=None):
-    """Pretty-print a command line.
-    """
+    """Pretty-print a command line."""
     if fn is None:
         fn = print
     if args is None:
@@ -332,13 +419,19 @@ def printcmdline(cmd, args=None, fn=None, cwd=None):
         lines.append(item)
         i += 1
     for line in lines:
-        fn(textwrap.fill(line, 80, expand_tabs=False,
-                         replace_whitespace=False, initial_indent="    ",
-                         subsequent_indent="      "))
+        fn(
+            textwrap.fill(
+                line,
+                80,
+                expand_tabs=False,
+                replace_whitespace=False,
+                initial_indent="    ",
+                subsequent_indent="      ",
+            )
+        )
 
 
 class ThreadAbort(object):
-
     def __init__(self):
         self.event = mp.Event()
 
@@ -354,17 +447,15 @@ class ThreadAbort(object):
 
 
 class WorkerBase(object):
-
     def __init__(self):
-        """Create and return a new base worker instance.
-        """
+        """Create and return a new base worker instance."""
         self.sessionlogfile = None
         self.subprocess_abort = False
         self.tempdir = None
         self._thread_abort = ThreadAbort()
 
     def create_tempdir(self):
-        """ Create a temporary working directory and return its path. """
+        """Create a temporary working directory and return its path."""
         if not self.tempdir or not os.path.isdir(self.tempdir):
             # we create the tempdir once each calibrating/profiling run
             # (deleted by 'wrapup' after each run)
@@ -378,22 +469,23 @@ class WorkerBase(object):
                 self.tempdir = tempfile.mkdtemp(prefix=appname + "-")
             except Exception as exception:
                 self.tempdir = None
-                return Error("Error - couldn't create temporary directory: " +
-                             safe_str(exception))
+                return Error(
+                    "Error - couldn't create temporary directory: "
+                    + safe_str(exception)
+                )
         return self.tempdir
 
     def isalive(self, subprocess=None):
-        """ Check if subprocess is still alive """
+        """Check if subprocess is still alive"""
         if not subprocess:
             subprocess = getattr(self, "subprocess", None)
-        return (subprocess and
-                ((hasattr(subprocess, "poll") and
-                  subprocess.poll() is None) or
-                 (hasattr(subprocess, "isalive") and
-                  subprocess.isalive())))
+        return subprocess and (
+            (hasattr(subprocess, "poll") and subprocess.poll() is None)
+            or (hasattr(subprocess, "isalive") and subprocess.isalive())
+        )
 
     def log(self, *args, **kwargs):
-        """ Log to global logfile and session logfile (if any) """
+        """Log to global logfile and session logfile (if any)"""
         msg = " ".join(safe_basestring(arg) for arg in args)
         fn = kwargs.get("fn", print)
         fn(msg)
@@ -411,11 +503,26 @@ class WorkerBase(object):
         else:
             self._thread_abort.event.clear()
 
-    def xicclu(self, profile, idata, intent="r", direction="f", order="n",
-               pcs=None, scale=1, cwd=None, startupinfo=None, raw=False,
-               logfile=None, use_icclu=False, use_cam_clipping=False,
-               get_clip=False, show_actual_if_clipped=False,
-               input_encoding=None, output_encoding=None):
+    def xicclu(
+        self,
+        profile,
+        idata,
+        intent="r",
+        direction="f",
+        order="n",
+        pcs=None,
+        scale=1,
+        cwd=None,
+        startupinfo=None,
+        raw=False,
+        logfile=None,
+        use_icclu=False,
+        use_cam_clipping=False,
+        get_clip=False,
+        show_actual_if_clipped=False,
+        input_encoding=None,
+        output_encoding=None,
+    ):
         """Call xicclu, feed input floats into stdin, return output floats.
 
         input data needs to be a list of 3-tuples (or lists) with floats,
@@ -424,21 +531,48 @@ class WorkerBase(object):
         if 'raw' is true.
 
         """
-        with Xicclu(profile, intent, direction, order, pcs, scale, cwd,
-                    startupinfo, use_icclu, use_cam_clipping, logfile,
-                    self, show_actual_if_clipped, input_encoding,
-                    output_encoding) as xicclu:
+        with Xicclu(
+            profile,
+            intent,
+            direction,
+            order,
+            pcs,
+            scale,
+            cwd,
+            startupinfo,
+            use_icclu,
+            use_cam_clipping,
+            logfile,
+            self,
+            show_actual_if_clipped,
+            input_encoding,
+            output_encoding,
+        ) as xicclu:
             xicclu(idata)
         return xicclu.get(raw, get_clip)
 
 
 class Xicclu(WorkerBase):
-    def __init__(self, profile, intent="r", direction="f", order="n",
-                 pcs=None, scale=1, cwd=None, startupinfo=None, use_icclu=False,
-                 use_cam_clipping=False, logfile=None, worker=None,
-                 show_actual_if_clipped=False, input_encoding=None,
-                 output_encoding=None, convert_video_rgb_to_clut65=False,
-                 verbose=1):
+    def __init__(
+        self,
+        profile,
+        intent="r",
+        direction="f",
+        order="n",
+        pcs=None,
+        scale=1,
+        cwd=None,
+        startupinfo=None,
+        use_icclu=False,
+        use_cam_clipping=False,
+        logfile=None,
+        worker=None,
+        show_actual_if_clipped=False,
+        input_encoding=None,
+        output_encoding=None,
+        convert_video_rgb_to_clut65=False,
+        verbose=1,
+    ):
         if not profile:
             raise Error("Xicclu: Profile is %r" % profile)
         WorkerBase.__init__(self)
@@ -457,16 +591,24 @@ class Xicclu(WorkerBase):
             else:
                 profile = ICCP.ICCProfile(profile)
         is_profile = isinstance(profile, ICCP.ICCProfile)
-        if (is_profile and profile.version >= 4 and
-                not profile.convert_iccv4_tags_to_iccv2()):
-            raise Error("\n".join([lang.getstr("profile.iccv4.unsupported"),
-                                   profile.getDescription()]))
+        if (
+            is_profile
+            and profile.version >= 4
+            and not profile.convert_iccv4_tags_to_iccv2()
+        ):
+            raise Error(
+                "\n".join(
+                    [lang.getstr("profile.iccv4.unsupported"), profile.getDescription()]
+                )
+            )
         if not profile.fileName or not os.path.isfile(profile.fileName):
             if profile.fileName:
                 prefix = os.path.basename(profile.fileName)
             elif is_profile:
-                prefix = make_filename_safe(profile.getDescription(),
-                                            concat=False) + profile_ext
+                prefix = (
+                    make_filename_safe(profile.getDescription(), concat=False)
+                    + profile_ext
+                )
             else:
                 # CGATS (.cal)
                 prefix = "cal"
@@ -497,9 +639,12 @@ class Xicclu(WorkerBase):
         args = [xicclu, "-v%i" % verbose, "-s%s" % scale]
         self.show_actual_if_clipped = False
         if utilname == "xicclu":
-            if (is_profile and
-                    show_actual_if_clipped and "A2B0" in profile.tags and
-                    ("B2A0" in profile.tags or direction == "if")):
+            if (
+                is_profile
+                and show_actual_if_clipped
+                and "A2B0" in profile.tags
+                and ("B2A0" in profile.tags or direction == "if")
+            ):
                 args.append("-a")
                 self.show_actual_if_clipped = True
             if use_cam_clipping:
@@ -512,8 +657,10 @@ class Xicclu(WorkerBase):
                     input_encoding = "n"
                 if not output_encoding:
                     output_encoding = "n"
-                args += ["-e" + safe_str(input_encoding),
-                         "-E" + safe_str(output_encoding)]
+                args += [
+                    "-e" + safe_str(input_encoding),
+                    "-E" + safe_str(output_encoding),
+                ]
         args.append("-f" + direction)
         self.output_scale = 1.0
         if is_profile:
@@ -522,7 +669,9 @@ class Xicclu(WorkerBase):
                 if order != "n":
                     args.append("-o" + order)
             if profile.profileClass != "link":
-                if direction in ("f", "ib") and (pcs == "x" or (profile.connectionColorSpace == "XYZ" and not pcs)):
+                if direction in ("f", "ib") and (
+                    pcs == "x" or (profile.connectionColorSpace == "XYZ" and not pcs)
+                ):
                     # In case of forward lookup with XYZ PCS, use 0..100 scaling
                     # internally so we get extra precision from xicclu for the
                     # decimal part. Scale back to 0..1 later.
@@ -532,21 +681,29 @@ class Xicclu(WorkerBase):
                     args.append("-p" + pcs)
         args.append(self.profile_path)
         if debug or verbose > 1:
-            self.sessionlogfile = LogFile(profile_basename + ".xicclu", os.path.dirname(profile.fileName))
+            self.sessionlogfile = LogFile(
+                profile_basename + ".xicclu", os.path.dirname(profile.fileName)
+            )
             if is_profile:
                 profile_act = ICCP.ICCProfile(profile.fileName)
-                self.sessionlogfile.write("Profile ID %s (actual %s)" %
-                                          (hexlify(profile.ID),
-                                           hexlify(profile_act.calculateID(False))))
+                self.sessionlogfile.write(
+                    "Profile ID %s (actual %s)"
+                    % (hexlify(profile.ID), hexlify(profile_act.calculateID(False)))
+                )
             if cwd:
                 self.log(lang.getstr("working_dir"))
                 indent = "  "
                 for name in cwd.split(os.path.sep):
-                    self.log(textwrap.fill(name + os.path.sep, 80,
-                                           expand_tabs=False,
-                                           replace_whitespace=False,
-                                           initial_indent=indent,
-                                           subsequent_indent=indent))
+                    self.log(
+                        textwrap.fill(
+                            name + os.path.sep,
+                            80,
+                            expand_tabs=False,
+                            replace_whitespace=False,
+                            initial_indent=indent,
+                            subsequent_indent=indent,
+                        )
+                    )
                     indent += " "
                 self.log("")
             self.log(lang.getstr("commandline"))
@@ -563,9 +720,14 @@ class Xicclu(WorkerBase):
         self.errors = []
         self.stdout = tempfile.SpooledTemporaryFile()
         self.stderr = tempfile.SpooledTemporaryFile()
-        self.subprocess = sp.Popen(self.args, stdin=sp.PIPE, stdout=self.stdout,
-                                   stderr=self.stderr, cwd=self.cwd,
-                                   startupinfo=self.startupinfo)
+        self.subprocess = sp.Popen(
+            self.args,
+            stdin=sp.PIPE,
+            stdout=self.stdout,
+            stderr=self.stderr,
+            cwd=self.cwd,
+            startupinfo=self.startupinfo,
+        )
 
     def devi_devip(self, n):
         if n > 236 / 256.0:
@@ -589,9 +751,11 @@ class Xicclu(WorkerBase):
                     if verbose:
                         for n in v:
                             if not isinstance(n, (float, int)):
-                                raise TypeError("xicclu: Expecting list of "
-                                                "strings or n-tuples with "
-                                                "floats")
+                                raise TypeError(
+                                    "xicclu: Expecting list of "
+                                    "strings or n-tuples with "
+                                    "floats"
+                                )
                     idata[i] = " ".join(str(devi_devip(n / scale) * scale) for n in v)
         else:
             idata = idata.splitlines()
@@ -671,7 +835,10 @@ class Xicclu(WorkerBase):
                 try:
                     shutil.rmtree(self.tempdir, True)
                 except Exception as exception:
-                    print("Warning - temporary directory '%s' could not be removed: %s" % (self.tempdir, exception))
+                    print(
+                        "Warning - temporary directory '%s' could not be removed: %s"
+                        % (self.tempdir, exception)
+                    )
 
     def get(self, raw=False, get_clip=False, output_format=None, reverse=False):
         if raw:
@@ -730,7 +897,10 @@ class Xicclu(WorkerBase):
                 if get_clip and not self.show_actual_if_clipped:
                     out.append(clip)
             else:
-                out = b"".join(struct.pack(fmt, int(round(devop_devo(float(v) / scale) * maxv))) for v in parts)
+                out = b"".join(
+                    struct.pack(fmt, int(round(devop_devo(float(v) / scale) * maxv)))
+                    for v in parts
+                )
             parsed.append(out)
         if self.sessionlogfile:
             self.sessionlogfile.close()
@@ -758,25 +928,55 @@ class Xicclu(WorkerBase):
 
 
 class MP_Xicclu(Xicclu):
-
-    def __init__(self, profile, intent="r", direction="f", order="n",
-                 pcs=None, scale=1, cwd=None, startupinfo=None, use_icclu=False,
-                 use_cam_clipping=False, logfile=None, worker=None,
-                 show_actual_if_clipped=False, input_encoding=None,
-                 output_encoding=None, output_format=None, reverse=False,
-                 output_stream=None, convert_video_rgb_to_clut65=False,
-                 verbose=1):
+    def __init__(
+        self,
+        profile,
+        intent="r",
+        direction="f",
+        order="n",
+        pcs=None,
+        scale=1,
+        cwd=None,
+        startupinfo=None,
+        use_icclu=False,
+        use_cam_clipping=False,
+        logfile=None,
+        worker=None,
+        show_actual_if_clipped=False,
+        input_encoding=None,
+        output_encoding=None,
+        output_format=None,
+        reverse=False,
+        output_stream=None,
+        convert_video_rgb_to_clut65=False,
+        verbose=1,
+    ):
         WorkerBase.__init__(self)
         self.logfile = logfile
         self.worker = worker
         self.output_stream = output_stream
         self._in = []
-        self._args = (profile.fileName, intent, direction, order,
-                      pcs, scale, cwd, startupinfo, use_icclu,
-                      use_cam_clipping, None,
-                      show_actual_if_clipped, input_encoding,
-                      output_encoding, lang.getstr("aborted"), output_format,
-                      reverse, convert_video_rgb_to_clut65, verbose)
+        self._args = (
+            profile.fileName,
+            intent,
+            direction,
+            order,
+            pcs,
+            scale,
+            cwd,
+            startupinfo,
+            use_icclu,
+            use_cam_clipping,
+            None,
+            show_actual_if_clipped,
+            input_encoding,
+            output_encoding,
+            lang.getstr("aborted"),
+            output_format,
+            reverse,
+            convert_video_rgb_to_clut65,
+            verbose,
+        )
         self._out = []
         num_cpus = mp.cpu_count()
         if isinstance(profile.tags.get("A2B0"), ICCP.LUT16Type):
@@ -805,9 +1005,16 @@ class MP_Xicclu(Xicclu):
         pass
 
     def get(self, raw=False, get_clip=False, output_format=None, reverse=False):
-        for slices in pool_slice(_mp_xicclu, self._in, self._args, {},
-                                 self.num_workers, self.thread_abort,
-                                 self.logfile, num_batches=self.num_batches):
+        for slices in pool_slice(
+            _mp_xicclu,
+            self._in,
+            self._args,
+            {},
+            self.num_workers,
+            self.thread_abort,
+            self.logfile,
+            num_batches=self.num_batches,
+        ):
             if self.output_stream:
                 for row in slices:
                     self.output_stream.write(row)

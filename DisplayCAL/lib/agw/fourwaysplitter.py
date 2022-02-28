@@ -87,7 +87,7 @@ Event Name                         Description
 License And Version
 ===================
 
-FourWaySplitter is distributed under the wxPython license. 
+FourWaySplitter is distributed under the wxPython license.
 
 Latest Revision: Andrea Gavana @ 14 Apr 2010, 12.00 GMT
 
@@ -120,17 +120,14 @@ SP_3DBORDER = wx.SP_3DBORDER
 
 # FourWaySplitter events
 EVT_SPLITTER_SASH_POS_CHANGING = wx.EVT_SPLITTER_SASH_POS_CHANGING
-""" The sash position is in the process of being changed. You may prevent this change""" \
-""" from happening by calling `Veto` or you may also modify the position of the tracking""" \
-""" bar to properly reflect the position that would be set if the drag were to be""" \
-""" completed at this point. Processes a `wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGING` event."""
+""" The sash position is in the process of being changed. You may prevent this change""" """ from happening by calling `Veto` or you may also modify the position of the tracking""" """ bar to properly reflect the position that would be set if the drag were to be""" """ completed at this point. Processes a `wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGING` event."""
 EVT_SPLITTER_SASH_POS_CHANGED = wx.EVT_SPLITTER_SASH_POS_CHANGED
-""" The sash position was changed. This event is generated after the user releases the""" \
-""" mouse after dragging the splitter. Processes a `wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGED` event. """
+""" The sash position was changed. This event is generated after the user releases the""" """ mouse after dragging the splitter. Processes a `wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGED` event. """
 
 # ---------------------------------------------------------------------------- #
 # Class FourWaySplitterEvent
 # ---------------------------------------------------------------------------- #
+
 
 class FourWaySplitterEvent(wx.PyCommandEvent):
     """This event class is almost the same as `wx.SplitterEvent` except
@@ -138,14 +135,14 @@ class FourWaySplitterEvent(wx.PyCommandEvent):
     same event type IDs and event binders are used as with
     `wx.SplitterEvent`.
     """
-    
+
     def __init__(self, evtType=wx.wxEVT_NULL, splitter=None):
         """Default class constructor.
 
         :param evtType: the event type;
         :param splitter: the associated L{FourWaySplitter} window.
         """
-        
+
         wx.PyCommandEvent.__init__(self, evtType)
 
         if splitter:
@@ -156,16 +153,14 @@ class FourWaySplitterEvent(wx.PyCommandEvent):
         self.sashPos = -1
         self.isAllowed = True
 
-
     def SetSashIdx(self, idx):
         """Sets the index of the sash currently involved in the event.
 
         :param idx: an integer between 0 and 3, representing the index of the
          sash involved in the event.
         """
-        
-        self.sashIdx = idx
 
+        self.sashIdx = idx
 
     def SetSashPosition(self, pos):
         """In the case of ``EVT_SPLITTER_SASH_POS_CHANGED`` events, sets the new sash
@@ -179,15 +174,13 @@ class FourWaySplitterEvent(wx.PyCommandEvent):
         :note: May only be called while processing ``EVT_SPLITTER_SASH_POS_CHANGING``
          and ``EVT_SPLITTER_SASH_POS_CHANGED`` events.
         """
-        
+
         self.sashPos = pos
 
-
     def GetSashIdx(self):
-        """ Returns the index of the sash currently involved in the event. """
+        """Returns the index of the sash currently involved in the event."""
 
         return self.sashIdx
-
 
     def GetSashPosition(self):
         """Returns the new sash position.
@@ -195,9 +188,8 @@ class FourWaySplitterEvent(wx.PyCommandEvent):
         :note: May only be called while processing ``EVT_SPLITTER_SASH_POS_CHANGING``
          and ``EVT_SPLITTER_SASH_POS_CHANGED`` events.
         """
-        
-        return self.sashPos
 
+        return self.sashPos
 
     # methods from wx.NotifyEvent
     def Veto(self):
@@ -210,7 +202,6 @@ class FourWaySplitterEvent(wx.PyCommandEvent):
 
         self.isAllowed = False
 
-
     def Allow(self):
         """This is the opposite of L{Veto}: it explicitly allows the event to be processed.
         For most events it is not necessary to call this method as the events are
@@ -220,18 +211,18 @@ class FourWaySplitterEvent(wx.PyCommandEvent):
 
         self.isAllowed = True
 
-
     def IsAllowed(self):
         """Returns ``True`` if the change is allowed (L{Veto} hasn't been called) or
         ``False`` otherwise (if it was).
         """
 
         return self.isAllowed
-        
+
 
 # ---------------------------------------------------------------------------- #
 # Class FourWaySplitter
 # ---------------------------------------------------------------------------- #
+
 
 class FourWaySplitter(wx.PyPanel):
     """This class is very similar to `wx.SplitterWindow` except that it
@@ -242,19 +233,27 @@ class FourWaySplitter(wx.PyPanel):
     sashes, it is possible to resize the four windows at the same time.
 
     :note: These things are not yet supported:
-    
+
      * Minimum pane size (minimum of what? Width? Height?);
      * Using negative sash positions to indicate a position offset from the end;
      * User controlled unsplitting with double clicks on the sash (but supported via the L{FourWaySplitter.SetExpanded} method);
      * Sash gravity.
 
-     
+
     """
 
-    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=0, agwStyle=0, name="FourWaySplitter"):
+    def __init__(
+        self,
+        parent,
+        id=wx.ID_ANY,
+        pos=wx.DefaultPosition,
+        size=wx.DefaultSize,
+        style=0,
+        agwStyle=0,
+        name="FourWaySplitter",
+    ):
         """Default class constructor.
-        
+
         :param parent: parent window. Must not be ``None``;
         :param id: window identifier. A value of -1 indicates a default value;
         :param pos: the control position. A value of (-1, -1) indicates a default position,
@@ -275,7 +274,7 @@ class FourWaySplitter(wx.PyPanel):
 
         :param name: the window name.
         """
-        
+
         # always turn on tab traversal
         style |= wx.TAB_TRAVERSAL
 
@@ -283,14 +282,14 @@ class FourWaySplitter(wx.PyPanel):
         style &= ~wx.BORDER_MASK
         style |= wx.BORDER_NONE
 
-        self._agwStyle = agwStyle        
+        self._agwStyle = agwStyle
 
         # initialize the base class
         wx.PyPanel.__init__(self, parent, id, pos, size, style, name)
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
 
         self._windows = []
-        
+
         self._splitx = 0
         self._splity = 0
         self._expanded = -1
@@ -303,11 +302,11 @@ class FourWaySplitter(wx.PyPanel):
         self._isHot = False
 
         self._sashTrackerPen = wx.Pen(wx.BLACK, 2, wx.SOLID)
-        
+
         self._sashCursorWE = wx.StockCursor(wx.CURSOR_SIZEWE)
         self._sashCursorNS = wx.StockCursor(wx.CURSOR_SIZENS)
         self._sashCursorSIZING = wx.StockCursor(wx.CURSOR_SIZING)
-        
+
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_MOTION, self.OnMotion)
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -315,7 +314,6 @@ class FourWaySplitter(wx.PyPanel):
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveWindow)
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnterWindow)
-
 
     def SetAGWWindowStyleFlag(self, agwStyle):
         """Sets the L{FourWaySplitter} window style flags.
@@ -329,21 +327,19 @@ class FourWaySplitter(wx.PyPanel):
          ``SP_NOSASH``             0x10 No sash will be drawn on L{FourWaySplitter}.
          ``SP_LIVE_UPDATE``        0x80 Don't draw XOR line but resize the child windows immediately.
          ``SP_3DBORDER``          0x200 Draws a 3D effect border.
-         ================== =========== ==================================================         
+         ================== =========== ==================================================
         """
 
         self._agwStyle = agwStyle
         self.Refresh()
-        
 
     def GetAGWWindowStyleFlag(self):
         """Returns the L{FourWaySplitter} window style.
 
-        :see: L{SetAGWWindowStyleFlag} for a list of possible window styles.        
+        :see: L{SetAGWWindowStyleFlag} for a list of possible window styles.
         """
 
         return self._agwStyle
-
 
     def AppendWindow(self, window):
         """Add a new window to the splitter at the right side or bottom
@@ -351,9 +347,8 @@ class FourWaySplitter(wx.PyPanel):
 
         :param window: an instance of `wx.Window`.
         """
-        
-        self.InsertWindow(len(self._windows), window)
 
+        self.InsertWindow(len(self._windows), window)
 
     def InsertWindow(self, idx, window, sashPos=-1):
         """Insert a new window into the splitter at the position given in `idx`.
@@ -362,13 +357,12 @@ class FourWaySplitter(wx.PyPanel):
         :param window: an instance of `wx.Window`;
         :param sashPos: the sash position after the window insertion.
         """
-        
-        assert window not in self._windows, "A window can only be in the splitter once!"
-        
-        self._windows.insert(idx, window)
-        
-        self._SizeWindows()
 
+        assert window not in self._windows, "A window can only be in the splitter once!"
+
+        self._windows.insert(idx, window)
+
+        self._SizeWindows()
 
     def DetachWindow(self, window):
         """Removes the window from the stack of windows managed by the splitter. The
@@ -376,14 +370,13 @@ class FourWaySplitter(wx.PyPanel):
 
         :param window: an instance of `wx.Window`.
         """
-        
+
         assert window in self._windows, "Unknown window!"
-        
+
         idx = self._windows.index(window)
         del self._windows[idx]
 
         self._SizeWindows()
-
 
     def ReplaceWindow(self, oldWindow, newWindow):
         """Replaces `oldWindow` (which is currently being managed by the
@@ -395,12 +388,11 @@ class FourWaySplitter(wx.PyPanel):
         """
 
         assert oldWindow in self._windows, "Unknown window!"
-        
+
         idx = self._windows.index(oldWindow)
         self._windows[idx] = newWindow
-        
-        self._SizeWindows()
 
+        self._SizeWindows()
 
     def ExchangeWindows(self, window1, window2):
         """Trade the positions in the splitter of the two windows.
@@ -408,10 +400,10 @@ class FourWaySplitter(wx.PyPanel):
         :param window1: an instance of `wx.Window`;
         :param window2: another instance of `wx.Window`.
         """
-        
+
         assert window1 in self._windows, "Unknown window!"
         assert window2 in self._windows, "Unknown window!"
-        
+
         idx1 = self._windows.index(window1)
         idx2 = self._windows.index(window2)
         self._windows[idx1] = window2
@@ -425,7 +417,6 @@ class FourWaySplitter(wx.PyPanel):
         if "__WXMSW__" in wx.Platform:
             self.Thaw()
 
-
     def GetWindow(self, idx):
         """Returns the window at the index `idx`.
 
@@ -434,70 +425,65 @@ class FourWaySplitter(wx.PyPanel):
 
         if len(self._windows) > idx:
             return self._windows[idx]
-        
+
         return None
 
     # Get top left child
     def GetTopLeft(self):
-        """ Returns the top left window (window index: 0). """
+        """Returns the top left window (window index: 0)."""
 
         return self.GetWindow(0)
-    
 
     # Get top right child
     def GetTopRight(self):
-        """ Returns the top right window (window index: 1). """
+        """Returns the top right window (window index: 1)."""
 
         return self.GetWindow(1)
-  
 
     # Get bottom left child
     def GetBottomLeft(self):
-        """ Returns the bottom left window (window index: 2). """
+        """Returns the bottom left window (window index: 2)."""
 
         return self.GetWindow(2)
 
-
     # Get bottom right child
     def GetBottomRight(self):
-        """ Returns the bottom right window (window index: 3). """
+        """Returns the bottom right window (window index: 3)."""
 
         return self.GetWindow(3)
-
 
     def DoGetBestSize(self):
         """Gets the size which best suits the window: for a control, it would be the
         minimal size which doesn't truncate the control, for a panel - the same size
         as it would have after a call to `Fit()`.
 
-        :note: Overridden from `wx.PyPanel`.        
+        :note: Overridden from `wx.PyPanel`.
         """
 
         if not self._windows:
             # something is better than nothing...
             return wx.Size(10, 10)
-        
+
         width = height = 0
         border = self._GetBorderSize()
-        
+
         tl = self.GetTopLeft()
         tr = self.GetTopRight()
         bl = self.GetBottomLeft()
         br = self.GetBottomRight()
-    
+
         for win in self._windows:
             w, h = win.GetEffectiveMinSize()
             width += w
             height += h
-            
+
         if tl and tr:
-          width += self._GetSashSize()
+            width += self._GetSashSize()
 
         if bl and br:
-          height += self._GetSashSize()
-          
-        return wx.Size(width+2*border, height+2*border)
-  
+            height += self._GetSashSize()
+
+        return wx.Size(width + 2 * border, height + 2 * border)
 
     # Recompute layout
     def _SizeWindows(self):
@@ -505,7 +491,7 @@ class FourWaySplitter(wx.PyPanel):
 
         :see: L{SetHSplit} and L{SetVSplit} for more information about split fractions.
         """
-            
+
         win0 = self.GetTopLeft()
         win1 = self.GetTopRight()
         win2 = self.GetBottomLeft()
@@ -514,38 +500,39 @@ class FourWaySplitter(wx.PyPanel):
         width, height = self.GetSize()
         barSize = self._GetSashSize()
         border = self._GetBorderSize()
-        
+
         if self._expanded < 0:
-            totw = width - barSize - 2*border
-            toth = height - barSize - 2*border
-            self._splitx = (self._fhor*totw)/10000
-            self._splity = (self._fver*toth)/10000
+            totw = width - barSize - 2 * border
+            toth = height - barSize - 2 * border
+            self._splitx = (self._fhor * totw) / 10000
+            self._splity = (self._fver * toth) / 10000
             rightw = totw - self._splitx
             bottomh = toth - self._splity
             if win0:
                 win0.SetDimensions(0, 0, self._splitx, self._splity)
-                win0.Show() 
+                win0.Show()
             if win1:
                 win1.SetDimensions(self._splitx + barSize, 0, rightw, self._splity)
-                win1.Show() 
+                win1.Show()
             if win2:
                 win2.SetDimensions(0, self._splity + barSize, self._splitx, bottomh)
-                win2.Show() 
+                win2.Show()
             if win3:
-                win3.SetDimensions(self._splitx + barSize, self._splity + barSize, rightw, bottomh)
-                win3.Show() 
+                win3.SetDimensions(
+                    self._splitx + barSize, self._splity + barSize, rightw, bottomh
+                )
+                win3.Show()
 
         else:
 
             if self._expanded < len(self._windows):
                 for ii, win in enumerate(self._windows):
                     if ii == self._expanded:
-                        win.SetDimensions(0, 0, width-2*border, height-2*border)
+                        win.SetDimensions(0, 0, width - 2 * border, height - 2 * border)
                         win.Show()
                     else:
                         win.Hide()
 
-        
     # Determine split mode
     def GetMode(self, pt):
         """Determines the split mode for L{FourWaySplitter}.
@@ -565,9 +552,9 @@ class FourWaySplitter(wx.PyPanel):
 
         """
 
-        barSize = self._GetSashSize()        
+        barSize = self._GetSashSize()
         flag = wx.BOTH
-        
+
         if pt.x < self._splitx - _TOLERANCE:
             flag &= ~wx.VERTICAL
 
@@ -576,12 +563,11 @@ class FourWaySplitter(wx.PyPanel):
 
         if pt.x >= self._splitx + barSize + _TOLERANCE:
             flag &= ~wx.VERTICAL
-            
+
         if pt.y >= self._splity + barSize + _TOLERANCE:
             flag &= ~wx.HORIZONTAL
-            
+
         return flag
-  
 
     # Move the split intelligently
     def MoveSplit(self, x, y):
@@ -593,15 +579,18 @@ class FourWaySplitter(wx.PyPanel):
 
         width, height = self.GetSize()
         barSize = self._GetSashSize()
-        
-        if x < 0: x = 0
-        if y < 0: y = 0
-        if x > width - barSize: x = width - barSize
-        if y > height - barSize: y = height - barSize
-        
+
+        if x < 0:
+            x = 0
+        if y < 0:
+            y = 0
+        if x > width - barSize:
+            x = width - barSize
+        if y > height - barSize:
+            y = height - barSize
+
         self._splitx = x
         self._splity = y
-
 
     # Adjust layout
     def AdjustLayout(self):
@@ -611,18 +600,21 @@ class FourWaySplitter(wx.PyPanel):
 
         width, height = self.GetSize()
         barSize = self._GetSashSize()
-        border = self._GetBorderSize()
-        
-        self._fhor = (width > barSize and \
-                      [(10000*self._splitx+(width-barSize-1))/(width-barSize)] \
-                      or [0])[0]
-        
-        self._fver = (height > barSize and \
-                      [(10000*self._splity+(height-barSize-1))/(height-barSize)] \
-                      or [0])[0]
+        # border = self._GetBorderSize()
+
+        self._fhor = (
+            width > barSize
+            and [(10000 * self._splitx + (width - barSize - 1)) / (width - barSize)]
+            or [0]
+        )[0]
+
+        self._fver = (
+            height > barSize
+            and [(10000 * self._splity + (height - barSize - 1)) / (height - barSize)]
+            or [0]
+        )[0]
 
         self._SizeWindows()
-            
 
     # Button being pressed
     def OnLeftDown(self, event):
@@ -633,7 +625,7 @@ class FourWaySplitter(wx.PyPanel):
 
         if not self.IsEnabled():
             return
-        
+
         pt = event.GetPosition()
         self.CaptureMouse()
         self._mode = self.GetMode(pt)
@@ -646,7 +638,6 @@ class FourWaySplitter(wx.PyPanel):
                 self.DrawTrackSplitter(self._splitx, self._splity)
 
             self._flags |= FLAG_PRESSED
-            
 
     # Button being released
     def OnLeftUp(self, event):
@@ -654,7 +645,7 @@ class FourWaySplitter(wx.PyPanel):
 
         :param event: a `wx.MouseEvent` event to be processed.
         """
-        
+
         if not self.IsEnabled():
             return
 
@@ -662,25 +653,26 @@ class FourWaySplitter(wx.PyPanel):
             self.ReleaseMouse()
 
         flgs = self._flags
-        
+
         self._flags &= ~FLAG_CHANGED
         self._flags &= ~FLAG_PRESSED
-        
+
         if flgs & FLAG_PRESSED:
-            
+
             if not self.GetAGWWindowStyleFlag() & wx.SP_LIVE_UPDATE:
                 self.DrawTrackSplitter(self._splitx, self._splity)
                 self.DrawSplitter(wx.ClientDC(self))
                 self.AdjustLayout()
-                
+
             if flgs & FLAG_CHANGED:
-                event = FourWaySplitterEvent(wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGED, self)
+                event = FourWaySplitterEvent(
+                    wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGED, self
+                )
                 event.SetSashIdx(self._mode)
                 event.SetSashPosition(wx.Point(self._splitx, self._splity))
-                self.GetEventHandler().ProcessEvent(event)                
+                self.GetEventHandler().ProcessEvent(event)
 
         self._mode = NOWHERE
-        
 
     def OnLeaveWindow(self, event):
         """Handles the ``wx.EVT_LEAVE_WINDOW`` event for L{FourWaySplitter}.
@@ -691,15 +683,13 @@ class FourWaySplitter(wx.PyPanel):
         self.SetCursor(wx.STANDARD_CURSOR)
         self._RedrawIfHotSensitive(False)
 
-
     def OnEnterWindow(self, event):
         """Handles the ``wx.EVT_ENTER_WINDOW`` event for L{FourWaySplitter}.
 
         :param event: a `wx.MouseEvent` event to be processed.
         """
-        
-        self._RedrawIfHotSensitive(True)
 
+        self._RedrawIfHotSensitive(True)
 
     def _RedrawIfHotSensitive(self, isHot):
         """Used internally. Redraw the splitter if we are using a hot-sensitive splitter.
@@ -715,7 +705,6 @@ class FourWaySplitter(wx.PyPanel):
             dc = wx.ClientDC(self)
             self.DrawSplitter(dc)
 
-        
     def OnMotion(self, event):
         """Handles the ``wx.EVT_MOTION`` event for L{FourWaySplitter}.
 
@@ -723,22 +712,22 @@ class FourWaySplitter(wx.PyPanel):
         """
 
         if self.HasFlag(wx.SP_NOSASH):
-            return 
+            return
 
         pt = event.GetPosition()
 
         # Moving split
         if self._flags & FLAG_PRESSED:
-                    
+
             oldsplitx = self._splitx
             oldsplity = self._splity
-            
+
             if self._mode == wx.BOTH:
                 self.MoveSplit(pt.x - self._offx, pt.y - self._offy)
-              
+
             elif self._mode == wx.VERTICAL:
                 self.MoveSplit(pt.x - self._offx, self._splity)
-              
+
             elif self._mode == wx.HORIZONTAL:
                 self.MoveSplit(self._splitx, pt.y - self._offy)
 
@@ -746,7 +735,7 @@ class FourWaySplitter(wx.PyPanel):
             if not self.DoSendChangingEvent(wx.Point(self._splitx, self._splity)):
                 self._splitx = oldsplitx
                 self._splity = oldsplity
-                return              
+                return
 
             if oldsplitx != self._splitx or oldsplity != self._splity:
                 if not self.GetAGWWindowStyleFlag() & wx.SP_LIVE_UPDATE:
@@ -756,10 +745,10 @@ class FourWaySplitter(wx.PyPanel):
                     self.AdjustLayout()
 
                 self._flags |= FLAG_CHANGED
-        
+
         # Change cursor based on position
         ff = self.GetMode(pt)
-        
+
         if ff == wx.BOTH:
             self.SetCursor(self._sashCursorSIZING)
 
@@ -774,7 +763,6 @@ class FourWaySplitter(wx.PyPanel):
 
         event.Skip()
 
-
     def OnPaint(self, event):
         """Handles the ``wx.EVT_PAINT`` event for L{FourWaySplitter}.
 
@@ -784,7 +772,6 @@ class FourWaySplitter(wx.PyPanel):
         if self:
             dc = wx.PaintDC(self)
             self.DrawSplitter(dc)
-
 
     def OnSize(self, event):
         """Handles the ``wx.EVT_SIZE`` event for L{FourWaySplitter}.
@@ -796,9 +783,8 @@ class FourWaySplitter(wx.PyPanel):
         if parent.IsIconized():
             event.Skip()
             return
-    
-        self._SizeWindows()
 
+        self._SizeWindows()
 
     def DoSendChangingEvent(self, pt):
         """Sends a ``EVT_SPLITTER_SASH_POS_CHANGING`` event.
@@ -810,7 +796,7 @@ class FourWaySplitter(wx.PyPanel):
         event = FourWaySplitterEvent(wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGING, self)
         event.SetSashIdx(self._mode)
         event.SetSashPosition(pt)
-        
+
         if self.GetEventHandler().ProcessEvent(event) and not event.IsAllowed():
             # the event handler vetoed the change or missing event.Skip()
             return False
@@ -818,9 +804,8 @@ class FourWaySplitter(wx.PyPanel):
             # or it might have changed the value
             return True
 
-
     def _GetSashSize(self):
-        """ Used internally. """
+        """Used internally."""
 
         if self.HasFlag(wx.SP_NOSASH):
             return 0
@@ -830,16 +815,14 @@ class FourWaySplitter(wx.PyPanel):
         else:
             return 5
 
-
     def _GetBorderSize(self):
-        """ Used internally. """
+        """Used internally."""
 
         if wx.VERSION >= _RENDER_VER:
             return wx.RendererNative.Get().GetSplitterParams(self).border
         else:
             return 0
 
-        
     # Draw the horizontal split
     def DrawSplitter(self, dc):
         """Actually draws the sashes.
@@ -847,7 +830,7 @@ class FourWaySplitter(wx.PyPanel):
         :param dc: an instance of `wx.DC`.
         """
 
-        backColour = self.GetBackgroundColour()        
+        backColour = self.GetBackgroundColour()
         dc.SetBrush(wx.Brush(backColour, wx.SOLID))
         dc.SetPen(wx.Pen(backColour))
         dc.Clear()
@@ -855,7 +838,8 @@ class FourWaySplitter(wx.PyPanel):
         if wx.VERSION >= _RENDER_VER:
             if self.HasFlag(wx.SP_3DBORDER):
                 wx.RendererNative.Get().DrawSplitterBorder(
-                    self, dc, self.GetClientRect())
+                    self, dc, self.GetClientRect()
+                )
         else:
             barSize = self._GetSashSize()
 
@@ -866,25 +850,24 @@ class FourWaySplitter(wx.PyPanel):
         flag = 0
         if self._isHot:
             flag = wx.CONTROL_CURRENT
-        
+
         width, height = self.GetSize()
 
         if self._mode & wx.VERTICAL:
             if wx.VERSION >= _RENDER_VER:
-                wx.RendererNative.Get().DrawSplitterSash(self, dc,
-                                                         self.GetClientSize(),
-                                                         self._splitx, wx.VERTICAL, flag)
+                wx.RendererNative.Get().DrawSplitterSash(
+                    self, dc, self.GetClientSize(), self._splitx, wx.VERTICAL, flag
+                )
             else:
                 dc.DrawRectangle(self._splitx, 0, barSize, height)
 
         if self._mode & wx.HORIZONTAL:
             if wx.VERSION >= _RENDER_VER:
-                wx.RendererNative.Get().DrawSplitterSash(self, dc,
-                                                         self.GetClientSize(),
-                                                         self._splity, wx.VERTICAL, flag)
+                wx.RendererNative.Get().DrawSplitterSash(
+                    self, dc, self.GetClientSize(), self._splity, wx.VERTICAL, flag
+                )
             else:
                 dc.DrawRectangle(0, self._splity, width, barSize)
-
 
     def DrawTrackSplitter(self, x, y):
         """Draws a fake sash in case we don't have ``wx.SP_LIVE_UPDATE`` style.
@@ -892,23 +875,23 @@ class FourWaySplitter(wx.PyPanel):
         :param x: the `x` position of the sash;
         :param y: the `y` position of the sash.
 
-        :note: This method relies on `wx.ScreenDC` which is currently unavailable on wxMac.        
+        :note: This method relies on `wx.ScreenDC` which is currently unavailable on wxMac.
         """
 
         # Draw a line to represent the dragging sash, for when not
-        # doing live updates            
+        # doing live updates
         w, h = self.GetClientSize()
         dc = wx.ScreenDC()
-        
+
         dc.SetLogicalFunction(wx.INVERT)
         dc.SetPen(self._sashTrackerPen)
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        
+
         if self._mode == wx.VERTICAL:
             x1 = x
             y1 = 2
             x2 = x
-            y2 = h-2
+            y2 = h - 2
             if x1 > w:
                 x1 = w
                 x2 = w
@@ -918,15 +901,15 @@ class FourWaySplitter(wx.PyPanel):
 
             x1, y1 = self.ClientToScreenXY(x1, y1)
             x2, y2 = self.ClientToScreenXY(x2, y2)
-         
+
             dc.DrawLine(x1, y1, x2, y2)
             dc.SetLogicalFunction(wx.COPY)
-                                
+
         elif self._mode == wx.HORIZONTAL:
 
             x1 = 2
             y1 = y
-            x2 = w-2
+            x2 = w - 2
             y2 = y
             if y1 > h:
                 y1 = h
@@ -940,11 +923,11 @@ class FourWaySplitter(wx.PyPanel):
 
             dc.DrawLine(x1, y1, x2, y2)
             dc.SetLogicalFunction(wx.COPY)
-            
+
         elif self._mode == wx.BOTH:
 
             x1 = 2
-            x2 = w-2
+            x2 = w - 2
             y1 = y
             y2 = y
 
@@ -952,19 +935,18 @@ class FourWaySplitter(wx.PyPanel):
             x2, y2 = self.ClientToScreenXY(x2, y2)
 
             dc.DrawLine(x1, y1, x2, y2)
-                        
+
             x1 = x
             x2 = x
             y1 = 2
-            y2 = h-2
+            y2 = h - 2
 
             x1, y1 = self.ClientToScreenXY(x1, y1)
             x2, y2 = self.ClientToScreenXY(x2, y2)
 
             dc.DrawLine(x1, y1, x2, y2)
-            dc.SetLogicalFunction(wx.COPY)            
+            dc.SetLogicalFunction(wx.COPY)
 
-        
     # Change horizontal split [fraction*10000]
     def SetHSplit(self, s):
         """Change horizontal split fraction.
@@ -974,16 +956,17 @@ class FourWaySplitter(wx.PyPanel):
          panes. For example, to split the panes at 35 percent, use::
 
             fourSplitter.SetHSplit(3500)
-          
+
         """
 
-        if s < 0: s = 0
-        if s > 10000: s  =10000
+        if s < 0:
+            s = 0
+        if s > 10000:
+            s = 10000
         if s != self._fhor:
             self._fhor = s
             self._SizeWindows()
 
-    
     # Change vertical split [fraction*10000]
     def SetVSplit(self, s):
         """Change vertical split fraction.
@@ -993,15 +976,16 @@ class FourWaySplitter(wx.PyPanel):
          panes. For example, to split the panes at 35 percent, use::
 
             fourSplitter.SetVSplit(3500)
-          
+
         """
 
-        if s < 0: s = 0
-        if s > 10000: s  =10000
+        if s < 0:
+            s = 0
+        if s > 10000:
+            s = 10000
         if s != self._fver:
             self._fver = s
             self._SizeWindows()
-
 
     # Expand one or all of the four panes
     def SetExpanded(self, expanded):
@@ -1012,13 +996,10 @@ class FourWaySplitter(wx.PyPanel):
         :param expanded: an integer >= 0 to expand a window to fill the whole
          client size, or an integer < 0 to return to the four-window view.
         """
-        
+
         if expanded >= 4:
-            raise Exception("ERROR: SetExpanded: index out of range: %d"%expanded)
+            raise Exception("ERROR: SetExpanded: index out of range: %d" % expanded)
 
         if self._expanded != expanded:
             self._expanded = expanded
             self._SizeWindows()
-
-
-    

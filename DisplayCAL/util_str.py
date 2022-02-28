@@ -8,20 +8,28 @@ import sys
 import unicodedata
 from functools import reduce
 
-env_errors = (EnvironmentError, )
+env_errors = (EnvironmentError,)
 if sys.platform == "win32":
     import pywintypes
+
     env_errors = env_errors + (pywintypes.error, pywintypes.com_error)
 
 from DisplayCAL.encoding import get_encodings
 
 fs_enc = get_encodings()[1]
 
-ascii_printable = "".join([getattr(string, name) for name in ("digits", "ascii_letters", "punctuation", "whitespace")])
+ascii_printable = "".join(
+    [
+        getattr(string, name)
+        for name in ("digits", "ascii_letters", "punctuation", "whitespace")
+    ]
+)
 
-# Control chars are defined as charcodes in the decimal range 0-31 (inclusive) 
+# Control chars are defined as charcodes in the decimal range 0-31 (inclusive)
 # except whitespace characters, plus charcode 127 (DEL)
-control_chars = "".join([chr(i) for i in list(range(0, 9)) + list(range(14, 32)) + [127]])
+control_chars = "".join(
+    [chr(i) for i in list(range(0, 9)) + list(range(14, 32)) + [127]]
+)
 
 # Safe character substitution - can be used for filenames
 # i.e. no \/:*?"<>| will be added through substitution
@@ -177,47 +185,49 @@ safesubst = {
 # Extended character substitution - can NOT be used for filenames
 # Contains only chars that are not normalizable
 subst = dict(safesubst)
-subst.update({
-    # Latin-1 supplement
-    "\u00a6": b"|",
-    "\u00ab": b"<<",
-    "\u00bb": b">>",
-    "\u00bc": b"1/4",
-    "\u00bd": b"1/2",
-    "\u00be": b"3/4",
-    "\u00f7": b":",
-    # General punctuation
-    "\u201c": b"\x22",
-    "\u201d": b"\x22",
-    "\u201f": b"\x22",
-    "\u2033": b"\x22",
-    "\u2036": b"\x22",
-    "\u2039": b"<",
-    "\u203a": b">",
-    "\u203d": b"!?",
-    "\u2044": b"/",
-    # Number forms
-    "\u2153": b"1/3",
-    "\u2154": b"2/3",
-    "\u215b": b"1/8",
-    "\u215c": b"3/8",
-    "\u215d": b"5/8",
-    "\u215e": b"7/8",
-    # Arrows
-    "\u2190": b"<-",
-    "\u2192": b"->",
-    "\u2194": b"<->",
-    # Mathematical operators
-    "\u226a": b"<<",
-    "\u226b": b">>",
-    "\u2264": b"<=",
-    "\u2265": b"=>",
-})
+subst.update(
+    {
+        # Latin-1 supplement
+        "\u00a6": b"|",
+        "\u00ab": b"<<",
+        "\u00bb": b">>",
+        "\u00bc": b"1/4",
+        "\u00bd": b"1/2",
+        "\u00be": b"3/4",
+        "\u00f7": b":",
+        # General punctuation
+        "\u201c": b"\x22",
+        "\u201d": b"\x22",
+        "\u201f": b"\x22",
+        "\u2033": b"\x22",
+        "\u2036": b"\x22",
+        "\u2039": b"<",
+        "\u203a": b">",
+        "\u203d": b"!?",
+        "\u2044": b"/",
+        # Number forms
+        "\u2153": b"1/3",
+        "\u2154": b"2/3",
+        "\u215b": b"1/8",
+        "\u215c": b"3/8",
+        "\u215d": b"5/8",
+        "\u215e": b"7/8",
+        # Arrows
+        "\u2190": b"<-",
+        "\u2192": b"->",
+        "\u2194": b"<->",
+        # Mathematical operators
+        "\u226a": b"<<",
+        "\u226b": b">>",
+        "\u2264": b"<=",
+        "\u2265": b"=>",
+    }
+)
 
 
 class StrList(list):
 
-    """ It's a list. It's a string. It's a list of strings that behaves like a
+    """It's a list. It's a string. It's a list of strings that behaves like a
     string! And like a list."""
 
     def __init__(self, seq=tuple()):
@@ -242,7 +252,7 @@ def asciize(obj):
     """
     chars = b""
     if isinstance(obj, Exception):
-        for char in obj.object[obj.start:obj.end]:
+        for char in obj.object[obj.start: obj.end]:
             chars += subst.get(char, normalencode(char).strip() or b"?")
         return chars, obj.end
     else:
@@ -261,7 +271,7 @@ def safe_asciize(obj):
     """
     chars = b""
     if isinstance(obj, Exception):
-        for char in obj.object[obj.start:obj.end]:
+        for char in obj.object[obj.start: obj.end]:
             if char in safesubst:
                 subst_char = safesubst[char]
             else:
@@ -286,8 +296,8 @@ def escape(obj):
     """
     chars = b""
     if isinstance(obj, Exception):
-        for char in obj.object[obj.start:obj.end]:
-            chars += subst.get(char, "\\u%s" % hex(ord(char))[2:].rjust(4, '0'))
+        for char in obj.object[obj.start: obj.end]:
+            chars += subst.get(char, "\\u%s" % hex(ord(char))[2:].rjust(4, "0"))
         return chars, obj.end
     else:
         return obj.encode("ASCII", "escape")
@@ -327,7 +337,7 @@ def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
             # unidec. Technically, this should never happen, but who knows
             # what hidden bugs and quirks may linger in the Python 2.x Unicode
             # implementation...
-            c = safe_asciize(unistr[i:i + 1])
+            c = safe_asciize(unistr[i: i + 1])
         uniout += c
     # Remove invalid chars
     pattern = r"[\\/:*?\"<>|]"
@@ -338,15 +348,12 @@ def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
 
 
 def normalencode(unistr, form="NFKD", encoding="ASCII", errors="ignore"):
-    """Return encoded normal form of unicode string
-    """
+    """Return encoded normal form of unicode string"""
     return unicodedata.normalize(form, unistr).encode(encoding, errors)
 
 
 def box(text, width=80, collapse=False):
-    """Create a box around text (monospaced font required for display)
-
-    """
+    """Create a box around text (monospaced font required for display)"""
     content_width = width - 4
     text = wrap(str(text), content_width)
     lines = text.splitlines()
@@ -363,7 +370,7 @@ def box(text, width=80, collapse=False):
     return "\n".join(box)
 
 
-def center(text, width = None):
+def center(text, width=None):
     """Center (mono-spaced) text.
 
     If no width is given, the longest line
@@ -384,15 +391,17 @@ def center(text, width = None):
 
 
 def create_replace_function(template, values):
-    """ Create a replace function for use with e.g. re.sub """
+    """Create a replace function for use with e.g. re.sub"""
+
     def replace_function(match, template=template, values=values):
         template = match.expand(template)
         return template % values
+
     return replace_function
 
 
 def ellipsis(text, maxlen=64, pos="r"):
-    """ Truncate text to maxlen characters and add elipsis if it was longer.
+    """Truncate text to maxlen characters and add elipsis if it was longer.
 
     Elipsis position can be 'm' (middle) or 'r' (right).
 
@@ -400,13 +409,13 @@ def ellipsis(text, maxlen=64, pos="r"):
     if len(text) <= maxlen:
         return text
     if pos == "r":
-        return text[:maxlen - 1] + "\u2026"
+        return text[: maxlen - 1] + "\u2026"
     elif pos == "m":
-        return text[:maxlen / 2] + "\u2026" + text[-maxlen / 2 + 1:]
+        return text[: maxlen / 2] + "\u2026" + text[-maxlen / 2 + 1:]
 
 
 def hexunescape(match):
-    """ To be used with re.sub """
+    """To be used with re.sub"""
     return chr(int(match.group(1), 16))
 
 
@@ -420,23 +429,24 @@ def indent(text, prefix, predicate=None):
     consist solely of whitespace characters.
     """
     if predicate is None:
+
         def predicate(line):
             return line.strip()
 
     def prefixed_lines():
         for line in text.splitlines(True):
             yield (prefix + line if predicate(line) else line)
-    return ''.join(prefixed_lines())
+
+    return "".join(prefixed_lines())
 
 
 def universal_newlines(txt):
-    """Return txt with all new line formats converted to POSIX newlines.
-    """
+    """Return txt with all new line formats converted to POSIX newlines."""
     return txt.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def replace_control_chars(txt, replacement=" ", collapse=False):
-    """ Replace all control characters.
+    """Replace all control characters.
 
     Default replacement character is ' ' (space).
     If the 'collapse' keyword argument evaluates to True, consecutive
@@ -472,7 +482,7 @@ def safe_basestring(obj):
         #   and 'args' attributes
         if hasattr(obj, "reason"):
             if isinstance(obj.reason, str):
-                obj.args = (obj.reason, )
+                obj.args = (obj.reason,)
             else:
                 obj.args = obj.reason
         error = []
@@ -519,8 +529,7 @@ def safe_basestring(obj):
 
 
 def safe_str(obj, enc=fs_enc, errors="replace"):
-    """Return string representation of obj
-    """
+    """Return string representation of obj"""
     obj = safe_basestring(obj)
     if isinstance(obj, bytes):
         return obj.decode()
@@ -545,20 +554,26 @@ def strtr(txt, replacements):
     return txt
 
 
-def wrap(text, width = 70):
+def wrap(text, width=70):
     """A word-wrap function that preserves existing line breaks and spaces.
 
     Expects that existing line breaks are posix newlines (\\n).
 
     """
-    return reduce(lambda line, word, width=width: '%s%s%s' %
-        (line,
-        ' \n'[(len(line)-line.rfind('\n')-1
-            + len(word.split('\n',1)[0]
-                ) >= width)],
-        word),
-        text.split(' ')
-        )
+    return reduce(
+        lambda line, word, width=width: "%s%s%s"
+        % (
+            line,
+            " \n"[
+                (
+                    len(line) - line.rfind("\n") - 1 + len(word.split("\n", 1)[0])
+                    >= width
+                )
+            ],
+            word,
+        ),
+        text.split(" "),
+    )
 
 
 def test():

@@ -48,44 +48,30 @@ instruments = {
     # Instruments can have an id (short string) that is different than the
     # long instrument name. In case no id is given, the instrument name is
     # the same as the id.
-
     # TODO: Update instrument names from Argyll 2.3.0
-
     "DTP92": {
-        "usb_ids": [
-            {
-                "vid": 0x0765,
-                "pid": 0xD092,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0765, "pid": 0xD092, "hid": False}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": None,
         "skip_sensor_cal": None,
-        "refresh": True
+        "refresh": True,
     },
     "DTP94": {
-        "usb_ids": [
-            {
-                "vid": 0x0765,
-                "pid": 0xD094,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0765, "pid": 0xD094, "hid": False}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": False,
-        "skip_sensor_cal": False, # DTP94 instrument access fails
-                # when using -N option to skip automatic sensor calibration
-                # (dispread -D9 output: "Setting no-sensor_calibrate failed
-                # failed with 'Unsupported function'")
+        "skip_sensor_cal": False,  # DTP94 instrument access fails
+        # when using -N option to skip automatic sensor calibration
+        # (dispread -D9 output: "Setting no-sensor_calibrate failed
+        # with 'Unsupported function'")
         "integration_time": [4.0, 1.1],  # Estimated
-        "refresh": True
+        "refresh": True,
     },
     "Spectrolino": {
         "spectral": True,
@@ -93,7 +79,7 @@ instruments = {
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": True,
-        "skip_sensor_cal": True
+        "skip_sensor_cal": True,
     },
     "SpectroScan": {
         "spectral": True,
@@ -101,7 +87,7 @@ instruments = {
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": True,
-        "skip_sensor_cal": True
+        "skip_sensor_cal": True,
     },
     "SpectroScanT": {
         "spectral": True,
@@ -109,7 +95,7 @@ instruments = {
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": True,
-        "skip_sensor_cal": True
+        "skip_sensor_cal": True,
     },
     "Spectrocam": {
         "spectral": True,
@@ -117,16 +103,10 @@ instruments = {
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": True,
-        "skip_sensor_cal": None
+        "skip_sensor_cal": None,
     },
     "i1 Display": {  # Argyll 1.3.5 and earlier
-        "usb_ids": [
-            {
-                "vid": 0x0670,
-                "pid": 0x0001,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0670, "pid": 0x0001, "hid": False}],
         "id": "i1D1",
         "spectral": False,
         "adaptive_mode": False,
@@ -135,16 +115,10 @@ instruments = {
         "sensor_cal": False,
         "skip_sensor_cal": False,
         "integration_time": [4.0, 1.0],  # Using i1D2 values
-        "refresh": True
+        "refresh": True,
     },
     "i1 Display 1": {  # Argyll 1.3.6 and newer
-        "usb_ids": [
-            {
-                "vid": 0x0670,
-                "pid": 0x0001,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0670, "pid": 0x0001, "hid": False}],
         "id": "i1D1",
         "spectral": False,
         "adaptive_mode": False,
@@ -153,37 +127,25 @@ instruments = {
         "sensor_cal": True,
         "skip_sensor_cal": False,
         "integration_time": [4.0, 1.0],  # Using i1D2 values
-        "refresh": True
+        "refresh": True,
     },
     "i1 Display 2": {  # Argyll 1.3.6 and newer
-        "usb_ids": [
-            {
-                "vid": 0x0971,
-                "pid": 0x2003,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0971, "pid": 0x2003, "hid": False}],
         "id": "i1D2",
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": False,
-        "skip_sensor_cal": False, # i1 Display 2 instrument access fails
-                # when using -N option to skip automatic sensor calibration
-                # (dispread -D9 output: "Setting no-sensor_calibrate failed
-                # failed with 'Unsupported function'")
+        "skip_sensor_cal": False,  # i1 Display 2 instrument access fails
+        # when using -N option to skip automatic sensor calibration
+        # (dispread -D9 output: "Setting no-sensor_calibrate failed
+        # with 'Unsupported function'")
         "integration_time": [4.0, 1.0],  # Measured
-        "refresh": True
+        "refresh": True,
     },
     "i1 DisplayPro, ColorMunki Display": {
-        "usb_ids": [
-            {
-                "vid": 0x0765,
-                "pid": 0x5020,
-                "hid": True
-            }
-        ],
+        "usb_ids": [{"vid": 0x0765, "pid": 0x5020, "hid": True}],
         "id": "i1D3",
         "spectral": False,
         "adaptive_mode": False,
@@ -194,16 +156,10 @@ instruments = {
         "measurement_mode_map": {"c": "r", "l": "n"},
         "integration_time": [2.6, 0.2],  # Measured
         "refresh": True,
-        "spectral_cal": True
+        "spectral_cal": True,
     },
     "i1 Monitor": {  # like i1Pro
-        "usb_ids": [
-            {
-                "vid": 0x0971,
-                "pid": 0x2001,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0971, "pid": 0x2001, "hid": False}],
         "spectral": True,
         "adaptive_mode": True,
         "highres_mode": True,
@@ -211,16 +167,10 @@ instruments = {
         "sensor_cal": True,
         "skip_sensor_cal": True,
         "integration_time": [9.2, 3.9],  # Using i1 Pro values
-        "refresh": True
+        "refresh": True,
     },
     "i1 Pro": {
-        "usb_ids": [
-            {
-                "vid": 0x0971,
-                "pid": 0x2000,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0971, "pid": 0x2000, "hid": False}],
         "spectral": True,
         "adaptive_mode": True,
         "highres_mode": True,
@@ -228,16 +178,10 @@ instruments = {
         "sensor_cal": True,
         "skip_sensor_cal": True,
         "integration_time": [9.2, 3.9],  # Measured (i1 Pro Rev. A)
-        "refresh": True
+        "refresh": True,
     },
     "i1 Pro 2": {
-        "usb_ids": [
-            {
-                "vid": 0x0971,
-                "pid": 0x2000,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0971, "pid": 0x2000, "hid": False}],
         "spectral": True,
         "adaptive_mode": True,
         "highres_mode": True,
@@ -245,20 +189,12 @@ instruments = {
         "sensor_cal": True,
         "skip_sensor_cal": True,
         "integration_time": [9.2, 3.9],  # Using i1 Pro values
-        "refresh": True
+        "refresh": True,
     },
     "ColorHug": {
         "usb_ids": [
-            {
-                "vid": 0x04D8,
-                "pid": 0xF8DA,
-                "hid": True
-            },
-            {
-                "vid": 0x273F,
-                "pid": 0x1001,
-                "hid": True
-            }
+            {"vid": 0x04D8, "pid": 0xF8DA, "hid": True},
+            {"vid": 0x273F, "pid": 0x1001, "hid": True},
         ],
         "spectral": False,
         "adaptive_mode": False,
@@ -267,16 +203,10 @@ instruments = {
         "sensor_cal": None,
         "skip_sensor_cal": None,
         "integration_time": [1.8, 0.8],  # Measured (ColorHug #660)
-        "refresh": True
+        "refresh": True,
     },
     "ColorHug2": {
-        "usb_ids": [
-            {
-                "vid": 0x273F,
-                "pid": 0x1004,
-                "hid": True
-            }
-        ],
+        "usb_ids": [{"vid": 0x273F, "pid": 0x1004, "hid": True}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
@@ -284,20 +214,12 @@ instruments = {
         "sensor_cal": None,
         "skip_sensor_cal": None,
         "integration_time": [2.0, 0.6],  # Measured (ColorHug2 prototype #2)
-        "refresh": True
+        "refresh": True,
     },
     "ColorMunki": {
         "usb_ids": [
-            {
-                "vid": 0x0971,
-                "pid": 0x2007,
-                "hid": False
-            },
-            {  # ColorMunki i1Studio
-                "vid": 0x0765,
-                "pid": 0x6008,
-                "hid": False
-            }
+            {"vid": 0x0971, "pid": 0x2007, "hid": False},
+            {"vid": 0x0765, "pid": 0x6008, "hid": False},  # ColorMunki i1Studio
         ],
         "spectral": True,
         "adaptive_mode": True,
@@ -306,20 +228,12 @@ instruments = {
         "sensor_cal": True,
         "skip_sensor_cal": True,
         "integration_time": [9.2, 3.9],  # Using i1 Pro values
-        "refresh": True
+        "refresh": True,
     },
     "Colorimtre HCFR": {
         "usb_ids": [
-            {  # V3.1
-                "vid": 0x04DB,
-                "pid": 0x005B,
-                "hid": False
-            },
-            {  # V4.0
-                "vid": 0x04D8,
-                "pid": 0xFE17,
-                "hid": False
-            }
+            {"vid": 0x04DB, "pid": 0x005B, "hid": False},  # V3.1
+            {"vid": 0x04D8, "pid": 0xFE17, "hid": False},  # V4.0
         ],
         "id": "HCFR",
         "spectral": False,
@@ -327,16 +241,10 @@ instruments = {
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": None,
-        "skip_sensor_cal": None
+        "skip_sensor_cal": None,
     },
     "ColorMunki Smile": {  # Argyll 1.5.x and newer
-        "usb_ids": [
-            {
-                "vid": 0x0765,
-                "pid": 0x6003,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x0765, "pid": 0x6003, "hid": False}],
         "id": "Smile",
         "spectral": False,
         "adaptive_mode": False,
@@ -344,23 +252,17 @@ instruments = {
         "projector_mode": False,
         "sensor_cal": False,
         "skip_sensor_cal": False,
-        "integration_time": [4.0, 1.0]  # Using i1D2 values
+        "integration_time": [4.0, 1.0],  # Using i1D2 values
     },
     "EX1": {
-        "usb_ids": [
-            {
-                "vid": 0x2457,
-                "pid": 0x4000,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x2457, "pid": 0x4000, "hid": False}],
         "spectral": True,
         "adaptive_mode": False,
         "highres_mode": False,
         "projector_mode": False,
         "sensor_cal": True,
         "skip_sensor_cal": True,
-        "integration_time": [9.2, 3.9]  # Using i1 Pro values
+        "integration_time": [9.2, 3.9],  # Using i1 Pro values
     },
     "K-10": {
         "spectral": False,
@@ -370,32 +272,10 @@ instruments = {
         "sensor_cal": None,
         "skip_sensor_cal": None,
         "integration_time": [1.1, 0.1],  # Using i1D3 values halved
-        "refresh": True
+        "refresh": True,
     },
     "Spyder1": {
-        "usb_ids": [
-            {
-                "vid": 0x085C,
-                "pid": 0x0100,
-                "hid": False
-            }
-        ],
-        "spectral": False,
-        "adaptive_mode": False,
-        "highres_mode": False,
-        "projector_mode": False,
-        "sensor_cal": None,
-        "skip_sensor_cal": None,
-        "integration_time": [10.5, 2.3]  # Using Spyder3 values
-    },
-    "Spyder2": {
-        "usb_ids": [
-            {
-                "vid": 0x085C,
-                "pid": 0x0200,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x085C, "pid": 0x0100, "hid": False}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
@@ -403,16 +283,20 @@ instruments = {
         "sensor_cal": None,
         "skip_sensor_cal": None,
         "integration_time": [10.5, 2.3],  # Using Spyder3 values
-        "refresh": True
+    },
+    "Spyder2": {
+        "usb_ids": [{"vid": 0x085C, "pid": 0x0200, "hid": False}],
+        "spectral": False,
+        "adaptive_mode": False,
+        "highres_mode": False,
+        "projector_mode": False,
+        "sensor_cal": None,
+        "skip_sensor_cal": None,
+        "integration_time": [10.5, 2.3],  # Using Spyder3 values
+        "refresh": True,
     },
     "Spyder3": {
-        "usb_ids": [
-            {
-                "vid": 0x085C,
-                "pid": 0x0300,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x085C, "pid": 0x0300, "hid": False}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
@@ -421,16 +305,10 @@ instruments = {
         "skip_sensor_cal": None,
         "measurement_mode_map": {"c": "r", "l": "n"},
         "integration_time": [10.5, 2.3],  # Estimated
-        "refresh": True
+        "refresh": True,
     },
     "Spyder4": {
-        "usb_ids": [
-            {
-                "vid": 0x085C,
-                "pid": 0x0400,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x085C, "pid": 0x0400, "hid": False}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
@@ -440,16 +318,10 @@ instruments = {
         "measurement_mode_map": {"c": "r", "l": "n"},
         "integration_time": [10.5, 2.3],  # Using Spyder3 values
         "refresh": True,
-        "spectral_cal": True
+        "spectral_cal": True,
     },
     "Spyder5": {
-        "usb_ids": [
-            {
-                "vid": 0x085C,
-                "pid": 0x0500,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x085C, "pid": 0x0500, "hid": False}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
@@ -459,16 +331,10 @@ instruments = {
         "measurement_mode_map": {"c": "r", "l": "n"},
         "integration_time": [10.5, 2.3],  # Using Spyder3 values
         "refresh": True,
-        "spectral_cal": True
+        "spectral_cal": True,
     },
     "SpyderX": {
-        "usb_ids": [
-            {
-                "vid": 0x085C,
-                "pid": 0x0A00,
-                "hid": False
-            }
-        ],
+        "usb_ids": [{"vid": 0x085C, "pid": 0x0A00, "hid": False}],
         "spectral": False,
         "adaptive_mode": False,
         "highres_mode": False,
@@ -476,25 +342,13 @@ instruments = {
         "sensor_cal": True,
         "skip_sensor_cal": True,  # Not yet officially, but likely supported in future
         "integration_time": [1.6, 1.6],
-        "refresh": False
+        "refresh": False,
     },
     "Huey": {
         "usb_ids": [
-            {
-                "vid": 0x0971,
-                "pid": 0x2005,
-                "hid": True
-            },
-            {  # HueyL
-                "vid": 0x0765,
-                "pid": 0x5001,
-                "hid": True
-            },
-            {  # HueyL
-                "vid": 0x0765,
-                "pid": 0x5010,
-                "hid": True
-            }
+            {"vid": 0x0971, "pid": 0x2005, "hid": True},
+            {"vid": 0x0765, "pid": 0x5001, "hid": True},  # HueyL
+            {"vid": 0x0765, "pid": 0x5010, "hid": True},  # HueyL
         ],
         "spectral": False,
         "adaptive_mode": False,
@@ -502,7 +356,7 @@ instruments = {
         "projector_mode": False,
         "sensor_cal": None,
         "skip_sensor_cal": None,
-        "integration_time": [4.0, 1.0]  # Using i1D2 values
+        "integration_time": [4.0, 1.0],  # Using i1D2 values
     },
     "specbos": {
         "spectral": True,
@@ -513,7 +367,7 @@ instruments = {
         "skip_sensor_cal": None,
         "measurement_mode_map": {"c": "r", "l": "n"},
         "integration_time": [3.3, 0.8],  # Estimated, VERY rough
-        "refresh": True
+        "refresh": True,
     },
     "specbos 1201": {
         "spectral": True,
@@ -523,7 +377,7 @@ instruments = {
         "sensor_cal": None,
         "skip_sensor_cal": None,
         "integration_time": [10.3, 2.8],  # Estimated, VERY rough
-        "refresh": True
+        "refresh": True,
     },
     "spectraval": {
         "spectral": True,
@@ -533,7 +387,7 @@ instruments = {
         "sensor_cal": None,
         "skip_sensor_cal": None,
         "integration_time": [3.3, 0.8],  # Estimated, VERY rough
-        "refresh": True
+        "refresh": True,
     },
     "Dummy Meter / Hires & Projector": {
         # dummy instrument, just for testing
@@ -542,7 +396,7 @@ instruments = {
         "highres_mode": True,
         "projector_mode": True,
         "sensor_cal": False,
-        "skip_sensor_cal": False
+        "skip_sensor_cal": False,
     },
     "Dummy Spectro / Hires & Projector": {
         # dummy instrument, just for testing
@@ -551,7 +405,7 @@ instruments = {
         "highres_mode": True,
         "projector_mode": True,
         "sensor_cal": True,
-        "skip_sensor_cal": True
+        "skip_sensor_cal": True,
     },
     "Dummy Meter / Adaptive, Hires & Projector": {
         # dummy instrument, just for testing
@@ -560,7 +414,7 @@ instruments = {
         "highres_mode": True,
         "projector_mode": True,
         "sensor_cal": False,
-        "skip_sensor_cal": False
+        "skip_sensor_cal": False,
     },
     "Dummy Spectro / Adaptive, Hires & Projector": {
         # dummy instrument, just for testing
@@ -569,8 +423,8 @@ instruments = {
         "highres_mode": True,
         "projector_mode": True,
         "sensor_cal": True,
-        "skip_sensor_cal": True
-    }
+        "skip_sensor_cal": True,
+    },
 }
 
 vendors = [
@@ -582,7 +436,7 @@ vendors = [
     "JETI",
     "Klein",
     "X-Rite",
-    "Xrite"
+    "Xrite",
 ]
 
 

@@ -14,8 +14,9 @@ import subprocess as sp
 appname = "DisplayCAL"
 
 if getattr(sys, "frozen", False):
-    args = [os.path.join(os.path.dirname(sys.executable),
-            appname + "-apply-profiles.exe")]
+    args = [
+        os.path.join(os.path.dirname(sys.executable), appname + "-apply-profiles.exe")
+    ]
 else:
     args = [sys.executable]
     dirname = os.path.dirname(__file__)
@@ -31,6 +32,6 @@ if "--oneshot" in sys.argv[1:]:
 
 sp.Popen(args, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
 
-# Sleep a few seconds so task scheduler can see an instance already running and 
+# Sleep a few seconds so task scheduler can see an instance already running and
 # won't start another one due to multiple triggers firing at the same time
 time.sleep(9)

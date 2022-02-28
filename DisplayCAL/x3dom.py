@@ -6,7 +6,9 @@ import os
 import re
 import socket
 import string
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 
 from DisplayCAL.config import get_data_path
 from DisplayCAL.defaultpaths import cache as cachepath
@@ -24,7 +26,7 @@ class VRMLParseError(Exception):
 
 class Tag(object):
 
-    """ X3D Tag """
+    """X3D Tag"""
 
     def __init__(self, tagname, **attributes):
         self.parent = None
@@ -39,11 +41,13 @@ class Tag(object):
         markup = ["<%s" % self.tagname]
         attrs = []
         for key, value in self.attributes.items():
-            value = value.strip().replace("<",
-                                          "&lt;").replace(">",
-                                                          "&gt;").replace("&",
-                                                                          "&amp;").replace("'",
-                                                                                           "&#39;")
+            value = (
+                value.strip()
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("&", "&amp;")
+                .replace("'", "&#39;")
+            )
             if value in ("FALSE", "TRUE"):
                 value = value.lower()
             attrs.append("%s='%s'" % (key, value))
@@ -56,8 +60,7 @@ class Tag(object):
                 markup.append(">")
             markup.append("\n")
             for child in self.children:
-                for line in child.markup(allow_empty_element_tag,
-                                         x3dom).splitlines():
+                for line in child.markup(allow_empty_element_tag, x3dom).splitlines():
                     markup.append("\t" + line + "\n")
         if not allow_empty_element_tag or self.children:
             # Not XML, or XML with children
@@ -65,9 +68,12 @@ class Tag(object):
         else:
             # XML, no children
             markup.append("/>")
-        if (self.tagname == "Material" and
-                float(self.attributes.get("transparency",
-                                          "0").strip()) not in (0.0, 1.0) and x3dom):
+        if (
+            self.tagname == "Material"
+            and float(self.attributes.get("transparency", "0").strip())
+            not in (0.0, 1.0)
+            and x3dom
+        ):
             # Fix z-fighting in X3DOM renderer
             markup.append("<DepthMode readOnly='true'></DepthMode>")
         return "".join(markup)
@@ -76,8 +82,7 @@ class Tag(object):
         child.parent = self
         self.children.append(child)
 
-    def html(self, title="Untitled", xhtml=False, embed=False, force=False,
-             cache=True):
+    def html(self, title="Untitled", xhtml=False, embed=False, force=False, cache=True):
         """Convert X3D to HTML
 
         This will generate HTML5 by default unless you set xhtml=True.
@@ -87,15 +92,16 @@ class Tag(object):
 
         """
         # Get children of X3D document
-        x3d_html = re.sub(r"\s*</?X3D(?:\s+[^>]*)?>\s*", "",
-                          self.markup(xhtml, True))
+        x3d_html = re.sub(r"\s*</?X3D(?:\s+[^>]*)?>\s*", "", self.markup(xhtml, True))
         if not xhtml:
             # Convert uppercase letters at start of tag name to lowercase
-            x3d_html = re.sub(r"(</?[0-9A-Z]+)",
-                              lambda match: match.groups()[0].lower(), x3d_html)
+            x3d_html = re.sub(
+                r"(</?[0-9A-Z]+)", lambda match: match.groups()[0].lower(), x3d_html
+            )
         # Indent
-        x3d_html = "\n".join(["\t" * 2 + line
-                              for line in x3d_html.splitlines()]).lstrip()
+        x3d_html = "\n".join(
+            ["\t" * 2 + line for line in x3d_html.splitlines()]
+        ).lstrip()
 
         # Collect resources
         def get_resource(url, source=True):
@@ -109,8 +115,7 @@ class Tag(object):
             cache_uri = "/".join([".".join(reversed(domain.split("."))), path])
             # com.domain/path -> com.domain.path
             cache_uri = re.sub(r"^([^/]+)/", "\\1.", cache_uri)
-            cachedir = os.path.join(cachepath,
-                                    os.path.join(*cache_uri.split("/")))
+            cachedir = os.path.join(cachepath, os.path.join(*cache_uri.split("/")))
             if not os.path.isdir(cachedir):
                 print("Creating cache directory:", cachedir)
                 os.makedirs(cachedir)
@@ -125,8 +130,11 @@ class Tag(object):
                     print("Requesting:", url)
                     try:
                         response = urllib.request.urlopen(url)
-                    except (socket.error, urllib.error.URLError,
-                            http.client.HTTPException) as exception:
+                    except (
+                        socket.error,
+                        urllib.error.URLError,
+                        http.client.HTTPException,
+                    ) as exception:
                         print(exception)
                     else:
                         body = response.read()
@@ -152,23 +160,25 @@ class Tag(object):
                     else:
                         return body
                 else:
-                    return "file:///" + str(cachefilename).lstrip("/").replace(os.path.sep, "/")
+                    return "file:///" + str(cachefilename).lstrip("/").replace(
+                        os.path.sep, "/"
+                    )
             else:
                 print("Error: Empty document:", url)
                 if os.path.isfile(cachefilename):
                     print("Removing", cachefilename)
                     os.remove(cachefilename)
+
         # Get HTML template from cache or online
-        html = get_resource("https://%s/x3d-viewer/release/x3d-viewer.html" %
-                            domain.lower(), True)
+        html = get_resource(
+            "https://%s/x3d-viewer/release/x3d-viewer.html" % domain.lower(), True
+        )
         if cache or embed:
             # Update resources in HTML
             restags = re.findall(r"<[^>]+\s+data-fallback-\w+=[^>]*>", html)
             for restag in restags:
-                attrname = re.search(r"\s+data-fallback-(\w+)=",
-                                     restag).groups()[0]
-                url = re.search(r"\s+%s=([\"'])(.+?)\1" % attrname,
-                                restag).groups()[1]
+                attrname = re.search(r"\s+data-fallback-(\w+)=", restag).groups()[0]
+                url = re.search(r"\s+%s=([\"'])(.+?)\1" % attrname, restag).groups()[1]
                 if url.endswith(".swf") and not cache:
                     continue
                 resource = get_resource(url, embed)
@@ -177,15 +187,18 @@ class Tag(object):
                 if embed and not url.endswith(".swf"):
                     html = html.replace(restag, resource)
                 else:
-                    updated_restag = re.sub(r"(\s+data-fallback-%s=)([\"']).+?\2"
-                                            % attrname,
-                                            create_replace_function(r"\1\2%s\2",
-                                                                    resource),
-                                            restag)
+                    updated_restag = re.sub(
+                        r"(\s+data-fallback-%s=)([\"']).+?\2" % attrname,
+                        create_replace_function(r"\1\2%s\2", resource),
+                        restag,
+                    )
                     html = html.replace(restag, updated_restag)
         # Update title
-        html = re.sub(r"(<title>)[^<]*(</title>)",
-                      create_replace_function(r"\1%s\2", str(title)), html)
+        html = re.sub(
+            r"(<title>)[^<]*(</title>)",
+            create_replace_function(r"\1%s\2", str(title)),
+            html,
+        )
         # Insert X3D
         html = html.replace("</x3d>", "\t" + x3d_html + "\n\t\t</x3d>")
         # Finish
@@ -201,9 +214,13 @@ class Tag(object):
         return self.html(*args, **kwargs)
 
     def x3d(self):
-        x3d = "\n".join(["<?xml version='1.0' encoding='UTF-8'?>",
-                         '<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 3.0//EN" "http://www.web3d.org/specifications/x3d-3.0.dtd">',
-                         self.markup(allow_empty_element_tag=True)])
+        x3d = "\n".join(
+            [
+                "<?xml version='1.0' encoding='UTF-8'?>",
+                '<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 3.0//EN" "http://www.web3d.org/specifications/x3d-3.0.dtd">',
+                self.markup(allow_empty_element_tag=True),
+            ]
+        )
         return x3d
 
 
@@ -211,14 +228,23 @@ def _attrchk(attribute, token, tag, indent):
     if attribute:
         if debug:
             if tag.attributes.get(token):
-                safe_print(indent, "attribute %r %r" % (token,
-                                                        tag.attributes[token]))
+                safe_print(indent, "attribute %r %r" % (token, tag.attributes[token]))
         attribute = False
     return attribute
 
 
-def get_vrml_axes(xlabel="X", ylabel="Y", zlabel="Z", offsetx=0,
-                  offsety=0, offsetz=0, maxx=100, maxy=100, maxz=100, zero=True):
+def get_vrml_axes(
+    xlabel="X",
+    ylabel="Y",
+    zlabel="Z",
+    offsetx=0,
+    offsety=0,
+    offsetz=0,
+    maxx=100,
+    maxy=100,
+    maxz=100,
+    zero=True,
+):
     return """# Z axis
         Transform {
             translation %(offsetx).1f %(offsety).1f %(offsetz).1f
@@ -314,21 +340,27 @@ def get_vrml_axes(xlabel="X", ylabel="Y", zlabel="Z", offsetx=0,
                     }
                 }
             ]
-        }""" % dict(list(locals().items()) +
-                    list({"xaxisx": maxx / 2.0 + offsetx,
-                          "yaxisy": maxy / 2.0 + offsety,
-                          "xyaxisz": offsetz - maxz / 2.0,
-                          "zlabelx": offsetx - 10,
-                          "zlabely": offsety - 10,
-                          "zlabelz": maxz / 2.0 + offsetz + 5,
-                          "xlabelx": maxx + offsetx + 5,
-                          "xlabely": offsety - 5,
-                          "ylabelx": offsetx - 5,
-                          "ylabely": maxy + offsety + 5,
-                          "zerolabel": "0" if zero else "",
-                          "zerox": offsetx - 10,
-                          "zeroy": offsety - 10,
-                          "zeroz": offsetz - maxz / 2.0 - 5}.items()))
+        }""" % dict(
+        list(locals().items())
+        + list(
+            {
+                "xaxisx": maxx / 2.0 + offsetx,
+                "yaxisy": maxy / 2.0 + offsety,
+                "xyaxisz": offsetz - maxz / 2.0,
+                "zlabelx": offsetx - 10,
+                "zlabely": offsety - 10,
+                "zlabelz": maxz / 2.0 + offsetz + 5,
+                "xlabelx": maxx + offsetx + 5,
+                "xlabely": offsety - 5,
+                "ylabelx": offsetx - 5,
+                "ylabely": maxy + offsety + 5,
+                "zerolabel": "0" if zero else "",
+                "zerox": offsetx - 10,
+                "zeroy": offsety - 10,
+                "zeroz": offsetz - maxz / 2.0 - 5,
+            }.items()
+        )
+    )
 
 
 def safe_print(*args, **kwargs):
@@ -337,18 +369,19 @@ def safe_print(*args, **kwargs):
 
 
 def update_vrml(vrml, colorspace):
-    """ Update color and axes in VRML """
+    """Update color and axes in VRML"""
     offsetx, offsety = 0, 0
     maxz = scale = 100
     maxxy = 200
     if colorspace.startswith("DIN99"):
         scale = 1.0
     elif colorspace == "Lu'v'":
-        offsetx, offsety = -.3, -.3
-        scale = maxxy / .6
+        offsetx, offsety = -0.3, -0.3
+        scale = maxxy / 0.6
     elif colorspace == "xyY":
-        offsetx, offsety = -.4, -.4
-        scale = maxxy / .8
+        offsetx, offsety = -0.4, -0.4
+        scale = maxxy / 0.8
+
     def update_xyz(xyz):
         x, y, z = [float(v) for v in xyz.split()]
         a, b, L = x, y, z + 50
@@ -367,17 +400,14 @@ def update_vrml(vrml, colorspace):
             z, x, y = colormath.XYZ2Luv(X, Y, Z)
         elif colorspace == "Lu'v'":
             L, u_, v_ = colormath.XYZ2Lu_v_(X, Y, Z)
-            x, y, z = ((u_ + offsetx) * scale,
-                       (v_ + offsety) * scale,
-                       L / 100.0 * maxz)
+            x, y, z = ((u_ + offsetx) * scale, (v_ + offsety) * scale, L / 100.0 * maxz)
         elif colorspace == "xyY":
             x, y, Y = colormath.XYZ2xyY(X, Y, Z)
-            x, y, z = ((x + offsetx) * scale,
-                       (y + offsety) * scale,
-                       Y / 100.0 * maxz)
+            x, y, z = ((x + offsetx) * scale, (y + offsety) * scale, Y / 100.0 * maxz)
         elif colorspace == "ICtCp":
-            I, Ct, Cp = colormath.XYZ2ICtCp(X / 100.0, Y / 100.0, Z / 100.0,
-                                            clamp=False)
+            I, Ct, Cp = colormath.XYZ2ICtCp(
+                X / 100.0, Y / 100.0, Z / 100.0, clamp=False
+            )
             z, x, y = I * 100, Ct * 100, Cp * 100
         elif colorspace == "IPT":
             I, P, T = colormath.XYZ2IPT(X / 100.0, Y / 100.0, Z / 100.0)
@@ -386,6 +416,7 @@ def update_vrml(vrml, colorspace):
             z, x, y = colormath.XYZ2Lpt(X, Y, Z)
         z -= maxz / 2.0
         return " ".join(["%.6f" % v for v in (x, y, z)])
+
     # Update point lists
     for item in re.findall(r"point\s*\[[^\]]+\]", vrml):
         item = item[:-1].rstrip()
@@ -398,42 +429,46 @@ def update_vrml(vrml, colorspace):
             xyz = xyz.strip()
             if xyz:
                 points[i] = update_xyz(xyz)
-        vrml = vrml.replace(item, "point [%s%s" %
-                            (os.linesep,
-                             ("," +
-                              os.linesep).join(points).rstrip()))
+        vrml = vrml.replace(
+            item, "point [%s%s" % (os.linesep, ("," + os.linesep).join(points).rstrip())
+        )
     # Update spheres
-    spheres = re.findall(r'Transform\s*\{\s*translation\s+[+\-0-9.]+\s*[+\-0-9.]+\s*[+\-0-9.]+\s+children\s*\[\s*Shape\s*\{\s*geometry\s+Sphere\s*\{[^}]*\}\s*appearance\s+Appearance\s*\{\s*material\s+Material\s*\{[^}]*\}\s*\}\s*\}\s*\]\s*\}', vrml)
+    spheres = re.findall(
+        r"Transform\s*\{\s*translation\s+[+\-0-9.]+\s*[+\-0-9.]+\s*[+\-0-9.]+\s+children\s*\[\s*Shape\s*\{\s*geometry\s+Sphere\s*\{[^}]*\}\s*appearance\s+Appearance\s*\{\s*material\s+Material\s*\{[^}]*\}\s*\}\s*\}\s*\]\s*\}",
+        vrml,
+    )
     for i, sphere in enumerate(spheres):
-        coords = re.search(r"translation\s+([+\-0-9.]+\s+[+\-0-9.]+\s+[+\-0-9.]+)",
-                           sphere)
+        coords = re.search(
+            r"translation\s+([+\-0-9.]+\s+[+\-0-9.]+\s+[+\-0-9.]+)", sphere
+        )
         if coords:
-            vrml = vrml.replace(sphere,
-                                sphere.replace(coords.group(),
-                                               "translation " +
-                                               update_xyz(coords.groups()[0])))
+            vrml = vrml.replace(
+                sphere,
+                sphere.replace(
+                    coords.group(), "translation " + update_xyz(coords.groups()[0])
+                ),
+            )
     if colorspace.startswith("DIN99"):
         # Remove * from L*a*b* and add range
 
         # Pristine Argyll CMS VRML
         vrml = re.sub(r'(string\s*\[")(\+?)(L)\*("\])', r'\1\3", "\2\0$\4', vrml)
         vrml = vrml.replace("\0$", "100")
-        vrml = re.sub(r'(string\s*\[")([+\-]?)(a)\*("\])',
-                      r'\1\3", "\2\0$\4', vrml)
-        vrml = re.sub(r'(string\s*\[")([+\-]?)(b)\*("\])',
-                      r'\1\3 \2\0$\4', vrml)
+        vrml = re.sub(r'(string\s*\[")([+\-]?)(a)\*("\])', r'\1\3", "\2\0$\4', vrml)
+        vrml = re.sub(r'(string\s*\[")([+\-]?)(b)\*("\])', r"\1\3 \2\0$\4", vrml)
 
         # DisplayCAL tweaked VRML created by worker.Worker.calculate_gamut()
-        vrml = re.sub(r'(string\s*\["a)\*",\s*"([+\-]?)\d+("\])',
-                      r'\1", "\2\0$\3', vrml)
-        vrml = re.sub(r'(string\s*\["b)\*\s+([+\-]?)\d+("\])',
-                      r'\1 \2\0$\3', vrml)
+        vrml = re.sub(
+            r'(string\s*\["a)\*",\s*"([+\-]?)\d+("\])', r'\1", "\2\0$\3', vrml
+        )
+        vrml = re.sub(r'(string\s*\["b)\*\s+([+\-]?)\d+("\])', r"\1 \2\0$\3", vrml)
 
         vrml = vrml.replace("\0$", "%i" % round(100.0 / scale))
 
         # Add colorspace information
-        vrml = re.sub(r"(Viewpoint\s*\{[^}]+\})",
-                      r"""\1
+        vrml = re.sub(
+            r"(Viewpoint\s*\{[^}]+\})",
+            r"""\1
 Transform {
     translation %.6f %.6f %.6f
     children [
@@ -447,70 +482,118 @@ Transform {
             }
         }
     ]
-}""" % (maxz + offsetx, maxz + offsety, -maxz / 2.0, colorspace), vrml)
+}"""
+            % (maxz + offsetx, maxz + offsety, -maxz / 2.0, colorspace),
+            vrml,
+        )
     elif colorspace == "Luv":
         # Replace a* b* labels with u* v*
-        vrml = re.sub(r'(string\s*\["[+\-]?)a(\*)',
-                      r"\1u\2", vrml)
-        vrml = re.sub(r'(string\s*\["[+\-]?)b(\*)',
-                      r"\1v\2", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)a(\*)', r"\1u\2", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)b(\*)', r"\1v\2", vrml)
     elif colorspace in ("Lu'v'", "xyY"):
         # Remove axes
-        vrml = re.sub(r'Transform\s*\{\s*translation\s+[+\-0-9.]+\s*[+\-0-9.]+\s*[+\-0-9.]+\s+children\s*\[\s*Shape\s*\{\s*geometry\s+Box\s*\{[^}]*\}\s*appearance\s+Appearance\s*\{\s*material\s+Material\s*\{[^}]*\}\s*\}\s*\}\s*\]\s*\}', "", vrml)
+        vrml = re.sub(
+            r"Transform\s*\{\s*translation\s+[+\-0-9.]+\s*[+\-0-9.]+\s*[+\-0-9.]+\s+children\s*\[\s*Shape\s*\{\s*geometry\s+Box\s*\{[^}]*\}\s*appearance\s+Appearance\s*\{\s*material\s+Material\s*\{[^}]*\}\s*\}\s*\}\s*\]\s*\}",
+            "",
+            vrml,
+        )
         # Remove axis labels
-        vrml = re.sub(r'Transform\s*\{\s*translation\s+[+\-0-9.]+\s*[+\-0-9.]+\s*[+\-0-9.]+\s+children\s*\[\s*Shape\s*\{\s*geometry\s+Text\s*\{\s*string\s*\[[^\]]*\]\s*fontStyle\s+FontStyle\s*\{[^}]*\}\s*\}\s*appearance\s+Appearance\s*\{\s*material\s+Material\s*{[^}]*\}\s*\}\s*\}\s*\]\s*\}', "", vrml)
+        vrml = re.sub(
+            r"Transform\s*\{\s*translation\s+[+\-0-9.]+\s*[+\-0-9.]+\s*[+\-0-9.]+\s+children\s*\[\s*Shape\s*\{\s*geometry\s+Text\s*\{\s*string\s*\[[^\]]*\]\s*fontStyle\s+FontStyle\s*\{[^}]*\}\s*\}\s*appearance\s+Appearance\s*\{\s*material\s+Material\s*{[^}]*\}\s*\}\s*\}\s*\]\s*\}",
+            "",
+            vrml,
+        )
         # Add new axes + labels
         if colorspace == "Lu'v'":
             xlabel, ylabel, zlabel = "u' 0.6", "v' 0.6", "L* 100"
         else:
             xlabel, ylabel, zlabel = "x 0.8", "y 0.8", "Y 100"
-        vrml = re.sub(r"(Viewpoint\s*\{[^}]+\})",
-                      r"\1\n" + get_vrml_axes(xlabel, ylabel, zlabel,
-                                              offsetx * scale, offsety * scale,
-                                              0, maxxy, maxxy, maxz),
-                      vrml)
+        vrml = re.sub(
+            r"(Viewpoint\s*\{[^}]+\})",
+            r"\1\n"
+            + get_vrml_axes(
+                xlabel,
+                ylabel,
+                zlabel,
+                offsetx * scale,
+                offsety * scale,
+                0,
+                maxxy,
+                maxxy,
+                maxz,
+            ),
+            vrml,
+        )
     elif colorspace == "ICtCp":
         # Replace L* a* b* labels with I Ct Cp
-        vrml = re.sub(r'(string\s*\["[+\-]?)L\*?',
-                      r"\1I", vrml)
-        vrml = re.sub(r'(string\s*\["[+\-]?)a\*?',
-                      r"\1Ct", vrml)
-        vrml = re.sub(r'(string\s*\["[+\-]?)b\*?',
-                      r"\1Cp", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)L\*?', r"\1I", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)a\*?', r"\1Ct", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)b\*?', r"\1Cp", vrml)
         # Change axis colors
-        axes = re.findall(r'Shape\s*\{\s*geometry\s*(?:Box|Text)\s*\{\s*(?:size\s+\d+\.0+\s+\d+\.0+\s+\d+\.0+|string\s+\["[^"]*"\]\s*fontStyle\s+FontStyle\s*\{[^}]+\})\s*\}\s*appearance\s+Appearance\s*\{\s*material\s*Material\s*\{[^}]+}\s*\}\s*\}', vrml)
+        axes = re.findall(
+            r'Shape\s*\{\s*geometry\s*(?:Box|Text)\s*\{\s*(?:size\s+\d+\.0+\s+\d+\.0+\s+\d+\.0+|string\s+\["[^"]*"\]\s*fontStyle\s+FontStyle\s*\{[^}]+\})\s*\}\s*appearance\s+Appearance\s*\{\s*material\s*Material\s*\{[^}]+}\s*\}\s*\}',
+            vrml,
+        )
         for i, axis in enumerate(axes):
             # Red -> purpleish blue
-            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+1\.0+\s+0\.0+\s+0\.0+", "diffuseColor 0.5 0.0 1.0", axis))
+            vrml = vrml.replace(
+                axis,
+                re.sub(
+                    r"diffuseColor\s+1\.0+\s+0\.0+\s+0\.0+",
+                    "diffuseColor 0.5 0.0 1.0",
+                    axis,
+                ),
+            )
             # Green -> yellowish green
-            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+0\.0+\s+1\.0+\s+0\.0+", "diffuseColor 0.8 1.0 0.0", axis))
+            vrml = vrml.replace(
+                axis,
+                re.sub(
+                    r"diffuseColor\s+0\.0+\s+1\.0+\s+0\.0+",
+                    "diffuseColor 0.8 1.0 0.0",
+                    axis,
+                ),
+            )
             # Yellow -> magentaish red
-            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+1\.0+\s+1\.0+\s+0\.0+", "diffuseColor 1.0 0.0 0.25", axis))
+            vrml = vrml.replace(
+                axis,
+                re.sub(
+                    r"diffuseColor\s+1\.0+\s+1\.0+\s+0\.0+",
+                    "diffuseColor 1.0 0.0 0.25",
+                    axis,
+                ),
+            )
             # Blue -> cyan
-            vrml = vrml.replace(axis, re.sub(r"diffuseColor\s+0\.0+\s+0\.0+\s+1\.0+", "diffuseColor 0.0 1.0 1.0", axis))
+            vrml = vrml.replace(
+                axis,
+                re.sub(
+                    r"diffuseColor\s+0\.0+\s+0\.0+\s+1\.0+",
+                    "diffuseColor 0.0 1.0 1.0",
+                    axis,
+                ),
+            )
     elif colorspace == "IPT":
         # Replace L* a* b* labels with I P T
-        vrml = re.sub(r'(string\s*\["[+\-]?)L\*?',
-                      r"\1I", vrml)
-        vrml = re.sub(r'(string\s*\["[+\-]?)a\*?',
-                      r"\1P", vrml)
-        vrml = re.sub(r'(string\s*\["[+\-]?)b\*?',
-                      r"\1T", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)L\*?', r"\1I", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)a\*?', r"\1P", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)b\*?', r"\1T", vrml)
     elif colorspace == "Lpt":
         # Replace a* b* labels with p* t*
-        vrml = re.sub(r'(string\s*\["[+\-]?)a\*?',
-                      r"\1p", vrml)
-        vrml = re.sub(r'(string\s*\["[+\-]?)b\*?',
-                      r"\1t", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)a\*?', r"\1p", vrml)
+        vrml = re.sub(r'(string\s*\["[+\-]?)b\*?', r"\1t", vrml)
     return vrml
 
 
 def vrml2x3dom(vrml, worker=None):
-    """ Convert VRML to X3D """
-    x3d = Tag("X3D",  **{"xmlns:xsd": "http://www.w3.org/2001/XMLSchema-instance",
-                         "profile": "Immersive",
-                         "version": "3.0",
-                         "xsd:noNamespaceSchemaLocation": "http://www.web3d.org/specifications/x3d-3.0.xsd"})
+    """Convert VRML to X3D"""
+    x3d = Tag(
+        "X3D",
+        **{
+            "xmlns:xsd": "http://www.w3.org/2001/XMLSchema-instance",
+            "profile": "Immersive",
+            "version": "3.0",
+            "xsd:noNamespaceSchemaLocation": "http://www.web3d.org/specifications/x3d-3.0.xsd",
+        }
+    )
     tag = Tag("Scene")
     x3d.append_child(tag)
     token = ""
@@ -576,8 +659,7 @@ def vrml2x3dom(vrml, worker=None):
         elif attribute:
             if c in ("\n", "\r"):
                 if listing:
-                    if (tag.attributes.get(token) and
-                            tag.attributes[token][-1] != " "):
+                    if tag.attributes.get(token) and tag.attributes[token][-1] != " ":
                         tag.attributes[token] += " "
                 else:
                     attribute = _attrchk(attribute, token, tag, indent)
@@ -590,8 +672,9 @@ def vrml2x3dom(vrml, worker=None):
                 if c == '"':
                     quote += 1
                 if c != '"' or tag.tagname != "FontStyle" or token != "style":
-                    if c != " " or (tag.attributes[token] and
-                                    tag.attributes[token][-1] != " "):
+                    if c != " " or (
+                        tag.attributes[token] and tag.attributes[token][-1] != " "
+                    ):
                         tag.attributes[token] += c
                 if quote == 2:
                     if not listing:
@@ -617,11 +700,10 @@ def vrml2x3dom(vrml, worker=None):
     return x3d
 
 
-def vrmlfile2x3dfile(vrmlpath, x3dpath, html=True, embed=False, force=False,
-                     cache=True, worker=None):
-    """Convert VRML file located at vrmlpath to HTML and write to x3dpath
-
-    """
+def vrmlfile2x3dfile(
+    vrmlpath, x3dpath, html=True, embed=False, force=False, cache=True, worker=None
+):
+    """Convert VRML file located at vrmlpath to HTML and write to x3dpath"""
     filename, ext = os.path.splitext(vrmlpath)
     if ext.lower() in (".gz", ".wrz"):
         cls = GzipFileProper
@@ -630,8 +712,9 @@ def vrmlfile2x3dfile(vrmlpath, x3dpath, html=True, embed=False, force=False,
     with cls(vrmlpath, "rb") as vrmlfile:
         vrml = vrmlfile.read()
     if worker:
-        worker.recent.write("%s %s\n" % (lang.getstr("converting"),
-                                         os.path.basename(vrmlpath)))
+        worker.recent.write(
+            "%s %s\n" % (lang.getstr("converting"), os.path.basename(vrmlpath))
+        )
     print(lang.getstr("converting"), vrmlpath)
     filename, ext = os.path.splitext(x3dpath)
     try:
@@ -644,8 +727,9 @@ def vrmlfile2x3dfile(vrmlpath, x3dpath, html=True, embed=False, force=False,
             with open(x3dpath, "wb") as x3dfile:
                 x3dfile.write(x3d.x3d())
         else:
-            html = x3d.html(title=os.path.basename(filename),
-                            embed=embed, force=force, cache=cache)
+            html = x3d.html(
+                title=os.path.basename(filename), embed=embed, force=force, cache=cache
+            )
             print("Writing", x3dpath + ".html")
             with open(x3dpath + ".html", "wb") as htmlfile:
                 htmlfile.write(html)
@@ -657,6 +741,7 @@ def vrmlfile2x3dfile(vrmlpath, x3dpath, html=True, embed=False, force=False,
         return exception
     except Exception as exception:
         import traceback
+
         print(traceback.format_exc())
         return exception
     return True

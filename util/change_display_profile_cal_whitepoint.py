@@ -33,7 +33,11 @@ def main(*args, **kwargs):
             state = "COLORTEMP_DAYLIGHT"
         elif arg == "-T":
             state = "COLORTEMP_BLACKBODY"
-        elif arg.startswith("-t") or arg.startswith("-T") or state in ("COLORTEMP_DAYLIGHT", "COLORTEMP_BLACKBODY"):
+        elif (
+            arg.startswith("-t")
+            or arg.startswith("-T")
+            or state in ("COLORTEMP_DAYLIGHT", "COLORTEMP_BLACKBODY")
+        ):
             if state in ("COLORTEMP_DAYLIGHT", "COLORTEMP_BLACKBODY"):
                 ctstr = arg
             else:
@@ -72,7 +76,10 @@ def main(*args, **kwargs):
         else:
             outfilename = os.path.abspath(arg)
     if not xy or not outfilename:
-        raise Invalid("Usage: %s [-t temp | -T temp | -w x,y] [--cal-only] [inprofile] outfilename" % os.path.basename(__file__))
+        raise Invalid(
+            "Usage: %s [-t temp | -T temp | -w x,y] [--cal-only] [inprofile] outfilename"
+            % os.path.basename(__file__)
+        )
     if not profile:
         print("Reading display profile")
         profile = ICCP.get_display_profile()
@@ -88,8 +95,12 @@ def main(*args, **kwargs):
     else:
         app = BaseApp(0)
         app.TopWindow = wx.Frame(None)
-        w.start(lambda result: app.ExitMainLoop(), fn, wargs=args,
-                progress_msg=lang.getstr("create_profile"))
+        w.start(
+            lambda result: app.ExitMainLoop(),
+            fn,
+            wargs=args,
+            progress_msg=lang.getstr("create_profile"),
+        )
         app.MainLoop()
 
 

@@ -12,16 +12,14 @@ from DisplayCAL.util_str import safe_str
 
 
 def get_network_addr():
-    """Tries to get the local machine's network address.
-
-    """
+    """Tries to get the local machine's network address."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Opening a connection on an UDP socket does nothing except give the socket
+    # Opening a connection on a UDP socket does nothing except give the socket
     # the network address of the (local) machine. We use Google's DNS server
     # as remote address, but could use any valid non-local address (doesn't
     # matter if it is actually reachable)
     try:
-        s.connect(('8.8.8.8', 53))
+        s.connect(("8.8.8.8", 53))
         return s.getsockname()[0]  # Return network address
     finally:
         s.close()
@@ -55,7 +53,7 @@ def get_valid_host(hostname=None):
 
 class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
 
-    """ Like urllib2.HTTPRedirectHandler, but logs redirections """
+    """Like urllib2.HTTPRedirectHandler, but logs redirections"""
 
     # maximum number of redirections to any single URL
     # this is needed because of the state that cookies introduce
@@ -67,10 +65,10 @@ class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
         # Some servers (incorrectly) return multiple Location headers
         # (so probably same goes for URI).  Use first header.
-        if 'location' in headers:
-            newurl = headers.get('location')
-        elif 'uri' in headers:
-            newurl = headers.get('uri')
+        if "location" in headers:
+            newurl = headers.get("location")
+        elif "uri" in headers:
+            newurl = headers.get("uri")
         else:
             return
 
@@ -82,7 +80,9 @@ class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
             print(req.get_full_url(), end=" ")
         print("\u2192", newurl)
 
-        return urllib.request.HTTPRedirectHandler.http_error_302(self, req, fp, code, msg, headers)
+        return urllib.request.HTTPRedirectHandler.http_error_302(
+            self, req, fp, code, msg, headers
+        )
 
     http_error_301 = http_error_303 = http_error_307 = http_error_302
 
@@ -91,28 +91,30 @@ class LoggingHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
 
 class NoHTTPRedirectHandler(urllib.request.HTTPRedirectHandler):
 
-    """ Like urllib2.HTTPRedirectHandler, but does not allow redirections """
+    """Like urllib2.HTTPRedirectHandler, but does not allow redirections"""
 
     def http_error_302(self, req, fp, code, msg, headers):
         # Some servers (incorrectly) return multiple Location headers
         # (so probably same goes for URI).  Use first header.
-        if 'location' in headers:
-            newurl = headers.get('location')
-        elif 'uri' in headers:
-            newurl = headers.get('uri')
+        if "location" in headers:
+            newurl = headers.get("location")
+        elif "uri" in headers:
+            newurl = headers.get("uri")
         else:
             return
 
-        raise urllib.error.HTTPError(newurl, code,
-                                     msg + " - Redirection to url '%s' is not allowed" %
-                                     newurl,
-                                     headers, fp)
+        raise urllib.error.HTTPError(
+            newurl,
+            code,
+            msg + " - Redirection to url '%s' is not allowed" % newurl,
+            headers,
+            fp,
+        )
 
     http_error_301 = http_error_303 = http_error_307 = http_error_302
 
 
 class ScriptingClientSocket(socket.socket):
-
     def __del__(self):
         self.disconnect()
 

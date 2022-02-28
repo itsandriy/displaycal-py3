@@ -4,7 +4,6 @@ from ctypes import wintypes
 import ctypes
 import _ctypes
 import winreg
-import os
 import platform
 import struct
 import sys
@@ -26,13 +25,13 @@ if not hasattr(ctypes, "c_bool"):
     # Python 2.5
     ctypes.c_bool = ctypes.c_int
 
-if sys.getwindowsversion() >= (6, ):
+if sys.getwindowsversion() >= (6,):
     LPDWORD = POINTER(DWORD)
     PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
     kernel32 = windll.kernel32
     QueryFullProcessImageNameW = kernel32.QueryFullProcessImageNameW
     QueryFullProcessImageNameW.argtypes = [HANDLE, DWORD, LPWSTR, LPDWORD]
-    QueryFullProcessImageNameW.restype  = bool
+    QueryFullProcessImageNameW.restype = bool
 
 try:
     psapi = ctypes.windll.psapi
@@ -51,14 +50,18 @@ USE_REGISTRY = True
 
 # Flags for parent devices
 DISPLAY_DEVICE_ATTACHED_TO_DESKTOP = 0x1
-DISPLAY_DEVICE_MIRRORING_DRIVER = 0x8  # Represents a pseudo device used to mirror application drawing for remoting or other purposes. 
+DISPLAY_DEVICE_MIRRORING_DRIVER = 0x8  # Represents a pseudo device used to mirror application drawing for remoting or other purposes.
 # An invisible pseudo monitor is associated with this device.
 # For example, NetMeeting uses it. Note that GetSystemMetrics (SM_MONITORS) only accounts for visible display monitors.
-DISPLAY_DEVICE_MODESPRUNED = 0x8000000  # The device has more display modes than its output devices support.
-DISPLAY_DEVICE_PRIMARY_DEVICE = 0x4  # The primary desktop is on the device. 
+DISPLAY_DEVICE_MODESPRUNED = (
+    0x8000000  # The device has more display modes than its output devices support.
+)
+DISPLAY_DEVICE_PRIMARY_DEVICE = 0x4  # The primary desktop is on the device.
 # For a system with a single display card, this is always set.
 # For a system with multiple display cards, only one device can have this set.
-DISPLAY_DEVICE_REMOVABLE = 0x20  # The device is removable; it cannot be the primary display.
+DISPLAY_DEVICE_REMOVABLE = (
+    0x20  # The device is removable; it cannot be the primary display.
+)
 DISPLAY_DEVICE_VGA_COMPATIBLE = 0x10  # The device is VGA compatible.
 DISPLAY_DEVICE_DISCONNECT = 0x2000000
 DISPLAY_DEVICE_MULTI_DRIVER = 0x2
@@ -88,9 +91,18 @@ SEE_MASK_WAITFORINPUTIDLE = 0x02000000
 
 def _get_icm_display_device_key(devicekey):
     monkey = devicekey.split("\\")[-2:]  # pun totally intended
-    subkey = "\\".join(["Software", "Microsoft", "Windows NT",
-                        "CurrentVersion", "ICM", "ProfileAssociations",
-                        "Display"] + monkey)
+    subkey = "\\".join(
+        [
+            "Software",
+            "Microsoft",
+            "Windows NT",
+            "CurrentVersion",
+            "ICM",
+            "ProfileAssociations",
+            "Display",
+        ]
+        + monkey
+    )
     return winreg.CreateKey(winreg.HKEY_CURRENT_USER, subkey)
 
 
@@ -107,14 +119,17 @@ _get_mscms_windll._windll = None
 
 
 def calibration_management_isenabled():
-    """ Check if calibration is enabled under Windows 7 """
+    """Check if calibration is enabled under Windows 7"""
     if sys.getwindowsversion() < (6, 1):
         # Windows XP and Vista don't have calibration management
         return False
     if False:
         # Using registry - NEVER
         # Also, does not work!
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ICM\Calibration") as key:
+        with winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ICM\Calibration",
+        ) as key:
             return bool(winreg.QueryValueEx(key, "CalibrationManagementEnabled")[0])
     else:
         # Using ctypes
@@ -126,28 +141,32 @@ def calibration_management_isenabled():
 
 
 def disable_calibration_management():
-    """ Disable calibration loading under Windows 7 """
+    """Disable calibration loading under Windows 7"""
     enable_calibration_management(False)
 
 
 def disable_per_user_profiles(display_no=0):
-    """ Disable per user profiles under Vista/Windows 7 """
+    """Disable per user profiles under Vista/Windows 7"""
     enable_per_user_profiles(False, display_no)
 
 
 def enable_calibration_management(enable=True):
-    """ Enable calibration loading under Windows 7 """
+    """Enable calibration loading under Windows 7"""
     if sys.getwindowsversion() < (6, 1):
-        raise NotImplementedError("Calibration Management is only available "
-                                  "in Windows 7 or later")
+        raise NotImplementedError(
+            "Calibration Management is only available " "in Windows 7 or later"
+        )
     if False:
         # Using registry - NEVER
         # Also, does not work!
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                            r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ICM\Calibration",
-                            winreg.KEY_SET_VALUE) as key:
-            winreg.SetValueEx(key, "CalibrationManagementEnabled", 0,
-                              winreg.REG_DWORD, int(enable))
+        with winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ICM\Calibration",
+            winreg.KEY_SET_VALUE,
+        ) as key:
+            winreg.SetValueEx(
+                key, "CalibrationManagementEnabled", 0, winreg.REG_DWORD, int(enable)
+            )
     else:
         # Using ctypes (must be called with elevated permissions)
         mscms = _get_mscms_windll()
@@ -159,11 +178,12 @@ def enable_calibration_management(enable=True):
 
 
 def enable_per_user_profiles(enable=True, display_no=0, devicekey=None):
-    """ Enable per user profiles under Vista/Windows 7 """
-    if sys.getwindowsversion() < (6, ):
+    """Enable per user profiles under Vista/Windows 7"""
+    if sys.getwindowsversion() < (6,):
         # Windows XP doesn't have per-user profiles
-        raise NotImplementedError("Per-user profiles are only available "
-                                  "in Windows Vista, 7 or later")
+        raise NotImplementedError(
+            "Per-user profiles are only available " "in Windows Vista, 7 or later"
+        )
     if not devicekey:
         device = get_display_device(display_no)
         if device:
@@ -171,17 +191,18 @@ def enable_per_user_profiles(enable=True, display_no=0, devicekey=None):
     if devicekey:
         if USE_REGISTRY:
             with _get_icm_display_device_key(devicekey) as key:
-                winreg.SetValueEx(key, "UsePerUserProfiles", 0,
-                                  winreg.REG_DWORD, int(enable))
+                winreg.SetValueEx(
+                    key, "UsePerUserProfiles", 0, winreg.REG_DWORD, int(enable)
+                )
         else:
             # Using ctypes - this leaks registry key handles internally in
             # WcsSetUsePerUserProfiles since Windows 10 1903
             mscms = _get_mscms_windll()
             if not mscms:
                 return False
-            if not mscms.WcsSetUsePerUserProfiles(str(devicekey),
-                                                  CLASS_MONITOR,
-                                                  enable):
+            if not mscms.WcsSetUsePerUserProfiles(
+                str(devicekey), CLASS_MONITOR, enable
+            ):
                 raise get_windows_error(ctypes.windll.kernel32.GetLastError())
         return True
 
@@ -208,9 +229,7 @@ def get_display_devices(devicename):
 
 
 def get_first_display_device(devicename, exception_cls=pywintypes.error):
-    """Get the first display of device <devicename>.
-
-    """
+    """Get the first display of device <devicename>."""
     try:
         return win32api.EnumDisplayDevices(devicename, 0)
     except exception_cls:
@@ -230,16 +249,14 @@ def get_active_display_device(devicename, devices=None):
     if not devices:
         devices = get_display_devices(devicename)
     for device in devices:
-        if (device.StateFlags & DISPLAY_DEVICE_ACTIVE
-                and (len(devices) == 1 or device.StateFlags &
-                     DISPLAY_DEVICE_ATTACHED)):
+        if device.StateFlags & DISPLAY_DEVICE_ACTIVE and (
+            len(devices) == 1 or device.StateFlags & DISPLAY_DEVICE_ATTACHED
+        ):
             return device
 
 
 def get_active_display_devices(attrname=None):
-    """Return active display devices
-
-    """
+    """Return active display devices"""
     devices = []
     for moninfo in get_real_display_devices_info():
         device = get_active_display_device(moninfo["Device"])
@@ -250,8 +267,9 @@ def get_active_display_devices(attrname=None):
     return devices
 
 
-def get_display_device(display_no=0, use_active_display_device=False,
-                       exception_cls=pywintypes.error):
+def get_display_device(
+    display_no=0, use_active_display_device=False, exception_cls=pywintypes.error
+):
     # The ordering will work as long as Argyll continues using
     # EnumDisplayMonitors
     monitors = get_real_display_devices_info()
@@ -263,21 +281,22 @@ def get_display_device(display_no=0, use_active_display_device=False,
 
 
 def get_process_filename(pid, handle=0):
-    if sys.getwindowsversion() >= (6, ):
+    if sys.getwindowsversion() >= (6,):
         flags = PROCESS_QUERY_LIMITED_INFORMATION
     else:
-        flags = win32con.PROCESS_QUERY_INFORMATION |  win32con.PROCESS_VM_READ
+        flags = win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ
     if not handle:
         handle = win32api.OpenProcess(flags, False, pid)
     try:
-        if sys.getwindowsversion() >= (6, ):
+        if sys.getwindowsversion() >= (6,):
             dwSize = win32con.MAX_PATH
             while True:
                 dwFlags = 0  # The name should use the Win32 path format
                 lpdwSize = DWORD(dwSize)
                 lpExeName = ctypes.create_unicode_buffer("", lpdwSize.value + 1)
-                success = QueryFullProcessImageNameW(int(handle), dwFlags,
-                                                     lpExeName, byref(lpdwSize))
+                success = QueryFullProcessImageNameW(
+                    int(handle), dwFlags, lpExeName, byref(lpdwSize)
+                )
                 if success and 0 < lpdwSize.value < dwSize:
                     break
                 error = kernel32.GetLastError()
@@ -298,25 +317,38 @@ def get_process_filename(pid, handle=0):
 
 
 def get_file_info(filename):
-    """ Get exe/dll file information """
+    """Get exe/dll file information"""
     info = {"FileInfo": None, "StringFileInfo": {}, "FileVersion": None}
 
     finfo = win32api.GetFileVersionInfo(filename, "\\")
     info["FileInfo"] = finfo
-    info["FileVersion"] = "%i.%i.%i.%i" % (finfo["FileVersionMS"] / 65536,
-                                           finfo["FileVersionMS"] % 65536,
-                                           finfo["FileVersionLS"] / 65536,
-                                           finfo["FileVersionLS"] % 65536)
-    for lcid, codepage in win32api.GetFileVersionInfo(filename,
-                                                      "\\VarFileInfo\\Translation"):
+    info["FileVersion"] = "%i.%i.%i.%i" % (
+        finfo["FileVersionMS"] / 65536,
+        finfo["FileVersionMS"] % 65536,
+        finfo["FileVersionLS"] / 65536,
+        finfo["FileVersionLS"] % 65536,
+    )
+    for lcid, codepage in win32api.GetFileVersionInfo(
+        filename, "\\VarFileInfo\\Translation"
+    ):
         info["StringFileInfo"][lcid, codepage] = {}
-        for name in ["Comments", "CompanyName", "FileDescription",
-                     "FileVersion", "InternalName", "LegalCopyright",
-                     "LegalTrademarks", "OriginalFilename", "PrivateBuild",
-                     "ProductName", "ProductVersion", "SpecialBuild"]:
-            value = win32api.GetFileVersionInfo(filename,
-                                                "\\StringFileInfo\\%04X%04X\\%s" %
-                                                (lcid, codepage, name))
+        for name in [
+            "Comments",
+            "CompanyName",
+            "FileDescription",
+            "FileVersion",
+            "InternalName",
+            "LegalCopyright",
+            "LegalTrademarks",
+            "OriginalFilename",
+            "PrivateBuild",
+            "ProductName",
+            "ProductVersion",
+            "SpecialBuild",
+        ]:
+            value = win32api.GetFileVersionInfo(
+                filename, "\\StringFileInfo\\%04X%04X\\%s" % (lcid, codepage, name)
+            )
             if value is not None:
                 info["StringFileInfo"][lcid, codepage][name] = value
 
@@ -324,7 +356,7 @@ def get_file_info(filename):
 
 
 def get_pids():
-    """ Get PIDs of all running processes """
+    """Get PIDs of all running processes"""
     pids_count = 1024
     while True:
         pids = (DWORD * pids_count)()
@@ -340,7 +372,7 @@ def get_pids():
 
 
 def get_real_display_devices_info():
-    """ Return info for real (non-virtual) devices """
+    """Return info for real (non-virtual) devices"""
     # See Argyll source spectro/dispwin.c MonitorEnumProc, get_displays
     monitors = []
     for monitor in win32api.EnumDisplayMonitors(None, None):
@@ -359,8 +391,8 @@ def get_windows_error(errorcode):
 
 
 def per_user_profiles_isenabled(display_no=0, devicekey=None):
-    """ Check if per user profiles is enabled under Vista/Windows 7 """
-    if sys.getwindowsversion() < (6, ):
+    """Check if per user profiles is enabled under Vista/Windows 7"""
+    if sys.getwindowsversion() < (6,):
         # Windows XP doesn't have per-user profiles
         return False
     if not devicekey:
@@ -381,15 +413,16 @@ def per_user_profiles_isenabled(display_no=0, devicekey=None):
             # WcsGetUsePerUserProfiles since Windows 10 1903
             mscms = _get_mscms_windll()
             pbool = ctypes.pointer(ctypes.c_bool())
-            if not mscms or not mscms.WcsGetUsePerUserProfiles(str(devicekey),
-                                                               CLASS_MONITOR,
-                                                               pbool):
+            if not mscms or not mscms.WcsGetUsePerUserProfiles(
+                str(devicekey), CLASS_MONITOR, pbool
+            ):
                 return
             return bool(pbool.contents)
 
 
-def run_as_admin(cmd, args, close_process=True, async_=False,
-                 wait_for_idle=False, show=True):
+def run_as_admin(
+    cmd, args, close_process=True, async_=False, wait_for_idle=False, show=True
+):
     """Run command with elevated privileges.
 
     This is a wrapper around ShellExecuteEx.
@@ -397,12 +430,18 @@ def run_as_admin(cmd, args, close_process=True, async_=False,
     Returns a dictionary with hInstApp and hProcess members.
 
     """
-    return shell_exec(cmd, args, "runas", close_process, async_, wait_for_idle,
-                      show)
+    return shell_exec(cmd, args, "runas", close_process, async_, wait_for_idle, show)
 
 
-def shell_exec(filename, args, operation="open", close_process=True,
-               async_=False, wait_for_idle=False, show=True):
+def shell_exec(
+    filename,
+    args,
+    operation="open",
+    close_process=True,
+    async_=False,
+    wait_for_idle=False,
+    show=True,
+):
     """Run command.
 
     This is a wrapper around ShellExecuteEx.
@@ -422,15 +461,13 @@ def shell_exec(filename, args, operation="open", close_process=True,
         show = win32con.SW_SHOWNORMAL
     else:
         show = win32con.SW_HIDE
-    return win32com_shell.ShellExecuteEx(fMask=flags,
-                                         lpVerb=operation,
-                                         lpFile=filename,
-                                         lpParameters=params,
-                                         nShow=show)
+    return win32com_shell.ShellExecuteEx(
+        fMask=flags, lpVerb=operation, lpFile=filename, lpParameters=params, nShow=show
+    )
 
 
 def win_ver():
-    """ Get Windows version info """
+    """Get Windows version info"""
     csd = sys.getwindowsversion()[-1]
     # Use the registry to get product name, e.g. 'Windows 7 Ultimate'.
     # Not recommended, but we don't care.
@@ -442,15 +479,18 @@ def win_ver():
     if platform.machine() == "AMD64":
         sam |= winreg.KEY_WOW64_64KEY
     try:
-        key = winreg.OpenKeyEx(winreg.HKEY_LOCAL_MACHINE,
-                               r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
-                               0, sam)
+        key = winreg.OpenKeyEx(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows NT\CurrentVersion",
+            0,
+            sam,
+        )
         pname = winreg.QueryValueEx(key, "ProductName")[0]
         build = "Build %s" % winreg.QueryValueEx(key, "CurrentBuildNumber")[0]
         # Since Windows 10
         release = "Version %s" % winreg.QueryValueEx(key, "ReleaseId")[0]
         build += ".%s" % winreg.QueryValueEx(key, "UBR")[0]
-    except Exception as e:
+    except Exception:
         pass
     finally:
         if key:
@@ -471,7 +511,7 @@ def _free_library(handle):
 
 class UnloadableWinDLL(object):
 
-    """ WinDLL wrapper that allows unloading """
+    """WinDLL wrapper that allows unloading"""
 
     def __init__(self, dllname):
         self.dllname = dllname
@@ -489,8 +529,9 @@ class UnloadableWinDLL(object):
     def load(self):
         if not self._windll:
             if USE_NTDLL_LDR:
-                mod = wintypes.byref(UNICODE_STRING(len(self.dllname) * 2, 256,
-                                                    self.dllname))
+                mod = wintypes.byref(
+                    UNICODE_STRING(len(self.dllname) * 2, 256, self.dllname)
+                )
                 handle = wintypes.HANDLE()
                 ctypes.windll.ntdll.LdrLoadDll(None, 0, mod, wintypes.byref(handle))
                 windll = ctypes.WinDLL(self.dllname, handle=handle.value)
@@ -507,7 +548,7 @@ class UnloadableWinDLL(object):
 
 class MSCMS(UnloadableWinDLL):
 
-    """ MSCMS wrapper (optionally) allowing unloading """
+    """MSCMS wrapper (optionally) allowing unloading"""
 
     def __init__(self, bootstrap_icm32=False):
         self._icm32_handle = None

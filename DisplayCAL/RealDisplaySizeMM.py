@@ -12,13 +12,13 @@ if sys.platform == "darwin":
     # Mac OS X has universal binaries in two flavors:
     # - i386 & PPC
     # - i386 & x86_64
-    if platform.architecture()[0].startswith('64'):
+    if platform.architecture()[0].startswith("64"):
         from DisplayCAL.lib64.RealDisplaySizeMM import *
     else:
         from DisplayCAL.lib32.RealDisplaySizeMM import *
 else:
     # Linux and Windows have separate files
-    if platform.architecture()[0].startswith('64'):
+    if platform.architecture()[0].startswith("64"):
         if sys.version_info[:2] == (3, 6):
             from DisplayCAL.lib64.python36.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 7):
@@ -68,11 +68,16 @@ def enumerate_displays():
     for display in _displays:
         desc = display.get("description")
         if desc:
-            match = re.findall(r"(.+?),? at (-?\d+), (-?\d+), width (\d+), height (\d+)", desc)
+            match = re.findall(
+                r"(.+?),? at (-?\d+), (-?\d+), width (\d+), height (\d+)", desc
+            )
             if len(match):
                 if sys.platform not in ("darwin", "win32"):
-                    if (os.getenv("XDG_SESSION_TYPE") == "wayland" and
-                            "pos" in display and "size" in display):
+                    if (
+                        os.getenv("XDG_SESSION_TYPE") == "wayland"
+                        and "pos" in display
+                        and "size" in display
+                    ):
                         x, y, w, h = display["pos"] + display["size"]
                         wayland_display = get_wayland_display(x, y, w, h)
                         if wayland_display:
@@ -92,6 +97,7 @@ def get_display(display_no=0):
     # Translate from Argyll display index to enumerated display index
     # using the coordinates and dimensions
     from DisplayCAL.config import getcfg, is_virtual_display
+
     if is_virtual_display(display_no):
         return
     try:
@@ -123,9 +129,11 @@ def get_wayland_display(x, y, w, h):
     # Look for active display at x, y instead.
     # Currently only support for GNOME3/Mutter
     try:
-        iface = DBusObject(BUSTYPE_SESSION,
-                           'org.gnome.Mutter.DisplayConfig',
-                           '/org/gnome/Mutter/DisplayConfig')
+        iface = DBusObject(
+            BUSTYPE_SESSION,
+            "org.gnome.Mutter.DisplayConfig",
+            "/org/gnome/Mutter/DisplayConfig",
+        )
         res = iface.get_resources()
     except DBusException:
         pass
@@ -162,6 +170,7 @@ def get_wayland_display(x, y, w, h):
                 return wayland_display
         except (IndexError, KeyError):
             pass
+
 
 def get_x_display(display_no=0):
     display = get_display(display_no)

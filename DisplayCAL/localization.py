@@ -4,7 +4,6 @@ import builtins
 import locale
 import os
 import re
-import sys
 
 from DisplayCAL.config import data_dirs, defaults, getcfg, storage
 from DisplayCAL.debughelpers import handle_error
@@ -27,7 +26,9 @@ def init(set_wx_locale=False):
             try:
                 langfiles = os.listdir(langdir)
             except Exception as exception:
-                print("Warning - directory '%s' listing failed: %s" % (langdir, exception))
+                print(
+                    "Warning - directory '%s' listing failed: %s" % (langdir, exception)
+                )
             else:
                 for filename in langfiles:
                     name, ext = os.path.splitext(filename)
@@ -35,35 +36,41 @@ def init(set_wx_locale=False):
                         path = os.path.join(langdir, filename)
                         ldict[name.lower()] = LazyDict_YAML_UltraLite(path)
     if len(ldict) == 0:
-        handle_error(UserWarning("Warning: No language files found. The "
-                                 "following places have been searched:\n%s" %
-                                 "\n".join(langdirs)))
+        handle_error(
+            UserWarning(
+                "Warning: No language files found. The "
+                "following places have been searched:\n%s" % "\n".join(langdirs)
+            )
+        )
 
 
 def update_defaults():
-    defaults.update({
-        "last_3dlut_path": os.path.join(expanduseru("~"), getstr("unnamed")),
-        "last_archive_save_path": os.path.join(expanduseru("~"),
-                                               getstr("unnamed")),
-        "last_cal_path": os.path.join(storage, getstr("unnamed")),
-        "last_cal_or_icc_path": os.path.join(storage, getstr("unnamed")),
-        "last_colorimeter_ti3_path": os.path.join(expanduseru("~"),
-                                                  getstr("unnamed")),
-        "last_testchart_export_path": os.path.join(expanduseru("~"),
-                                                   getstr("unnamed")),
-        "last_filedialog_path": os.path.join(expanduseru("~"),
-                                             getstr("unnamed")),
-        "last_icc_path": os.path.join(storage, getstr("unnamed")),
-        "last_reference_ti3_path": os.path.join(expanduseru("~"),
-                                                getstr("unnamed")),
-        "last_ti1_path": os.path.join(storage, getstr("unnamed")),
-        "last_ti3_path": os.path.join(storage, getstr("unnamed")),
-        "last_vrml_path": os.path.join(storage, getstr("unnamed"))
-    })
+    defaults.update(
+        {
+            "last_3dlut_path": os.path.join(expanduseru("~"), getstr("unnamed")),
+            "last_archive_save_path": os.path.join(expanduseru("~"), getstr("unnamed")),
+            "last_cal_path": os.path.join(storage, getstr("unnamed")),
+            "last_cal_or_icc_path": os.path.join(storage, getstr("unnamed")),
+            "last_colorimeter_ti3_path": os.path.join(
+                expanduseru("~"), getstr("unnamed")
+            ),
+            "last_testchart_export_path": os.path.join(
+                expanduseru("~"), getstr("unnamed")
+            ),
+            "last_filedialog_path": os.path.join(expanduseru("~"), getstr("unnamed")),
+            "last_icc_path": os.path.join(storage, getstr("unnamed")),
+            "last_reference_ti3_path": os.path.join(
+                expanduseru("~"), getstr("unnamed")
+            ),
+            "last_ti1_path": os.path.join(storage, getstr("unnamed")),
+            "last_ti3_path": os.path.join(storage, getstr("unnamed")),
+            "last_vrml_path": os.path.join(storage, getstr("unnamed")),
+        }
+    )
 
 
 def getcode():
-    """ Get language code from config """
+    """Get language code from config"""
     lcode = getcfg("lang")
     if lcode not in ldict:
         # fall back to default
@@ -75,7 +82,7 @@ def getcode():
 
 
 def getstr(id_str, strvars=None, lcode=None, default=None):
-    """ Get a translated string from the dictionary """
+    """Get a translated string from the dictionary"""
     if not lcode:
         lcode = getcode()
     if lcode not in ldict or id_str not in ldict[lcode]:
@@ -110,8 +117,7 @@ def getstr(id_str, strvars=None, lcode=None, default=None):
                 lstr %= tuple(strvars)
         return lstr
     else:
-        if (debug and id_str and not isinstance(id_str, str) and
-                " " not in id_str):
+        if debug and id_str and not isinstance(id_str, str) and " " not in id_str:
             usage[id_str] = 0
         return default or id_str
 

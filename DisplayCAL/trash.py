@@ -10,40 +10,59 @@ if sys.platform == "win32":
     import win32api
 
     def recycle(path):
-        path = os.path.join(win32api.GetShortPathName(os.path.split(path)[0]),
-                            os.path.split(path)[1])
+        path = os.path.join(
+            win32api.GetShortPathName(os.path.split(path)[0]), os.path.split(path)[1]
+        )
         if len(path) > 259:
             path = win32api.GetShortPathName(path)
             if path.startswith("\\\\?\\") and len(path) < 260:
                 path = path[4:]
-        if (hasattr(shell, "CLSID_FileOperation") and
-                hasattr(shell, "IID_IFileOperation")):
+        if hasattr(shell, "CLSID_FileOperation") and hasattr(
+            shell, "IID_IFileOperation"
+        ):
             # Vista and later
-            fo = pythoncom.CoCreateInstance(shell.CLSID_FileOperation, None,
-                                            pythoncom.CLSCTX_ALL,
-                                            shell.IID_IFileOperation)
-            fo.SetOperationFlags(shellcon.FOF_ALLOWUNDO |
-                                 shellcon.FOF_NOCONFIRMATION |
-                                 shellcon.FOF_RENAMEONCOLLISION |
-                                 shellcon.FOF_SILENT)
+            fo = pythoncom.CoCreateInstance(
+                shell.CLSID_FileOperation,
+                None,
+                pythoncom.CLSCTX_ALL,
+                shell.IID_IFileOperation,
+            )
+            fo.SetOperationFlags(
+                shellcon.FOF_ALLOWUNDO
+                | shellcon.FOF_NOCONFIRMATION
+                | shellcon.FOF_RENAMEONCOLLISION
+                | shellcon.FOF_SILENT
+            )
             try:
-                item = shell.SHCreateItemFromParsingName(path, None,
-                                                         shell.IID_IShellItem)
+                item = shell.SHCreateItemFromParsingName(
+                    path, None, shell.IID_IShellItem
+                )
                 fo.DeleteItem(item)
                 success = fo.PerformOperations() is None
                 aborted = fo.GetAnyOperationsAborted()
-            except pythoncom.com_error as exception:
+            except pythoncom.com_error:
                 raise TrashAborted(-1)
         else:
             # XP
-            retcode, aborted = shell.SHFileOperation((0,
-                                                      shellcon.FO_DELETE, path, "", shellcon.FOF_ALLOWUNDO |
-                                                      shellcon.FOF_NOCONFIRMATION | shellcon.FOF_RENAMEONCOLLISION |
-                                                      shellcon.FOF_SILENT, None, None))
+            retcode, aborted = shell.SHFileOperation(
+                (
+                    0,
+                    shellcon.FO_DELETE,
+                    path,
+                    "",
+                    shellcon.FOF_ALLOWUNDO
+                    | shellcon.FOF_NOCONFIRMATION
+                    | shellcon.FOF_RENAMEONCOLLISION
+                    | shellcon.FOF_SILENT,
+                    None,
+                    None,
+                )
+            )
             success = retcode == 0
         if aborted:
             raise TrashAborted(aborted)
         return success and not aborted
+
 else:
     from time import strftime
     from urllib.parse import quote
@@ -81,8 +100,10 @@ def trash(paths):
                 deleted.append(path)
     else:
         # http://freedesktop.org/wiki/Specifications/trash-spec
-        trashroot = os.path.join(getenvu("XDG_DATA_HOME",
-                                         os.path.join(expanduseru("~"), ".local", "share")), "Trash")
+        trashroot = os.path.join(
+            getenvu("XDG_DATA_HOME", os.path.join(expanduseru("~"), ".local", "share")),
+            "Trash",
+        )
         trashinfo = os.path.join(trashroot, "info")
         # Older Linux distros and Mac OS X
         trashcan = os.path.join(expanduseru("~"), ".Trash")
@@ -101,17 +122,17 @@ def trash(paths):
                 while os.path.exists(dst):
                     # avoid name clashes
                     n += 1
-                    dst = os.path.join(trashcan,
-                                       os.path.basename(path) + "." + str(n))
+                    dst = os.path.join(trashcan, os.path.basename(path) + "." + str(n))
                 if os.path.isdir(trashinfo):
-                    info = open(os.path.join(trashinfo,
-                                             os.path.basename(dst) +
-                                             ".trashinfo"), "w")
+                    info = open(
+                        os.path.join(trashinfo, os.path.basename(dst) + ".trashinfo"),
+                        "w",
+                    )
                     info.write("[Trash Info]\n")
-                    info.write("Path=%s\n" %
-                               quote(path.encode(sys.getfilesystemencoding())))
-                    info.write("DeletionDate=" +
-                               strftime("%Y-%m-%dT%H:%M:%S"))
+                    info.write(
+                        "Path=%s\n" % quote(path.encode(sys.getfilesystemencoding()))
+                    )
+                    info.write("DeletionDate=" + strftime("%Y-%m-%dT%H:%M:%S"))
                     info.close()
                 shutil.move(path, dst)
             else:

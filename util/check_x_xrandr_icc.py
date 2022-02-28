@@ -16,8 +16,7 @@ for i in range(5):
     except ValueError:
         x_icc_c = None
     if x_icc_c:
-        print("Root window %s" % ("_ICC_PROFILE" if i < 1 else
-                                       "_ICC_PROFILE_%i" % i))
+        print("Root window %s" % ("_ICC_PROFILE" if i < 1 else "_ICC_PROFILE_%i" % i))
         x_icc = ICCP.ICCProfile("".join(chr(n) for n in x_icc_c))
         print("Description:", x_icc.getDescription())
         print("Checksum ID:", hexlify(x_icc.calculateID()))

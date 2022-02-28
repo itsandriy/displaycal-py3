@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-c
-"""
-
-demjson 1.3 compatibilty module
-
-"""
+"""demjson 1.3 compatibility module"""
 
 from io import StringIO
 import json
@@ -58,70 +54,69 @@ def decode(txt, strict=False, encoding=None, **kw):
             write = True
             if c == "\\":
                 if DEBUG:
-                    sys.stdout.write('<ESCAPE>')
+                    sys.stdout.write("<ESCAPE>")
                 escape = True
             elif escape:
                 if DEBUG:
-                    sys.stdout.write('</ESCAPE>')
+                    sys.stdout.write("</ESCAPE>")
                 escape = False
             else:
                 if not in_quote:
                     if c == "/":
                         if expect_comment:
                             if DEBUG:
-                                sys.stdout.write('<COMMENT>')
+                                sys.stdout.write("<COMMENT>")
                             in_comment = True
                             comment_multiline = False
                             expect_comment = False
                         elif in_comment and prev == "*":
                             if DEBUG:
-                                sys.stdout.write('</MULTILINECOMMENT>')
+                                sys.stdout.write("</MULTILINECOMMENT>")
                             in_comment = False
                             comment_multiline = False
                             write = False
                         elif not in_comment:
                             if DEBUG:
-                                sys.stdout.write('<EXPECT_COMMENT>')
+                                sys.stdout.write("<EXPECT_COMMENT>")
                             expect_comment = True
                     elif c == "*":
                         if expect_comment:
                             if DEBUG:
-                                sys.stdout.write('<MULTILINECOMMENT>')
+                                sys.stdout.write("<MULTILINECOMMENT>")
                             in_comment = True
                             comment_multiline = True
                             expect_comment = False
                     elif expect_comment:
                         if DEBUG:
-                            sys.stdout.write('</EXPECT_COMMENT>')
+                            sys.stdout.write("</EXPECT_COMMENT>")
                         expect_comment = False
                 if c == "\n":
                     if in_comment and not comment_multiline:
                         if DEBUG:
-                            sys.stdout.write('</COMMENT>')
+                            sys.stdout.write("</COMMENT>")
                         in_comment = False
                         write = False
                 elif c == '"' and not in_comment:
                     if in_quote:
                         if DEBUG:
-                            sys.stdout.write('</QUOTE>')
+                            sys.stdout.write("</QUOTE>")
                         in_quote = False
                     else:
                         if DEBUG:
-                            sys.stdout.write('<QUOTE>')
+                            sys.stdout.write("<QUOTE>")
                         in_quote = True
             if write and not expect_comment and not in_comment:
                 io.write(c)
             prev = c
         txt = io.getvalue()
         if DEBUG:
-            sys.stdout.write('\n')
-            print('JSON:', txt)
+            sys.stdout.write("\n")
+            print("JSON:", txt)
 
     return json.loads(txt, encoding=encoding, strict=strict)
 
 
-def encode(obj, strict=False, compactly=True, escape_unicode=False,
-           encoding=None):
+def encode(obj, strict=False, compactly=True, escape_unicode=False, encoding=None):
     """Encodes a Python object into a JSON-encoded string.
 
     'strict' is ignored.
@@ -155,5 +150,10 @@ def encode(obj, strict=False, compactly=True, escape_unicode=False,
 
     ensure_ascii = escape_unicode or encoding is not None
 
-    return json.dumps(obj, ensure_ascii=ensure_ascii,  indent=indent,
-                      separators=separators, encoding=encoding or "utf-8")
+    return json.dumps(
+        obj,
+        ensure_ascii=ensure_ascii,
+        indent=indent,
+        separators=separators,
+        encoding=encoding or "utf-8",
+    )

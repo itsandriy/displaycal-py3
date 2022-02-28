@@ -26,23 +26,36 @@ names = [
     "viewgam",
     "oeminst",
     "profcheck",
-    "spec2cie"
+    "spec2cie",
 ]
 
 # Argyll CMS tools optionally used by DisplayCAL
-optional = ["applycal", "average", "cctiff", "ccxxmake", "i1d3ccss", "oeminst",
-            "spec2cie", "spyd2en", "spyd4en", "tiffgamut", "timage"]
+optional = [
+    "applycal",
+    "average",
+    "cctiff",
+    "ccxxmake",
+    "i1d3ccss",
+    "oeminst",
+    "spec2cie",
+    "spyd2en",
+    "spyd4en",
+    "tiffgamut",
+    "timage",
+]
 
 prefixes_suffixes = ["argyll"]
 
-# Alternative tool names (from older Argyll CMS versions or with filename 
+# Alternative tool names (from older Argyll CMS versions or with filename
 # prefix/suffix like on some Linux distros)
-altnames = {"txt2ti3": ["logo2cgats"], 
-            "icclu": ["xicclu"],
-            "ccxxmake": ["ccmxmake"],
-            "i1d3ccss": ["oeminst"],
-            "spyd2en": ["oeminst"],
-            "spyd4en": ["oeminst"]}
+altnames = {
+    "txt2ti3": ["logo2cgats"],
+    "icclu": ["xicclu"],
+    "ccxxmake": ["ccmxmake"],
+    "i1d3ccss": ["oeminst"],
+    "spyd2en": ["oeminst"],
+    "spyd4en": ["oeminst"],
+}
 
 
 def add_prefixes_suffixes(name, altname):
@@ -76,7 +89,7 @@ viewconds = [
     "tv",  # Argyll 1.6
     "pcd",
     "ob",
-    "cx"
+    "cx",
 ]
 
 # Intents supported by colprof

@@ -3,19 +3,35 @@
 Interactive display calibration UI
 """
 
-import math
 import os
 import re
 import sys
 import time
 
 from DisplayCAL.wxaddons import wx
-from DisplayCAL.config import getbitmap, getcfg, geticon, get_data_path, get_icon_bundle, setcfg
+from DisplayCAL.config import (
+    getbitmap,
+    getcfg,
+    geticon,
+    get_data_path,
+    get_icon_bundle,
+    setcfg,
+)
 from DisplayCAL.log import get_file_logger
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug, test, verbose
-from DisplayCAL.wxwindows import (BaseApp, BaseFrame, BitmapBackgroundPanel, CustomCheckBox, CustomGrid,
-                                  FlatShadedButton, numpad_keycodes, nav_keycodes, processing_keycodes, wx_Panel)
+from DisplayCAL.wxwindows import (
+    BaseApp,
+    BaseFrame,
+    BitmapBackgroundPanel,
+    CustomCheckBox,
+    CustomGrid,
+    FlatShadedButton,
+    numpad_keycodes,
+    nav_keycodes,
+    processing_keycodes,
+    wx_Panel,
+)
 from DisplayCAL import CGATS
 from DisplayCAL import audio
 from DisplayCAL import colormath
@@ -27,17 +43,18 @@ FGCOLOUR = wx.Colour(0x99, 0x99, 0x99)
 
 
 class UntetheredFrame(BaseFrame):
-
     def __init__(self, parent=None, handler=None, keyhandler=None, start_timer=True):
         # BaseFrame.__init__(self, parent, wx.ID_ANY,
         #                    lang.getstr("measurement.untethered"),
         #                    style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
         #                    name="untetheredframe")
         super(UntetheredFrame, self).__init__(
-            self, parent, wx.ID_ANY,
+            self,
+            parent,
+            wx.ID_ANY,
             lang.getstr("measurement.untethered"),
             style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
-            name="untetheredframe"
+            name="untetheredframe",
         )
         self.SetIcons(get_icon_bundle([256, 48, 32, 16], appname))
         self.sizer = wx.FlexGridSizer(2, 1, 0, 0)
@@ -72,26 +89,34 @@ class UntetheredFrame(BaseFrame):
         self.panel_XYZ.SetBitmap(getbitmap("theme/checkerboard-32x32x5-333-444"))
         panelsizer.Add(self.panel_XYZ, 1, wx.RIGHT | wx.EXPAND, border=8)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.back_btn = FlatShadedButton(self.panel, bitmap=geticon(10, "back"), label="", fgcolour=FGCOLOUR)
+        self.back_btn = FlatShadedButton(
+            self.panel, bitmap=geticon(10, "back"), label="", fgcolour=FGCOLOUR
+        )
         self.back_btn.Bind(wx.EVT_BUTTON, self.back_btn_handler)
         sizer.Add(self.back_btn, 0, wx.LEFT | wx.RIGHT, border=8)
         self.label_index = wx.StaticText(self.panel, wx.ID_ANY, " ")
         self.label_index.SetForegroundColour(FGCOLOUR)
         sizer.Add(self.label_index, 0, wx.ALIGN_CENTER_VERTICAL)
-        self.next_btn = FlatShadedButton(self.panel, bitmap=geticon(10, "play"), label="", fgcolour=FGCOLOUR)
+        self.next_btn = FlatShadedButton(
+            self.panel, bitmap=geticon(10, "play"), label="", fgcolour=FGCOLOUR
+        )
         self.next_btn.Bind(wx.EVT_BUTTON, self.next_btn_handler)
         sizer.Add(self.next_btn, 0, wx.LEFT, border=8)
         sizer.Add((12, 1), 1)
-        self.measure_auto_cb = CustomCheckBox(self.panel, wx.ID_ANY, lang.getstr("auto"))
+        self.measure_auto_cb = CustomCheckBox(
+            self.panel, wx.ID_ANY, lang.getstr("auto")
+        )
         self.measure_auto_cb.SetForegroundColour(FGCOLOUR)
         self.measure_auto_cb.Bind(wx.EVT_CHECKBOX, self.measure_auto_ctrl_handler)
         sizer.Add(self.measure_auto_cb, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
         panelsizer.Add(sizer, 0, wx.BOTTOM | wx.EXPAND, border=8)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.measure_btn = FlatShadedButton(self.panel,
-                                            bitmap=geticon(10, "play"),
-                                            label=lang.getstr("measure"),
-                                            fgcolour=FGCOLOUR)
+        self.measure_btn = FlatShadedButton(
+            self.panel,
+            bitmap=geticon(10, "play"),
+            label=lang.getstr("measure"),
+            fgcolour=FGCOLOUR,
+        )
         self.measure_btn.Bind(wx.EVT_BUTTON, self.measure_btn_handler)
         sizer.Add(self.measure_btn, 0, wx.RIGHT, border=6)
         # Sound when measuring
@@ -99,12 +124,16 @@ class UntetheredFrame(BaseFrame):
         self.measurement_sound = audio.Sound(get_data_path("beep.wav"))
         self.commit_sound = audio.Sound(get_data_path("camera_shutter.wav"))
         bitmap = self.get_sound_on_off_btn_bitmap()
-        self.sound_on_off_btn = FlatShadedButton(self.panel, bitmap=bitmap, fgcolour=FGCOLOUR)
+        self.sound_on_off_btn = FlatShadedButton(
+            self.panel, bitmap=bitmap, fgcolour=FGCOLOUR
+        )
         self.sound_on_off_btn.SetToolTipString(lang.getstr("measurement.play_sound"))
         self.sound_on_off_btn.Bind(wx.EVT_BUTTON, self.measurement_play_sound_handler)
         sizer.Add(self.sound_on_off_btn, 0)
         sizer.Add((12, 1), 1)
-        self.finish_btn = FlatShadedButton(self.panel, label=lang.getstr("finish"), fgcolour=FGCOLOUR)
+        self.finish_btn = FlatShadedButton(
+            self.panel, label=lang.getstr("finish"), fgcolour=FGCOLOUR
+        )
         self.finish_btn.Bind(wx.EVT_BUTTON, self.finish_btn_handler)
         sizer.Add(self.finish_btn, 0, wx.RIGHT, border=8)
         panelsizer.Add(sizer, 0, wx.BOTTOM | wx.EXPAND, border=8)
@@ -143,10 +172,8 @@ class UntetheredFrame(BaseFrame):
         self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
         self.grid.EnableEditing(False)
         self.grid.EnableGridLines(False)
-        self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK,
-                       self.grid_left_click_handler)
-        self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL,
-                       self.grid_left_click_handler)
+        self.grid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.grid_left_click_handler)
+        self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, self.grid_left_click_handler)
         self.sizer.Add(self.grid, 1, wx.EXPAND)
 
         self.Fit()
@@ -188,8 +215,11 @@ class UntetheredFrame(BaseFrame):
 
         # Final initialization steps
         for child in self.GetAllChildren():
-            if (sys.platform == "win32" and sys.getwindowsversion() >= (6, ) and
-                    isinstance(child, wx.Panel)):
+            if (
+                sys.platform == "win32"
+                and sys.getwindowsversion() >= (6,)
+                and isinstance(child, wx.Panel)
+            ):
                 # No need to enable double buffering under Linux and Mac OS X.
                 # Under Windows, enabling double buffering on the panel seems
                 # to work best to reduce flicker.
@@ -227,9 +257,11 @@ class UntetheredFrame(BaseFrame):
                         print(exception)
 
     def OnMove(self, event):
-        if self.IsShownOnScreen() and not self.IsIconized() and \
-                (not self.GetParent() or
-                 not self.GetParent().IsShownOnScreen()):
+        if (
+            self.IsShownOnScreen()
+            and not self.IsIconized()
+            and (not self.GetParent() or not self.GetParent().IsShownOnScreen())
+        ):
             prev_x = getcfg("position.progress.x")
             prev_y = getcfg("position.progress.y")
             x, y = self.GetScreenPosition()
@@ -264,12 +296,14 @@ class UntetheredFrame(BaseFrame):
         self.is_measuring = not enable and enable_measure_button
         self.back_btn.Enable(enable and self.index > 0)
         self.next_btn.Enable(enable and self.index < self.index_max)
-        self.measure_btn._bitmap = geticon(10, {True: "play",
-                                                False: "pause"}.get(enable))
+        self.measure_btn._bitmap = geticon(
+            10, {True: "play", False: "pause"}.get(enable)
+        )
         self.measure_btn.Enable(enable or enable_measure_button)
         self.measure_btn.SetDefault()
-        if self.measure_btn.Enabled and not isinstance(self.FindFocus(),
-                                                       (wx.Control, CustomGrid)):
+        if self.measure_btn.Enabled and not isinstance(
+            self.FindFocus(), (wx.Control, CustomGrid)
+        ):
             self.measure_btn.SetFocus()
 
     def finish_btn_handler(self, event):
@@ -297,11 +331,11 @@ class UntetheredFrame(BaseFrame):
                 self.cgats[0].DATA_FORMAT.pop(i)
         # Add XYZ to DATA_FORMAT if not yet present
         for label in ("XYZ_X", "XYZ_Y", "XYZ_Z"):
-            if not label in list(self.cgats[0].DATA_FORMAT.values()):
-                self.cgats[0].DATA_FORMAT.add_data((label, ))
+            if label not in list(self.cgats[0].DATA_FORMAT.values()):
+                self.cgats[0].DATA_FORMAT.add_data((label,))
         self.cgats[0].write(os.path.splitext(self.cgats.filename)[0] + ".ti3")
         self.safe_send("Q")
-        time.sleep(.5)
+        time.sleep(0.5)
         self.safe_send("Q")
 
     def flush(self):
@@ -324,41 +358,45 @@ class UntetheredFrame(BaseFrame):
                 if PXYZ:
                     white_planckianCCT_Lab = colormath.XYZ2Lab(*PXYZ)
                 white_Lab = colormath.XYZ2Lab(*white_XYZ_Y100)
-                if (DXYZ and PXYZ and
-                        (colormath.delta(*white_CIEDCCT_Lab + white_Lab)["E"] < 6 or
-                         colormath.delta(*white_planckianCCT_Lab + white_Lab)["E"] < 6)):
+                if (
+                    DXYZ
+                    and PXYZ
+                    and (
+                        colormath.delta(*white_CIEDCCT_Lab + white_Lab)["E"] < 6
+                        or colormath.delta(*white_planckianCCT_Lab + white_Lab)["E"] < 6
+                    )
+                ):
                     # Is white close enough to daylight or planckian locus?
-                    XYZ = colormath.adapt(XYZ[0], XYZ[1], XYZ[2],
-                                          white_XYZ_Y100, "D65")
+                    XYZ = colormath.adapt(XYZ[0], XYZ[1], XYZ[2], white_XYZ_Y100, "D65")
         X, Y, Z = [v / 100.0 for v in XYZ]
-        color = [int(round(v)) for v in
-                 colormath.XYZ2RGB(X, Y, Z,
-                                   scale=255)]
+        color = [int(round(v)) for v in colormath.XYZ2RGB(X, Y, Z, scale=255)]
         return Lab, color
 
     def grid_left_click_handler(self, event):
         if not self.is_measuring:
             row, col = event.GetRow(), event.GetCol()
-            if row == -1 and col > -1: # col label clicked
+            if row == -1 and col > -1:  # col label clicked
                 pass
-            elif row > -1: # row clicked
-                if not (event.CmdDown() or event.ControlDown() or
-                        event.ShiftDown()):
+            elif row > -1:  # row clicked
+                if not (event.CmdDown() or event.ControlDown() or event.ShiftDown()):
                     self.update(row)
                 event.Skip()
 
     def has_worker_subprocess(self):
-        return bool(getattr(self, "worker", None) and
-                    getattr(self.worker, "subprocess", None))
+        return bool(
+            getattr(self, "worker", None) and getattr(self.worker, "subprocess", None)
+        )
 
     def isatty(self):
         return True
 
     def key_handler(self, event):
         keycode = None
-        is_key_event = event.GetEventType() in (wx.EVT_CHAR.typeId,
-                                                wx.EVT_CHAR_HOOK.typeId,
-                                                wx.EVT_KEY_DOWN.typeId)
+        is_key_event = event.GetEventType() in (
+            wx.EVT_CHAR.typeId,
+            wx.EVT_CHAR_HOOK.typeId,
+            wx.EVT_KEY_DOWN.typeId,
+        )
         if is_key_event:
             keycode = event.GetKeyCode()
         elif event.GetEventType() == wx.EVT_MENU.typeId:
@@ -390,8 +428,10 @@ class UntetheredFrame(BaseFrame):
                 if keycode == wx.WXK_ESCAPE or chr(keycode) == "Q":
                     # ESC or Q
                     self.worker.abort_subprocess()
-                elif (not isinstance(self.FindFocus(), wx.Control) or
-                      keycode != wx.WXK_SPACE):
+                elif (
+                    not isinstance(self.FindFocus(), wx.Control)
+                    or keycode != wx.WXK_SPACE
+                ):
                     # Any other key
                     self.measure_btn_handler(None)
                 else:
@@ -419,8 +459,9 @@ class UntetheredFrame(BaseFrame):
             self.measure()
 
     def measurement_play_sound_handler(self, event):
-        setcfg("measurement.play_sound",
-               int(not(bool(getcfg("measurement.play_sound")))))
+        setcfg(
+            "measurement.play_sound", int(not (bool(getcfg("measurement.play_sound"))))
+        )
         self.set_sound_on_off_btn_bitmap()
 
     def get_sound_on_off_btn_bitmap(self):
@@ -443,7 +484,7 @@ class UntetheredFrame(BaseFrame):
             return
         self.logger.info("%r" % txt)
         data_len = len(self.cgats[0].DATA)
-        if (self.grid.GetNumberRows() < data_len):
+        if self.grid.GetNumberRows() < data_len:
             self.index = 0
             self.index_max = data_len - 1
             self.grid.AppendRows(data_len - self.grid.GetNumberRows())
@@ -455,8 +496,7 @@ class UntetheredFrame(BaseFrame):
                     value = int(round(row["RGB_%s" % label] / 100.0 * 255))
                     self.grid.SetCellValue(row.SAMPLE_ID - 1, j, "%i" % value)
                     RGB.append(value)
-                self.grid.SetCellBackgroundColour(row.SAMPLE_ID - 1, 3,
-                                                  wx.Colour(*RGB))
+                self.grid.SetCellBackgroundColour(row.SAMPLE_ID - 1, 3, wx.Colour(*RGB))
         if "Connecting to the instrument" in txt:
             self.Pulse(lang.getstr("instrument.initializing"))
         if "Spot read needs a calibration" in txt:
@@ -468,18 +508,19 @@ class UntetheredFrame(BaseFrame):
             if getcfg("measurement.play_sound"):
                 self.measurement_sound.safe_play()
             # Result is XYZ: d.dddddd d.dddddd d.dddddd, D50 Lab: d.dddddd d.dddddd d.dddddd
-            XYZ = re.search(r"XYZ:\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)", txt)
+            XYZ = re.search(
+                r"XYZ:\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)", txt
+            )
             if not XYZ:
                 return
             XYZ = [float(v) for v in XYZ.groups()]
             row = self.cgats[0].DATA[self.index]
-            if (row["RGB_R"] == 100 and
-                    row["RGB_G"] == 100 and
-                    row["RGB_B"] == 100):
+            if row["RGB_R"] == 100 and row["RGB_G"] == 100 and row["RGB_B"] == 100:
                 # White
                 if XYZ[1] > 0:
-                    self.cgats[0].add_keyword("LUMINANCE_XYZ_CDM2",
-                                              "%.6f %.6f %.6f" % tuple(XYZ))
+                    self.cgats[0].add_keyword(
+                        "LUMINANCE_XYZ_CDM2", "%.6f %.6f %.6f" % tuple(XYZ)
+                    )
                     self.white_XYZ = XYZ
             Lab1 = colormath.XYZ2Lab(*self.last_XYZ)
             Lab2 = colormath.XYZ2Lab(*XYZ)
@@ -490,9 +531,10 @@ class UntetheredFrame(BaseFrame):
                 print("Delta E to last recorded Lab: %.4f" % delta["E"])
                 print("Abs. delta L to last recorded Lab: %.4f" % abs(delta["L"]))
                 print("Abs. delta C to last recorded Lab: %.4f" % abs(delta["C"]))
-            if (delta["E"] > getcfg("untethered.min_delta") or
-                    (abs(delta["L"]) > getcfg("untethered.min_delta.lightness") and
-                     abs(delta["C"]) < getcfg("untethered.max_delta.chroma"))):
+            if delta["E"] > getcfg("untethered.min_delta") or (
+                abs(delta["L"]) > getcfg("untethered.min_delta.lightness")
+                and abs(delta["C"]) < getcfg("untethered.max_delta.chroma")
+            ):
                 self.measure_count += 1
                 if self.measure_count == 2:
                     if getcfg("measurement.play_sound"):
@@ -501,9 +543,13 @@ class UntetheredFrame(BaseFrame):
                     # Reset row label
                     self.grid.SetRowLabelValue(self.index, "%i" % (self.index + 1))
                     # Update CGATS
-                    query = self.cgats[0].queryi({"RGB_R": row["RGB_R"],
-                                                  "RGB_G": row["RGB_G"],
-                                                  "RGB_B": row["RGB_B"]})
+                    query = self.cgats[0].queryi(
+                        {
+                            "RGB_R": row["RGB_R"],
+                            "RGB_G": row["RGB_G"],
+                            "RGB_B": row["RGB_B"],
+                        }
+                    )
                     for i in query:
                         index = query[i].SAMPLE_ID - 1
                         if index not in self.measured:
@@ -518,10 +564,13 @@ class UntetheredFrame(BaseFrame):
                     Lab, color = self.get_Lab_RGB()
                     for i in query:
                         row = query[i]
-                        self.grid.SetCellBackgroundColour(query[i].SAMPLE_ID - 1,
-                                                          4, wx.Colour(*color))
+                        self.grid.SetCellBackgroundColour(
+                            query[i].SAMPLE_ID - 1, 4, wx.Colour(*color)
+                        )
                         for j in range(3):
-                            self.grid.SetCellValue(query[i].SAMPLE_ID - 1, 5 + j, "%.2f" % Lab[j])
+                            self.grid.SetCellValue(
+                                query[i].SAMPLE_ID - 1, 5 + j, "%.2f" % Lab[j]
+                            )
                     self.grid.MakeCellVisible(self.index, 0)
                     self.grid.ForceRefresh()
                     if len(self.measured) == data_len:
@@ -531,18 +580,22 @@ class UntetheredFrame(BaseFrame):
                         # Jump to the next or previous unmeasured patch, if any
                         index = self.index
                         for i in range(self.index + 1, data_len):
-                            if (getcfg("untethered.measure.auto") or
-                                    not i in self.measured):
+                            if (
+                                getcfg("untethered.measure.auto")
+                                or i not in self.measured
+                            ):
                                 self.index = i
                                 break
                         if self.index == index:
                             for i in range(self.index - 1, -1, -1):
-                                if not i in self.measured:
+                                if i not in self.measured:
                                     self.index = i
                                     break
                         if self.index != index:
                             # Mark the row containing the next/previous patch
-                            self.grid.SetRowLabelValue(self.index, "\u25ba %i" % (self.index + 1))
+                            self.grid.SetRowLabelValue(
+                                self.index, "\u25ba %i" % (self.index + 1)
+                            )
                             self.grid.MakeCellVisible(self.index, 0)
         if "key to take a reading" in txt and not self.last_error:
             if getcfg("untethered.measure.auto") and self.is_measuring:
@@ -585,8 +638,7 @@ class UntetheredFrame(BaseFrame):
             else:
                 w = col_w
             self.grid.SetColSize(i, w)
-        self.grid.SetMargins(0 - wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
-                             0)
+        self.grid.SetMargins(0 - wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X), 0)
         self.grid.ForceRefresh()
 
     def _setup(self):
@@ -628,11 +680,18 @@ class UntetheredFrame(BaseFrame):
 
     def show_RGB(self, clear_XYZ=True, mark_current_row=True):
         row = self.cgats[0].DATA[self.index]
-        self.label_RGB.SetLabel("RGB %i %i %i" % (round(row["RGB_R"] / 100.0 * 255),
-                                                  round(row["RGB_G"] / 100.0 * 255),
-                                                  round(row["RGB_B"] / 100.0 * 255)))
-        color = [int(round(v / 100.0 * 255)) for v in
-                 (row["RGB_R"], row["RGB_G"], row["RGB_B"])]
+        self.label_RGB.SetLabel(
+            "RGB %i %i %i"
+            % (
+                round(row["RGB_R"] / 100.0 * 255),
+                round(row["RGB_G"] / 100.0 * 255),
+                round(row["RGB_B"] / 100.0 * 255),
+            )
+        )
+        color = [
+            int(round(v / 100.0 * 255))
+            for v in (row["RGB_R"], row["RGB_G"], row["RGB_B"])
+        ]
         self.panel_RGB.SetBackgroundColour(wx.Colour(*color))
         self.panel_RGB.SetBitmap(None)
         self.panel_RGB.Refresh()
@@ -649,8 +708,7 @@ class UntetheredFrame(BaseFrame):
         if self.index not in self.grid.GetSelectedRows():
             self.grid.SelectRow(self.index)
             self.grid.SetGridCursor(self.index, 0)
-        self.label_index.SetLabel("%i/%i" % (self.index + 1,
-                                             len(self.cgats[0].DATA)))
+        self.label_index.SetLabel("%i/%i" % (self.index + 1, len(self.cgats[0].DATA)))
         self.label_index.GetContainingSizer().Layout()
 
     def show_XYZ(self):
@@ -690,7 +748,7 @@ if __name__ == "__main__":
     from DisplayCAL import ICCProfile as ICCP
     from DisplayCAL import worker
 
-    class Subprocess():
+    class Subprocess:
         def send(self, bytes_):
             start_new_thread(test, (bytes_,))
 
@@ -725,19 +783,21 @@ if __name__ == "__main__":
     if os.path.splitext(testchart)[1].lower() in (".icc", ".icm"):
         try:
             testchart = ICCP.ICCProfile(testchart).tags.targ
-        except:
+        except Exception:
             pass
     try:
         app.TopWindow.cgats = CGATS.CGATS(testchart)
-    except:
-        app.TopWindow.cgats = CGATS.CGATS("""TI1    
+    except Exception:
+        app.TopWindow.cgats = CGATS.CGATS(
+            """TI1
 BEGIN_DATA_FORMAT
 SAMPLE_ID RGB_R RGB_G RGB_B XYZ_X XYZ_Y XYZ_Z
 END_DATA_FORMAT
 BEGIN_DATA
 1 0 0 0 0 0 0
 END_DATA
-""")
+"""
+        )
     app.TopWindow.worker = Worker()
     app.TopWindow.worker.progress_wnd = app.TopWindow
     app.TopWindow.Show()
@@ -756,7 +816,8 @@ Hit ESC or Q to exit, any other key to take a reading:"""
         elif bytes_ == " ":
             i = app.TopWindow.index
             row = app.TopWindow.cgats[0].DATA[i]
-            txt = ["""
+            txt = [
+                """
  Result is XYZ: %.6f %.6f %.6f
 
 Place instrument on spot to be measured,
@@ -764,24 +825,28 @@ and hit [A-Z] to read white and setup FWA compensation (keyed to letter)
 [a-z] to read and make FWA compensated reading from keyed reference
 'r' to set reference, 's' to save spectrum,
 'h' to toggle high res., 'k' to do a calibration
-Hit ESC or Q to exit, any other key to take a reading:""" % (row.XYZ_X, row.XYZ_Y, row.XYZ_Z),
-                   """"
+Hit ESC or Q to exit, any other key to take a reading:"""
+                % (row.XYZ_X, row.XYZ_Y, row.XYZ_Z),
+                """"
 Result is XYZ: %.6f %.6f %.6f
 
 Spot read needs a calibration before continuing
 Place cap on the instrument, or place on a dark surface,
 or place on the white calibration reference,
 and then hit any key to continue,
-or hit Esc or Q to abort:""" % (row.XYZ_X, row.XYZ_Y, row.XYZ_Z)][random.choice([0, 1])]
+or hit Esc or Q to abort:"""
+                % (row.XYZ_X, row.XYZ_Y, row.XYZ_Z),
+            ][random.choice([0, 1])]
         elif bytes_ in ("Q", "q"):
             wx.CallAfter(app.TopWindow.Close)
             return
         else:
             return
         for line in txt.split("\n"):
-            sleep(.03125)
+            sleep(0.03125)
             if app.TopWindow:
                 wx.CallAfter(files.write, line)
                 print(line)
+
     start_new_thread(test, tuple())
     app.MainLoop()

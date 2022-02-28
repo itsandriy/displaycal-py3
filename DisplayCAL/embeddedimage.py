@@ -1,4 +1,4 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Name:        wx.lib.embeddedimage
 # Purpose:     Defines a class used for embedding PNG images in Python
 #              code. The primary method of using this module is via
@@ -10,7 +10,7 @@
 # RCS-ID:      $Id: embeddedimage.py 59672 2009-03-20 20:59:42Z RD $
 # Copyright:   (c) 2007 by Anthony Tuininga
 # Licence:     wxWindows license
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 import base64
 import io
@@ -20,7 +20,7 @@ try:
     b64decode = base64.b64decode
 except AttributeError:
     b64decode = base64.decodestring
-    
+
 
 class PyEmbeddedImage(object):
     """PyEmbeddedImage is primarily intended to be used by code generated
@@ -71,4 +71,3 @@ class PyEmbeddedImage(object):
     Bitmap = property(GetBitmap)
     Icon = property(GetIcon)
     Image = property(GetImage)
-

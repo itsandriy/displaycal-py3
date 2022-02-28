@@ -3,7 +3,6 @@
 import os
 import platform
 import shutil
-import sys
 
 import winmanifest
 
@@ -19,7 +18,7 @@ def vc90crt_find_files():
         processorArchitecture=arch,
         name=name,
         publicKeyToken="1fc8b3b9a1e18e3b",
-        version=[9, 0, 21022, 8]
+        version=[9, 0, 21022, 8],
     ).find_files()
 
 
@@ -29,7 +28,9 @@ def vc90crt_copy_files(dest_dir):
     for filename in vc90crt_find_files():
         dest = os.path.join(
             dest_dir,
-            name + ".manifest" if filename.endswith(".manifest") else os.path.basename(filename)
+            name + ".manifest"
+            if filename.endswith(".manifest")
+            else os.path.basename(filename),
         )
         if not os.path.exists(dest):
             shutil.copy2(filename, dest)

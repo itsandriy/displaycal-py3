@@ -15,7 +15,7 @@ for p in set(iccprofiles_home + iccprofiles):
         for f in os.listdir(p):
             try:
                 profile = iccp.ICCProfile(os.path.join(p, f))
-            except:
+            except Exception:
                 pass
             else:
                 curve = None
@@ -23,7 +23,12 @@ for p in set(iccprofiles_home + iccprofiles):
                     curve = profile.tags.get(key + "TRC")
                     if curve:
                         break
-                if curve and isinstance(curve, iccp.CurveType) and len(curve) == 1 and curve[0] < 1.8:
+                if (
+                    curve
+                    and isinstance(curve, iccp.CurveType)
+                    and len(curve) == 1
+                    and curve[0] < 1.8
+                ):
                     print(f)
                     print(curve)
                     print("")

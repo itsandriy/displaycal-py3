@@ -2,22 +2,39 @@
 
 import math
 import os
-import re
 import sys
 import time
 import warnings
 
 from DisplayCAL import config
 from DisplayCAL import localization as lang
-from DisplayCAL.config import (defaults, enc, getcfg, geticon, get_argyll_display_number, get_default_dpi,
-                               get_display_number, get_display_rects, scale_adjustment_factor, setcfg, writecfg)
+from DisplayCAL.config import (
+    defaults,
+    enc,
+    getcfg,
+    geticon,
+    get_argyll_display_number,
+    get_default_dpi,
+    get_display_number,
+    get_display_rects,
+    scale_adjustment_factor,
+    setcfg,
+    writecfg,
+)
 from DisplayCAL.debughelpers import handle_error
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.util_list import floatlist, strlist
 from DisplayCAL.wxaddons import wx
-from DisplayCAL.wxwindows import BaseApp, BitmapBackgroundPanel, ConfirmDialog, InfoDialog, InvincibleFrame
+from DisplayCAL.wxwindows import (
+    BaseApp,
+    BitmapBackgroundPanel,
+    ConfirmDialog,
+    InfoDialog,
+    InvincibleFrame,
+)
 from DisplayCAL.wxfixes import GenBitmapButton as BitmapButton
+
 try:
     from DisplayCAL import RealDisplaySizeMM as RDSMM
 except ImportError as exception:
@@ -45,7 +62,9 @@ def get_default_size():
             try:
                 display_size_mm = RDSMM.RealDisplaySizeMM(display_no)
             except Exception as exception:
-                handle_error("Error - RealDisplaySizeMM() failed: %s" % exception, silent=True)
+                handle_error(
+                    "Error - RealDisplaySizeMM() failed: %s" % exception, silent=True
+                )
             else:
                 display_size_mm = floatlist(display_size_mm)
         if debug:
@@ -57,12 +76,11 @@ def get_default_size():
                 # use configurable screen diagonal
                 inch = 20.0
                 mm = inch * 25.4
-                f = mm / math.sqrt(math.pow(display_size[0], 2) + \
-                                   math.pow(display_size[1], 2))
-                w_mm = math.sqrt(math.pow(mm, 2) - \
-                                 math.pow(display_size[1] * f, 2))
-                h_mm = math.sqrt(math.pow(mm, 2) - \
-                                 math.pow(display_size[0] * f, 2))
+                f = mm / math.sqrt(
+                    math.pow(display_size[0], 2) + math.pow(display_size[1], 2)
+                )
+                w_mm = math.sqrt(math.pow(mm, 2) - math.pow(display_size[1] * f, 2))
+                h_mm = math.sqrt(math.pow(mm, 2) - math.pow(display_size[0] * f, 2))
                 display_size_mm = w_mm, h_mm
             elif method == 1:
                 # use the first display
@@ -70,23 +88,31 @@ def get_default_size():
                 display_size_mm = floatlist(wx.DisplaySizeMM())
                 if 0 in display_size_mm:
                     # bogus
-                    display_size_mm = [display_size_1st[0] / ppi_def * 25.4,
-                                       display_size_1st[1] / ppi_def * 25.4]
+                    display_size_mm = [
+                        display_size_1st[0] / ppi_def * 25.4,
+                        display_size_1st[1] / ppi_def * 25.4,
+                    ]
                 if display_no > 0:
                     display_size_mm[0] = display_size[0] / (
-                            display_size_1st[0] / display_size_mm[0])
+                        display_size_1st[0] / display_size_mm[0]
+                    )
                     display_size_mm[1] = display_size[1] / (
-                            display_size_1st[1] / display_size_mm[1])
+                        display_size_1st[1] / display_size_mm[1]
+                    )
             else:
                 # use assumed ppi
-                display_size_mm = (display_size[0] / ppi_def * 25.4,
-                                   display_size[1] / ppi_def * 25.4)
+                display_size_mm = (
+                    display_size[0] / ppi_def * 25.4,
+                    display_size[1] / ppi_def * 25.4,
+                )
         display_sizes.append(display_size)
         display_sizes_mm.append(display_size_mm)
-    if sum(mm[0] for mm in display_sizes_mm) / \
-            len(display_sizes_mm) == display_sizes_mm[0][0] and \
-            sum(mm[1] for mm in display_sizes_mm) / \
-            len(display_sizes_mm) == display_sizes_mm[0][1]:
+    if (
+        sum(mm[0] for mm in display_sizes_mm) / len(display_sizes_mm)
+        == display_sizes_mm[0][0]
+        and sum(mm[1] for mm in display_sizes_mm) / len(display_sizes_mm)
+        == display_sizes_mm[0][1]
+    ):
         # display_size_mm is the same for all screens, use the 1st one
         display_size = display_sizes[0]
         display_size_mm = display_sizes_mm[0]
@@ -97,8 +123,10 @@ def get_default_size():
             display_no = getcfg("display_lut.number") - 1
         display_size = display_sizes[display_no]
         display_size_mm = display_sizes_mm[display_no]
-    px_per_mm = (display_size[0] / display_size_mm[0],
-                 display_size[1] / display_size_mm[1])
+    px_per_mm = (
+        display_size[0] / display_size_mm[0],
+        display_size[1] / display_size_mm[1],
+    )
     if debug:
         print("[D]  H px_per_mm:", px_per_mm[0])
         print("[D]  V px_per_mm:", px_per_mm[1])
@@ -107,21 +135,24 @@ def get_default_size():
 
 class MeasureFrame(InvincibleFrame):
 
-    """A rectangular window to set the measure area size for dispcal/dispread.
-
-    """
+    """A rectangular window to set the measure area size for dispcal/dispread."""
 
     exitcode = 1
 
     def __init__(self, parent=None, id=-1):
         style = wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX)
-        if (os.getenv("XDG_SESSION_TYPE") != "wayland" and
-                getcfg("patterngenerator.use_pattern_window")):
+        if os.getenv("XDG_SESSION_TYPE") != "wayland" and getcfg(
+            "patterngenerator.use_pattern_window"
+        ):
             style |= wx.STAY_ON_TOP
-        InvincibleFrame.__init__(self, parent, id,
-                                 lang.getstr("measureframe.title"),
-                                 style=style,
-                                 name="measureframe")
+        InvincibleFrame.__init__(
+            self,
+            parent,
+            id,
+            lang.getstr("measureframe.title"),
+            style=style,
+            name="measureframe",
+        )
         self.SetIcons(config.get_icon_bundle([256, 48, 32, 16], appname))
         self.Bind(wx.EVT_CLOSE, self.close_handler, self)
         if os.getenv("XDG_SESSION_TYPE") != "wayland":
@@ -141,104 +172,144 @@ class MeasureFrame(InvincibleFrame):
         self.panel.SetSizer(self.sizer)
 
         self.hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add(self.hsizer, flag=wx.ALIGN_CENTER_HORIZONTAL |
-                                         wx.ALIGN_TOP)
+        self.sizer.Add(self.hsizer, flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
 
-        self.zoommaxbutton = BitmapButton(self.panel, -1,
-                                          geticon(16, "zoom-best-fit"),
-                                          style=wx.NO_BORDER,
-                                          name="zoommaxbutton")
+        self.zoommaxbutton = BitmapButton(
+            self.panel,
+            -1,
+            geticon(16, "zoom-best-fit"),
+            style=wx.NO_BORDER,
+            name="zoommaxbutton",
+        )
         self.zoommaxbutton.Bind(wx.EVT_KILL_FOCUS, self.focus_lost_handler)
         self.Bind(wx.EVT_BUTTON, self.zoommax_handler, self.zoommaxbutton)
-        self.hsizer.Add(self.zoommaxbutton, flag=wx.ALIGN_CENTER | wx.LEFT |
-                                                 wx.TOP | wx.BOTTOM, border=10)
+        self.hsizer.Add(
+            self.zoommaxbutton,
+            flag=wx.ALIGN_CENTER | wx.LEFT | wx.TOP | wx.BOTTOM,
+            border=10,
+        )
         self.zoommaxbutton.SetToolTipString(lang.getstr("measureframe.zoommax"))
 
         self.hsizer.Add((8, 0))
 
-        self.zoominbutton = BitmapButton(self.panel, -1,
-                                         geticon(16, "zoom-in"),
-                                         style=wx.NO_BORDER,
-                                         name="zoominbutton")
+        self.zoominbutton = BitmapButton(
+            self.panel,
+            -1,
+            geticon(16, "zoom-in"),
+            style=wx.NO_BORDER,
+            name="zoominbutton",
+        )
         self.zoominbutton.Bind(wx.EVT_KILL_FOCUS, self.focus_lost_handler)
         self.Bind(wx.EVT_BUTTON, self.zoomin_handler, self.zoominbutton)
-        self.hsizer.Add(self.zoominbutton, flag=wx.ALIGN_CENTER | wx.TOP |
-                                                wx.BOTTOM, border=10)
+        self.hsizer.Add(
+            self.zoominbutton, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10
+        )
         self.zoominbutton.SetToolTipString(lang.getstr("measureframe.zoomin"))
 
         self.hsizer.Add((8, 0))
 
-        self.zoomnormalbutton = BitmapButton(self.panel, -1,
-                                             geticon(16, "zoom-original"),
-                                             style=wx.NO_BORDER,
-                                             name="zoomnormalbutton")
+        self.zoomnormalbutton = BitmapButton(
+            self.panel,
+            -1,
+            geticon(16, "zoom-original"),
+            style=wx.NO_BORDER,
+            name="zoomnormalbutton",
+        )
         self.zoomnormalbutton.Bind(wx.EVT_KILL_FOCUS, self.focus_lost_handler)
         self.Bind(wx.EVT_BUTTON, self.zoomnormal_handler, self.zoomnormalbutton)
-        self.hsizer.Add(self.zoomnormalbutton, flag=wx.ALIGN_CENTER | wx.TOP |
-                                                    wx.BOTTOM, border=10)
-        self.zoomnormalbutton.SetToolTipString(lang.getstr("measureframe."
-                                                           "zoomnormal"))
+        self.hsizer.Add(
+            self.zoomnormalbutton, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10
+        )
+        self.zoomnormalbutton.SetToolTipString(
+            lang.getstr("measureframe." "zoomnormal")
+        )
 
         self.hsizer.Add((8, 0))
 
-        self.zoomoutbutton = BitmapButton(self.panel, -1,
-                                          geticon(16, "zoom-out"),
-                                          style=wx.NO_BORDER,
-                                          name="zoomoutbutton")
+        self.zoomoutbutton = BitmapButton(
+            self.panel,
+            -1,
+            geticon(16, "zoom-out"),
+            style=wx.NO_BORDER,
+            name="zoomoutbutton",
+        )
         self.zoomoutbutton.Bind(wx.EVT_KILL_FOCUS, self.focus_lost_handler)
         self.Bind(wx.EVT_BUTTON, self.zoomout_handler, self.zoomoutbutton)
-        self.hsizer.Add(self.zoomoutbutton, flag=wx.ALIGN_CENTER | wx.RIGHT |
-                                                 wx.TOP | wx.BOTTOM, border=10)
+        self.hsizer.Add(
+            self.zoomoutbutton,
+            flag=wx.ALIGN_CENTER | wx.RIGHT | wx.TOP | wx.BOTTOM,
+            border=10,
+        )
         self.zoomoutbutton.SetToolTipString(lang.getstr("measureframe.zoomout"))
 
         if os.getenv("XDG_SESSION_TYPE") != "wayland":
             # No manual centering under Wayland...
-            self.centerbutton = BitmapButton(self.panel, -1,
-                                             geticon(16, "window-center"),
-                                             style=wx.NO_BORDER,
-                                             name="centerbutton")
+            self.centerbutton = BitmapButton(
+                self.panel,
+                -1,
+                geticon(16, "window-center"),
+                style=wx.NO_BORDER,
+                name="centerbutton",
+            )
             self.centerbutton.Bind(wx.EVT_KILL_FOCUS, self.focus_lost_handler)
             self.Bind(wx.EVT_BUTTON, self.center_handler, self.centerbutton)
-            self.sizer.Add(self.centerbutton, flag=wx.ALIGN_CENTER | wx.LEFT |
-                                                   wx.RIGHT, border=10)
+            self.sizer.Add(
+                self.centerbutton, flag=wx.ALIGN_CENTER | wx.LEFT | wx.RIGHT, border=10
+            )
             self.centerbutton.SetToolTipString(lang.getstr("measureframe.center"))
         else:
-            self.centermsg = wx.StaticText(self.panel, -1,
-                                           lang.getstr("measureframe.center.manual"),
-                                           style=wx.ALIGN_CENTER_HORIZONTAL)
+            self.centermsg = wx.StaticText(
+                self.panel,
+                -1,
+                lang.getstr("measureframe.center.manual"),
+                style=wx.ALIGN_CENTER_HORIZONTAL,
+            )
             self.centermsg.Wrap(self.hsizer.MinSize[0] - 20)
-            self.sizer.Add(self.centermsg, flag=wx.ALIGN_CENTER | wx.LEFT |
-                                                wx.RIGHT, border=10)
+            self.sizer.Add(
+                self.centermsg, flag=wx.ALIGN_CENTER | wx.LEFT | wx.RIGHT, border=10
+            )
 
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.vsizer, flag=wx.ALIGN_BOTTOM |
-                                         wx.ALIGN_CENTER_HORIZONTAL)
+        self.sizer.Add(self.vsizer, flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
 
-        if (os.getenv("XDG_SESSION_TYPE") != "wayland" or
-                config.is_virtual_display()):
-            self.measure_darken_background_cb = wx.CheckBox(self.panel, -1,
-                                                            lang.getstr("measure.darken_background"))
+        if os.getenv("XDG_SESSION_TYPE") != "wayland" or config.is_virtual_display():
+            self.measure_darken_background_cb = wx.CheckBox(
+                self.panel, -1, lang.getstr("measure.darken_background")
+            )
             self.measure_darken_background_cb.SetValue(
-                bool(int(getcfg("measure.darken_background"))))
-            self.measure_darken_background_cb.Bind(wx.EVT_KILL_FOCUS,
-                                                   self.focus_lost_handler)
-            self.Bind(wx.EVT_CHECKBOX, self.measure_darken_background_ctrl_handler,
-                      id=self.measure_darken_background_cb.GetId())
-            self.vsizer.Add(self.measure_darken_background_cb,
-                            # flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT | wx.TOP,
-                            flag=wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT,
-                            border=10)
+                bool(int(getcfg("measure.darken_background")))
+            )
+            self.measure_darken_background_cb.Bind(
+                wx.EVT_KILL_FOCUS, self.focus_lost_handler
+            )
+            self.Bind(
+                wx.EVT_CHECKBOX,
+                self.measure_darken_background_ctrl_handler,
+                id=self.measure_darken_background_cb.GetId(),
+            )
+            self.vsizer.Add(
+                self.measure_darken_background_cb,
+                # flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT | wx.TOP,
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT,
+                border=10,
+            )
         else:
             self.vsizer.Add((10, 10))
 
-        self.measurebutton = wx.Button(self.panel, -1,
-                                       lang.getstr("measureframe.measurebutton"), name="measurebutton")
+        self.measurebutton = wx.Button(
+            self.panel,
+            -1,
+            lang.getstr("measureframe.measurebutton"),
+            name="measurebutton",
+        )
         self.measurebutton.Bind(wx.EVT_KILL_FOCUS, self.focus_lost_handler)
         self.Bind(wx.EVT_BUTTON, self.measure_handler, self.measurebutton)
-        self.vsizer.Add(self.measurebutton,
-                        # flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
-                        flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
-                        border=10)
+        self.vsizer.Add(
+            self.measurebutton,
+            # flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
+            flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
+            border=10,
+        )
         self.measurebutton.SetMaxFontSize(11)
         self.measurebutton.SetDefault()
         self.last_focused = self.measurebutton
@@ -249,35 +320,47 @@ class MeasureFrame(InvincibleFrame):
         self.sizer.SetSizeHints(self)
 
     def measure_darken_background_ctrl_handler(self, event):
-        if self.measure_darken_background_cb.GetValue() and \
-                getcfg("measure.darken_background.show_warning"):
-            dlg = ConfirmDialog(self,
-                                msg=lang.getstr("measure.darken_background.warning"),
-                                ok=lang.getstr("ok"),
-                                cancel=lang.getstr("cancel"),
-                                bitmap=geticon(32, "dialog-warning"))
+        if self.measure_darken_background_cb.GetValue() and getcfg(
+            "measure.darken_background.show_warning"
+        ):
+            dlg = ConfirmDialog(
+                self,
+                msg=lang.getstr("measure.darken_background.warning"),
+                ok=lang.getstr("ok"),
+                cancel=lang.getstr("cancel"),
+                bitmap=geticon(32, "dialog-warning"),
+            )
             chk = wx.CheckBox(dlg, -1, lang.getstr("dialog.do_not_show_again"))
-            dlg.Bind(wx.EVT_CHECKBOX,
-                     self.measure_darken_background_warning_handler,
-                     id=chk.GetId())
+            dlg.Bind(
+                wx.EVT_CHECKBOX,
+                self.measure_darken_background_warning_handler,
+                id=chk.GetId(),
+            )
             dlg.sizer3.Add(chk, flag=wx.TOP | wx.ALIGN_LEFT, border=12)
             dlg.sizer0.SetSizeHints(dlg)
             dlg.sizer0.Layout()
             rslt = dlg.ShowModal()
             if rslt == wx.ID_CANCEL:
                 self.measure_darken_background_cb.SetValue(False)
-        setcfg("measure.darken_background",
-               int(self.measure_darken_background_cb.GetValue()))
+        setcfg(
+            "measure.darken_background",
+            int(self.measure_darken_background_cb.GetValue()),
+        )
 
     def measure_darken_background_warning_handler(self, event):
-        setcfg("measure.darken_background.show_warning",
-               int(not event.GetEventObject().GetValue()))
+        setcfg(
+            "measure.darken_background.show_warning",
+            int(not event.GetEventObject().GetValue()),
+        )
 
     def info_handler(self, event):
-        InfoDialog(self, msg=lang.getstr("measureframe.info"),
-                   ok=lang.getstr("ok"),
-                   bitmap=geticon(32, "dialog-information"),
-                   log=False)
+        InfoDialog(
+            self,
+            msg=lang.getstr("measureframe.info"),
+            ok=lang.getstr("ok"),
+            bitmap=geticon(32, "dialog-information"),
+            log=False,
+        )
 
     def measure_handler(self, event):
         if self.Parent and hasattr(self.Parent, "call_pending_function"):
@@ -291,19 +374,19 @@ class MeasureFrame(InvincibleFrame):
             self.show_controls()
             if hasattr(self, "measure_darken_background_cb"):
                 self.measure_darken_background_cb.SetValue(
-                    bool(int(getcfg("measure.darken_background"))))
+                    bool(int(getcfg("measure.darken_background")))
+                )
             if self.Parent and hasattr(self.Parent, "display_ctrl"):
                 display_no = self.Parent.display_ctrl.GetSelection()
             else:
-                display_no = getcfg('display.number') - 1
+                display_no = getcfg("display.number") - 1
             if display_no < 0 or display_no > wx.Display.GetCount() - 1:
                 display_no = 0
             else:
                 display_no = get_display_number(display_no)
             x, y = wx.Display(display_no).Geometry[:2]
-            self.SetPosition((x, y)) # place measure frame on correct display
-            self.place_n_zoom(
-                *floatlist(getcfg("dimensions.measureframe").split(",")))
+            self.SetPosition((x, y))  # place measure frame on correct display
+            self.place_n_zoom(*floatlist(getcfg("dimensions.measureframe").split(",")))
             self.display_no = wx.Display.GetFromWindow(self)
         elif self.IsShownOnScreen():
             setcfg("dimensions.measureframe", self.get_dimensions())
@@ -331,7 +414,8 @@ class MeasureFrame(InvincibleFrame):
         configuration.
 
         """
-        if debug: print("[D] measureframe.place_n_zoom")
+        if debug:
+            print("[D] measureframe.place_n_zoom")
         if None in (x, y, scale):
             cur_x, cur_y, cur_scale = floatlist(self.get_dimensions().split(","))
             if x is None:
@@ -340,28 +424,35 @@ class MeasureFrame(InvincibleFrame):
                 y = cur_y
             if scale is None:
                 scale = cur_scale
-        if scale > 50.0: # Argyll max
+        if scale > 50.0:  # Argyll max
             scale = 50
-        if debug: print(" x:", x)
-        if debug: print(" y:", y)
-        if debug: print(" scale:", scale)
+        if debug:
+            print(" x:", x)
+        if debug:
+            print(" y:", y)
+        if debug:
+            print(" scale:", scale)
         if debug:
             print("[D]  scale_adjustment_factor:", scale_adjustment_factor)
         scale /= scale_adjustment_factor
-        if debug: print("[D]  scale / scale_adjustment_factor:", scale)
+        if debug:
+            print("[D]  scale / scale_adjustment_factor:", scale)
         display = self.get_display(getcfg("display.number") - 1)
         display_client_rect = display[2]
-        if debug: print("[D]  display_client_rect:", display_client_rect)
+        if debug:
+            print("[D]  display_client_rect:", display_client_rect)
         display_client_size = display_client_rect[2:]
-        if debug: print("[D]  display_client_size:", display_client_size)
+        if debug:
+            print("[D]  display_client_size:", display_client_size)
         measureframe_min_size = [max(self.sizer.GetMinSize())] * 2
-        if debug: print("[D]  measureframe_min_size:", measureframe_min_size)
+        if debug:
+            print("[D]  measureframe_min_size:", measureframe_min_size)
         default_measureframe_size = get_default_size()
         defaults["size.measureframe"] = default_measureframe_size
-        size = [min(display_client_size[0],
-                    default_measureframe_size * scale),
-                min(display_client_size[1],
-                    default_measureframe_size * scale)]
+        size = [
+            min(display_client_size[0], default_measureframe_size * scale),
+            min(display_client_size[1], default_measureframe_size * scale),
+        ]
         if measureframe_min_size[0] > size[0]:
             size = measureframe_min_size
         if size[0] > display_client_size[0]:
@@ -370,11 +461,14 @@ class MeasureFrame(InvincibleFrame):
             size[1] = display_client_size[1]
         if max(size) >= max(display_client_size):
             scale = 50
-        if debug: print("[D]  measureframe_size:", size)
-        if (sys.platform not in ("darwin", "win32") and
-                os.getenv("XDG_SESSION_TYPE") != "wayland" and
-                not os.getenv("XDG_CURRENT_DESKTOP", "").startswith("KDE") and
-                hasattr(self, "MaxClientSize")):
+        if debug:
+            print("[D]  measureframe_size:", size)
+        if (
+            sys.platform not in ("darwin", "win32")
+            and os.getenv("XDG_SESSION_TYPE") != "wayland"
+            and not os.getenv("XDG_CURRENT_DESKTOP", "").startswith("KDE")
+            and hasattr(self, "MaxClientSize")
+        ):
             self.MaxClientSize = (-1, -1)
             self.MinClientSize = size
             self.ClientSize = size
@@ -385,81 +479,97 @@ class MeasureFrame(InvincibleFrame):
             self.SetSize(size)
             self.SetMaxSize(size)
         display_rect = display[1]
-        if debug: print("[D]  display_rect:", display_rect)
+        if debug:
+            print("[D]  display_rect:", display_rect)
         display_size = display_rect[2:]
-        if debug: print("[D]  display_size:", display_size)
+        if debug:
+            print("[D]  display_size:", display_size)
         if sys.platform in ("darwin", "win32"):
             titlebar = 0  # size already includes window decorations
         else:
             titlebar = 25  # assume titlebar height of 25px
-        measureframe_pos = [display_rect[0] + round((display_size[0] -
-                                                     size[0]) *
-                                                    x),
-                            display_rect[1] + round((display_size[1] -
-                                                     size[1]) *
-                                                    y) - titlebar]
+        measureframe_pos = [
+            display_rect[0] + round((display_size[0] - size[0]) * x),
+            display_rect[1] + round((display_size[1] - size[1]) * y) - titlebar,
+        ]
         if measureframe_pos[0] < display_client_rect[0]:
             measureframe_pos[0] = display_client_rect[0]
         if measureframe_pos[1] < display_client_rect[1]:
             measureframe_pos[1] = display_client_rect[1]
-        if debug: print("[D]  measureframe_pos:", measureframe_pos)
+        if debug:
+            print("[D]  measureframe_pos:", measureframe_pos)
         setcfg("dimensions.measureframe", ",".join(strlist((x, y, scale))))
         self.SetPosition(measureframe_pos)
 
     def zoomin_handler(self, event):
-        if debug: print("[D] measureframe_zoomin_handler")
+        if debug:
+            print("[D] measureframe_zoomin_handler")
         # We can't use self.get_dimensions() here because if we are near
         # fullscreen, next magnification step will be larger than normal
         display_size = self.get_display()[1][2:]
         default_measureframe_size = get_default_size()
         size = floatlist(self.GetSize())
         x, y = None, None
-        self.place_n_zoom(x, y, scale=(display_size[0] /
-                                       default_measureframe_size) /
-                                      (display_size[0] /
-                                       size[0]) + .125)
+        self.place_n_zoom(
+            x,
+            y,
+            scale=(display_size[0] / default_measureframe_size)
+            / (display_size[0] / size[0])
+            + 0.125,
+        )
 
     def zoomout_handler(self, event):
-        if debug: print("[D] measureframe_zoomout_handler")
+        if debug:
+            print("[D] measureframe_zoomout_handler")
         # We can't use self.get_dimensions() here because if we are
         # fullscreen, scale will be 50, thus changes won't be visible quickly
         display_size = self.get_display()[1][2:]
         default_measureframe_size = get_default_size()
         size = floatlist(self.GetSize())
         x, y = None, None
-        self.place_n_zoom(x, y, scale=(display_size[0] /
-                                       default_measureframe_size) /
-                                      (display_size[0] /
-                                       size[0]) - .125)
+        self.place_n_zoom(
+            x,
+            y,
+            scale=(display_size[0] / default_measureframe_size)
+            / (display_size[0] / size[0])
+            - 0.125,
+        )
 
     def zoomnormal_handler(self, event):
-        if debug: print("[D] measureframe_zoomnormal_handler")
+        if debug:
+            print("[D] measureframe_zoomnormal_handler")
         x, y = None, None
         scale = floatlist(defaults["dimensions.measureframe"].split(","))[2]
         self.place_n_zoom(x, y, scale=scale)
 
     def zoommax_handler(self, event):
-        if debug: print("[D] measureframe_zoommax_handler")
+        if debug:
+            print("[D] measureframe_zoommax_handler")
         display_client_rect = self.get_display()[2]
-        if debug: print("[D]  display_client_rect:", display_client_rect)
+        if debug:
+            print("[D]  display_client_rect:", display_client_rect)
         display_client_size = display_client_rect[2:]
-        if debug: print("[D]  display_client_size:", display_client_size)
+        if debug:
+            print("[D]  display_client_size:", display_client_size)
         size = self.GetSize()
-        if debug: print(" size:", size)
+        if debug:
+            print(" size:", size)
         if max(size) >= max(display_client_size) - 50:
             dim = getcfg("dimensions.measureframe.unzoomed")
             self.place_n_zoom(*floatlist(dim.split(",")))
         else:
             setcfg("dimensions.measureframe.unzoomed", self.get_dimensions())
-            self.place_n_zoom(x=.5, y=.5, scale=50.0)
+            self.place_n_zoom(x=0.5, y=0.5, scale=50.0)
 
     def center_handler(self, event):
-        if debug: print("[D] measureframe_center_handler")
+        if debug:
+            print("[D] measureframe_center_handler")
         x, y = floatlist(defaults["dimensions.measureframe"].split(","))[:2]
         self.place_n_zoom(x, y)
 
     def close_handler(self, event):
-        if debug: print("[D] measureframe_close_handler")
+        if debug:
+            print("[D] measureframe_close_handler")
         if self.Parent:
             if self.Parent.worker.is_working():
                 self.Parent.worker.abort_subprocess(confirm=True)
@@ -517,7 +627,9 @@ class MeasureFrame(InvincibleFrame):
             elif display_no is None:
                 # Assume separate X screens
                 display_no = 0
-            client_rect = wx.Rect(*tuple(geometry)).Intersect(display.GetRealClientArea())
+            client_rect = wx.Rect(*tuple(geometry)).Intersect(
+                display.GetRealClientArea()
+            )
         else:
             display_no = wx.Display.GetFromWindow(self)
             display = self.GetDisplay()
@@ -543,8 +655,10 @@ class MeasureFrame(InvincibleFrame):
         e.Skip()
         if debug:
             print("SET_FOCUS", e.EventObject.Name)
-        if e.EventObject is self and getattr(self, "last_focused",
-                                             None) not in (None, self):
+        if e.EventObject is self and getattr(self, "last_focused", None) not in (
+            None,
+            self,
+        ):
             self.last_focused.SetFocus()
             if debug:
                 print(self.last_focused.Name + ".SetFocus()")
@@ -587,14 +701,18 @@ class MeasureFrame(InvincibleFrame):
         ceil = tuple(int(math.ceil(v)) for v in rgb)
         if floor != ceil:
             # Dither using simple ordered pattern
-            print("Dither 8 bit %.6f %.6f %.6f -> %i %i %i | %i %i %i" %
-                       (rgb + floor + ceil))
+            print(
+                "Dither 8 bit %.6f %.6f %.6f -> %i %i %i | %i %i %i"
+                % (rgb + floor + ceil)
+            )
             img = wx.EmptyImage(*self.ClientSize, clear=False)
             buf = img.GetDataBuffer()
             buflen = len(buf)
             # Intervals in pixels per each R, G and B
-            intervals = tuple((buflen / (buflen * (rgb[i] - floor[i]))
-                               if rgb[i] - floor[i] else 0) for i in range(3))
+            intervals = tuple(
+                (buflen / (buflen * (rgb[i] - floor[i])) if rgb[i] - floor[i] else 0)
+                for i in range(3)
+            )
             print("Intervals %.6f %.6f %.6f" % intervals)
             floorbytes = tuple(chr(v) for v in floor)
             ceilbytes = tuple(chr(v) for v in ceil)
@@ -602,7 +720,7 @@ class MeasureFrame(InvincibleFrame):
             # XXX: Generating the dithered image can take nontrivial amounts
             # of time if the image is large
             ts = time.time()
-            for i, byte in enumerate(buf):
+            for i, _byte in enumerate(buf):
                 m = intervals[i % 3]
                 if m and n % m < 1:
                     color = ceilbytes
@@ -628,45 +746,51 @@ class MeasureFrame(InvincibleFrame):
         Returns x, y and scale in Argyll coordinates (0.0...1.0).
 
         """
-        if debug: print("[D] measureframe.get_dimensions")
+        if debug:
+            print("[D] measureframe.get_dimensions")
         display = self.get_display()
         display_rect = display[1]
         display_size = display_rect[2:]
         display_client_rect = display[2]
         display_client_size = display_client_rect[2:]
-        if debug: print("[D]  display_size:", display_size)
-        if debug: print("[D]  display_client_size:", display_client_size)
+        if debug:
+            print("[D]  display_size:", display_size)
+        if debug:
+            print("[D]  display_client_size:", display_client_size)
         default_measureframe_size = get_default_size()
         if debug:
-            print("[D]  default_measureframe_size:",
-                       default_measureframe_size)
+            print("[D]  default_measureframe_size:", default_measureframe_size)
         measureframe_pos = floatlist(self.GetScreenPosition())
         measureframe_pos[0] -= display_rect[0]
         measureframe_pos[1] -= display_rect[1]
-        if debug: print("[D]  measureframe_pos:", measureframe_pos)
+        if debug:
+            print("[D]  measureframe_pos:", measureframe_pos)
         size = floatlist(self.GetSize())
-        if debug: print(" size:", size)
+        if debug:
+            print(" size:", size)
         if max(size) >= max(display_client_size) - 50:
             # Fullscreen?
             scale = 50.0  # Argyll max is 50
-            measureframe_pos = [.5, .5]
+            measureframe_pos = [0.5, 0.5]
         else:
-            scale = (display_size[0] / default_measureframe_size) / \
-                    (display_size[0] / size[0])
-            if debug: print("[D]  scale:", scale)
+            scale = (display_size[0] / default_measureframe_size) / (
+                display_size[0] / size[0]
+            )
             if debug:
-                print("[D]  scale_adjustment_factor:",
-                           scale_adjustment_factor)
+                print("[D]  scale:", scale)
+            if debug:
+                print("[D]  scale_adjustment_factor:", scale_adjustment_factor)
             scale *= scale_adjustment_factor
             if size[0] >= display_client_size[0]:
-                measureframe_pos[0] = .5
+                measureframe_pos[0] = 0.5
             elif measureframe_pos[0] != 0:
                 if display_size[0] - size[0] < measureframe_pos[0]:
                     measureframe_pos[0] = display_size[0] - size[0]
-                measureframe_pos[0] = 1.0 / ((display_size[0] - size[0]) /
-                                             (measureframe_pos[0]))
+                measureframe_pos[0] = 1.0 / (
+                    (display_size[0] - size[0]) / (measureframe_pos[0])
+                )
             if size[1] >= display_client_size[1]:
-                measureframe_pos[1] = .5
+                measureframe_pos[1] = 0.5
             elif measureframe_pos[1] != 0:
                 if display_size[1] - size[1] < measureframe_pos[1]:
                     measureframe_pos[1] = display_size[1] - size[1]
@@ -674,11 +798,16 @@ class MeasureFrame(InvincibleFrame):
                     titlebar = 0  # size already includes window decorations
                 else:
                     titlebar = 25  # assume titlebar height of 25px
-                measureframe_pos[1] = 1.0 / ((display_size[1] - size[1]) /
-                                             (measureframe_pos[1] + titlebar))
-        if debug: print("[D]  scale:", scale)
-        if debug: print("[D]  measureframe_pos:", measureframe_pos)
-        measureframe_dimensions = ",".join(str(max(0, n)) for n in measureframe_pos + [scale])
+                measureframe_pos[1] = 1.0 / (
+                    (display_size[1] - size[1]) / (measureframe_pos[1] + titlebar)
+                )
+        if debug:
+            print("[D]  scale:", scale)
+        if debug:
+            print("[D]  measureframe_pos:", measureframe_pos)
+        measureframe_dimensions = ",".join(
+            str(max(0, n)) for n in measureframe_pos + [scale]
+        )
         if debug:
             print("[D]  measureframe_dimensions:", measureframe_dimensions)
         return measureframe_dimensions
@@ -686,11 +815,14 @@ class MeasureFrame(InvincibleFrame):
 
 def test():
     import time
-    for rgb in [(0.079291, 1 / 51., 1 / 51.),
-                (0.079291, 0.089572, 0.094845),
-                (0.032927, 0.028376, 0.027248),
-                (0.037647, 0.037095, 0.036181),
-                (51.2 / 255, 153.7 / 255, 127.4 / 255)]:
+
+    for rgb in [
+        (0.079291, 1 / 51.0, 1 / 51.0),
+        (0.079291, 0.089572, 0.094845),
+        (0.032927, 0.028376, 0.027248),
+        (0.037647, 0.037095, 0.036181),
+        (51.2 / 255, 153.7 / 255, 127.4 / 255),
+    ]:
         wx.CallAfter(wx.GetApp().TopWindow.show_rgb, rgb)
         time.sleep(0.05)
         input("Press RETURN to continue\n")
@@ -706,6 +838,7 @@ def main():
     app.TopWindow.Show()
     if "--test-dither" in sys.argv[1:]:
         import threading
+
         t = threading.Thread(target=test)
         app.TopWindow.show_controls(False)
         t.start()

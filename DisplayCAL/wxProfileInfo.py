@@ -8,25 +8,55 @@ import os
 import sys
 import tempfile
 
-from DisplayCAL.config import (defaults, fs_enc, get_argyll_display_number, get_data_path, get_display_profile,
-                               get_display_rects, getbitmap, getcfg, geticon, get_verified_path, profile_ext, setcfg,
-                               writecfg)
+from DisplayCAL.config import (
+    defaults,
+    fs_enc,
+    get_argyll_display_number,
+    get_data_path,
+    get_display_profile,
+    get_display_rects,
+    getbitmap,
+    getcfg,
+    geticon,
+    get_verified_path,
+    profile_ext,
+    setcfg,
+    writecfg,
+)
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.ordereddict import OrderedDict
+
 # from collections import OrderedDict
 from DisplayCAL.util_io import GzipFileProper
 from DisplayCAL.util_list import intlist
 from DisplayCAL.util_os import launch_file, make_win32_compatible_long_path, waccess
 from DisplayCAL.util_str import strtr, universal_newlines, wrap
-from DisplayCAL.worker import (Error, UnloggedError, UnloggedInfo, check_set_argyll_bin, get_argyll_util,
-                               make_argyll_compatible_path, show_result_dialog)
+from DisplayCAL.worker import (
+    Error,
+    UnloggedError,
+    UnloggedInfo,
+    check_set_argyll_bin,
+    get_argyll_util,
+    make_argyll_compatible_path,
+    show_result_dialog,
+)
 from DisplayCAL.wxaddons import get_platform_window_decoration_size, wx
 from DisplayCAL.wxLUTViewer import LUTCanvas, LUTFrame
 from DisplayCAL.wxVRML2X3D import vrmlfile2x3dfile
-from DisplayCAL.wxwindows import (BaseApp, BaseFrame, BitmapBackgroundPanelText, CustomCheckBox, CustomGrid,
-                                  CustomRowLabelRenderer, ConfirmDialog, FileDrop, InfoDialog, SimpleBook,
-                                  TwoWaySplitter)
+from DisplayCAL.wxwindows import (
+    BaseApp,
+    BaseFrame,
+    BitmapBackgroundPanelText,
+    CustomCheckBox,
+    CustomGrid,
+    CustomRowLabelRenderer,
+    ConfirmDialog,
+    FileDrop,
+    InfoDialog,
+    SimpleBook,
+    TwoWaySplitter,
+)
 from DisplayCAL.wxfixes import GenBitmapButton as BitmapButton, wx_Panel, set_maxsize
 from DisplayCAL import colormath
 from DisplayCAL import config
@@ -46,7 +76,6 @@ else:
 
 
 class GamutCanvas(LUTCanvas):
-
     def __init__(self, *args, **kwargs):
         LUTCanvas.__init__(self, *args, **kwargs)
         self.SetEnableTitle(False)
@@ -61,8 +90,14 @@ class GamutCanvas(LUTCanvas):
         self.reset()
         self.resetzoom()
 
-    def DrawCanvas(self, title=None, colorspace=None, whitepoint=None,
-                   center=False, show_outline=True):
+    def DrawCanvas(
+        self,
+        title=None,
+        colorspace=None,
+        whitepoint=None,
+        center=False,
+        show_outline=True,
+    ):
         if not title:
             title = ""
         if colorspace:
@@ -84,33 +119,45 @@ class GamutCanvas(LUTCanvas):
             label_x = "x"
             label_y = "y"
             if show_outline:
-                polys.append(plot.PolySpline(xy,
-                                             colour=wx.Colour(102, 102, 102, 153),
-                                             width=1.75))
-                polys.append(plot.PolyLine([xy[0], xy[-1]],
-                                           colour=wx.Colour(102, 102, 102, 153),
-                                           width=1.75))
+                polys.append(
+                    plot.PolySpline(
+                        xy, colour=wx.Colour(102, 102, 102, 153), width=1.75
+                    )
+                )
+                polys.append(
+                    plot.PolyLine(
+                        [xy[0], xy[-1]],
+                        colour=wx.Colour(102, 102, 102, 153),
+                        width=1.75,
+                    )
+                )
             max_x = 0.75
             max_y = 0.85
-            min_x = -.05
-            min_y = -.05
-            step = .1
+            min_x = -0.05
+            min_y = -0.05
+            step = 0.1
         elif self.colorspace == "u'v'":
             label_x = "u'"
             label_y = "v'"
             if show_outline:
                 uv = [colormath.xyY2Lu_v_(x, y, 100)[1:] for x, y in xy]
-                polys.append(plot.PolySpline(uv,
-                                             colour=wx.Colour(102, 102, 102, 153),
-                                             width=1.75))
-                polys.append(plot.PolyLine([uv[0], uv[-1]],
-                                           colour=wx.Colour(102, 102, 102, 153),
-                                           width=1.75))
+                polys.append(
+                    plot.PolySpline(
+                        uv, colour=wx.Colour(102, 102, 102, 153), width=1.75
+                    )
+                )
+                polys.append(
+                    plot.PolyLine(
+                        [uv[0], uv[-1]],
+                        colour=wx.Colour(102, 102, 102, 153),
+                        width=1.75,
+                    )
+                )
             max_x = 0.625
             max_y = 0.6
-            min_x = -.025
-            min_y = -.025
-            step = .1
+            min_x = -0.025
+            min_y = -0.025
+            step = 0.1
         elif self.colorspace == "u*v*":
             # Hard to present gamut projection appropriately in 2D
             # because blue tones 'cave in' towards the center
@@ -144,7 +191,7 @@ class GamutCanvas(LUTCanvas):
             max_y = 0.5
             min_x = -0.5
             min_y = -0.4
-            step = .1
+            step = 0.1
         elif self.colorspace == "IPT":
             label_x = "P"
             label_y = "T"
@@ -152,7 +199,7 @@ class GamutCanvas(LUTCanvas):
             max_y = 1.0
             min_x = -1.0
             min_y = -1.0
-            step = .25
+            step = 0.25
         else:
             if self.colorspace == "Lpt":
                 label_x = "p"
@@ -166,46 +213,68 @@ class GamutCanvas(LUTCanvas):
             min_y = -150.0
             step = 50
 
-        convert2coords = {"a*b*": lambda X, Y, Z: colormath.XYZ2Lab(*[v * 100 for v in (X, Y, Z)])[1:],
-                          "xy": lambda X, Y, Z: colormath.XYZ2xyY(X, Y, Z)[:2],
-                          "u*v*": lambda X, Y, Z: colormath.XYZ2Luv(*[v * 100 for v in (X, Y, Z)])[1:],
-                          "u'v'": lambda X, Y, Z: colormath.XYZ2Lu_v_(X, Y, Z)[1:],
-                          "DIN99": lambda X, Y, Z: colormath.XYZ2DIN99(*[v * 100 for v in (X, Y, Z)])[1:],
-                          "DIN99b": lambda X, Y, Z: colormath.XYZ2DIN99b(*[v * 100 for v in (X, Y, Z)])[1:],
-                          "DIN99c": lambda X, Y, Z: colormath.XYZ2DIN99c(*[v * 100 for v in (X, Y, Z)])[1:],
-                          "DIN99d": lambda X, Y, Z: colormath.XYZ2DIN99d(*[v * 100 for v in (X, Y, Z)])[1:],
-                          "ICtCp": lambda X, Y, Z: colormath.XYZ2ICtCp(X, Y, Z,
-                                                                       clamp=False)[1:],
-                          "IPT": lambda X, Y, Z: colormath.XYZ2IPT(X, Y, Z)[1:],
-                          "Lpt": lambda X, Y, Z: colormath.XYZ2Lpt(*[v * 100 for v in (X, Y, Z)])[1:]}[self.colorspace]
+        convert2coords = {
+            "a*b*": lambda X, Y, Z: colormath.XYZ2Lab(*[v * 100 for v in (X, Y, Z)])[
+                1:
+            ],
+            "xy": lambda X, Y, Z: colormath.XYZ2xyY(X, Y, Z)[:2],
+            "u*v*": lambda X, Y, Z: colormath.XYZ2Luv(*[v * 100 for v in (X, Y, Z)])[
+                1:
+            ],
+            "u'v'": lambda X, Y, Z: colormath.XYZ2Lu_v_(X, Y, Z)[1:],
+            "DIN99": lambda X, Y, Z: colormath.XYZ2DIN99(*[v * 100 for v in (X, Y, Z)])[
+                1:
+            ],
+            "DIN99b": lambda X, Y, Z: colormath.XYZ2DIN99b(
+                *[v * 100 for v in (X, Y, Z)]
+            )[1:],
+            "DIN99c": lambda X, Y, Z: colormath.XYZ2DIN99c(
+                *[v * 100 for v in (X, Y, Z)]
+            )[1:],
+            "DIN99d": lambda X, Y, Z: colormath.XYZ2DIN99d(
+                *[v * 100 for v in (X, Y, Z)]
+            )[1:],
+            "ICtCp": lambda X, Y, Z: colormath.XYZ2ICtCp(X, Y, Z, clamp=False)[1:],
+            "IPT": lambda X, Y, Z: colormath.XYZ2IPT(X, Y, Z)[1:],
+            "Lpt": lambda X, Y, Z: colormath.XYZ2Lpt(*[v * 100 for v in (X, Y, Z)])[1:],
+        }[self.colorspace]
 
-        if show_outline and (self.colorspace == "a*b*" or
-                             self.colorspace.startswith("DIN99")):
+        if show_outline and (
+            self.colorspace == "a*b*" or self.colorspace.startswith("DIN99")
+        ):
             if self.colorspace == "a*b*":
                 optimalcolors = [Lab[1:] for Lab in optimalcolors]
             else:
-                optimalcolors = [convert2coords(*colormath.Lab2XYZ(L, a, b))
-                                 for L, a, b in optimalcolors]
-            polys.append(plot.PolySpline(optimalcolors,
-                                         colour=wx.Colour(102, 102, 102, 153),
-                                         width=1.75))
+                optimalcolors = [
+                    convert2coords(*colormath.Lab2XYZ(L, a, b))
+                    for L, a, b in optimalcolors
+                ]
+            polys.append(
+                plot.PolySpline(
+                    optimalcolors, colour=wx.Colour(102, 102, 102, 153), width=1.75
+                )
+            )
 
         # Add color temp graph
         if whitepoint == 1:
             colortemps = []
             for kelvin in range(4000, 25001, 40):
                 colortemps.append(convert2coords(*colormath.CIEDCCT2XYZ(kelvin)))
-            polys.append(plot.PolyLine(colortemps,
-                                       colour=wx.Colour(255, 255, 255, 204),
-                                       width=1.5))
+            polys.append(
+                plot.PolyLine(
+                    colortemps, colour=wx.Colour(255, 255, 255, 204), width=1.5
+                )
+            )
         elif whitepoint == 2:
             colortemps = []
             # Stepsize 38 = endpoint 24999
             for kelvin in range(1667, 25001, 38):
                 colortemps.append(convert2coords(*colormath.planckianCT2XYZ(kelvin)))
-            polys.append(plot.PolyLine(colortemps,
-                                       colour=wx.Colour(255, 255, 255, 204),
-                                       width=1.5))
+            polys.append(
+                plot.PolyLine(
+                    colortemps, colour=wx.Colour(255, 255, 255, 204), width=1.5
+                )
+            )
 
         kwargs = {"scale": 255}
 
@@ -222,20 +291,25 @@ class GamutCanvas(LUTCanvas):
                 coords.append(convert2coords(*pcs_triplet))
 
             profile = self.profiles.get(len(self.pcs_data) - 1 - i)
-            if (profile and profile.profileClass == "nmcl" and
-                    "ncl2" in profile.tags and
-                    isinstance(profile.tags.ncl2,
-                               ICCP.NamedColor2Type) and
-                    profile.connectionColorSpace in ("Lab", "XYZ")):
+            if (
+                profile
+                and profile.profileClass == "nmcl"
+                and "ncl2" in profile.tags
+                and isinstance(profile.tags.ncl2, ICCP.NamedColor2Type)
+                and profile.connectionColorSpace in ("Lab", "XYZ")
+            ):
                 # Named color profile
                 for j, (x, y) in enumerate(coords):
-                    RGBA = colormath.XYZ2RGB(*pcs_triplets[j],
-                                             **kwargs)
-                    polys.append(plot.PolyMarker([(x, y)],
-                                                 colour=wx.Colour(*intlist(RGBA)),
-                                                 size=2,
-                                                 marker="plus",
-                                                 width=1.75))
+                    RGBA = colormath.XYZ2RGB(*pcs_triplets[j], **kwargs)
+                    polys.append(
+                        plot.PolyMarker(
+                            [(x, y)],
+                            colour=wx.Colour(*intlist(RGBA)),
+                            size=2,
+                            marker="plus",
+                            width=1.75,
+                        )
+                    )
             else:
                 xy = []
                 for x, y in coords[:-1]:
@@ -263,13 +337,17 @@ class GamutCanvas(LUTCanvas):
                                     RGBA = 102, 102, 102, 255
                                     w = 2
                                 else:
-                                    RGBA = colormath.XYZ2RGB(*pcs_triplets[j -
-                                                                           len(xy2) + k],
-                                                             **kwargs)
+                                    RGBA = colormath.XYZ2RGB(
+                                        *pcs_triplets[j - len(xy2) + k], **kwargs
+                                    )
                                     w = 3
-                                polys.append(poly(list(xy3),
-                                                  colour=wx.Colour(*intlist(RGBA)),
-                                                  width=w))
+                                polys.append(
+                                    poly(
+                                        list(xy3),
+                                        colour=wx.Colour(*intlist(RGBA)),
+                                        width=w,
+                                    )
+                                )
                                 if i == 1:
                                     xy3 = []
                                 else:
@@ -281,7 +359,7 @@ class GamutCanvas(LUTCanvas):
             if i == 1:
                 # Draw comparison profile with grey outline
                 RGBA = 204, 204, 204, 102
-                marker="cross"
+                marker = "cross"
                 s = 1.5
                 w = 1.75
             else:
@@ -289,11 +367,15 @@ class GamutCanvas(LUTCanvas):
                 marker = "plus"
                 s = 2
                 w = 1.75
-            polys.append(plot.PolyMarker([(x, y)],
-                                         colour=wx.Colour(*intlist(RGBA)),
-                                         size=s,
-                                         marker=marker,
-                                         width=w))
+            polys.append(
+                plot.PolyMarker(
+                    [(x, y)],
+                    colour=wx.Colour(*intlist(RGBA)),
+                    size=s,
+                    marker=marker,
+                    width=w,
+                )
+            )
 
         xy_range = max(abs(min_x), abs(min_y)) + max(max_x, max_y)
         if center or not self.last_draw:
@@ -304,12 +386,14 @@ class GamutCanvas(LUTCanvas):
         if polys:
             graphics = plot.PlotGraphics(polys, title, label_x, label_y)
             p1, p2 = graphics.boundingBox()
-            spacer = plot.PolyMarker([(p1[0] - xy_range / 20.0,
-                                       p1[1] - xy_range / 20.0),
-                                      (p2[0] + xy_range / 20.0,
-                                       p2[1] + xy_range / 20.0)],
-                                     colour=wx.Colour(0x33, 0x33, 0x33),
-                                     size=0)
+            spacer = plot.PolyMarker(
+                [
+                    (p1[0] - xy_range / 20.0, p1[1] - xy_range / 20.0),
+                    (p2[0] + xy_range / 20.0, p2[1] + xy_range / 20.0),
+                ],
+                colour=wx.Colour(0x33, 0x33, 0x33),
+                size=0,
+            )
             graphics.objects.append(spacer)
             if center or not self.last_draw:
                 boundingbox = spacer.boundingBox()
@@ -326,9 +410,12 @@ class GamutCanvas(LUTCanvas):
         else:
             self.pcs_data[i] = []
 
-    def setup(self, profiles=None, profile_no=None, intent="a", direction="f",
-              order="n"):
-        self.size = 40  # Number of segments from one primary to the next secondary color
+    def setup(
+        self, profiles=None, profile_no=None, intent="a", direction="f", order="n"
+    ):
+        self.size = (
+            40  # Number of segments from one primary to the next secondary color
+        )
 
         if not check_set_argyll_bin():
             return
@@ -342,22 +429,32 @@ class GamutCanvas(LUTCanvas):
             raise cwd
 
         if not profiles:
-            profiles = [ICCP.ICCProfile(get_data_path("ref/sRGB.icm")),
-                        get_display_profile()]
+            profiles = [
+                ICCP.ICCProfile(get_data_path("ref/sRGB.icm")),
+                get_display_profile(),
+            ]
         for i, profile in enumerate(profiles):
             if profile_no is not None and i != profile_no:
                 continue
 
-            if (not profile or profile.profileClass == "link" or
-                    profile.connectionColorSpace not in ("Lab", "XYZ")):
+            if (
+                not profile
+                or profile.profileClass == "link"
+                or profile.connectionColorSpace not in ("Lab", "XYZ")
+            ):
                 self.set_pcs_data(i)
                 self.profiles[i] = None
                 continue
 
             check = self.profiles.get(i)
-            if (check and check.fileName == profile.fileName and
-                    check.ID == profile.calculateID(False) and intent == self.intent and
-                    direction == self.direction and order == self.order):
+            if (
+                check
+                and check.fileName == profile.fileName
+                and check.ID == profile.calculateID(False)
+                and intent == self.intent
+                and direction == self.direction
+                and order == self.order
+            ):
                 continue
 
             self.profiles[i] = profile
@@ -365,56 +462,77 @@ class GamutCanvas(LUTCanvas):
             self.set_pcs_data(i)
 
             pcs_triplets = []
-            if (profile.profileClass == "nmcl" and "ncl2" in profile.tags and
-                    isinstance(profile.tags.ncl2, ICCP.NamedColor2Type) and
-                    profile.connectionColorSpace in ("Lab", "XYZ")):
+            if (
+                profile.profileClass == "nmcl"
+                and "ncl2" in profile.tags
+                and isinstance(profile.tags.ncl2, ICCP.NamedColor2Type)
+                and profile.connectionColorSpace in ("Lab", "XYZ")
+            ):
                 for k, v in profile.tags.ncl2.items():
                     color = list(v.pcs.values())
                     if profile.connectionColorSpace == "Lab":
                         # Need to convert to XYZ
                         color = colormath.Lab2XYZ(*color)
                     if intent == "a" and "wtpt" in profile.tags:
-                        color = colormath.adapt(color[0], color[1], color[2],
-                                                whitepoint_destination=list(profile.tags.wtpt.ir.values()))
+                        color = colormath.adapt(
+                            color[0],
+                            color[1],
+                            color[2],
+                            whitepoint_destination=list(profile.tags.wtpt.ir.values()),
+                        )
                     pcs_triplets.append(color)
                 pcs_triplets.sort()
-            elif (profile.version >= 4 and
-                  not profile.convert_iccv4_tags_to_iccv2()):
+            elif profile.version >= 4 and not profile.convert_iccv4_tags_to_iccv2():
                 self.profiles[i] = None
-                self.errors.append(Error("\n".join([lang.getstr("profile.iccv4.unsupported"),
-                                                    profile.getDescription()])))
+                self.errors.append(
+                    Error(
+                        "\n".join(
+                            [
+                                lang.getstr("profile.iccv4.unsupported"),
+                                profile.getDescription(),
+                            ]
+                        )
+                    )
+                )
                 continue
             else:
-                channels = {'XYZ': 3,
-                            'Lab': 3,
-                            'Luv': 3,
-                            'YCbr': 3,
-                            'Yxy': 3,
-                            'RGB': 3,
-                            'GRAY': 1,
-                            'HSV': 3,
-                            'HLS': 3,
-                            'CMYK': 4,
-                            'CMY': 3,
-                            '2CLR': 2,
-                            '3CLR': 3,
-                            '4CLR': 4,
-                            '5CLR': 5,
-                            '6CLR': 6,
-                            '7CLR': 7,
-                            '8CLR': 8,
-                            '9CLR': 9,
-                            'ACLR': 10,
-                            'BCLR': 11,
-                            'CCLR': 12,
-                            'DCLR': 13,
-                            'ECLR': 14,
-                            'FCLR': 15}.get(profile.colorSpace)
+                channels = {
+                    "XYZ": 3,
+                    "Lab": 3,
+                    "Luv": 3,
+                    "YCbr": 3,
+                    "Yxy": 3,
+                    "RGB": 3,
+                    "GRAY": 1,
+                    "HSV": 3,
+                    "HLS": 3,
+                    "CMYK": 4,
+                    "CMY": 3,
+                    "2CLR": 2,
+                    "3CLR": 3,
+                    "4CLR": 4,
+                    "5CLR": 5,
+                    "6CLR": 6,
+                    "7CLR": 7,
+                    "8CLR": 8,
+                    "9CLR": 9,
+                    "ACLR": 10,
+                    "BCLR": 11,
+                    "CCLR": 12,
+                    "DCLR": 13,
+                    "ECLR": 14,
+                    "FCLR": 15,
+                }.get(profile.colorSpace)
 
                 if not channels:
-                    self.errors.append(Error(lang.getstr("profile.unsupported",
-                                                         (profile.profileClass,
-                                                          profile.colorSpace))))
+                    self.errors.append(
+                        Error(
+                            lang.getstr(
+                                "profile.unsupported",
+                                (profile.profileClass, profile.colorSpace),
+                            )
+                        )
+                    )
                     continue
 
                 # Create input values
@@ -422,7 +540,7 @@ class GamutCanvas(LUTCanvas):
                 if profile.colorSpace in ("Lab", "Luv", "XYZ", "Yxy"):
                     # Use ICC PCSXYZ encoding range
                     minv = 0.0
-                    maxv = 0xffff / 32768.0
+                    maxv = 0xFFFF / 32768.0
                 else:
                     minv = 0.0
                     maxv = 1.0
@@ -445,12 +563,10 @@ class GamutCanvas(LUTCanvas):
                             HSV = list(colormath.RGB2HSV(*values))
                             device_values.append(HSV)
                         elif profile.colorSpace == "Lab":
-                            Lab = list(colormath.XYZ2Lab(*[v * 100
-                                                           for v in values]))
+                            Lab = list(colormath.XYZ2Lab(*[v * 100 for v in values]))
                             device_values.append(Lab)
                         elif profile.colorSpace == "Luv":
-                            Luv = list(colormath.XYZ2Luv(*[v * 100
-                                                           for v in values]))
+                            Luv = list(colormath.XYZ2Luv(*[v * 100 for v in values]))
                             device_values.append(Luv)
                         elif profile.colorSpace == "Yxy":
                             xyY = list(colormath.XYZ2xyY(*values))
@@ -479,7 +595,7 @@ class GamutCanvas(LUTCanvas):
                 if debug:
                     print("In:")
                     for v in device_values:
-                        print(" ".join(("%3.4f", ) * len(v)) % tuple(v))
+                        print(" ".join(("%3.4f",) * len(v)) % tuple(v))
 
                 # Lookup device -> XYZ values through profile using xicclu
                 if direction == "ib" and intent not in "ar":
@@ -488,15 +604,16 @@ class GamutCanvas(LUTCanvas):
                     fwd_intent = intent
                 try:
                     # Device -> PCS, fwd
-                    odata = self.worker.xicclu(profile, device_values, intent,
-                                               "f", order)
+                    odata = self.worker.xicclu(
+                        profile, device_values, intent, "f", order
+                    )
                     if direction == "ib":
                         # PCS -> device, bwd
-                        odata = self.worker.xicclu(profile, odata, intent,
-                                                   "b", order)
+                        odata = self.worker.xicclu(profile, odata, intent, "b", order)
                         # Device -> PCS, fwd
-                        odata = self.worker.xicclu(profile, odata, fwd_intent,
-                                                   "f", order)
+                        odata = self.worker.xicclu(
+                            profile, odata, fwd_intent, "f", order
+                        )
                 except Exception as exception:
                     self.errors.append(Error(str(exception)))
                     continue
@@ -505,7 +622,9 @@ class GamutCanvas(LUTCanvas):
                     print("Out:")
                 for pcs_triplet in odata:
                     if debug:
-                        print(" ".join(("%3.4f", ) * len(pcs_triplet)) % tuple(pcs_triplet))
+                        print(
+                            " ".join(("%3.4f",) * len(pcs_triplet)) % tuple(pcs_triplet)
+                        )
                     pcs_triplets.append(pcs_triplet)
                     if profile.connectionColorSpace == "Lab":
                         pcs_triplets[-1] = list(colormath.Lab2XYZ(*pcs_triplets[-1]))
@@ -524,7 +643,6 @@ class GamutCanvas(LUTCanvas):
 
 
 class GamutViewOptions(wx_Panel):
-
     def __init__(self, *args, **kwargs):
         scale = getcfg("app.dpi") / config.get_default_dpi()
         if scale < 1:
@@ -543,31 +661,39 @@ class GamutViewOptions(wx_Panel):
         self.sizer.Add(legendsizer)
 
         # Whitepoint legend
-        legendsizer.Add(wx.StaticBitmap(self, -1,
-                                        getbitmap("theme/cross-2px-12x12-fff")),
-                        flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
-                        border=2)
-        self.whitepoint_legend = wx.StaticText(self, -1,
-                                               lang.getstr("whitepoint"))
+        legendsizer.Add(
+            wx.StaticBitmap(self, -1, getbitmap("theme/cross-2px-12x12-fff")),
+            flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+            border=2,
+        )
+        self.whitepoint_legend = wx.StaticText(self, -1, lang.getstr("whitepoint"))
         self.whitepoint_legend.SetMaxFontSize(11)
         self.whitepoint_legend.SetForegroundColour(FGCOLOUR)
-        legendsizer.Add(self.whitepoint_legend,
-                        flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
-                        border=10)
+        legendsizer.Add(
+            self.whitepoint_legend, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=10
+        )
 
         # Comparison profile whitepoint legend
-        self.comparison_whitepoint_bmp = wx.StaticBitmap(self, -1,
-                                                         getbitmap("theme/x-2px-12x12-999"))
-        legendsizer.Add(self.comparison_whitepoint_bmp,
-                        flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
-                        border=20)
-        self.comparison_whitepoint_legend = wx.StaticText(self, -1,
-                                                          "%s (%s)" % (lang.getstr("whitepoint"),
-                                                                       lang.getstr("comparison_profile")))
+        self.comparison_whitepoint_bmp = wx.StaticBitmap(
+            self, -1, getbitmap("theme/x-2px-12x12-999")
+        )
+        legendsizer.Add(
+            self.comparison_whitepoint_bmp,
+            flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+            border=20,
+        )
+        self.comparison_whitepoint_legend = wx.StaticText(
+            self,
+            -1,
+            "%s (%s)" % (lang.getstr("whitepoint"), lang.getstr("comparison_profile")),
+        )
         self.comparison_whitepoint_legend.SetMaxFontSize(11)
         self.comparison_whitepoint_legend.SetForegroundColour(FGCOLOUR)
-        legendsizer.Add(self.comparison_whitepoint_legend,
-                        flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=8)
+        legendsizer.Add(
+            self.comparison_whitepoint_legend,
+            flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+            border=8,
+        )
         self.sizer.Add((0, 0))
 
         # Empty 'row'
@@ -581,83 +707,104 @@ class GamutViewOptions(wx_Panel):
         self.sizer.Add(self.options_sizer, flag=wx.EXPAND)
 
         # Colorspace select
-        self.colorspace_outline_bmp = wx.StaticBitmap(self, -1,
-                                                      getbitmap("theme/solid-16x2-666"))
-        self.options_sizer.Add(self.colorspace_outline_bmp,
-                               flag=wx.ALIGN_CENTER_VERTICAL)
-        self.colorspace_label = wx.StaticText(self, -1,
-                                              lang.getstr("colorspace"))
+        self.colorspace_outline_bmp = wx.StaticBitmap(
+            self, -1, getbitmap("theme/solid-16x2-666")
+        )
+        self.options_sizer.Add(
+            self.colorspace_outline_bmp, flag=wx.ALIGN_CENTER_VERTICAL
+        )
+        self.colorspace_label = wx.StaticText(self, -1, lang.getstr("colorspace"))
         self.colorspace_label.SetMaxFontSize(11)
         self.colorspace_label.SetForegroundColour(FGCOLOUR)
-        self.options_sizer.Add(self.colorspace_label,
-                               flag=wx.ALIGN_CENTER_VERTICAL)
-        self.colorspace_select = wx.Choice(self, -1,
-                                           size=(150 * scale, -1),
-                                           choices=["CIE a*b*",
-                                                    "CIE u*v*",
-                                                    "CIE u'v'",
-                                                    "CIE xy",
-                                                    "DIN99",
-                                                    "DIN99b",
-                                                    "DIN99c",
-                                                    "DIN99d",
-                                                    "ICtCp",
-                                                    "IPT",
-                                                    "Lpt"])
-        self.options_sizer.Add(self.colorspace_select,
-                               flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+        self.options_sizer.Add(self.colorspace_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.colorspace_select = wx.Choice(
+            self,
+            -1,
+            size=(150 * scale, -1),
+            choices=[
+                "CIE a*b*",
+                "CIE u*v*",
+                "CIE u'v'",
+                "CIE xy",
+                "DIN99",
+                "DIN99b",
+                "DIN99c",
+                "DIN99d",
+                "ICtCp",
+                "IPT",
+                "Lpt",
+            ],
+        )
+        self.options_sizer.Add(
+            self.colorspace_select, flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND
+        )
         self.colorspace_select.Bind(wx.EVT_CHOICE, self.generic_select_handler)
         self.colorspace_select.SetSelection(0)
 
         # Colorspace outline
         self.options_sizer.Add((0, 0))
         self.options_sizer.Add((0, 0))
-        self.draw_gamut_outline_cb = CustomCheckBox(self, -1,
-                                                    lang.getstr("colorspace.show_outline"))
-        self.draw_gamut_outline_cb.Bind(wx.EVT_CHECKBOX,
-                                        self.draw_gamut_outline_handler)
+        self.draw_gamut_outline_cb = CustomCheckBox(
+            self, -1, lang.getstr("colorspace.show_outline")
+        )
+        self.draw_gamut_outline_cb.Bind(
+            wx.EVT_CHECKBOX, self.draw_gamut_outline_handler
+        )
         self.draw_gamut_outline_cb.SetMaxFontSize(11)
         self.draw_gamut_outline_cb.SetForegroundColour(FGCOLOUR)
         self.draw_gamut_outline_cb.SetValue(True)
-        self.options_sizer.Add(self.draw_gamut_outline_cb,
-                               flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
-                               border=4)
+        self.options_sizer.Add(
+            self.draw_gamut_outline_cb,
+            flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
+            border=4,
+        )
 
         # Colortemperature curve select
-        self.whitepoint_bmp = wx.StaticBitmap(self, -1,
-                                              getbitmap("theme/solid-16x1-fff"))
-        self.options_sizer.Add(self.whitepoint_bmp,
-                               flag=wx.ALIGN_CENTER_VERTICAL)
-        self.whitepoint_label = wx.StaticText(self, -1,
-                                              lang.getstr("whitepoint.colortemp.locus.curve"))
+        self.whitepoint_bmp = wx.StaticBitmap(
+            self, -1, getbitmap("theme/solid-16x1-fff")
+        )
+        self.options_sizer.Add(self.whitepoint_bmp, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.whitepoint_label = wx.StaticText(
+            self, -1, lang.getstr("whitepoint.colortemp.locus.curve")
+        )
         self.whitepoint_label.SetMaxFontSize(11)
         self.whitepoint_label.SetForegroundColour(FGCOLOUR)
-        self.options_sizer.Add(self.whitepoint_label,
-                               flag=wx.ALIGN_CENTER_VERTICAL)
-        self.whitepoint_select = wx.Choice(self, -1,
-                                           size=(150 * scale, -1),
-                                           choices=[lang.getstr("calibration.file.none"),
-                                                    lang.getstr("whitepoint.colortemp.locus.daylight"),
-                                                    lang.getstr("whitepoint.colortemp.locus.blackbody")])
-        self.options_sizer.Add(self.whitepoint_select,
-                               flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+        self.options_sizer.Add(self.whitepoint_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        self.whitepoint_select = wx.Choice(
+            self,
+            -1,
+            size=(150 * scale, -1),
+            choices=[
+                lang.getstr("calibration.file.none"),
+                lang.getstr("whitepoint.colortemp.locus.daylight"),
+                lang.getstr("whitepoint.colortemp.locus.blackbody"),
+            ],
+        )
+        self.options_sizer.Add(
+            self.whitepoint_select, flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND
+        )
         self.whitepoint_select.Bind(wx.EVT_CHOICE, self.generic_select_handler)
         self.whitepoint_select.SetSelection(0)
         self.whitepoint_bmp.Hide()
 
         # Comparison profile select
-        self.comparison_profile_bmp = wx.StaticBitmap(self, -1,
-                                                      getbitmap("theme/dashed-16x2-666"))
-        self.options_sizer.Add(self.comparison_profile_bmp,
-                               flag=wx.ALIGN_CENTER_VERTICAL)
-        self.comparison_profile_label = wx.StaticText(self, -1,
-                                                      lang.getstr("comparison_profile"))
+        self.comparison_profile_bmp = wx.StaticBitmap(
+            self, -1, getbitmap("theme/dashed-16x2-666")
+        )
+        self.options_sizer.Add(
+            self.comparison_profile_bmp, flag=wx.ALIGN_CENTER_VERTICAL
+        )
+        self.comparison_profile_label = wx.StaticText(
+            self, -1, lang.getstr("comparison_profile")
+        )
         self.comparison_profile_label.SetMaxFontSize(11)
         self.comparison_profile_label.SetForegroundColour(FGCOLOUR)
-        self.options_sizer.Add(self.comparison_profile_label,
-                               flag=wx.ALIGN_CENTER_VERTICAL)
-        self.comparison_profiles = OrderedDict([(lang.getstr("calibration.file.none"),
-                                                 None)])
+        self.options_sizer.Add(
+            self.comparison_profile_label, flag=wx.ALIGN_CENTER_VERTICAL
+        )
+        self.comparison_profiles = OrderedDict(
+            [(lang.getstr("calibration.file.none"), None)]
+        )
         srgb = None
         try:
             srgb = ICCP.ICCProfile(get_data_path("ref/sRGB.icm"))
@@ -671,17 +818,23 @@ class GamutViewOptions(wx_Panel):
             desc = profile.getDescription()
             if desc not in self.comparison_profiles:
                 self.comparison_profiles[desc] = profile
-        self.comparison_profile_select = wx.Choice(self, -1,
-                                                   size=(150 * scale, -1),
-                                                   choices=[])
+        self.comparison_profile_select = wx.Choice(
+            self, -1, size=(150 * scale, -1), choices=[]
+        )
         self.comparison_profiles_sort()
-        self.options_sizer.Add(self.comparison_profile_select,
-                               flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
-        self.comparison_profile_select.Bind(wx.EVT_CHOICE,
-                                            self.comparison_profile_select_handler)
-        droptarget = FileDrop(self.TopLevelParent,
-                              {".icc": self.comparison_profile_drop_handler,
-                               ".icm": self.comparison_profile_drop_handler})
+        self.options_sizer.Add(
+            self.comparison_profile_select, flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND
+        )
+        self.comparison_profile_select.Bind(
+            wx.EVT_CHOICE, self.comparison_profile_select_handler
+        )
+        droptarget = FileDrop(
+            self.TopLevelParent,
+            {
+                ".icc": self.comparison_profile_drop_handler,
+                ".icm": self.comparison_profile_drop_handler,
+            },
+        )
         self.comparison_profile_select.SetDropTarget(droptarget)
         if srgb:
             self.comparison_profile_select.SetSelection(1)
@@ -689,22 +842,31 @@ class GamutViewOptions(wx_Panel):
 
         # Rendering intent select
         self.options_sizer.Add((0, 0))
-        self.rendering_intent_label = wx.StaticText(self, -1,
-                                                    lang.getstr("rendering_intent"))
+        self.rendering_intent_label = wx.StaticText(
+            self, -1, lang.getstr("rendering_intent")
+        )
         self.rendering_intent_label.SetMaxFontSize(11)
         self.rendering_intent_label.SetForegroundColour(FGCOLOUR)
-        self.options_sizer.Add(self.rendering_intent_label,
-                               flag=wx.ALIGN_CENTER_VERTICAL)
-        self.rendering_intent_select = wx.Choice(self, -1,
-                                                 size=(150 * scale, -1),
-                                                 choices=[lang.getstr("gamap.intents.a"),
-                                                          lang.getstr("gamap.intents.r"),
-                                                          lang.getstr("gamap.intents.p"),
-                                                          lang.getstr("gamap.intents.s")])
-        self.options_sizer.Add(self.rendering_intent_select,
-                               flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
-        self.rendering_intent_select.Bind(wx.EVT_CHOICE,
-                                          self.rendering_intent_select_handler)
+        self.options_sizer.Add(
+            self.rendering_intent_label, flag=wx.ALIGN_CENTER_VERTICAL
+        )
+        self.rendering_intent_select = wx.Choice(
+            self,
+            -1,
+            size=(150 * scale, -1),
+            choices=[
+                lang.getstr("gamap.intents.a"),
+                lang.getstr("gamap.intents.r"),
+                lang.getstr("gamap.intents.p"),
+                lang.getstr("gamap.intents.s"),
+            ],
+        )
+        self.options_sizer.Add(
+            self.rendering_intent_select, flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND
+        )
+        self.rendering_intent_select.Bind(
+            wx.EVT_CHOICE, self.rendering_intent_select_handler
+        )
         self.rendering_intent_select.SetSelection(0)
 
         self.options_sizer.Add((0, 0))
@@ -718,12 +880,18 @@ class GamutViewOptions(wx_Panel):
         self.toggle_clut.Hide()
 
         # Direction selection
-        self.direction_select = wx.Choice(self, -1,
-                                          size=(150 * scale, -1),
-                                          choices=[lang.getstr("direction.forward"),
-                                                   lang.getstr("direction.backward.inverted")])
-        self.options_sizer.Add(self.direction_select,
-                               flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+        self.direction_select = wx.Choice(
+            self,
+            -1,
+            size=(150 * scale, -1),
+            choices=[
+                lang.getstr("direction.forward"),
+                lang.getstr("direction.backward.inverted"),
+            ],
+        )
+        self.options_sizer.Add(
+            self.direction_select, flag=wx.ALIGN_CENTER_VERTICAL | wx.EXPAND
+        )
         self.direction_select.Bind(wx.EVT_CHOICE, self.direction_select_handler)
         self.direction_select.SetSelection(0)
 
@@ -737,11 +905,13 @@ class GamutViewOptions(wx_Panel):
         parent.client.SetEnableGrid(True)
         parent.client.SetEnablePointLabel(False)
         try:
-            parent.client.setup([self.comparison_profile,
-                                 parent.profile],
-                                profile_no,
-                                intent=self.intent,
-                                direction=self.direction, order=self.order)
+            parent.client.setup(
+                [self.comparison_profile, parent.profile],
+                profile_no,
+                intent=self.intent,
+                direction=self.direction,
+                order=self.order,
+            )
         except Exception as exception:
             show_result_dialog(exception, parent)
         if reset:
@@ -756,7 +926,9 @@ class GamutViewOptions(wx_Panel):
 
     @property
     def comparison_profile(self):
-        return list(self.comparison_profiles.values())[self.comparison_profile_select.GetSelection()]
+        return list(self.comparison_profiles.values())[
+            self.comparison_profile_select.GetSelection()
+        ]
 
     def comparison_profile_drop_handler(self, path):
         try:
@@ -767,17 +939,27 @@ class GamutViewOptions(wx_Panel):
             desc = profile.getDescription()
             self.comparison_profiles[desc] = profile
             self.comparison_profiles_sort()
-            self.comparison_profile_select.SetSelection(list(self.comparison_profiles.keys()).index(desc))
+            self.comparison_profile_select.SetSelection(
+                list(self.comparison_profiles.keys()).index(desc)
+            )
             self.comparison_profile_select_handler(None)
 
     def comparison_profile_select_handler(self, event):
         if self.comparison_profile_select.GetSelection() > 0:
-            self.comparison_profile_select.SetToolTipString(self.comparison_profile.fileName)
+            self.comparison_profile_select.SetToolTipString(
+                self.comparison_profile.fileName
+            )
         else:
             self.comparison_profile_select.SetToolTip(None)
-        self.comparison_whitepoint_bmp.Show(self.comparison_profile_select.GetSelection() > 0)
-        self.comparison_whitepoint_legend.Show(self.comparison_profile_select.GetSelection() > 0)
-        self.comparison_profile_bmp.Show(self.comparison_profile_select.GetSelection() > 0)
+        self.comparison_whitepoint_bmp.Show(
+            self.comparison_profile_select.GetSelection() > 0
+        )
+        self.comparison_whitepoint_legend.Show(
+            self.comparison_profile_select.GetSelection() > 0
+        )
+        self.comparison_profile_bmp.Show(
+            self.comparison_profile_select.GetSelection() > 0
+        )
         self.DrawCanvas(0, reset=False)
 
     def comparison_profiles_sort(self):
@@ -790,8 +972,7 @@ class GamutViewOptions(wx_Panel):
     @property
     def direction(self):
         if self.direction_select.IsShown():
-            return {0: "f",
-                    1: "ib"}.get(self.direction_select.GetSelection())
+            return {0: "f", 1: "ib"}.get(self.direction_select.GetSelection())
         else:
             return "f"
 
@@ -799,12 +980,13 @@ class GamutViewOptions(wx_Panel):
         colorspace = self.colorspace
         parent = self.TopLevelParent
         parent.client.proportional = True
-        parent.client.DrawCanvas("%s %s" % (colorspace,
-                                            lang.getstr("colorspace")),
-                                 colorspace,
-                                 whitepoint=self.whitepoint_select.GetSelection(),
-                                 center=center,
-                                 show_outline=self.draw_gamut_outline_cb.GetValue())
+        parent.client.DrawCanvas(
+            "%s %s" % (colorspace, lang.getstr("colorspace")),
+            colorspace,
+            whitepoint=self.whitepoint_select.GetSelection(),
+            center=center,
+            show_outline=self.draw_gamut_outline_cb.GetValue(),
+        )
 
     def draw_gamut_outline_handler(self, event):
         self.colorspace_outline_bmp.Show(self.draw_gamut_outline_cb.GetValue())
@@ -819,34 +1001,36 @@ class GamutViewOptions(wx_Panel):
             self.DrawCanvas()
 
     def get_colorspace(self, dimensions=2):
-        return {0: "a*b*" if dimensions == 2 else "Lab",
-                1: "u*v*" if dimensions == 2 else "Luv",
-                2: "u'v'" if dimensions == 2 else "Lu'v'",
-                3: "xy" if dimensions == 2 else "xyY",
-                4: "DIN99",
-                5: "DIN99b",
-                6: "DIN99c",
-                7: "DIN99d",
-                8: "ICtCp",
-                9: "IPT",
-                10: "Lpt"}.get(self.colorspace_select.GetSelection(),
-                               "a*b*" if dimensions == 2 else "Lab")
+        return {
+            0: "a*b*" if dimensions == 2 else "Lab",
+            1: "u*v*" if dimensions == 2 else "Luv",
+            2: "u'v'" if dimensions == 2 else "Lu'v'",
+            3: "xy" if dimensions == 2 else "xyY",
+            4: "DIN99",
+            5: "DIN99b",
+            6: "DIN99c",
+            7: "DIN99d",
+            8: "ICtCp",
+            9: "IPT",
+            10: "Lpt",
+        }.get(
+            self.colorspace_select.GetSelection(), "a*b*" if dimensions == 2 else "Lab"
+        )
 
     @property
     def intent(self):
-        return {0: "a",
-                1: "r",
-                2: "p",
-                3: "s"}.get(self.rendering_intent_select.GetSelection())
+        return {0: "a", 1: "r", 2: "p", 3: "s"}.get(
+            self.rendering_intent_select.GetSelection()
+        )
 
     @property
     def order(self):
         parent = self.TopLevelParent
-        return {True: "n",
-                False: "r"}.get(bool(parent.profile) and
-                                not ("B2A0" in parent.profile.tags or
-                                     "A2B0" in parent.profile.tags) or
-                                self.toggle_clut.GetValue())
+        return {True: "n", False: "r"}.get(
+            bool(parent.profile)
+            and not ("B2A0" in parent.profile.tags or "A2B0" in parent.profile.tags)
+            or self.toggle_clut.GetValue()
+        )
 
     def rendering_intent_select_handler(self, event):
         self.DrawCanvas(reset=False)
@@ -857,16 +1041,17 @@ class GamutViewOptions(wx_Panel):
     def toggle_clut_handler(self, event):
         parent = self.TopLevelParent
         self.Freeze()
-        self.direction_select.Enable(bool(parent.profile) and
-                                     "B2A0" in parent.profile.tags and
-                                     "A2B0" in parent.profile.tags and
-                                     self.toggle_clut.GetValue())
+        self.direction_select.Enable(
+            bool(parent.profile)
+            and "B2A0" in parent.profile.tags
+            and "A2B0" in parent.profile.tags
+            and self.toggle_clut.GetValue()
+        )
         self.DrawCanvas(reset=False)
         self.Thaw()
 
 
 class PIFrame_2WaySplitter(TwoWaySplitter):
-
     def OnLeftDClick(self, event):
         if not self.IsEnabled():
             return
@@ -884,19 +1069,29 @@ class PIFrame_2WaySplitter(TwoWaySplitter):
             self.Freeze()
             TwoWaySplitter.OnLeftDClick(self, event)
             if self._expanded < 0:
-                self.Parent.SetMinSize((defaults["size.profile_info.split.w"] + winborder * 2,
-                                        self.Parent.GetMinSize()[1]))
-                if (not self.Parent.IsMaximized() and
-                        self.Parent.ClientSize[0] < self.GetSplitSize()[0]):
-                    self.Parent.ClientSize = (self.GetSplitSize()[0],
-                                              self.Parent.ClientSize[1])
+                self.Parent.SetMinSize(
+                    (
+                        defaults["size.profile_info.split.w"] + winborder * 2,
+                        self.Parent.GetMinSize()[1],
+                    )
+                )
+                if (
+                    not self.Parent.IsMaximized()
+                    and self.Parent.ClientSize[0] < self.GetSplitSize()[0]
+                ):
+                    self.Parent.ClientSize = (
+                        self.GetSplitSize()[0],
+                        self.Parent.ClientSize[1],
+                    )
             else:
-                self.Parent.SetMinSize((defaults["size.profile_info.w"] + winborder * 2,
-                                        self.Parent.GetMinSize()[1]))
-                w = max(self.GetExpandedSize()[0],
-                        self._splitx)
-                if (not self.Parent.IsMaximized() and
-                        self.Parent.ClientSize[0] > w):
+                self.Parent.SetMinSize(
+                    (
+                        defaults["size.profile_info.w"] + winborder * 2,
+                        self.Parent.GetMinSize()[1],
+                    )
+                )
+                w = max(self.GetExpandedSize()[0], self._splitx)
+                if not self.Parent.IsMaximized() and self.Parent.ClientSize[0] > w:
                     self.Parent.ClientSize = (w, self.Parent.ClientSize[1])
             if os.getenv("XDG_SESSION_TYPE") == "wayland":
                 self.Parent.MaxSize = self.Parent.Size
@@ -908,18 +1103,18 @@ class PIFrame_2WaySplitter(TwoWaySplitter):
 
 
 class ProfileInfoFrame(LUTFrame):
-
     def __init__(self, *args, **kwargs):
 
-        if len(args) < 3 and not "title" in kwargs:
+        if len(args) < 3 and "title" not in kwargs:
             kwargs["title"] = lang.getstr("profile.info")
-        if not "name" in kwargs:
+        if "name" not in kwargs:
             kwargs["name"] = "profile_info"
 
         BaseFrame.__init__(self, *args, **kwargs)
 
-        self.SetIcons(config.get_icon_bundle([256, 48, 32, 16],
-                                             appname + "-profile-info"))
+        self.SetIcons(
+            config.get_icon_bundle([256, 48, 32, 16], appname + "-profile-info")
+        )
 
         self.profile = None
         self.xLabel = lang.getstr("in")
@@ -928,9 +1123,9 @@ class ProfileInfoFrame(LUTFrame):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sizer)
 
-        self.splitter = PIFrame_2WaySplitter(self, -1,
-                                             agwStyle=wx.SP_LIVE_UPDATE |
-                                                      wx.SP_NOSASH)
+        self.splitter = PIFrame_2WaySplitter(
+            self, -1, agwStyle=wx.SP_LIVE_UPDATE | wx.SP_NOSASH
+        )
         self.sizer.Add(self.splitter, 1, flag=wx.EXPAND)
 
         p1 = wx_Panel(self.splitter, name="canvaspanel")
@@ -947,59 +1142,71 @@ class ProfileInfoFrame(LUTFrame):
         # 0 = vcgt,
         # 1 = [rgb]TRC
         # 2 = gamut
-        self.plot_mode_select = wx.Choice(p1, -1, choices=[lang.getstr("vcgt"),
-                                                           lang.getstr("[rgb]TRC"),
-                                                           lang.getstr("gamut")])
-        self.plot_mode_sizer.Add(self.plot_mode_select,
-                                 flag=wx.ALIGN_CENTER_VERTICAL)
+        self.plot_mode_select = wx.Choice(
+            p1,
+            -1,
+            choices=[
+                lang.getstr("vcgt"),
+                lang.getstr("[rgb]TRC"),
+                lang.getstr("gamut"),
+            ],
+        )
+        self.plot_mode_sizer.Add(self.plot_mode_select, flag=wx.ALIGN_CENTER_VERTICAL)
         self.plot_mode_select.Bind(wx.EVT_CHOICE, self.plot_mode_select_handler)
         self.plot_mode_select.Disable()
 
-        self.tooltip_btn = BitmapButton(p1, -1, geticon(16, "question-inverted"),
-                                        style=wx.NO_BORDER)
+        self.tooltip_btn = BitmapButton(
+            p1, -1, geticon(16, "question-inverted"), style=wx.NO_BORDER
+        )
         self.tooltip_btn.SetBackgroundColour(BGCOLOUR)
         self.tooltip_btn.Bind(wx.EVT_BUTTON, self.tooltip_handler)
         self.tooltip_btn.SetToolTipString(lang.getstr("gamut_plot.tooltip"))
-        self.plot_mode_sizer.Add(self.tooltip_btn, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                        wx.LEFT, border=8)
+        self.plot_mode_sizer.Add(
+            self.tooltip_btn, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=8
+        )
 
-        self.save_plot_btn = BitmapButton(p1, -1,
-                                          geticon(16, "image-x-generic-inverted"),
-                                          style=wx.NO_BORDER)
+        self.save_plot_btn = BitmapButton(
+            p1, -1, geticon(16, "image-x-generic-inverted"), style=wx.NO_BORDER
+        )
         self.save_plot_btn.SetBackgroundColour(BGCOLOUR)
         self.save_plot_btn.Bind(wx.EVT_BUTTON, self.SaveFile)
-        self.save_plot_btn.SetToolTipString(lang.getstr("save_as") + " " +
-                                            "(*.bmp, *.xbm, *.xpm, *.jpg, *.png)")
+        self.save_plot_btn.SetToolTipString(
+            lang.getstr("save_as") + " " + "(*.bmp, *.xbm, *.xpm, *.jpg, *.png)"
+        )
         self.save_plot_btn.Disable()
-        self.plot_mode_sizer.Add(self.save_plot_btn, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                          wx.LEFT, border=8)
+        self.plot_mode_sizer.Add(
+            self.save_plot_btn, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=8
+        )
 
-        self.view_3d_btn = BitmapButton(p1, -1, geticon(16, "3D"),
-                                        style=wx.NO_BORDER)
+        self.view_3d_btn = BitmapButton(p1, -1, geticon(16, "3D"), style=wx.NO_BORDER)
         self.view_3d_btn.SetBackgroundColour(BGCOLOUR)
         self.view_3d_btn.Bind(wx.EVT_BUTTON, self.view_3d)
         self.view_3d_btn.Bind(wx.EVT_CONTEXT_MENU, self.view_3d_format_popup)
         self.view_3d_btn.SetToolTipString(lang.getstr("view.3d"))
         self.view_3d_btn.Disable()
-        self.plot_mode_sizer.Add(self.view_3d_btn, flag=wx.ALIGN_CENTER_VERTICAL |
-                                                        wx.LEFT, border=12)
-        self.view_3d_format_btn = BitmapButton(p1, -1,
-                                               getbitmap("theme/dropdown-arrow"),
-                                               style=wx.NO_BORDER)
+        self.plot_mode_sizer.Add(
+            self.view_3d_btn, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=12
+        )
+        self.view_3d_format_btn = BitmapButton(
+            p1, -1, getbitmap("theme/dropdown-arrow"), style=wx.NO_BORDER
+        )
         self.view_3d_format_btn.MinSize = (-1, self.view_3d_btn.Size[1])
         self.view_3d_format_btn.SetBackgroundColour(BGCOLOUR)
         self.view_3d_format_btn.Bind(wx.EVT_BUTTON, self.view_3d_format_popup)
-        self.view_3d_format_btn.Bind(wx.EVT_CONTEXT_MENU,
-                                     self.view_3d_format_popup)
+        self.view_3d_format_btn.Bind(wx.EVT_CONTEXT_MENU, self.view_3d_format_popup)
         self.view_3d_format_btn.SetToolTipString(lang.getstr("view.3d"))
         self.view_3d_format_btn.Disable()
-        self.plot_mode_sizer.Add(self.view_3d_format_btn,
-                                 flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
-                                 border=4)
+        self.plot_mode_sizer.Add(
+            self.view_3d_format_btn, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=4
+        )
 
         self.client = GamutCanvas(p1)
-        p1.sizer.Add(self.client, 1, flag=wx.EXPAND | wx.LEFT | wx.RIGHT |
-                                          wx.TOP | wx.BOTTOM, border=4)
+        p1.sizer.Add(
+            self.client,
+            1,
+            flag=wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP | wx.BOTTOM,
+            border=4,
+        )
 
         self.options_panel = SimpleBook(p1)
         self.options_panel.SetBackgroundColour(BGCOLOUR)
@@ -1032,25 +1239,38 @@ class ProfileInfoFrame(LUTFrame):
 
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.lut_view_options_sizer.Add(hsizer, flag=wx.ALIGN_CENTER |
-                                                     wx.BOTTOM, border=8)
+        self.lut_view_options_sizer.Add(
+            hsizer, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=8
+        )
 
-        self.rendering_intent_select = wx.Choice(self.lut_view_options, -1,
-                                                 choices=[lang.getstr("gamap.intents.a"),
-                                                          lang.getstr("gamap.intents.r"),
-                                                          lang.getstr("gamap.intents.p"),
-                                                          lang.getstr("gamap.intents.s")])
+        self.rendering_intent_select = wx.Choice(
+            self.lut_view_options,
+            -1,
+            choices=[
+                lang.getstr("gamap.intents.a"),
+                lang.getstr("gamap.intents.r"),
+                lang.getstr("gamap.intents.p"),
+                lang.getstr("gamap.intents.s"),
+            ],
+        )
         hsizer.Add((10, self.rendering_intent_select.Size[1]))
         hsizer.Add(self.rendering_intent_select, flag=wx.ALIGN_CENTER_VERTICAL)
-        self.rendering_intent_select.Bind(wx.EVT_CHOICE,
-                                          self.rendering_intent_select_handler)
+        self.rendering_intent_select.Bind(
+            wx.EVT_CHOICE, self.rendering_intent_select_handler
+        )
         self.rendering_intent_select.SetSelection(1)
 
-        self.direction_select = wx.Choice(self.lut_view_options, -1,
-                                          choices=[lang.getstr("direction.backward"),
-                                                   lang.getstr("direction.forward.inverted")])
-        hsizer.Add(self.direction_select, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT,
-                   border=10)
+        self.direction_select = wx.Choice(
+            self.lut_view_options,
+            -1,
+            choices=[
+                lang.getstr("direction.backward"),
+                lang.getstr("direction.forward.inverted"),
+            ],
+        )
+        hsizer.Add(
+            self.direction_select, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=10
+        )
         self.direction_select.Bind(wx.EVT_CHOICE, self.direction_select_handler)
         self.direction_select.SetSelection(0)
 
@@ -1067,16 +1287,14 @@ class ProfileInfoFrame(LUTFrame):
         self.show_as_L = CustomCheckBox(self.lut_view_options, -1, "L* \u2192")
         self.show_as_L.SetForegroundColour(FGCOLOUR)
         self.show_as_L.SetValue(True)
-        hsizer.Add(self.show_as_L, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
-                   border=4)
+        hsizer.Add(self.show_as_L, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border=4)
         self.show_as_L.Bind(wx.EVT_CHECKBOX, self.DrawLUT)
 
         self.add_toggles(self.lut_view_options, hsizer)
 
         self.toggle_clut = CustomCheckBox(self.lut_view_options, -1, "LUT")
         self.toggle_clut.SetForegroundColour(FGCOLOUR)
-        hsizer.Add(self.toggle_clut, flag=wx.ALIGN_CENTER_VERTICAL |
-                                          wx.LEFT, border=16)
+        hsizer.Add(self.toggle_clut, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=16)
         self.toggle_clut.Bind(wx.EVT_CHECKBOX, self.toggle_clut_handler)
 
         self.lut_view_options_sizer.Add((0, 0))
@@ -1088,7 +1306,9 @@ class ProfileInfoFrame(LUTFrame):
 
         self.grid = CustomGrid(p2, -1)
         self.grid.alternate_row_label_background_color = wx.Colour(230, 230, 230)
-        self.grid.alternate_cell_background_color = self.grid.alternate_row_label_background_color
+        self.grid.alternate_cell_background_color = (
+            self.grid.alternate_row_label_background_color
+        )
         self.grid.draw_horizontal_grid_lines = False
         self.grid.draw_vertical_grid_lines = False
         self.grid.draw_row_labels = False
@@ -1112,17 +1332,16 @@ class ProfileInfoFrame(LUTFrame):
         self.grid.Bind(wx.grid.EVT_GRID_COL_SIZE, self.resize_grid)
         p2.sizer.Add(self.grid, 1, flag=wx.EXPAND)
 
-        drophandlers = {
-            ".icc": self.drop_handler,
-            ".icm": self.drop_handler
-        }
+        drophandlers = {".icc": self.drop_handler, ".icm": self.drop_handler}
         self.droptarget = FileDrop(self, drophandlers)
         self.client.SetDropTarget(self.droptarget)
         droptarget = FileDrop(self, drophandlers)
         self.grid.SetDropTarget(droptarget)
 
-        min_w = max(self.options_panel.GetBestSize()[0] + 24,
-                    defaults["size.profile_info.w"] - self.splitter._GetSashSize())
+        min_w = max(
+            self.options_panel.GetBestSize()[0] + 24,
+            defaults["size.profile_info.w"] - self.splitter._GetSashSize(),
+        )
 
         self.splitter.SetMinimumPaneSize(min_w)
         self.splitter.SetHSplit(0)
@@ -1132,11 +1351,14 @@ class ProfileInfoFrame(LUTFrame):
             getcfg("position.profile_info.x"),
             getcfg("position.profile_info.y"),
             defaults["size.profile_info.split.w"],
-            getcfg("size.profile_info.h"))
-        self.SetMinSize((min_w + border * 2,
-                         defaults["size.profile_info.h"] + titlebar + border))
-        self.splitter.SetSplitSize((defaults["size.profile_info.split.w"],
-                                    self.ClientSize[1]))
+            getcfg("size.profile_info.h"),
+        )
+        self.SetMinSize(
+            (min_w + border * 2, defaults["size.profile_info.h"] + titlebar + border)
+        )
+        self.splitter.SetSplitSize(
+            (defaults["size.profile_info.split.w"], self.ClientSize[1])
+        )
         self.splitter.SetExpandedSize(self.ClientSize)
 
         self.client.canvas.Bind(wx.EVT_MOTION, self.OnMotion)
@@ -1156,15 +1378,18 @@ class ProfileInfoFrame(LUTFrame):
                 child.SetMaxFontSize(11)
             child.Bind(wx.EVT_KEY_DOWN, self.key_handler)
             child.Bind(wx.EVT_MOUSEWHEEL, self.OnWheel)
-            if (sys.platform == "win32" and sys.getwindowsversion() >= (6, ) and
-                    isinstance(child, wx.Panel)):
+            if (
+                sys.platform == "win32"
+                and sys.getwindowsversion() >= (6,)
+                and isinstance(child, wx.Panel)
+            ):
                 # No need to enable double buffering under Linux and Mac OS X.
                 # Under Windows, enabling double buffering on the panel seems
                 # to work best to reduce flicker.
                 child.SetDoubleBuffered(True)
 
     def DrawCanvas(self, profile_no=None, reset=True):
-        self.SetStatusText('')
+        self.SetStatusText("")
         if self.plot_mode_select.GetSelection() == self.plot_mode_select.GetCount() - 1:
             # Gamut plot
             self.plot_mode_sizer.Show(self.view_3d_btn)
@@ -1178,16 +1403,14 @@ class ProfileInfoFrame(LUTFrame):
             self.plot_mode_sizer.Hide(self.view_3d_btn)
             self.plot_mode_sizer.Hide(self.view_3d_format_btn)
             self.client.SetEnableCenterLines(True)
-            self.client.SetEnableDiagonals('Bottomleft-Topright')
+            self.client.SetEnableDiagonals("Bottomleft-Topright")
             self.client.SetEnableGrid(False)
             self.client.SetEnablePointLabel(True)
-            if (isinstance(self.profile.tags.get("vcgt"),
-                           ICCP.VideoCardGammaType) or
-                    (self.rTRC and
-                     self.gTRC and
-                     self.bTRC) or
-                    ("B2A0" in self.profile.tags or
-                     "A2B0" in self.profile.tags)):
+            if (
+                isinstance(self.profile.tags.get("vcgt"), ICCP.VideoCardGammaType)
+                or (self.rTRC and self.gTRC and self.bTRC)
+                or ("B2A0" in self.profile.tags or "A2B0" in self.profile.tags)
+            ):
                 self.DrawLUT()
                 self.handle_errors()
             else:
@@ -1199,13 +1422,17 @@ class ProfileInfoFrame(LUTFrame):
         if not isinstance(profile, ICCP.ICCProfile):
             try:
                 profile = ICCP.ICCProfile(profile)
-            except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                show_result_dialog(Error(lang.getstr("profile.invalid") +
-                                         "\n" + profile), self)
+            except (IOError, ICCP.ICCProfileInvalidError):
+                show_result_dialog(
+                    Error(lang.getstr("profile.invalid") + "\n" + profile), self
+                )
                 self.DrawCanvas(reset=reset)
                 return
-        if (not reset and getattr(self, "profile", None) and
-                self.profile.colorSpace != profile.colorSpace):
+        if (
+            not reset
+            and getattr(self, "profile", None)
+            and self.profile.colorSpace != profile.colorSpace
+        ):
             reset = True
         self.profile = profile
         for channel in "rgb":
@@ -1216,32 +1443,32 @@ class ProfileInfoFrame(LUTFrame):
             setattr(self, "tf_" + channel + "TRC", trc)
         self.trc = None
 
-        self.gamut_view_options.direction_select.Enable("B2A0" in
-                                                        self.profile.tags and
-                                                        "A2B0" in
-                                                        self.profile.tags)
+        self.gamut_view_options.direction_select.Enable(
+            "B2A0" in self.profile.tags and "A2B0" in self.profile.tags
+        )
         if not self.gamut_view_options.direction_select.Enabled:
             self.gamut_view_options.direction_select.SetSelection(0)
-        self.gamut_view_options.toggle_clut.SetValue("B2A0" in profile.tags or
-                                                     "A2B0" in profile.tags)
-        self.gamut_view_options.toggle_clut.Show("B2A0" in profile.tags or
-                                                 "A2B0" in profile.tags)
-        self.gamut_view_options.toggle_clut.Enable(isinstance(self.rTRC,
-                                                              ICCP.CurveType) and
-                                                   isinstance(self.gTRC,
-                                                              ICCP.CurveType) and
-                                                   isinstance(self.bTRC,
-                                                              ICCP.CurveType))
-        self.toggle_clut.SetValue("B2A0" in profile.tags or
-                                  "A2B0" in profile.tags)
+        self.gamut_view_options.toggle_clut.SetValue(
+            "B2A0" in profile.tags or "A2B0" in profile.tags
+        )
+        self.gamut_view_options.toggle_clut.Show(
+            "B2A0" in profile.tags or "A2B0" in profile.tags
+        )
+        self.gamut_view_options.toggle_clut.Enable(
+            isinstance(self.rTRC, ICCP.CurveType)
+            and isinstance(self.gTRC, ICCP.CurveType)
+            and isinstance(self.bTRC, ICCP.CurveType)
+        )
+        self.toggle_clut.SetValue("B2A0" in profile.tags or "A2B0" in profile.tags)
 
         plot_mode = self.plot_mode_select.GetStringSelection()
         choice = []
         info = profile.get_info()
         self.client.errors = []
-        if ((self.rTRC and self.gTRC and self.bTRC) or
-                (self.toggle_clut.GetValue() and
-                 profile.colorSpace in ("RGB", "GRAY", "CMYK"))):
+        if (self.rTRC and self.gTRC and self.bTRC) or (
+            self.toggle_clut.GetValue()
+            and profile.colorSpace in ("RGB", "GRAY", "CMYK")
+        ):
             if "vcgt" in profile.tags or "MS00" in profile.tags:
                 choice.append(lang.getstr("vcgt"))
             try:
@@ -1260,8 +1487,9 @@ class ProfileInfoFrame(LUTFrame):
         self.select_current_page()
         self.plot_mode_select.Enable()
 
-        self.SetTitle(" \u2014 ".join([lang.getstr("profile.info"),
-                                       profile.getDescription()]))
+        self.SetTitle(
+            " \u2014 ".join([lang.getstr("profile.info"), profile.getDescription()])
+        )
 
         rows = [("", "")]
         lines = []
@@ -1271,8 +1499,11 @@ class ProfileInfoFrame(LUTFrame):
                 value = ""
             elif not isinstance(value, str):
                 value = str(value, "ascii")
-            value = wrap(universal_newlines(value.strip()).replace("\t", "\n"),
-                         52).replace("\0", "").split("\n")
+            value = (
+                wrap(universal_newlines(value.strip()).replace("\t", "\n"), 52)
+                .replace("\0", "")
+                .split("\n")
+            )
             linecount = len(value)
             for i, line in enumerate(value):
                 value[i] = line.strip()
@@ -1286,23 +1517,26 @@ class ProfileInfoFrame(LUTFrame):
             for j, v in enumerate(line):
                 if v.endswith("_"):
                     continue
-                key = re.sub(r"[^0-9A-Za-z]+", "_",
-                             strtr(line[j],
-                                   {"\u0394E": "Delta E"}).lower().strip(), 0).strip("_")
+                key = re.sub(
+                    r"[^0-9A-Za-z]+",
+                    "_",
+                    strtr(line[j], {"\u0394E": "Delta E"}).lower().strip(),
+                    0,
+                ).strip("_")
                 val = lang.getstr(key)
                 if key != val:
                     line[j] = val
             if indent:
-                #if i + 1 < len(lines) and lines[i + 1][0].startswith(" "):
-                #marker = u" ├  "
-                #else:
-                #marker = u" └  "
+                # if i + 1 < len(lines) and lines[i + 1][0].startswith(" "):
+                # marker = u" ├  "
+                # else:
+                # marker = u" └  "
                 line[0] = indent.group() + line[0].strip()
             elif line[0]:
-                #if i + 1 < len(lines) and lines[i + 1][0].startswith(" "):
-                #marker = u"▼ "
-                #else:
-                #marker = u"► "
+                # if i + 1 < len(lines) and lines[i + 1][0].startswith(" "):
+                # marker = u"▼ "
+                # else:
+                # marker = u"► "
                 pass
             rows.append(line)
 
@@ -1319,12 +1553,11 @@ class ProfileInfoFrame(LUTFrame):
             bgcolor = self.grid.GetCellBackgroundColour(i, 0)
             bgblend = (255 - alpha) / 255.0
             blend = alpha / 255.0
-            textcolor = wx.Colour(int(round(bgblend * bgcolor.Red() +
-                                            blend * labelcolor.Red())),
-                                  int(round(bgblend * bgcolor.Green() +
-                                            blend * labelcolor.Green())),
-                                  int(round(bgblend * bgcolor.Blue() +
-                                            blend * labelcolor.Blue())))
+            textcolor = wx.Colour(
+                int(round(bgblend * bgcolor.Red() + blend * labelcolor.Red())),
+                int(round(bgblend * bgcolor.Green() + blend * labelcolor.Green())),
+                int(round(bgblend * bgcolor.Blue() + blend * labelcolor.Blue())),
+            )
             if label == lang.getstr("named_colors"):
                 namedcolor = True
             elif label.strip() and label.lstrip() == label:
@@ -1335,14 +1568,16 @@ class ProfileInfoFrame(LUTFrame):
                 color = None
             if color:
                 if color.groups()[0] == "Lab":
-                    color = colormath.Lab2RGB(*[float(v) for v in
-                                                color.groups()[1].strip().split()],
-                                              **dict(scale=255))
+                    color = colormath.Lab2RGB(
+                        *[float(v) for v in color.groups()[1].strip().split()],
+                        **dict(scale=255)
+                    )
                 else:
                     # XYZ
-                    color = colormath.XYZ2RGB(*[float(v) for v in
-                                                color.groups()[1].strip().split()],
-                                              **dict(scale=255))
+                    color = colormath.XYZ2RGB(
+                        *[float(v) for v in color.groups()[1].strip().split()],
+                        **dict(scale=255)
+                    )
                 labelbgcolor = wx.Colour(*[int(round(v)) for v in color])
                 rowlabelrenderer = CustomRowLabelRenderer(labelbgcolor)
             else:
@@ -1359,16 +1594,20 @@ class ProfileInfoFrame(LUTFrame):
         self.Thaw()
 
     def OnClose(self, event):
-        if (getattr(self.worker, "thread", None) and
-                self.worker.thread.is_alive()):
+        if getattr(self.worker, "thread", None) and self.worker.thread.is_alive():
             self.worker.abort_subprocess(True)
             return
         self.worker.wrapup(False)
-        writecfg(module="profile-info", options=("3d.format",
-                                                 "last_cal_or_icc_path",
-                                                 "last_icc_path",
-                                                 "position.profile_info",
-                                                 "size.profile_info"))
+        writecfg(
+            module="profile-info",
+            options=(
+                "3d.format",
+                "last_cal_or_icc_path",
+                "last_icc_path",
+                "position.profile_info",
+                "size.profile_info",
+            ),
+        )
         # Hide first (looks nicer)
         self.Hide()
         # Need to use CallAfter to prevent hang under Windows if minimized
@@ -1389,8 +1628,9 @@ class ProfileInfoFrame(LUTFrame):
         else:
             # Gamut plot
             page = self.options_panel.GetCurrentPage()
-            if (page.colorspace in ("a*b*", "u*v*") or
-                    page.colorspace.startswith("DIN99")):
+            if page.colorspace in ("a*b*", "u*v*") or page.colorspace.startswith(
+                "DIN99"
+            ):
                 format = "%.2f %.2f"
             else:
                 format = "%.4f %.4f"
@@ -1431,29 +1671,30 @@ class ProfileInfoFrame(LUTFrame):
                 else:
                     # xy
                     x, y = xy
-                cct, delta = colormath.xy_CCT_delta(x, y,
-                                                    daylight=whitepoint_no == 1)
+                cct, delta = colormath.xy_CCT_delta(x, y, daylight=whitepoint_no == 1)
                 status = format % xy
                 if cct:
                     if delta:
-                        locus = {"Blackbody": "blackbody",
-                                 "Daylight": "daylight"}.get(page.whitepoint_select.GetStringSelection(),
-                                                             page.whitepoint_select.GetStringSelection())
+                        locus = {"Blackbody": "blackbody", "Daylight": "daylight"}.get(
+                            page.whitepoint_select.GetStringSelection(),
+                            page.whitepoint_select.GetStringSelection(),
+                        )
                         status = "%s, CCT %i (%s %.2f)" % (
-                            format % xy, cct, lang.getstr("delta_e_to_locus",
-                                                          locus),
-                            delta["E"])
+                            format % xy,
+                            cct,
+                            lang.getstr("delta_e_to_locus", locus),
+                            delta["E"],
+                        )
                     else:
                         status = "%s, CCT %i" % (format % xy, cct)
                 self.SetStatusText(status)
             else:
                 self.SetStatusText(format % xy)
         if isinstance(event, wx.MouseEvent):
-            event.Skip() # Go to next handler
+            event.Skip()  # Go to next handler
 
     def OnMove(self, event=None):
-        if self.IsShownOnScreen() and not \
-                self.IsMaximized() and not self.IsIconized():
+        if self.IsShownOnScreen() and not self.IsMaximized() and not self.IsIconized():
             x, y = self.GetScreenPosition()
             setcfg("position.profile_info.x", x)
             setcfg("position.profile_info.y", y)
@@ -1461,17 +1702,21 @@ class ProfileInfoFrame(LUTFrame):
             event.Skip()
 
     def OnSashPosChanging(self, event):
-        self.splitter.SetExpandedSize((self.splitter._splitx +
-                                       self.splitter._GetSashSize(),
-                                       self.ClientSize[1]))
-        setcfg("size.profile_info.w", self.splitter._splitx +
-               self.splitter._GetSashSize())
+        self.splitter.SetExpandedSize(
+            (self.splitter._splitx + self.splitter._GetSashSize(), self.ClientSize[1])
+        )
+        setcfg(
+            "size.profile_info.w", self.splitter._splitx + self.splitter._GetSashSize()
+        )
         wx.CallAfter(self.redraw)
         wx.CallAfter(self.resize_grid)
 
     def OnSize(self, event=None):
-        if (self.IsShownOnScreen() and self.IsMaximized() and
-                self.splitter._expanded < 0):
+        if (
+            self.IsShownOnScreen()
+            and self.IsMaximized()
+            and self.splitter._expanded < 0
+        ):
             self.splitter.AdjustLayout()
         self.splitter.Refresh()
         wx.CallAfter(self.redraw)
@@ -1498,12 +1743,14 @@ class ProfileInfoFrame(LUTFrame):
         if not self.IsMaximized():
             w, h = self.ClientSize
             if self.splitter._expanded < 0:
-                self.splitter.SetExpandedSize((self.splitter._splitx +
-                                               self.splitter._GetSashSize(),
-                                               h))
+                self.splitter.SetExpandedSize(
+                    (self.splitter._splitx + self.splitter._GetSashSize(), h)
+                )
                 self.splitter.SetSplitSize((w, h))
-                setcfg("size.profile_info.w", self.splitter._splitx +
-                       self.splitter._GetSashSize())
+                setcfg(
+                    "size.profile_info.w",
+                    self.splitter._splitx + self.splitter._GetSashSize(),
+                )
                 setcfg("size.profile_info.split.w", w)
             else:
                 self.splitter.SetExpandedSize((w, h))
@@ -1511,16 +1758,15 @@ class ProfileInfoFrame(LUTFrame):
             setcfg("size.profile_info.h", h)
 
     def drop_handler(self, path):
-        """Drag'n'drop handler for .cal/.icc/.icm files.
-
-        """
-        reset = (self.plot_mode_select.GetSelection() ==
-                 self.plot_mode_select.GetCount() - 1)
+        """Drag'n'drop handler for .cal/.icc/.icm files."""
+        reset = (
+            self.plot_mode_select.GetSelection() == self.plot_mode_select.GetCount() - 1
+        )
         self.LoadProfile(path, reset=reset)
 
-
-    def get_platform_window_size(self, defaultwidth=None, defaultheight=None,
-                                 split=False):
+    def get_platform_window_size(
+        self, defaultwidth=None, defaultheight=None, split=False
+    ):
         if split:
             name = ".split"
         else:
@@ -1530,16 +1776,18 @@ class ProfileInfoFrame(LUTFrame):
         if not defaultheight:
             defaultheight = defaults["size.profile_info.h"]
         border, titlebar = get_platform_window_decoration_size()
-        #return (max(max(getcfg("size.profile_info%s.w" % name),
-        #defaultwidth), self.GetMinSize()[0] - border * 2),
-        #max(getcfg("size.profile_info.h"),
-        #defaultheight))
+        # return (max(max(getcfg("size.profile_info%s.w" % name),
+        # defaultwidth), self.GetMinSize()[0] - border * 2),
+        # max(getcfg("size.profile_info.h"),
+        # defaultheight))
         if split:
             w, h = self.splitter.GetSplitSize()
         else:
             w, h = self.splitter.GetExpandedSize()
-        return (max(w, defaultwidth, self.GetMinSize()[0] - border * 2),
-                max(h, defaultheight))
+        return (
+            max(w, defaultwidth, self.GetMinSize()[0] - border * 2),
+            max(h, defaultheight),
+        )
 
     def key_handler(self, event):
         # AltDown
@@ -1566,12 +1814,17 @@ class ProfileInfoFrame(LUTFrame):
         # X
         # Y
         key = event.GetKeyCode()
-        if (event.ControlDown() or event.CmdDown()): # CTRL (Linux/Mac/Windows) / CMD (Mac)
+        if (
+            event.ControlDown() or event.CmdDown()
+        ):  # CTRL (Linux/Mac/Windows) / CMD (Mac)
             focus = self.FindFocus()
-            if focus and self.grid in (focus, focus.GetParent(),
-                                       focus.GetGrandParent()):
+            if focus and self.grid in (
+                focus,
+                focus.GetParent(),
+                focus.GetGrandParent(),
+            ):
                 event.Skip()
-            if key == 83 and self.profile: # S
+            if key == 83 and self.profile:  # S
                 self.SaveFile()
                 return
             else:
@@ -1588,18 +1841,22 @@ class ProfileInfoFrame(LUTFrame):
     def plot_mode_select_handler(self, event):
         self.Freeze()
         self.select_current_page()
-        reset = (self.plot_mode_select.GetSelection() ==
-                 self.plot_mode_select.GetCount() - 1)
+        reset = (
+            self.plot_mode_select.GetSelection() == self.plot_mode_select.GetCount() - 1
+        )
         self.DrawCanvas(reset=reset)
         self.Thaw()
 
     def get_commands(self):
-        return self.get_common_commands() + ["profile-info [filename]",
-                                             "load <filename>"]
+        return self.get_common_commands() + [
+            "profile-info [filename]",
+            "load <filename>",
+        ]
 
     def process_data(self, data):
-        if (data[0] == "profile-info" and
-            len(data) < 3) or (data[0] == "load" and len(data) == 2):
+        if (data[0] == "profile-info" and len(data) < 3) or (
+            data[0] == "load" and len(data) == 2
+        ):
             if self.IsIconized():
                 self.Restore()
             self.Raise()
@@ -1615,20 +1872,30 @@ class ProfileInfoFrame(LUTFrame):
         return "invalid"
 
     def redraw(self):
-        if self.plot_mode_select.GetSelection() == self.plot_mode_select.GetCount() - 1 and self.client.last_draw:
+        if (
+            self.plot_mode_select.GetSelection() == self.plot_mode_select.GetCount() - 1
+            and self.client.last_draw
+        ):
             # Update gamut plot
             self.client.Parent.Freeze()
             self.client._DrawCanvas(self.client.last_draw[0])
             self.client.Parent.Thaw()
 
     def resize_grid(self, event=None):
-        self.grid.SetColSize(1, max(self.grid.GetSize()[0] -
-                                    self.grid.GetRowLabelSize() -
-                                    self.grid.GetColSize(0) -
-                                    wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
-                                    0))
-        self.grid.SetMargins(0 - wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
-                             0 - wx.SystemSettings_GetMetric(wx.SYS_HSCROLL_Y))
+        self.grid.SetColSize(
+            1,
+            max(
+                self.grid.GetSize()[0]
+                - self.grid.GetRowLabelSize()
+                - self.grid.GetColSize(0)
+                - wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
+                0,
+            ),
+        )
+        self.grid.SetMargins(
+            0 - wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
+            0 - wx.SystemSettings_GetMetric(wx.SYS_HSCROLL_Y),
+        )
         self.grid.ForceRefresh()
 
     def select_current_page(self):
@@ -1644,11 +1911,14 @@ class ProfileInfoFrame(LUTFrame):
         profile = self.profile
         if not profile:
             defaultDir, defaultFile = get_verified_path("last_icc_path")
-            dlg = wx.FileDialog(self, lang.getstr("profile.choose"),
-                                defaultDir=defaultDir, defaultFile=defaultFile,
-                                wildcard=lang.getstr("filetype.icc") +
-                                         "|*.icc;*.icm",
-                                style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+            dlg = wx.FileDialog(
+                self,
+                lang.getstr("profile.choose"),
+                defaultDir=defaultDir,
+                defaultFile=defaultFile,
+                wildcard=lang.getstr("filetype.icc") + "|*.icc;*.icm",
+                style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
+            )
             dlg.Center(wx.BOTH)
             result = dlg.ShowModal()
             path = dlg.GetPath()
@@ -1657,9 +1927,10 @@ class ProfileInfoFrame(LUTFrame):
                 return
             try:
                 profile = ICCP.ICCProfile(path)
-            except (IOError, ICCP.ICCProfileInvalidError) as exception:
-                show_result_dialog(Error(lang.getstr("profile.invalid") + "\n" +
-                                         path), self)
+            except (IOError, ICCP.ICCProfileInvalidError):
+                show_result_dialog(
+                    Error(lang.getstr("profile.invalid") + "\n" + path), self
+                )
             else:
                 setcfg("last_icc_path", path)
                 setcfg("last_cal_or_icc_path", path)
@@ -1677,16 +1948,15 @@ class ProfileInfoFrame(LUTFrame):
             profile_path = None
             if profile.fileName and os.path.isfile(profile.fileName):
                 profile_path = profile.fileName
-            if not profile_path or not waccess(os.path.dirname(profile_path),
-                                               os.W_OK):
+            if not profile_path or not waccess(os.path.dirname(profile_path), os.W_OK):
                 result = self.worker.create_tempdir()
                 if isinstance(result, Exception):
                     show_result_dialog(result, self)
                     return
                 desc = profile.getDescription()
-                profile_path = os.path.join(self.worker.tempdir,
-                                            make_argyll_compatible_path(desc) +
-                                            profile_ext)
+                profile_path = os.path.join(
+                    self.worker.tempdir, make_argyll_compatible_path(desc) + profile_ext
+                )
                 profile.write(profile_path)
             profile_mtime = os.stat(profile_path).st_mtime
             filename, ext = os.path.splitext(profile_path)
@@ -1695,15 +1965,19 @@ class ProfileInfoFrame(LUTFrame):
             comparison_profile_mtime = 0
             if comparison_profile:
                 comparison_profile_path = comparison_profile.fileName
-                if (comparison_profile_path and
-                        not waccess(os.path.dirname(comparison_profile_path),
-                                    os.W_OK)):
+                if comparison_profile_path and not waccess(
+                    os.path.dirname(comparison_profile_path), os.W_OK
+                ):
                     result = self.worker.create_tempdir()
                     if isinstance(result, Exception):
                         show_result_dialog(result, self)
                         return
-                    comparison_profile_path = os.path.join(self.worker.tempdir,
-                                                           make_argyll_compatible_path(os.path.basename(comparison_profile_path)))
+                    comparison_profile_path = os.path.join(
+                        self.worker.tempdir,
+                        make_argyll_compatible_path(
+                            os.path.basename(comparison_profile_path)
+                        ),
+                    )
                     comparison_profile.write(comparison_profile_path)
                 comparison_profile_mtime = os.stat(comparison_profile_path).st_mtime
             mods = []
@@ -1717,13 +1991,14 @@ class ProfileInfoFrame(LUTFrame):
             if order != "n":
                 mods.append(order)
             if mods:
-                filename += " " + "".join(["[%s]" % mod.upper()
-                                           for mod in mods])
+                filename += " " + "".join(["[%s]" % mod.upper() for mod in mods])
             if comparison_profile_path:
-                filename += " vs " + os.path.splitext(os.path.basename(comparison_profile_path))[0]
+                filename += (
+                    " vs "
+                    + os.path.splitext(os.path.basename(comparison_profile_path))[0]
+                )
                 if mods:
-                    filename += " " + "".join(["[%s]" % mod.upper()
-                                               for mod in mods])
+                    filename += " " + "".join(["[%s]" % mod.upper() for mod in mods])
             for vrmlext in (".vrml", ".vrml.gz", ".wrl", ".wrl.gz", ".wrz"):
                 vrmlpath = filename + vrmlext
                 if sys.platform == "win32":
@@ -1757,27 +2032,31 @@ class ProfileInfoFrame(LUTFrame):
                 launch_file(finalpath)
             else:
                 if os.path.isfile(vrmloutpath):
-                    self.view_3d_consumer(True, None, None, vrmloutpath,
-                                          x3d, x3dpath, html)
+                    self.view_3d_consumer(
+                        True, None, None, vrmloutpath, x3d, x3dpath, html
+                    )
                 elif os.path.isfile(vrmlpath):
-                    self.view_3d_consumer(True, colorspace, None, vrmlpath,
-                                          x3d, x3dpath, html)
+                    self.view_3d_consumer(
+                        True, colorspace, None, vrmlpath, x3d, x3dpath, html
+                    )
                 else:
                     # Create VRML file
                     profile_paths = [profile_path]
                     if comparison_profile_path:
                         profile_paths.append(comparison_profile_path)
-                    self.worker.start(self.view_3d_consumer,
-                                      self.worker.calculate_gamut,
-                                      cargs=(colorspace, filename, None, x3d,
-                                             x3dpath, html),
-                                      wargs=(profile_paths, intent, direction,
-                                             order, False),
-                                      progress_msg=lang.getstr("gamut.view.create"),
-                                      continue_next=x3d, fancy=False)
+                    self.worker.start(
+                        self.view_3d_consumer,
+                        self.worker.calculate_gamut,
+                        cargs=(colorspace, filename, None, x3d, x3dpath, html),
+                        wargs=(profile_paths, intent, direction, order, False),
+                        progress_msg=lang.getstr("gamut.view.create"),
+                        continue_next=x3d,
+                        fancy=False,
+                    )
 
-    def view_3d_consumer(self, result, colorspace, filename, vrmlpath, x3d,
-                         x3dpath, html):
+    def view_3d_consumer(
+        self, result, colorspace, filename, vrmlpath, x3d, x3dpath, html
+    ):
         if filename:
             if getcfg("vrml.compress"):
                 vrmlpath = filename + ".wrz"
@@ -1804,10 +2083,16 @@ class ProfileInfoFrame(LUTFrame):
             self.worker.stop_progress()
             show_result_dialog(result, self)
         elif x3d:
-            vrmlfile2x3dfile(vrmlpath, x3dpath,
-                             embed=getcfg("x3dom.embed"), html=html, view=True,
-                             force=False, cache=getcfg("x3dom.cache"),
-                             worker=self.worker)
+            vrmlfile2x3dfile(
+                vrmlpath,
+                x3dpath,
+                embed=getcfg("x3dom.embed"),
+                html=html,
+                view=True,
+                force=False,
+                cache=getcfg("x3dom.cache"),
+                worker=self.worker,
+            )
         else:
             launch_file(vrmlpath)
 
@@ -1844,6 +2129,7 @@ def main():
     wx.CallLater(1, _main, app)
     app.MainLoop()
 
+
 def _main(app):
     app.TopWindow.listen()
     display_no = get_argyll_display_number(app.TopWindow.get_display()[1])
@@ -1854,6 +2140,7 @@ def _main(app):
     else:
         app.TopWindow.LoadProfile(get_display_profile(display_no))
     app.TopWindow.Show()
+
 
 if __name__ == "__main__":
     main()

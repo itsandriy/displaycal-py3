@@ -3,6 +3,8 @@
 """
 
 import configparser
+
+# TODO: Does this line really need to be here.
 configparser.DEFAULTSECT = "Default"
 
 from decimal import Decimal
@@ -20,26 +22,44 @@ if sys.platform == "win32":
 
 from DisplayCAL.argyll_names import observers, viewconds, intents, video_encodings
 from DisplayCAL.defaultpaths import appdata, commonappdata
+
 if sys.platform == "win32":
     from DisplayCAL.defaultpaths import commonprogramfiles
 elif sys.platform == "darwin":
     from DisplayCAL.defaultpaths import library, library_home, prefs, prefs_home
 else:
-    from DisplayCAL.defaultpaths import (xdg_config_dir_default, xdg_config_home, xdg_data_home, xdg_data_home_default,
-                                         xdg_data_dirs)
-from DisplayCAL.defaultpaths import (autostart, autostart_home, home, iccprofiles, iccprofiles_home)
+    from DisplayCAL.defaultpaths import (
+        xdg_config_dir_default,
+        xdg_config_home,
+        xdg_data_home,
+        xdg_data_home_default,
+        xdg_data_dirs,
+    )
+from DisplayCAL.defaultpaths import (
+    autostart,
+    autostart_home,
+    home,
+    iccprofiles,
+    iccprofiles_home,
+)
 from DisplayCAL.meta import name as appname, build, lastmod, version
 from DisplayCAL.options import ascii, debug, verbose
 from DisplayCAL.safe_print import enc, fs_enc, original_codepage
 from DisplayCAL.util_io import StringIOu as StringIO
-from DisplayCAL.util_os import (expanduseru, expandvarsu, getenvu, is_superuser, listdir_re, which)
+from DisplayCAL.util_os import (
+    expanduseru,
+    getenvu,
+    is_superuser,
+    listdir_re,
+    which,
+)
 from DisplayCAL.util_str import create_replace_function, strtr
 from DisplayCAL import colormath, encodedstdio
 
 
 # Runtime configuration
-if ascii:
-    enc = "ASCII"
+# if ascii:
+#     enc = "ASCII"
 
 exe = sys.executable
 exedir = os.path.dirname(exe)
@@ -53,20 +73,22 @@ if isexe and os.getenv("_MEIPASS2"):
 pyfile = (
     exe
     if isexe
-    else (os.path.isfile(sys.argv[0]) and sys.argv[0]) or os.path.join(os.path.dirname(__file__), "main.py")
+    else (os.path.isfile(sys.argv[0]) and sys.argv[0])
+    or os.path.join(os.path.dirname(__file__), "main.py")
 )
 pypath = exe if isexe else os.path.abspath(pyfile)
 # Mac OS X: isapp should only be true for standalone, not 0install
-isapp = sys.platform == "darwin" and \
-        exe.split(os.path.sep)[-3:-1] == ["Contents", "MacOS"] and \
-        os.path.exists(os.path.join(exedir, "..", "Resources", "xrc"))
+isapp = (
+    sys.platform == "darwin"
+    and exe.split(os.path.sep)[-3:-1] == ["Contents", "MacOS"]
+    and os.path.exists(os.path.join(exedir, "..", "Resources", "xrc"))
+)
 if isapp:
     pyname, pyext = os.path.splitext(exe.split(os.path.sep)[-4])
     pydir = os.path.normpath(os.path.join(exedir, "..", "Resources"))
 else:
     pyname, pyext = os.path.splitext(os.path.basename(pypath))
-    pydir = os.path.dirname(exe if isexe
-                            else os.path.abspath(__file__))
+    pydir = os.path.dirname(exe if isexe else os.path.abspath(__file__))
 
 data_dirs = [pydir]
 extra_data_dirs = []
@@ -112,8 +134,7 @@ else:
         scale_adjustment_factor = 1.0
         config_sys = os.path.join(prefs, appbasename)
         confighome = os.path.join(prefs_home, appbasename)
-        logdir = os.path.join(expanduseru("~"), "Library",
-                              "Logs", appbasename)
+        logdir = os.path.join(expanduseru("~"), "Library", "Logs", appbasename)
         if appbasename != appname:
             data_dirs.append(os.path.join(commonappdata[0], appname))
         data_dirs.append(datahome)
@@ -134,8 +155,12 @@ else:
         if datahome_default not in data_dirs:
             data_dirs.append(datahome_default)
         data_dirs.extend(os.path.join(dir_, appbasename) for dir_ in xdg_data_dirs)
-        extra_data_dirs.extend(os.path.join(dir_, "argyllcms") for dir_ in xdg_data_dirs)
-        extra_data_dirs.extend(os.path.join(dir_, "color", "argyll") for dir_ in xdg_data_dirs)
+        extra_data_dirs.extend(
+            os.path.join(dir_, "argyllcms") for dir_ in xdg_data_dirs
+        )
+        extra_data_dirs.extend(
+            os.path.join(dir_, "color", "argyll") for dir_ in xdg_data_dirs
+        )
     exe_ext = ""
     profile_ext = ".icc"
 
@@ -160,28 +185,32 @@ resfiles = [
     "xrc/main.xrc",
     "xrc/mainmenu.xrc",
     "xrc/report.xrc",
-    "xrc/synthicc.xrc"
+    "xrc/synthicc.xrc",
 ]
 
 bitmaps = {}
 
 # Does the device not support iterative calibration?
-uncalibratable_displays = ("Untethered$", )
+uncalibratable_displays = ("Untethered$",)
 
 # Can the device generate patterns of its own?
 patterngenerators = ("madVR$", "Resolve$", "Chromecast ", "Prisma ", "Prisma$")
 
-non_argyll_displays = uncalibratable_displays + ("Resolve$", )
+non_argyll_displays = uncalibratable_displays + ("Resolve$",)
 
 # Is the device directly connected or e.g. driven via network?
 # (note that madVR can technically be both, but the endpoint is always directly
 # connected to a display so we have videoLUT access via madVR's API. Only
 # devices which don't support that are considered 'untethered' in this context)
-untethered_displays = non_argyll_displays + ("Web$", "Chromecast ", "Prisma ",
-                                             "Prisma$")
+untethered_displays = non_argyll_displays + (
+    "Web$",
+    "Chromecast ",
+    "Prisma ",
+    "Prisma$",
+)
 
 # Is the device not an actual display device (i.e. is it not a TV or monitor)?
-virtual_displays = untethered_displays + ("madVR$", )
+virtual_displays = untethered_displays + ("madVR$",)
 
 
 def is_special_display(display=None, tests=virtual_displays):
@@ -216,10 +245,12 @@ def is_virtual_display(display=None):
 def check_3dlut_format(devicename):
     if get_display_name(None, True) == devicename:
         if devicename == "Prisma":
-            return (getcfg("3dlut.format") == "3dl" and
-                    getcfg("3dlut.size") == 17 and
-                    getcfg("3dlut.bitdepth.input") == 10 and
-                    getcfg("3dlut.bitdepth.output") == 12)
+            return (
+                getcfg("3dlut.format") == "3dl"
+                and getcfg("3dlut.size") == 17
+                and getcfg("3dlut.bitdepth.input") == 10
+                and getcfg("3dlut.bitdepth.output") == 12
+            )
 
 
 def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
@@ -235,6 +266,7 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
 
     """
     from DisplayCAL.wxaddons import wx
+
     if name not in bitmaps:
         parts = name.split("/")
         w = 16
@@ -258,7 +290,7 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
             w = int(round(w * scale))
             h = int(round(h * scale))
         if parts[-1] == "empty":
-            if wx.VERSION < (3, ):
+            if wx.VERSION < (3,):
                 use_mask = True
             if use_mask and sys.platform == "win32":
                 bmp = wx.EmptyBitmap(w, h)
@@ -320,10 +352,13 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                         else:
                             # Try original size
                             parts[-1] = oname
-                if (sys.platform not in ("darwin", "win32") and
-                        parts[-1].startswith(appname.lower())):
+                if sys.platform not in ("darwin", "win32") and parts[-1].startswith(
+                    appname.lower()
+                ):
                     # Search /usr/share/icons on Linux first
-                    path = get_data_path(os.path.join(parts[-2], "apps", parts[-1]) + ".png")
+                    path = get_data_path(
+                        os.path.join(parts[-2], "apps", parts[-1]) + ".png"
+                    )
                 if not path:
                     path = get_data_path(os.path.sep.join(parts) + ".png")
                 if path or scale == 1:
@@ -343,12 +378,13 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                     elif len(size) == 2:
                         # HighDPI support. Icon
                         rescale = True
-                    if rescale and (bmp.Size[0] != w or
-                                    bmp.Size[1] != h):
+                    if rescale and (bmp.Size[0] != w or bmp.Size[1] != h):
                         # HighDPI support. Rescale
                         img = bmp.ConvertToImage()
-                        if (not hasattr(wx, "IMAGE_QUALITY_BILINEAR") or
-                                oname == "list-add"):
+                        if (
+                            not hasattr(wx, "IMAGE_QUALITY_BILINEAR")
+                            or oname == "list-add"
+                        ):
                             # In case bilinear is not supported, and to prevent
                             # black borders after resizing for some images
                             quality = wx.IMAGE_QUALITY_NORMAL
@@ -362,12 +398,15 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                             quality = wx.IMAGE_QUALITY_BILINEAR
                         img.Rescale(w, h, quality=quality)
                 factors = None
-                if (not inverted and len(parts) > 2 and parts[-3] == "icons" and
-                        (ow, oh) != (10, 10) and oname not in ("black_luminance",
-                                                               "check_all",
-                                                               "contrast",
-                                                               "luminance") and
-                        max(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)[:3]) < 102):
+                if (
+                    not inverted
+                    and len(parts) > 2
+                    and parts[-3] == "icons"
+                    and (ow, oh) != (10, 10)
+                    and oname
+                    not in ("black_luminance", "check_all", "contrast", "luminance")
+                    and max(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)[:3]) < 102
+                ):
                     # Automatically invert B&W image if background is dark
                     # (exceptions do apply)
                     if not img:
@@ -379,15 +418,30 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                     if not img:
                         img = bmp.ConvertToImage()
                     alpha = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNTEXT).alpha
-                    if oname in ["applications-system", "color",
-                                 "document-open", "document-save-as",
-                                 "edit-delete", "image-x-generic", "info",
-                                 "install", "list-add", "package-x-generic",
-                                 "question", "rgbsquares",
-                                 "stock_3d-color-picker", "stock_lock",
-                                 "stock_lock-open", "stock_refresh", "web",
-                                 "window-center", "zoom-best-fit", "zoom-in",
-                                 "zoom-original", "zoom-out"]:
+                    if oname in [
+                        "applications-system",
+                        "color",
+                        "document-open",
+                        "document-save-as",
+                        "edit-delete",
+                        "image-x-generic",
+                        "info",
+                        "install",
+                        "list-add",
+                        "package-x-generic",
+                        "question",
+                        "rgbsquares",
+                        "stock_3d-color-picker",
+                        "stock_lock",
+                        "stock_lock-open",
+                        "stock_refresh",
+                        "web",
+                        "window-center",
+                        "zoom-best-fit",
+                        "zoom-in",
+                        "zoom-original",
+                        "zoom-out",
+                    ]:
                         # Scale 85 to 255 and adjust alpha
                         factors = (3, 3, 3, alpha / 255.0)
                     else:
@@ -426,8 +480,7 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                 dc = wx.MemoryDC()
                 dc.SelectObject(bmp)
                 if display_missing_icon:
-                    art = wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE,
-                                                   size=(w, h))
+                    art = wx.ArtProvider.GetBitmap(wx.ART_MISSING_IMAGE, size=(w, h))
                     dc.DrawBitmap(art, 0, 0, True)
                 dc.SelectObject(wx.NullBitmap)
         bitmaps[name] = bmp
@@ -435,8 +488,9 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
 
 
 def get_bitmap_as_icon(size, name, scale=True):
-    """ Like geticon, but return a wx.Icon instance """
+    """Like geticon, but return a wx.Icon instance"""
     from DisplayCAL.wxaddons import wx
+
     icon = wx.EmptyIcon()
     if sys.platform == "darwin" and wx.VERSION >= (2, 9) and size > 128:
         # FIXME: wxMac 2.9 doesn't support icon sizes above 128
@@ -452,15 +506,17 @@ def get_argyll_data_dir():
     else:
         argyll_data_dirname = "ArgyllCMS"
     if sys.platform == "darwin" and getcfg("argyll.version") < "1.5.0":
-        return os.path.join(library if is_superuser() else library_home,
-                            argyll_data_dirname)
+        return os.path.join(
+            library if is_superuser() else library_home, argyll_data_dirname
+        )
     else:
-        return os.path.join(commonappdata[0] if is_superuser() else appdata,
-                            argyll_data_dirname)
+        return os.path.join(
+            commonappdata[0] if is_superuser() else appdata, argyll_data_dirname
+        )
 
 
 def get_display_name(n=None, include_geometry=False):
-    """ Return name of currently configured display """
+    """Return name of currently configured display"""
     if n is None:
         n = getcfg("display.number") - 1
     displays = getcfg("displays")
@@ -486,7 +542,7 @@ def split_display_name(display):
 
 
 def get_argyll_display_number(geometry):
-    """ Translate from wx display geometry to Argyll display index """
+    """Translate from wx display geometry to Argyll display index"""
     geometry = "%i, %i, %ix%i" % tuple(geometry)
     for i, display in enumerate(getcfg("displays")):
         if display.find("@ " + geometry) > -1:
@@ -496,10 +552,11 @@ def get_argyll_display_number(geometry):
 
 
 def get_display_number(display_no):
-    """ Translate from Argyll display index to wx display index """
+    """Translate from Argyll display index to wx display index"""
     if is_virtual_display(display_no):
         return 0
     from DisplayCAL.wxaddons import wx
+
     try:
         display = getcfg("displays")[display_no]
     except IndexError:
@@ -511,17 +568,17 @@ def get_display_number(display_no):
             geometry = "%i, %i, %ix%i" % tuple(wx.Display(i).Geometry)
             if display.endswith("@ " + geometry):
                 if debug:
-                    print("[D] Found display %s at index %i" %
-                               (geometry, i))
+                    print("[D] Found display %s at index %i" % (geometry, i))
                 return i
     return 0
 
 
 def get_display_rects():
-    """ Return the Argyll enumerated display coordinates and sizes """
+    """Return the Argyll enumerated display coordinates and sizes"""
     from DisplayCAL.wxaddons import wx
+
     display_rects = []
-    for i, display in enumerate(getcfg("displays")):
+    for _i, display in enumerate(getcfg("displays")):
         match = re.search(r"@ (-?\d+), (-?\d+), (\d+)x(\d+)", display)
         if match:
             display_rects.append(wx.Rect(*[int(item) for item in match.groups()]))
@@ -529,8 +586,9 @@ def get_display_rects():
 
 
 def get_icon_bundle(sizes, name):
-    """ Return a wx.IconBundle with given icon sizes """
+    """Return a wx.IconBundle with given icon sizes"""
     from DisplayCAL.wxaddons import wx
+
     iconbundle = wx.IconBundle()
     if not sizes:
         # Assume ICO format
@@ -547,7 +605,7 @@ def get_icon_bundle(sizes, name):
 
 
 def get_instrument_name():
-    """ Return name of currently configured instrument """
+    """Return name of currently configured instrument"""
     n = getcfg("comport.number") - 1
     instrument_names = getcfg("instruments")
     if 0 <= n < len(instrument_names):
@@ -556,11 +614,10 @@ def get_instrument_name():
 
 
 def get_measureframe_dimensions(dimensions_measureframe=None, percent=10):
-    """ return measurement area size adjusted for percentage of screen area """
+    """return measurement area size adjusted for percentage of screen area"""
     if not dimensions_measureframe:
         dimensions_measureframe = getcfg("dimensions.measureframe")
-    dimensions_measureframe = [float(n) for n in
-                               dimensions_measureframe.split(",")]
+    dimensions_measureframe = [float(n) for n in dimensions_measureframe.split(",")]
     dimensions_measureframe[2] *= defaults["size.measureframe"]
     dimensions_measureframe[2] /= get_display_rects()[0][2]
     dimensions_measureframe[2] *= percent
@@ -568,10 +625,12 @@ def get_measureframe_dimensions(dimensions_measureframe=None, percent=10):
 
 
 def geticon(size, name, scale=True, use_mask=False):
-    """ Convenience function for getbitmap('theme/icons/<size>/<name>'). """
-    return getbitmap("theme/icons/%(size)sx%(size)s/%(name)s" %
-                     {"size": size, "name": name}, scale=scale,
-                     use_mask=use_mask)
+    """Convenience function for getbitmap('theme/icons/<size>/<name>')."""
+    return getbitmap(
+        "theme/icons/%(size)sx%(size)s/%(name)s" % {"size": size, "name": name},
+        scale=scale,
+        use_mask=use_mask,
+    )
 
 
 def get_data_path(relpath, rex=None):
@@ -581,12 +640,16 @@ def get_data_path(relpath, rex=None):
     return a list of files in the intersection of searched directories.
 
     """
-    if not relpath or relpath.endswith(os.path.sep) \
-       or (isinstance(os.path.altsep, str) and relpath.endswith(os.path.altsep)):
+    if (
+        not relpath
+        or relpath.endswith(os.path.sep)
+        or (isinstance(os.path.altsep, str) and relpath.endswith(os.path.altsep))
+    ):
         return None
     dirs = list(data_dirs)
-    argyll_dir = (getcfg("argyll.dir") or
-                  os.path.dirname(os.path.realpath(which("dispcal" + exe_ext) or "")))
+    argyll_dir = getcfg("argyll.dir") or os.path.dirname(
+        os.path.realpath(which("dispcal" + exe_ext) or "")
+    )
     if argyll_dir and os.path.isdir(os.path.join(argyll_dir, "..", "ref")):
         dirs.append(os.path.dirname(argyll_dir))
     dirs.extend(extra_data_dirs)
@@ -594,7 +657,11 @@ def get_data_path(relpath, rex=None):
     paths = []
     for dir_ in dirs:
         curpath = os.path.join(dir_, relpath)
-        if dir_.endswith("/argyll") and (relpath + "/").startswith("ref/") and not os.path.exists(curpath):
+        if (
+            dir_.endswith("/argyll")
+            and (relpath + "/").startswith("ref/")
+            and not os.path.exists(curpath)
+        ):
             # Work-around distribution-specific differences for location
             # of Argyll reference files
             # Fedora and Ubuntu: /usr/share/color/argyll/ref
@@ -610,7 +677,10 @@ def get_data_path(relpath, rex=None):
                 try:
                     filelist = listdir_re(curpath, rex)
                 except Exception as exception:
-                    print("Error - directory '%s' listing failed: %s" % (curpath, exception))
+                    print(
+                        "Error - directory '%s' listing failed: %s"
+                        % (curpath, exception)
+                    )
                 else:
                     for filename in filelist:
                         if filename not in intersection:
@@ -639,6 +709,7 @@ def runtimeconfig(pyfile):
     """
     # global safe_log
     from DisplayCAL.log import setup_logging
+
     setup_logging(logdir, pyname, pyext, confighome=confighome)
     if debug:
         print("[D] pydir:", pydir)
@@ -653,9 +724,15 @@ def runtimeconfig(pyfile):
     else:
         pydir_parent = os.path.dirname(pydir)
         if debug:
-            print("[D] dirname(os.path.abspath(sys.argv[0])):", os.path.dirname(os.path.abspath(sys.argv[0])))
+            print(
+                "[D] dirname(os.path.abspath(sys.argv[0])):",
+                os.path.dirname(os.path.abspath(sys.argv[0])),
+            )
             print("[D] pydir parent:", pydir_parent)
-        if os.path.dirname(os.path.abspath(sys.argv[0])) == pydir_parent and pydir_parent not in data_dirs:
+        if (
+            os.path.dirname(os.path.abspath(sys.argv[0])) == pydir_parent
+            and pydir_parent not in data_dirs
+        ):
             # Add the parent directory of the package directory to our list
             # of data directories if it is the directory containing the
             # currently run script (e.g. when running from source)
@@ -670,26 +747,48 @@ def runtimeconfig(pyfile):
             if debug:
                 print("[D] from sys.path:", dir_)
     if sys.platform not in ("darwin", "win32"):
-        data_dirs.extend([os.path.join(dir_, "doc", appname + "-" + version)
-                          for dir_ in xdg_data_dirs + [xdg_data_home]])
-        data_dirs.extend([os.path.join(dir_, "doc", "packages", appname)
-                          for dir_ in xdg_data_dirs + [xdg_data_home]])
-        data_dirs.extend([os.path.join(dir_, "doc", appname)
-                          for dir_ in xdg_data_dirs + [xdg_data_home]])
-        data_dirs.extend([os.path.join(dir_, "doc", appname.lower())  # Debian
-                          for dir_ in xdg_data_dirs + [xdg_data_home]])
-        data_dirs.extend([os.path.join(dir_, "icons", "hicolor")
-                          for dir_ in xdg_data_dirs + [xdg_data_home]])
+        data_dirs.extend(
+            [
+                os.path.join(dir_, "doc", appname + "-" + version)
+                for dir_ in xdg_data_dirs + [xdg_data_home]
+            ]
+        )
+        data_dirs.extend(
+            [
+                os.path.join(dir_, "doc", "packages", appname)
+                for dir_ in xdg_data_dirs + [xdg_data_home]
+            ]
+        )
+        data_dirs.extend(
+            [
+                os.path.join(dir_, "doc", appname)
+                for dir_ in xdg_data_dirs + [xdg_data_home]
+            ]
+        )
+        data_dirs.extend(
+            [
+                os.path.join(dir_, "doc", appname.lower())  # Debian
+                for dir_ in xdg_data_dirs + [xdg_data_home]
+            ]
+        )
+        data_dirs.extend(
+            [
+                os.path.join(dir_, "icons", "hicolor")
+                for dir_ in xdg_data_dirs + [xdg_data_home]
+            ]
+        )
     if debug:
         print("[D] Data files search paths:\n[D]", "\n[D] ".join(data_dirs))
     defaults["calibration.file"] = get_data_path("presets/default.icc") or ""
-    defaults["measurement_report.chart"] = get_data_path(os.path.join("ref", "verify_extended.ti1")) or ""
+    defaults["measurement_report.chart"] = (
+        get_data_path(os.path.join("ref", "verify_extended.ti1")) or ""
+    )
     return runtype
 
 
 # User settings
 cfg = configparser.RawConfigParser()
-cfg['Default'] = {}
+cfg["Default"] = {}
 cfg.optionxform = str
 
 
@@ -748,14 +847,31 @@ valid_values = {
     "3dlut.encoding.input": list(video_encodings),
     # collink: xvYCC output encoding is not supported
     "3dlut.encoding.output": [v for v in video_encodings if v not in ("T", "x", "X")],
-    "3dlut.format": ["3dl", "cube", "dcl", "eeColor", "icc", "madVR", "mga",
-                     "png", "ReShade", "spi3d"],
+    "3dlut.format": [
+        "3dl",
+        "cube",
+        "dcl",
+        "eeColor",
+        "icc",
+        "madVR",
+        "mga",
+        "png",
+        "ReShade",
+        "spi3d",
+    ],
     "3dlut.hdr_display": [0, 1],
     "3dlut.image.layout": ["h", "v"],
     "3dlut.image.order": ["rgb", "bgr"],
     "3dlut.rendering_intent": intents,
     "3dlut.size": [5, 9, 16, 17, 24, 32, 33, 64, 65],
-    "3dlut.trc": ["bt1886", "customgamma", "gamma2.2", "smpte2084.hardclip", "smpte2084.rolloffclip", "hlg"],
+    "3dlut.trc": [
+        "bt1886",
+        "customgamma",
+        "gamma2.2",
+        "smpte2084.hardclip",
+        "smpte2084.rolloffclip",
+        "hlg",
+    ],
     "3dlut.trc_gamma_type": ["b", "B"],
     "calibration.quality": ["v", "l", "m", "h", "u"],
     "colorimeter_correction.observer": observers,
@@ -768,8 +884,7 @@ valid_values = {
     # worker.Worker.add_measurement_features if using Argyll >= 1.5
     # See http://www.argyllcms.com/doc/instruments.html
     # for description of per-instrument supported modes
-    "measurement_mode": [None, "auto"] + list(string.digits[1:] +
-                                              string.ascii_letters),
+    "measurement_mode": [None, "auto"] + list(string.digits[1:] + string.ascii_letters),
     "gamap_default_intent": ["a", "r", "p", "s"],
     "gamap_perceptual_intent": intents,
     "gamap_saturation_intent": intents,
@@ -778,9 +893,16 @@ valid_values = {
     "measurement_report.trc_gamma_type": ["b", "B"],
     "observer": observers,
     "patterngenerator.detect_video_levels": [0, 1],
-    "patterngenerator.prisma.preset": ["Movie", "Sports", "Game", "Animation",
-                                       "PC/Mac", "Black+White", "Custom-1",
-                                       "Custom-2"],
+    "patterngenerator.prisma.preset": [
+        "Movie",
+        "Sports",
+        "Game",
+        "Animation",
+        "PC/Mac",
+        "Black+White",
+        "Custom-1",
+        "Custom-2",
+    ],
     "patterngenerator.use_video_levels": [0, 1],
     "profile.black_point_compensation": [0, 1],
     "profile.install_scope": ["l", "u"],
@@ -793,21 +915,35 @@ valid_values = {
     "synthprofile.trc_gamma_type": ["g", "G"],
     "tc_algo": ["", "t", "r", "R", "q", "Q", "i", "I"],  # Q = Argyll >= 1.1.0
     "tc_vrml_use_D50": [0, 1],
-    "tc_vrml_cie_colorspace": ["DIN99", "DIN99b", "DIN99c", "DIN99d", "ICtCp",
-                               "IPT", "LCH(ab)", "LCH(uv)", "Lab", "Lpt", "Luv",
-                               "Lu'v'", "xyY"],
+    "tc_vrml_cie_colorspace": [
+        "DIN99",
+        "DIN99b",
+        "DIN99c",
+        "DIN99d",
+        "ICtCp",
+        "IPT",
+        "LCH(ab)",
+        "LCH(uv)",
+        "Lab",
+        "Lpt",
+        "Luv",
+        "Lu'v'",
+        "xyY",
+    ],
     "tc_vrml_device_colorspace": ["HSI", "HSL", "HSV", "RGB"],
     "testchart.auto_optimize": list(range(19)),
-    "testchart.patch_sequence": ["optimize_display_response_delay",
-                                 "maximize_lightness_difference",
-                                 "maximize_rec709_luma_difference",
-                                 "maximize_RGB_difference",
-                                 "vary_RGB_difference"],
+    "testchart.patch_sequence": [
+        "optimize_display_response_delay",
+        "maximize_lightness_difference",
+        "maximize_rec709_luma_difference",
+        "maximize_RGB_difference",
+        "vary_RGB_difference",
+    ],
     "trc": ["240", "709", "l", "s", ""],
     "trc.type": ["g", "G"],
     "uniformity.cols": [3, 5, 7, 9],
     "uniformity.rows": [3, 5, 7, 9],
-    "whitepoint.colortemp.locus": ["t", "T"]
+    "whitepoint.colortemp.locus": ["t", "T"],
 }
 
 content_rgb_space = colormath.get_rgb_space("DCI P3 D65")
@@ -1001,7 +1137,7 @@ defaults = {
     "multiprocessing.max_cpus": 0,
     "observer": "1931_2",
     "observer.backup": "1931_2",
-    "patterngenerator.apl": .22,
+    "patterngenerator.apl": 0.22,
     "patterngenerator.detect_video_levels": 1,
     "patterngenerator.ffp_insertion": 0,
     "patterngenerator.ffp_insertion.duration": 5.0,
@@ -1041,25 +1177,27 @@ defaults = {
     "profile.black_point_compensation": 0 if sys.platform != "darwin" else 1,
     "profile.black_point_correction": 0.0,
     "profile.create_gamut_views": 1,
-    "profile.install_scope": "l" if (sys.platform != "win32" and
-                                     os.geteuid() == 0) # or
+    "profile.install_scope": "l"
+    if (sys.platform != "win32" and os.geteuid() == 0)  # or
     # (sys.platform == "win32" and
     # sys.getwindowsversion() >= (6, ))
     else "u",  # Linux, OSX
     "profile.license": "Public Domain",
     "profile.load_on_login": 1,
-    "profile.name": " ".join([
-        "%dns",
-        "%out",
-        "%Y-%m-%d %H-%M",
-        "%cb",
-        "%wp",
-        "%cB",
-        "%ck",
-        "%cg",
-        "%cq-%pq",
-        "%pt"
-    ]),
+    "profile.name": " ".join(
+        [
+            "%dns",
+            "%out",
+            "%Y-%m-%d %H-%M",
+            "%cb",
+            "%wp",
+            "%cB",
+            "%ck",
+            "%cg",
+            "%cq-%pq",
+            "%pt",
+        ]
+    ),
     "profile.name.expanded": "",
     "profile.quality": "h",
     "profile.quality.b2a": "h",
@@ -1067,47 +1205,51 @@ defaults = {
     "profile.b2a.hires.diagpng": 2,
     "profile.b2a.hires.size": -1,
     "profile.b2a.hires.smooth": 1,
-    "profile.save_path": storage, # directory
+    "profile.save_path": storage,  # directory
     # Force profile type to single shaper + matrix
     # due to OS X bugs with cLUT profiles and
     # matrix profiles with individual shaper curves
     "profile.type": "X" if sys.platform != "darwin" else "S",
     "profile.update": 0,
-    "profile_loader.buggy_video_drivers":  ";".join(["*"]),
+    "profile_loader.buggy_video_drivers": ";".join(["*"]),
     "profile_loader.check_gamma_ramps": 1,
     "profile_loader.error.show_msg": 1,
     "profile_loader.exceptions": "",
     "profile_loader.fix_profile_associations": 1,
     "profile_loader.ignore_unchanged_gamma_ramps": 1,
-    "profile_loader.known_apps": ";".join(["basiccolor display.exe",
-                                           "calclient.exe",
-                                           "coloreyes display pro.exe",
-                                           "colorhcfr.exe",
-                                           "colormunkidisplay.exe",
-                                           "colornavigator.exe",
-                                           "cpkeeper.exe",
-                                           "dell ultrasharp calibration solution.exe",
-                                           "hp_dreamcolor_calibration_solution.exe",
-                                           "i1profiler.exe",
-                                           "icolordisplay.exe",
-                                           "spectraview.exe",
-                                           "spectraview profiler.exe",
-                                           "spyder3elite.exe",
-                                           "spyder3express.exe",
-                                           "spyder3pro.exe",
-                                           "spyder4elite.exe",
-                                           "spyder4express.exe",
-                                           "spyder4pro.exe",
-                                           "spyder5elite.exe",
-                                           "spyder5express.exe",
-                                           "spyder5pro.exe",
-                                           "spyderxelite.exe",
-                                           "spyderxpro.exe",
-                                           "dispcal.exe",
-                                           "dispread.exe",
-                                           "dispwin.exe",
-                                           "flux.exe",
-                                           "dccw.exe"]),
+    "profile_loader.known_apps": ";".join(
+        [
+            "basiccolor display.exe",
+            "calclient.exe",
+            "coloreyes display pro.exe",
+            "colorhcfr.exe",
+            "colormunkidisplay.exe",
+            "colornavigator.exe",
+            "cpkeeper.exe",
+            "dell ultrasharp calibration solution.exe",
+            "hp_dreamcolor_calibration_solution.exe",
+            "i1profiler.exe",
+            "icolordisplay.exe",
+            "spectraview.exe",
+            "spectraview profiler.exe",
+            "spyder3elite.exe",
+            "spyder3express.exe",
+            "spyder3pro.exe",
+            "spyder4elite.exe",
+            "spyder4express.exe",
+            "spyder4pro.exe",
+            "spyder5elite.exe",
+            "spyder5express.exe",
+            "spyder5pro.exe",
+            "spyderxelite.exe",
+            "spyderxpro.exe",
+            "dispcal.exe",
+            "dispread.exe",
+            "dispwin.exe",
+            "flux.exe",
+            "dccw.exe",
+        ]
+    ),
     "profile_loader.known_window_classes": ";".join(["CalClient.exe"]),
     "profile_loader.quantize_bits": 16,
     "profile_loader.reset_gamma_ramps": 0,
@@ -1224,7 +1366,7 @@ defaults = {
     "whitepoint.y": 0.3290,
     "whitepoint.y.backup": 0.3290,
     "x3dom.cache": 1,
-    "x3dom.embed": 0
+    "x3dom.embed": 0,
 }
 lcode, lenc = locale.getdefaultlocale()
 if lcode:
@@ -1233,8 +1375,9 @@ if lcode:
 testchart_defaults = {
     "s": {None: "auto"},  # shaper + matrix
     "l": {None: "auto"},  # lut
-    "g": {None: "auto"}  # gamma + matrix
+    "g": {None: "auto"},  # gamma + matrix
 }
+
 
 def _init_testcharts():
     for testcharts in list(testchart_defaults.values()):
@@ -1270,7 +1413,11 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
             # Check for invalid types and return default if wrong type
             if raw:
                 pass
-            elif (name != "trc" or value not in valid_values["trc"]) and hasdef and deftype in (Decimal, int, float):
+            elif (
+                (name != "trc" or value not in valid_values["trc"])
+                and hasdef
+                and deftype in (Decimal, int, float)
+            ):
                 try:
                     value = deftype(value)
                 except ValueError:
@@ -1300,18 +1447,26 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
                 value = "g"
             elif name in valid_values and value not in valid_values[name]:
                 if debug:
-                    print("Invalid config value for %s: %s" % (name, value), end=' ')
+                    print("Invalid config value for %s: %s" % (name, value), end=" ")
                 value = None
             elif name == "copyright":
                 # Make sure DisplayCAL and Argyll version are up-to-date
-                pattern = re.compile(r"(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appname, re.I)
+                pattern = re.compile(
+                    r"(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appname, re.I
+                )
                 repl = create_replace_function("\\1%s", version)
                 value = re.sub(pattern, repl, value)
                 if appbasename != appname:
-                    pattern = re.compile(r"(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appbasename, re.I)
+                    pattern = re.compile(
+                        r"(%s(?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*" % appbasename,
+                        re.I,
+                    )
                     repl = create_replace_function("\\1%s", version)
                     value = re.sub(pattern, repl, value)
-                pattern = re.compile(r"(Argyll(?:\s*CMS)?)((?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*", re.I)
+                pattern = re.compile(
+                    r"(Argyll(?:\s*CMS)?)((?:\s*v(?:ersion|\.)?)?\s*)\d+(?:\.\d+)*",
+                    re.I,
+                )
                 if defval.split()[-1] != "CMS":
                     repl = create_replace_function("\\1\\2%s", defval.split()[-1])
                 else:
@@ -1333,23 +1488,29 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
                 print("Warning - unknown option:", name)
     if raw:
         return value
-    if value and isinstance(value, str) and name.endswith("file") \
-       and name != "colorimeter_correction_matrix_file" and \
-       (name != "testchart.file" or value != "auto") and \
-       (not os.path.isabs(value) or not os.path.exists(value)):
+    if (
+        value
+        and isinstance(value, str)
+        and name.endswith("file")
+        and name != "colorimeter_correction_matrix_file"
+        and (name != "testchart.file" or value != "auto")
+        and (not os.path.isabs(value) or not os.path.exists(value))
+    ):
         # colorimeter_correction_matrix_file is special because it's
         # not (only) a path
         if debug:
-            print("%s does not exist: %s" % (name, value), end=' ')
+            print("%s does not exist: %s" % (name, value), end=" ")
         # Normalize path (important, this turns altsep into sep under
         # Windows)
         value = os.path.normpath(value)
         # Check if this is a relative path covered by data_dirs
-        if (value.split(os.path.sep)[-3:-2] == [appname] or
-            not os.path.isabs(value)) and (
-                value.split(os.path.sep)[-2:-1] == ["presets"] or
-                value.split(os.path.sep)[-2:-1] == ["ref"] or
-                value.split(os.path.sep)[-2:-1] == ["ti1"]):
+        if (
+            value.split(os.path.sep)[-3:-2] == [appname] or not os.path.isabs(value)
+        ) and (
+            value.split(os.path.sep)[-2:-1] == ["presets"]
+            or value.split(os.path.sep)[-2:-1] == ["ref"]
+            or value.split(os.path.sep)[-2:-1] == ["ti1"]
+        ):
             value = os.path.join(*value.split(os.path.sep)[-2:])
             value = get_data_path(value)
         elif hasdef:
@@ -1361,8 +1522,12 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
     elif name in ("displays", "instruments"):
         if not value:
             return []
-        value = [strtr(v, [("%" + hex(ord(os.pathsep))[2:].upper(), os.pathsep),
-                           ("%25", "%")]) for v in value.split(os.pathsep)]
+        value = [
+            strtr(
+                v, [("%" + hex(ord(os.pathsep))[2:].upper(), os.pathsep), ("%25", "%")]
+            )
+            for v in value.split(os.pathsep)
+        ]
     return value
 
 
@@ -1381,19 +1546,21 @@ def hascfg(name, fallback=True, cfg=cfg):
 
 
 def get_ccxx_testchart():
-    """ Get the path to the default chart for CCMX/CCSS creation """
-    return get_data_path(os.path.join("ti1",
-                                      defaults["colorimeter_correction.testchart"]))
+    """Get the path to the default chart for CCMX/CCSS creation"""
+    return get_data_path(
+        os.path.join("ti1", defaults["colorimeter_correction.testchart"])
+    )
 
 
 def get_current_profile(include_display_profile=False):
-    """ Get the currently selected profile (if any) """
+    """Get the currently selected profile (if any)"""
     path = getcfg("calibration.file", False)
     if path:
         from DisplayCAL import ICCProfile as ICCP
+
         try:
             profile = ICCP.ICCProfile(path, use_cache=True)
-        except (IOError, ICCP.ICCProfileInvalidError) as exception:
+        except (IOError, ICCP.ICCProfileInvalidError):
             return
         return profile
     elif include_display_profile:
@@ -1406,10 +1573,12 @@ def get_display_profile(display_no=None):
     if is_virtual_display(display_no):
         return None
     from DisplayCAL import ICCProfile as ICCP
+
     try:
         return ICCP.get_display_profile(display_no)
-    except Exception as exception:
+    except Exception:
         from DisplayCAL.log import log
+
         print("ICCP.get_display_profile(%s):" % display_no, file=log)
 
 
@@ -1419,42 +1588,48 @@ standard_profiles = []
 def get_standard_profiles(paths_only=False):
     if not standard_profiles:
         from DisplayCAL import ICCProfile as ICCP
+
         # Reference profiles (Argyll + DisplayCAL)
-        ref_icc = get_data_path("ref", "\.ic[cm]$") or []
+        ref_icc = get_data_path("ref", r"\.ic[cm]$") or []
         # Other profiles installed on the system
         other_icc = []
         rex = re.compile(r"\.ic[cm]$", re.IGNORECASE)
         for icc_dir in set(iccprofiles + iccprofiles_home):
-            for dirpath, dirnames, basenames in os.walk(icc_dir):
+            for dirpath, _dirnames, basenames in os.walk(icc_dir):
                 for basename in filter(rex.search, basenames):
                     filename, ext = os.path.splitext(basename.lower())
-                    if (filename.endswith("_bas") or
-                            filename.endswith("_eci") or
-                            filename.endswith("adobergb1998") or
-                            filename.startswith("eci-rgb") or
-                            filename.startswith("ecirgb") or
-                            filename.startswith("ekta space") or
-                            filename.startswith("ektaspace") or
-                            filename.startswith("fogra") or
-                            filename.startswith("gracol") or
-                            filename.startswith("iso") or
-                            filename.startswith("lstar-") or
-                            filename.startswith("pso") or
-                            filename.startswith("prophoto") or
-                            filename.startswith("psr_") or
-                            filename.startswith("psrgravure") or
-                            filename.startswith("snap") or
-                            filename.startswith("srgb") or
-                            filename.startswith("swop") or
-                            filename in ("applergb",
-                                         "bestrgb",
-                                         "betargb",
-                                         "brucergb",
-                                         "ciergb",
-                                         "cie-rgb",
-                                         "colormatchrgb",
-                                         "donrgb",
-                                         "widegamutrgb")):
+                    if (
+                        filename.endswith("_bas")
+                        or filename.endswith("_eci")
+                        or filename.endswith("adobergb1998")
+                        or filename.startswith("eci-rgb")
+                        or filename.startswith("ecirgb")
+                        or filename.startswith("ekta space")
+                        or filename.startswith("ektaspace")
+                        or filename.startswith("fogra")
+                        or filename.startswith("gracol")
+                        or filename.startswith("iso")
+                        or filename.startswith("lstar-")
+                        or filename.startswith("pso")
+                        or filename.startswith("prophoto")
+                        or filename.startswith("psr_")
+                        or filename.startswith("psrgravure")
+                        or filename.startswith("snap")
+                        or filename.startswith("srgb")
+                        or filename.startswith("swop")
+                        or filename
+                        in (
+                            "applergb",
+                            "bestrgb",
+                            "betargb",
+                            "brucergb",
+                            "ciergb",
+                            "cie-rgb",
+                            "colormatchrgb",
+                            "donrgb",
+                            "widegamutrgb",
+                        )
+                    ):
                         other_icc.append(os.path.join(dirpath, basename))
         for path in ref_icc + other_icc:
             try:
@@ -1464,20 +1639,27 @@ def get_standard_profiles(paths_only=False):
             except Exception as exception:
                 print(exception)
             else:
-                if (profile.version < 4 and
-                        profile.profileClass != "nmcl" and
-                        profile.colorSpace != "GRAY" and
-                        profile.connectionColorSpace in ("Lab", "XYZ")):
+                if (
+                    profile.version < 4
+                    and profile.profileClass != "nmcl"
+                    and profile.colorSpace != "GRAY"
+                    and profile.connectionColorSpace in ("Lab", "XYZ")
+                ):
                     standard_profiles.append(profile)
     if paths_only:
         return [profile.fileName for profile in standard_profiles]
     return standard_profiles
 
 
-def get_total_patches(white_patches=None, black_patches=None,
-                      single_channel_patches=None, gray_patches=None,
-                      multi_steps=None, multi_bcc_steps=None,
-                      fullspread_patches=None):
+def get_total_patches(
+    white_patches=None,
+    black_patches=None,
+    single_channel_patches=None,
+    gray_patches=None,
+    multi_steps=None,
+    multi_bcc_steps=None,
+    fullspread_patches=None,
+):
     if white_patches is None:
         white_patches = getcfg("tc_white_patches")
     if black_patches is None and getcfg("argyll.version") >= "1.6":
@@ -1501,7 +1683,7 @@ def get_total_patches(white_patches=None, black_patches=None,
         if multi_bcc_steps > 1:
             multi_patches += int(math.pow(multi_bcc_steps - 1, 3))
         total_patches += multi_patches
-        white_patches -= 1 # white always in multi channel patches
+        white_patches -= 1  # white always in multi channel patches
 
         multi_step = 255.0 / (multi_steps - 1)
         multi_values = []
@@ -1509,9 +1691,9 @@ def get_total_patches(white_patches=None, black_patches=None,
         if multi_bcc_steps > 1:
             multi_bcc_step = multi_step
             for i in range(multi_bcc_steps):
-                multi_values.append(str(multi_bcc_step  * i))
+                multi_values.append(str(multi_bcc_step * i))
             for i in range(multi_bcc_steps * 2 - 1):
-                multi_bcc_values.append(str(multi_bcc_step / 2.0  * i))
+                multi_bcc_values.append(str(multi_bcc_step / 2.0 * i))
         else:
             for i in range(multi_steps):
                 multi_values.append(str(multi_step * i))
@@ -1523,8 +1705,10 @@ def get_total_patches(white_patches=None, black_patches=None,
         if gray_patches > 1:
             gray_step = 255.0 / (gray_patches - 1)
             for i in range(gray_patches):
-                if (str(gray_step * i) in multi_values or
-                        str(gray_step * i) in multi_bcc_values):
+                if (
+                    str(gray_step * i) in multi_values
+                    or str(gray_step * i) in multi_bcc_values
+                ):
                     gray_patches -= 1
     elif gray_patches > 1:
         white_patches -= 1  # white always in gray patches
@@ -1532,9 +1716,12 @@ def get_total_patches(white_patches=None, black_patches=None,
     elif single_channel_patches_total:
         # black always only once in single channel patches
         single_channel_patches_total -= 2
-    total_patches += max(0, white_patches) + \
-                     max(0, single_channel_patches_total) + \
-                     max(0, gray_patches) + fullspread_patches
+    total_patches += (
+        max(0, white_patches)
+        + max(0, single_channel_patches_total)
+        + max(0, gray_patches)
+        + fullspread_patches
+    )
     if black_patches:
         if gray_patches > 1 or single_channel_patches_total or multi_steps:
             black_patches -= 1  # black always in other patches
@@ -1543,26 +1730,29 @@ def get_total_patches(white_patches=None, black_patches=None,
 
 
 def get_verified_path(cfg_item_name, path=None):
-    """ Verify and return dir and filename for a path from the user cfg,
-    or a given path """
+    """Verify and return dir and filename for a path from the user cfg,
+    or a given path"""
     defaultPath = path or getcfg(cfg_item_name)
     defaultDir = expanduseru("~")
     defaultFile = ""
     if defaultPath:
         if os.path.exists(defaultPath):
-            defaultDir, defaultFile = (os.path.dirname(defaultPath),
-                                       os.path.basename(defaultPath))
-        elif (defaults.get(cfg_item_name) and
-              os.path.exists(defaults[cfg_item_name])):
-            defaultDir, defaultFile = (os.path.dirname(defaults[cfg_item_name]),
-                                       os.path.basename(defaults[cfg_item_name]))
+            defaultDir, defaultFile = (
+                os.path.dirname(defaultPath),
+                os.path.basename(defaultPath),
+            )
+        elif defaults.get(cfg_item_name) and os.path.exists(defaults[cfg_item_name]):
+            defaultDir, defaultFile = (
+                os.path.dirname(defaults[cfg_item_name]),
+                os.path.basename(defaults[cfg_item_name]),
+            )
         elif os.path.exists(os.path.dirname(defaultPath)):
             defaultDir = os.path.dirname(defaultPath)
     return defaultDir, defaultFile
 
 
 def is_ccxx_testchart(testchart=None):
-    """ Check whether the testchart is the default chart for CCMX/CCSS creation """
+    """Check whether the testchart is the default chart for CCMX/CCSS creation"""
     testchart = testchart or getcfg("testchart.file")
     return testchart == get_ccxx_testchart()
 
@@ -1572,8 +1762,9 @@ def is_profile(filename=None, include_display_profile=False):
     if filename:
         if os.path.exists(filename):
             from DisplayCAL import ICCProfile as ICCP
+
             try:
-                profile = ICCP.ICCProfile(filename, use_cache=True)
+                ICCP.ICCProfile(filename, use_cache=True)
             except (IOError, ICCP.ICCProfileInvalidError):
                 pass
             else:
@@ -1589,24 +1780,32 @@ def makecfgdir(which="user", worker=None):
             try:
                 os.makedirs(confighome)
             except Exception as exception:
-                print("Warning - could not create configuration directory '%s': %s" % (confighome, exception))
+                print(
+                    "Warning - could not create configuration directory '%s': %s"
+                    % (confighome, exception)
+                )
                 return False
     elif not os.path.exists(config_sys):
         try:
             if sys.platform == "win32":
                 os.makedirs(config_sys)
             else:
-                result = worker.exec_cmd("mkdir",
-                                         ["-p", config_sys],
-                                         capture_output=True,
-                                         low_contrast=False,
-                                         skip_scripts=True,
-                                         silent=True,
-                                         asroot=True)
+                result = worker.exec_cmd(
+                    "mkdir",
+                    ["-p", config_sys],
+                    capture_output=True,
+                    low_contrast=False,
+                    skip_scripts=True,
+                    silent=True,
+                    asroot=True,
+                )
                 if isinstance(result, Exception):
                     raise result
         except Exception as exception:
-            print("Warning - could not create configuration directory '%s': %s" % (config_sys, exception))
+            print(
+                "Warning - could not create configuration directory '%s': %s"
+                % (config_sys, exception)
+            )
             return False
     return True
 
@@ -1625,7 +1824,9 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     else:
         cfgbasename = appbasename
     makecfgdir()
-    if os.path.exists(confighome) and not os.path.exists(os.path.join(confighome, cfgbasename + ".ini")):
+    if os.path.exists(confighome) and not os.path.exists(
+        os.path.join(confighome, cfgbasename + ".ini")
+    ):
         # Set default preset
         setcfg("calibration.file", defaults["calibration.file"], cfg=cfg)
 
@@ -1634,8 +1835,9 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     if module:
         cfgnames.append(cfgbasename)
     else:
-        cfgnames.extend("%s-%s" % (appbasename, othermod) for othermod in
-                        ("testchart-editor", ))
+        cfgnames.extend(
+            "%s-%s" % (appbasename, othermod) for othermod in ("testchart-editor",)
+        )
 
     cfgroots = [confighome]
     if module == "apply-profiles":
@@ -1673,8 +1875,10 @@ def initcfg(module=None, cfg=cfg, force_load=False):
         cfg.read(cfgfiles)
     # This won't raise an exception if the file does not exist, only
     # if it can't be parsed
-    except Exception as exception:
-        print("Warning - could not parse configuration files:\n%s" % "\n".join(cfgfiles))
+    except Exception:
+        print(
+            "Warning - could not parse configuration files:\n%s" % "\n".join(cfgfiles)
+        )
         # Fix Python 2.7 ConfigParser option values being lists instead of
         # strings in case of a ParsingError. http://bugs.python.org/issue24142
         all_sections = [configparser.DEFAULTSECT]
@@ -1693,12 +1897,13 @@ dpiset = False
 
 
 def set_default_app_dpi():
-    """ Set application DPI """
+    """Set application DPI"""
     # Only call this after creating the wx.App object!
     global dpiset
     if not dpiset and not getcfg("app.dpi", False):
         # HighDPI support
         from DisplayCAL.wxaddons import wx
+
         dpiset = True
         if sys.platform in ("darwin", "win32"):
             # Determine screen DPI
@@ -1706,6 +1911,7 @@ def set_default_app_dpi():
         else:
             # Linux
             from DisplayCAL.util_os import which
+
             txt_scale = None
             # XDG_CURRENT_DESKTOP delimiter is colon (':')
             desktop = os.getenv("XDG_CURRENT_DESKTOP", "").split(":")
@@ -1716,9 +1922,18 @@ def set_default_app_dpi():
             # Nothing to do
             elif which("gsettings"):
                 import subprocess as sp
-                p = sp.Popen(["gsettings", "get", "org.gnome.desktop.interface",
-                              "text-scaling-factor"], stdin=sp.PIPE,
-                             stdout=sp.PIPE, stderr=sp.PIPE)
+
+                p = sp.Popen(
+                    [
+                        "gsettings",
+                        "get",
+                        "org.gnome.desktop.interface",
+                        "text-scaling-factor",
+                    ],
+                    stdin=sp.PIPE,
+                    stdout=sp.PIPE,
+                    stderr=sp.PIPE,
+                )
                 factor, stderr = p.communicate()
                 try:
                     txt_scale = float(factor)
@@ -1737,10 +1952,13 @@ def get_hidpi_scaling_factor():
     else:
         # Linux
         from DisplayCAL.util_os import which
+
         if which("xrdb"):
             import subprocess as sp
-            p = sp.Popen(["xrdb", "-query"], stdin=sp.PIPE,
-                         stdout=sp.PIPE, stderr=sp.PIPE)
+
+            p = sp.Popen(
+                ["xrdb", "-query"], stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE
+            )
             # Format: 'Xft.dpi:        192'
             stdout, stderr = p.communicate()
             for line in stdout.splitlines():
@@ -1772,10 +1990,12 @@ def get_hidpi_scaling_factor():
             screen_scale_factors = os.getenv("QT_SCREEN_SCALE_FACTORS", "").split(";")
             if screen_scale_factors:
                 from DisplayCAL.wxaddons import wx
+
                 match = False
                 app = wx.GetApp()
                 if app:
                     from DisplayCAL import RealDisplaySizeMM as RDSMM
+
                     if not RDSMM._displays:
                         RDSMM.enumerate_displays()
                     top = app.TopWindow
@@ -1785,8 +2005,10 @@ def get_hidpi_scaling_factor():
                         # Create temp frame if no topwindow
                         top = wx.Frame(None)
                         # Move to main window location (and thus screen)
-                        x, y = (getcfg("position.x", False),
-                                getcfg("position.y", False))
+                        x, y = (
+                            getcfg("position.x", False),
+                            getcfg("position.y", False),
+                        )
                         if None not in (x, y):
                             top.SetSaneGeometry(x, y)
                         tmp = True
@@ -1806,12 +2028,10 @@ def get_hidpi_scaling_factor():
                         else:
                             name, factor = None, item
                         for display in RDSMM._displays:
-                            if (display.get("pos") != pos or
-                                    display.get("size") != size):
+                            if display.get("pos") != pos or display.get("size") != size:
                                 # No match
                                 continue
-                            if (name and
-                                    display.get("xrandr_name") != name):
+                            if name and display.get("xrandr_name") != name:
                                 # No match
                                 continue
                             # Match found
@@ -1825,9 +2045,13 @@ def get_hidpi_scaling_factor():
         if not factor and which("gsettings"):
             # GNOME
             import subprocess as sp
-            p = sp.Popen(["gsettings", "get", "org.gnome.desktop.interface",
-                          "scaling-factor"], stdin=sp.PIPE,
-                         stdout=sp.PIPE, stderr=sp.PIPE)
+
+            p = sp.Popen(
+                ["gsettings", "get", "org.gnome.desktop.interface", "scaling-factor"],
+                stdin=sp.PIPE,
+                stdout=sp.PIPE,
+                stderr=sp.PIPE,
+            )
             # Format: 'unint32 1'
             stdout, stderr = p.communicate()
             split = stdout.split()
@@ -1842,20 +2066,25 @@ def get_hidpi_scaling_factor():
 
 
 def setcfg(name, value, cfg=cfg):
-    """Set an option value in the configuration.
-    """
+    """Set an option value in the configuration."""
     if value is None:
         cfg.remove_option(configparser.DEFAULTSECT, name)
     else:
         if name in ("displays", "instruments") and isinstance(value, (list, tuple)):
             value = os.pathsep.join(
-                strtr(v, [("%", "%25"), (os.pathsep, "%" + hex(ord(os.pathsep))[2:].upper())]) for v in value
+                strtr(
+                    v,
+                    [
+                        ("%", "%25"),
+                        (os.pathsep, "%" + hex(ord(os.pathsep))[2:].upper()),
+                    ],
+                )
+                for v in value
             )
         cfg.set(configparser.DEFAULTSECT, name, value)
 
 
-def setcfg_cond(condition, name, value, set_if_backup_exists=False,
-                restore=True):
+def setcfg_cond(condition, name, value, set_if_backup_exists=False, restore=True):
     """If <condition>, backup configuration option <name> if not yet backed up
     and set option to <value> if backup did not previously exist or
     set_if_backup_exists evaluates to True
@@ -1892,7 +2121,7 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
     else:
         cfgbasename = appbasename
     # Remove unknown options
-    for name, val in cfg.items(configparser.DEFAULTSECT):
+    for name, _val in cfg.items(configparser.DEFAULTSECT):
         if name not in defaults:
             print("Removing unknown option:", name)
             setcfg(name, None)
@@ -1918,8 +2147,10 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             cfgfile.write((os.linesep.join(lines) + os.linesep).encode())
             cfgfile.close()
         except Exception as exception:
-            print("Warning - could not write user configuration file "
-                       "'%s': %s" % (cfgfilename, exception))
+            print(
+                "Warning - could not write user configuration file "
+                "'%s': %s" % (cfgfilename, exception)
+            )
             return False
     else:
         # system-wide config - only stores essentials ie. Argyll directory
@@ -1933,26 +2164,39 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             cfgfile = open(cfgfilename, "wb")
             if getcfg("argyll.dir"):
                 cfgfile.write(
-                    ("%s%s" % (
-                        os.linesep.join(["[Default]", "%s = %s" % ("argyll.dir", getcfg("argyll.dir"))]),
-                        os.linesep
-                    )).encode()
+                    (
+                        "%s%s"
+                        % (
+                            os.linesep.join(
+                                [
+                                    "[Default]",
+                                    "%s = %s" % ("argyll.dir", getcfg("argyll.dir")),
+                                ]
+                            ),
+                            os.linesep,
+                        )
+                    ).encode()
                 )
             cfgfile.close()
             if sys.platform != "win32":
                 # on Linux and OS X, we write the file to the users's config dir
                 # then 'su mv' it to the system-wide config dir
-                result = worker.exec_cmd("mv",
-                                         ["-f", cfgfilename1, cfgfilename2],
-                                         capture_output=True,
-                                         low_contrast=False,
-                                         skip_scripts=True,
-                                         silent=True,
-                                         asroot=True)
+                result = worker.exec_cmd(
+                    "mv",
+                    ["-f", cfgfilename1, cfgfilename2],
+                    capture_output=True,
+                    low_contrast=False,
+                    skip_scripts=True,
+                    silent=True,
+                    asroot=True,
+                )
                 if isinstance(result, Exception):
                     raise result
         except Exception as exception:
-            print("Warning - could not write system-wide configuration file '%s': %s" % (cfgfilename2, exception))
+            print(
+                "Warning - could not write system-wide configuration file '%s': %s"
+                % (cfgfilename2, exception)
+            )
             return False
     return True
 

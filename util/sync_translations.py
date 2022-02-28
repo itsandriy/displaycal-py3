@@ -24,7 +24,9 @@ USE_INLINE = False
 
 def quote(obj):
     if isinstance(obj, str):
-        return '"%s"' % obj.replace('\\', '\\\\').replace('"', '\\"').replace("\n", "\\n").replace("\t", "\\t")
+        return '"%s"' % obj.replace("\\", "\\\\").replace('"', '\\"').replace(
+            "\n", "\\n"
+        ).replace("\t", "\\t")
     else:
         return repr(obj)
 
@@ -55,28 +57,37 @@ def langmerge(infilename1, infilename2, outfilename):
                 a = dictin1[key].count("%" + c)
                 b = value.count("%" + c)
                 if a != b:
-                    print(key, "ERROR: Format character count for %%%s is wrong:" % c, a, "(expected %i)" % b)
+                    print(
+                        key,
+                        "ERROR: Format character count for %%%s is wrong:" % c,
+                        a,
+                        "(expected %i)" % b,
+                    )
             if key.startswith("info."):
                 # Check tag formatting and correct Google translator messing
                 # with tags
                 original = dictin1[key]
                 # Clean up whitespace
                 # E.g. ' <font> ' -> ' <font>'
-                wscleaned = re.sub(r'(^|\s+)(<[^/> ]+[^>]*>)\s+', r'\1\2', original)
+                wscleaned = re.sub(r"(^|\s+)(<[^/> ]+[^>]*>)\s+", r"\1\2", original)
                 # E.g. 'x<font> ' -> 'x <font>'
-                wscleaned = re.sub(r'([^>])(<[^/> ]+[^>]*>)(\s+)', r'\1\3\2', wscleaned)
+                wscleaned = re.sub(r"([^>])(<[^/> ]+[^>]*>)(\s+)", r"\1\3\2", wscleaned)
                 # E.g. ': </font>' -> ':</font> '
-                wscleaned = re.sub(r'([:\-])(\s+)(</[^>]*>)\s*', r'\1\3\2', wscleaned)
+                wscleaned = re.sub(r"([:\-])(\s+)(</[^>]*>)\s*", r"\1\3\2", wscleaned)
                 # E.g. ', </font>' -> '</font>, '
-                wscleaned = re.sub(r'([,;.])(\s+)(</[^>]*>)\s*', r'\3\1\2', wscleaned)
+                wscleaned = re.sub(r"([,;.])(\s+)(</[^>]*>)\s*", r"\3\1\2", wscleaned)
                 # E.g. ' </font> ' -> '</font> '
-                wscleaned = re.sub(r'\s+(</[^>]*>\s+)', r'\1', wscleaned)
+                wscleaned = re.sub(r"\s+(</[^>]*>\s+)", r"\1", wscleaned)
                 # E.g. ' </font>x' -> '</font> x'
-                wscleaned = re.sub(r'(\s+)(</[^>]*>)([^<,;.:\- \n])', r'\2\1\3', wscleaned)
+                wscleaned = re.sub(
+                    r"(\s+)(</[^>]*>)([^<,;.:\- \n])", r"\2\1\3", wscleaned
+                )
                 if original != wscleaned:
                     print(key, "INFO: Corrected whitespace.")
                 # Find all tags
-                tags = re.findall(r'<(\s*[^/> ]+)([^>]*)>([^<]*)(<\s*/\s*\1>)', wscleaned)
+                tags = re.findall(
+                    r"<(\s*[^/> ]+)([^>]*)>([^<]*)(<\s*/\s*\1>)", wscleaned
+                )
                 replaced = wscleaned
                 cleaned = wscleaned
                 tagcleaned = wscleaned
@@ -84,14 +95,18 @@ def langmerge(infilename1, infilename2, outfilename):
                     tag = "<%s%s>%s%s" % (tagname, attrs, contents, end)
                     replaced = replaced.replace(tag, contents)
                     # <font weight='bold'></font> is the only supported tag
-                    cleaned = cleaned.replace(tag,
-                                              "<font weight='bold'>%s</font>" %
-                                              contents.strip())
+                    cleaned = cleaned.replace(
+                        tag, "<font weight='bold'>%s</font>" % contents.strip()
+                    )
                     if contents != contents.strip():
-                        print(key, "INFO: Removed surrounding whitespace from tag contents %s" % tag)
-                    tagcleaned = cleaned.replace(tag,
-                                                 "<font weight='bold'>%s</font>" %
-                                                 contents)
+                        print(
+                            key,
+                            "INFO: Removed surrounding whitespace from tag contents %s"
+                            % tag,
+                        )
+                    tagcleaned = cleaned.replace(
+                        tag, "<font weight='bold'>%s</font>" % contents
+                    )
                 stripped = re.sub(r"<[^>]*>", "", replaced)
                 stripped = stripped.replace("<", "").replace(">", "")
                 if replaced != stripped:
@@ -110,7 +125,9 @@ def langmerge(infilename1, infilename2, outfilename):
     for key in natsort(dictin1.keys(), False):
         if key not in dictin2 and not key.startswith("*") and dictin1[key]:
             if "ORPHANED KEY-VALUE PAIRS" not in merged:
-                merged["ORPHANED KEY-VALUE PAIRS"] = "Note to translators: Key-value pairs below this point are no longer used. You may consider removing them."
+                merged[
+                    "ORPHANED KEY-VALUE PAIRS"
+                ] = "Note to translators: Key-value pairs below this point are no longer used. You may consider removing them."
             merged[key] = dictin1[key]
             print("Orphan: '%s' '%s'" % (key, dictin1[key]))
 
@@ -123,7 +140,10 @@ def langmerge(infilename1, infilename2, outfilename):
                 outstream.write(b"  %s\n" % line.encode("UTF-8"))
         else:
             # Inline
-            outstream.write(b'"%s": "%s"\n' % (key.encode("UTF-8"), lazydict.escape(value).encode("UTF-8")))
+            outstream.write(
+                b'"%s": "%s"\n'
+                % (key.encode("UTF-8"), lazydict.escape(value).encode("UTF-8"))
+            )
     outstream.seek(0)
     formatted = outstream.read()
     for key in added:
@@ -144,9 +164,13 @@ if __name__ == "__main__":
         print("Usage: %s" % os.path.basename(sys.argv[0]))
         print("Synchronizes translations to en.yaml")
     else:
-        for langfile in listdir_re(os.path.join(root, "DisplayCAL", "lang"), r"^\w+\.yaml$"):
+        for langfile in listdir_re(
+            os.path.join(root, "DisplayCAL", "lang"), r"^\w+\.yaml$"
+        ):
             if langfile != "template.yaml":
-                langmerge(os.path.join("lang", langfile),
-                          os.path.join("lang", "en.yaml"),
-                          os.path.join(root, "DisplayCAL", "lang", langfile))
+                langmerge(
+                    os.path.join("lang", langfile),
+                    os.path.join("lang", "en.yaml"),
+                    os.path.join(root, "DisplayCAL", "lang", langfile),
+                )
                 print("")

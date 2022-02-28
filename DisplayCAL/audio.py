@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 Audio wrapper module
 
@@ -13,11 +12,18 @@ only supports wav format.
 Example:
 sound = Sound("test.wav", loop=True)
 sound.Play(fade_ms=1000)
-
 """
 
-from ctypes import (CFUNCTYPE, POINTER, Structure, c_int, c_uint8, c_uint16,
-                    c_uint32, c_void_p)
+from ctypes import (
+    CFUNCTYPE,
+    POINTER,
+    Structure,
+    c_int,
+    c_uint8,
+    c_uint16,
+    c_uint32,
+    c_void_p,
+)
 import ctypes.util
 import os
 import sys
@@ -46,7 +52,7 @@ _sounds = {}
 
 
 def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
-    """ (Re-)Initialize sound subsystem """
+    """(Re-)Initialize sound subsystem"""
     # Note on buffer size: Too high values cause crackling during fade, too low
     # values cause choppy playback of ogg files when using pyo (good value for
     # pyo is >= 2048)
@@ -63,12 +69,19 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
         else:
             # Linux
             libs = ("SDL", "pyglet", "pyo", "wx")
+
+        audio_lib = None
         for lib in libs:
             try:
-                return init(lib, samplerate, channels, buffersize, reinit)
-            except Exception as exception:
+                audio_lib = init(lib, samplerate, channels, buffersize, reinit)
+                break
+            except Exception:
                 pass
-        raise exception
+
+        if not audio_lib:
+            raise RuntimeError("No suitable audio library found!")
+        else:
+            return audio_lib
     elif lib == "pyglet":
         if not getattr(sys, "frozen", False):
             # Use included pyglet
@@ -77,6 +90,7 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
                 sys.path.insert(0, lib_dir)
         try:
             import pyglet
+
             version = []
             for item in pyglet.version.split("."):
                 try:
@@ -99,17 +113,23 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
     elif lib == "pyo":
         try:
             import pyo
+
             _lib = "pyo"
         except ImportError:
             _lib = None
         else:
             if isinstance(_server, pyo.Server):
-                _server.reinit(sr=samplerate, nchnls=channels,
-                               buffersize=buffersize, duplex=0)
+                _server.reinit(
+                    sr=samplerate, nchnls=channels, buffersize=buffersize, duplex=0
+                )
             else:
-                _server = pyo.Server(sr=samplerate, nchnls=channels,
-                                     buffersize=buffersize, duplex=0,
-                                     winhost="asio").boot()
+                _server = pyo.Server(
+                    sr=samplerate,
+                    nchnls=channels,
+                    buffersize=buffersize,
+                    duplex=0,
+                    winhost="asio",
+                ).boot()
                 _server.start()
                 _lib_version = ".".join(str(v) for v in pyo.getVersion())
     elif lib == "SDL":
@@ -131,8 +151,7 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
             if x_framework_pth:
                 framework_pth = os.getenv("DYLD_FALLBACK_FRAMEWORK_PATH")
                 if framework_pth:
-                    x_framework_pth = os.pathsep.join([x_framework_pth,
-                                                       framework_pth])
+                    x_framework_pth = os.pathsep.join([x_framework_pth, framework_pth])
                 os.environ["DYLD_FALLBACK_FRAMEWORK_PATH"] = x_framework_pth
         for libname in ("SDL2", "SDL2_mixer", "SDL", "SDL_mixer"):
             handle = None
@@ -168,16 +187,20 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
                 _server.Mix_OpenAudio.argtypes = [c_int, c_uint16, c_int, c_int]
                 _server.Mix_LoadWAV_RW.argtypes = [POINTER(SDL_RWops), c_int]
                 _server.Mix_LoadWAV_RW.restype = POINTER(Mix_Chunk)
-                _server.Mix_PlayChannelTimed.argtypes = [c_int,
-                                                         POINTER(Mix_Chunk),
-                                                         c_int, c_int]
+                _server.Mix_PlayChannelTimed.argtypes = [
+                    c_int,
+                    POINTER(Mix_Chunk),
+                    c_int,
+                    c_int,
+                ]
                 _server.Mix_VolumeChunk.argtypes = [POINTER(Mix_Chunk), c_int]
                 if _initialized:
                     _server.Mix_Quit()
                     sdl.SDL_Quit()
                 sdl.SDL_Init(SDL_INIT_AUDIO)
-                _server.Mix_OpenAudio(samplerate, MIX_DEFAULT_FORMAT, channels,
-                                      buffersize)
+                _server.Mix_OpenAudio(
+                    samplerate, MIX_DEFAULT_FORMAT, channels, buffersize
+                )
                 _lib = "SDL"
                 if libname.startswith("SDL2"):
                     _lib_version = "2.0"
@@ -190,6 +213,7 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
     elif lib == "wx":
         try:
             import wx
+
             _lib = "wx"
         except ImportError:
             _lib = None
@@ -202,9 +226,8 @@ def init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
     return _server
 
 
-def safe_init(lib=None, samplerate=22050, channels=2, buffersize=2048,
-              reinit=False):
-    """ Like init(), but catch any exceptions """
+def safe_init(lib=None, samplerate=22050, channels=2, buffersize=2048, reinit=False):
+    """Like init(), but catch any exceptions"""
     global _initialized
     try:
         return init(lib, samplerate, channels, buffersize, reinit)
@@ -215,7 +238,7 @@ def safe_init(lib=None, samplerate=22050, channels=2, buffersize=2048,
 
 
 def Sound(filename, loop=False, raise_exceptions=False):
-    """ Sound caching mechanism """
+    """Sound caching mechanism"""
     if (filename, loop) in _sounds:
         # Cache hit
         return _sounds[(filename, loop)]
@@ -232,8 +255,7 @@ def Sound(filename, loop=False, raise_exceptions=False):
 
 
 class DummySound(object):
-
-    """ Dummy sound wrapper class """
+    """Dummy sound wrapper class"""
 
     def __init__(self, filename=None, loop=False):
         pass
@@ -272,15 +294,17 @@ class SDL_RWops(Structure):
 
 
 class Mix_Chunk(Structure):
-    _fields_ = [("allocated", c_int),
-                ("abuf", POINTER(c_uint8)),
-                ("alen", c_uint32),
-                ("volume", c_uint8)]
+    _fields_ = [
+        ("allocated", c_int),
+        ("abuf", POINTER(c_uint8)),
+        ("alen", c_uint32),
+        ("volume", c_uint8),
+    ]
 
 
 class _Sound(object):
 
-    """ Sound wrapper class """
+    """Sound wrapper class"""
 
     def __init__(self, filename, loop=False):
         self._filename = filename
@@ -301,8 +325,7 @@ class _Sound(object):
                 self._lib_version = _lib_version
             if not self._snd and self._filename:
                 if self._lib == "pyo":
-                    self._snd = pyo.SfPlayer(safe_str(self._filename),
-                                             loop=self._loop)
+                    self._snd = pyo.SfPlayer(safe_str(self._filename), loop=self._loop)
                 elif self._lib == "pyglet":
                     snd = pyglet.media.load(self._filename, streaming=False)
                     self._ch = pyglet.media.Player()
@@ -346,8 +369,7 @@ class _Sound(object):
             elif self._lib == "pyglet":
                 volume = self._ch.volume
             elif self._lib == "SDL":
-                volume = (float(self._server.Mix_VolumeChunk(self._snd, -1)) /
-                          128)
+                volume = float(self._server.Mix_VolumeChunk(self._snd, -1)) / 128
         return volume
 
     @volume.setter
@@ -358,8 +380,7 @@ class _Sound(object):
             elif self._lib == "pyglet":
                 self._ch.volume = volume
             elif self._lib == "SDL":
-                self._server.Mix_VolumeChunk(self._snd,
-                                             int(round(volume * 128)))
+                self._server.Mix_VolumeChunk(self._snd, int(round(volume * 128)))
             return True
         return False
 
@@ -383,9 +404,11 @@ class _Sound(object):
             return self.play(fade_ms=fade_ms)
         elif self._snd and self._lib != "wx":
             self._thread += 1
-            threading.Thread(target=self._fade, name="AudioFading-%d[%sms]" %
-                                                     (self._thread, fade_ms),
-                             args=(fade_ms, fade_in, self._thread)).start()
+            threading.Thread(
+                target=self._fade,
+                name="AudioFading-%d[%sms]" % (self._thread, fade_ms),
+                args=(fade_ms, fade_in, self._thread),
+            ).start()
             return True
         return False
 
@@ -394,12 +417,17 @@ class _Sound(object):
         if self._lib == "pyo":
             return bool(self._snd and self._snd.isOutputting())
         elif self._lib == "pyglet":
-            return bool(self._ch and self._ch.playing and self._ch.source and
-                        (self._loop or time.time() - self._play_timestamp <
-                         self._ch.source.duration))
+            return bool(
+                self._ch
+                and self._ch.playing
+                and self._ch.source
+                and (
+                    self._loop
+                    or time.time() - self._play_timestamp < self._ch.source.duration
+                )
+            )
         elif self._lib == "SDL":
-            return bool(self._ch is not None and
-                        self._server.Mix_Playing(self._ch))
+            return bool(self._ch is not None and self._server.Mix_Playing(self._ch))
         return self._is_playing
 
     def play(self, fade_ms=0, stop_already_playing=True):
@@ -424,8 +452,9 @@ class _Sound(object):
                 self._snd.out()
             elif self._lib == "pyglet":
                 if self._loop and self._lib_version < "1.4.0":
-                    snd = pyglet.media.SourceGroup(self._snd.audio_format,
-                                                   self._snd.video_format)
+                    snd = pyglet.media.SourceGroup(
+                        self._snd.audio_format, self._snd.video_format
+                    )
                     snd.loop = True
                     snd.queue(self._snd)
                 else:
@@ -433,9 +462,9 @@ class _Sound(object):
                 self._ch.queue(snd)
                 self._ch.play()
             elif self._lib == "SDL":
-                self._ch = self._server.Mix_PlayChannelTimed(-1, self._snd,
-                                                             -1 if self._loop else 0,
-                                                             -1)
+                self._ch = self._server.Mix_PlayChannelTimed(
+                    -1, self._snd, -1 if self._loop else 0, -1
+                )
             elif self._lib == "wx" and self._snd.IsOk():
                 flags = wx.SOUND_ASYNC
                 if self._loop:
@@ -459,7 +488,7 @@ class _Sound(object):
         return self._play_count
 
     def safe_fade(self, fade_ms, fade_in=None):
-        """ Like fade(), but catch any exceptions """
+        """Like fade(), but catch any exceptions"""
         if not _initialized:
             safe_init()
         try:
@@ -468,7 +497,7 @@ class _Sound(object):
             return exception
 
     def safe_play(self, fade_ms=0):
-        """ Like play(), but catch any exceptions """
+        """Like play(), but catch any exceptions"""
         if not _initialized:
             safe_init()
         try:
@@ -477,7 +506,7 @@ class _Sound(object):
             return exception
 
     def safe_stop(self, fade_ms=0):
-        """ Like stop(), but catch any exceptions """
+        """Like stop(), but catch any exceptions"""
         try:
             return self.stop(fade_ms)
         except Exception as exception:
@@ -505,21 +534,24 @@ class _Sound(object):
 if __name__ == "__main__":
     import wx
     from DisplayCAL.config import get_data_path
+
     sound = Sound(get_data_path("theme/engine_hum_loop.wav"), True)
     app = wx.App(0)
     frame = wx.Frame(None, -1, "Test")
-    frame.Bind(wx.EVT_CLOSE, lambda event: (sound.stop(1000) and
-                                            _lib != "wx" and time.sleep(1),
-                                            event.Skip()))
+    frame.Bind(
+        wx.EVT_CLOSE,
+        lambda event: (
+            sound.stop(1000) and _lib != "wx" and time.sleep(1),
+            event.Skip(),
+        ),
+    )
     panel = wx.Panel(frame)
     panel.Sizer = wx.BoxSizer()
     button = wx.Button(panel, -1, "Play")
-    button.Bind(wx.EVT_BUTTON, lambda event: not sound.is_playing and
-                                             sound.play(3000))
+    button.Bind(wx.EVT_BUTTON, lambda event: not sound.is_playing and sound.play(3000))
     panel.Sizer.Add(button, 1)
     button = wx.Button(panel, -1, "Stop")
-    button.Bind(wx.EVT_BUTTON, lambda event: sound.is_playing and
-                                             sound.stop(3000))
+    button.Bind(wx.EVT_BUTTON, lambda event: sound.is_playing and sound.stop(3000))
     panel.Sizer.Add(button, 1)
     panel.Sizer.SetSizeHints(frame)
     frame.Show()

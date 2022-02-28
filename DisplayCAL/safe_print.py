@@ -22,16 +22,18 @@ def _get_console_width():
             if sys.platform == "win32":
                 from ctypes import windll, create_string_buffer
                 import struct
+
                 # Use stderr handle so that pipes don't affect the reported size
                 stderr_handle = windll.kernel32.GetStdHandle(-12)
                 buf = create_string_buffer(22)
-                consinfo = windll.kernel32.GetConsoleScreenBufferInfo(stderr_handle,
-                                                                      buf)
+                consinfo = windll.kernel32.GetConsoleScreenBufferInfo(
+                    stderr_handle, buf
+                )
                 if consinfo:
                     _conwidth = struct.unpack("hhhhHhhhhhh", buf.raw)[0]
             else:
                 _conwidth = int(os.getenv("COLUMNS"))
-        except:
+        except Exception:
             pass
     return _conwidth
 
@@ -114,6 +116,6 @@ def _get_console_width():
 # safe_print = SafePrinter()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for arg in sys.argv[1:]:
         print(arg)

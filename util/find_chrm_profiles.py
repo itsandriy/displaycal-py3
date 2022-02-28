@@ -15,7 +15,7 @@ for p in set(iccprofiles_home + iccprofiles):
         for f in os.listdir(p):
             try:
                 profile = iccp.ICCProfile(os.path.join(p, f))
-            except:
+            except Exception:
                 pass
             else:
                 if "chrm" in profile.tags:

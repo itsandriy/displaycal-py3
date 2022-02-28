@@ -47,12 +47,16 @@ def profileinfo(profile):
     print("Description:", profile.getDescription())
     print("Copyright:", profile.getCopyright())
     if "dmnd" in profile.tags:
-        print("Device Manufacturer Description:",)
+        print(
+            "Device Manufacturer Description:",
+        )
         print(profile.getDeviceManufacturerDescription())
     if "dmdd" in profile.tags:
         print("Device Model Description:", profile.getDeviceModelDescription())
     if "vued" in profile.tags:
-        print("Viewing Conditions Description:",)
+        print(
+            "Viewing Conditions Description:",
+        )
         print(profile.getViewingConditionsDescription())
     wtpt_profile_norm = tuple(n * 100 for n in profile.tags.wtpt.values())
     if "chad" in profile.tags:

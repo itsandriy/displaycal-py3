@@ -12,10 +12,10 @@ def main():
     x = y = 0
     levels = []
     for i in range(256):
-        for j in range(5):
+        for _j in range(5):
             levels.append(i)
     offset = 0
-    for i, byte in enumerate(buf):
+    for i, _byte in enumerate(buf):
         if i and i % 3 == 0:
             x += 1
             if x % 640 == 0:
@@ -26,8 +26,7 @@ def main():
                 offset += 1
         level = levels[offset]
         buf[i] = chr(level)
-    img.SaveFile(os.path.join(os.getcwd(), "gradient_8bit.png"),
-                 wx.BITMAP_TYPE_PNG)
+    img.SaveFile(os.path.join(os.getcwd(), "gradient_8bit.png"), wx.BITMAP_TYPE_PNG)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ if sys.platform == "win32":
 
 
 def get_encoding(stream):
-    """ Return stream encoding. """
+    """Return stream encoding."""
     enc = None
     if stream in (sys.stdin, sys.stdout, sys.stderr):
         if sys.platform == "darwin":
@@ -25,20 +25,27 @@ def get_encoding(stream):
                     # we're not running as console executable. Fall back
                     # to GetOEMCP
                     if stream is (sys.stdin):
-                        enc = "cp%i" % (windll.kernel32.GetConsoleCP() or
-                                        windll.kernel32.GetOEMCP())
+                        enc = "cp%i" % (
+                            windll.kernel32.GetConsoleCP() or windll.kernel32.GetOEMCP()
+                        )
                     else:
-                        enc = "cp%i" % (windll.kernel32.GetConsoleOutputCP() or
-                                        windll.kernel32.GetOEMCP())
-                except:
+                        enc = "cp%i" % (
+                            windll.kernel32.GetConsoleOutputCP()
+                            or windll.kernel32.GetOEMCP()
+                        )
+                except Exception:
                     pass
-    enc = enc or getattr(stream, "encoding", None) or \
-          locale.getpreferredencoding() or sys.getdefaultencoding()
+    enc = (
+        enc
+        or getattr(stream, "encoding", None)
+        or locale.getpreferredencoding()
+        or sys.getdefaultencoding()
+    )
     return enc
 
 
 def get_encodings():
-    """ Return console encoding, filesystem encoding. """
+    """Return console encoding, filesystem encoding."""
     enc = get_encoding(sys.stdout)
     fs_enc = sys.getfilesystemencoding() or enc
     return enc, fs_enc

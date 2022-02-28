@@ -11,13 +11,15 @@ import warnings
 
 if sys.platform == "win32":
     from threading import _MainThread, currentThread
+
     wmi = None
-    if sys.getwindowsversion() >= (6, ):
+    if sys.getwindowsversion() >= (6,):
         # Use WMI for Vista/Win7
         import pythoncom
+
         try:
             import wmi
-        except:
+        except Exception:
             pass
     else:
         # Use registry as fallback for Win2k/XP/2003
@@ -33,6 +35,7 @@ from DisplayCAL import config
 from DisplayCAL.config import enc
 from DisplayCAL.log import log
 from DisplayCAL.util_str import make_ascii_printable, safe_str, strtr
+
 if sys.platform == "win32":
     from DisplayCAL import util_win
 elif sys.platform != "darwin":
@@ -71,7 +74,7 @@ BLOCK_TYPE_SERIAL_ASCII = "\xff"
 BLOCK_TYPE_ASCII = "\xfe"
 BLOCK_TYPE_MONITOR_NAME = "\xfc"
 BLOCK_TYPE_COLOR_POINT = "\xfb"
-BLOCK_TYPE_COLOR_MANAGEMENT_DATA  = "\xf9"
+BLOCK_TYPE_COLOR_MANAGEMENT_DATA = "\xf9"
 EXTENSION_FLAG = 126
 CHECKSUM = 127
 BLOCK_DI_EXT = "\x40"
@@ -79,12 +82,13 @@ TRC = (81, 127)
 
 pnpidcache = {}
 
+
 def combine_hi_8lo(hi, lo):
     return hi << 8 | lo
 
 
 def get_edid(display_no=0, display_name=None, device=None):
-    """ Get and parse EDID. Return dict.
+    """Get and parse EDID. Return dict.
 
     On Mac OS X, you need to specify a display name.
     On all other platforms, you need to specify a display number (zero-based).
@@ -120,7 +124,7 @@ def get_edid(display_no=0, display_name=None, device=None):
                 if msmonitor.InstanceName.split("\\")[1] == id:
                     try:
                         edid = msmonitor.WmiGetMonitorRawEEdidV1Block(0)
-                    except:
+                    except Exception:
                         # No EDID entry
                         pass
                     else:
@@ -128,7 +132,7 @@ def get_edid(display_no=0, display_name=None, device=None):
                     break
             if not_main_thread:
                 pythoncom.CoUninitialize()
-        elif sys.getwindowsversion() < (6, ):
+        elif sys.getwindowsversion() < (6,):
             # Use registry as fallback for Win2k/XP/2003
             # http://msdn.microsoft.com/en-us/library/ff546173%28VS.85%29.aspx
             # "The Enum tree is reserved for use by operating system components,
@@ -142,15 +146,18 @@ def get_edid(display_no=0, display_name=None, device=None):
                 key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey)
             except WindowsError:
                 # Registry error
-                print("Windows registry error: Key",
-                      "\\".join(["HKEY_LOCAL_MACHINE", subkey]),
-                      "does not exist.")
+                print(
+                    "Windows registry error: Key",
+                    "\\".join(["HKEY_LOCAL_MACHINE", subkey]),
+                    "does not exist.",
+                )
                 return {}
             numsubkeys, numvalues, mtime = winreg.QueryInfoKey(key)
             for i in range(numsubkeys):
                 hkname = winreg.EnumKey(key, i)
-                hk = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                                    "\\".join([subkey, hkname]))
+                hk = winreg.OpenKey(
+                    winreg.HKEY_LOCAL_MACHINE, "\\".join([subkey, hkname])
+                )
                 try:
                     test = winreg.QueryValueEx(hk, "Driver")[0]
                 except WindowsError:
@@ -159,15 +166,24 @@ def get_edid(display_no=0, display_name=None, device=None):
                 if test == driver:
                     # Found our display device
                     try:
-                        devparms = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                                                  "\\".join([subkey, hkname,
-                                                             "Device Parameters"]))
+                        devparms = winreg.OpenKey(
+                            winreg.HKEY_LOCAL_MACHINE,
+                            "\\".join([subkey, hkname, "Device Parameters"]),
+                        )
                     except WindowsError:
                         # No Device Parameters (registry error?)
-                        print("Windows registry error: Key",
-                                   "\\".join(["HKEY_LOCAL_MACHINE", subkey,
-                                              hkname, "Device Parameters"]),
-                                   "does not exist.")
+                        print(
+                            "Windows registry error: Key",
+                            "\\".join(
+                                [
+                                    "HKEY_LOCAL_MACHINE",
+                                    subkey,
+                                    hkname,
+                                    "Device Parameters",
+                                ]
+                            ),
+                            "does not exist.",
+                        )
                         continue
                     try:
                         edid = winreg.QueryValueEx(devparms, "EDID")[0]
@@ -181,12 +197,18 @@ def get_edid(display_no=0, display_name=None, device=None):
         p = sp.Popen(["ioreg", "-c", "IODisplay", "-S", "-w0"], stdout=sp.PIPE)
         stdout, stderr = p.communicate()
         if stdout:
-            for edid in [binascii.unhexlify(edid_hex) for edid_hex in
-                         re.findall(r'"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>', stdout.decode())]:
+            for edid in [
+                binascii.unhexlify(edid_hex)
+                for edid_hex in re.findall(
+                    r'"IODisplayEDID"\s*=\s*<([0-9A-Fa-f]*)>', stdout.decode()
+                )
+            ]:
                 if edid and len(edid) >= 128:
                     parsed_edid = parse_edid(edid)
-                    if parsed_edid.get("monitor_name",
-                                       parsed_edid.get("ascii")) == display_name:
+                    if (
+                        parsed_edid.get("monitor_name", parsed_edid.get("ascii"))
+                        == display_name
+                    ):
                         # On Mac OS X, you need to specify a display name
                         # because the order is unknown
                         return parsed_edid
@@ -201,7 +223,7 @@ def get_edid(display_no=0, display_name=None, device=None):
 
 
 def parse_manufacturer_id(block):
-    """ Parse the manufacturer id and return decoded string.
+    """Parse the manufacturer id and return decoded string.
 
     The range is always ASCII charcode 64 to 95.
 
@@ -209,12 +231,12 @@ def parse_manufacturer_id(block):
     h = combine_hi_8lo(ord(block[0]), ord(block[1]))
     manufacturer_id = []
     for shift in (10, 5, 0):
-        manufacturer_id.append(chr(((h >> shift) & 0x1f) + ord('A') - 1))
+        manufacturer_id.append(chr(((h >> shift) & 0x1F) + ord("A") - 1))
     return "".join(manufacturer_id).strip()
 
 
 def get_manufacturer_name(manufacturer_id):
-    """ Try and get a nice descriptive string for our manufacturer id.
+    """Try and get a nice descriptive string for our manufacturer id.
     This uses either hwdb or pnp.ids which will be looked for in several places.
     If it can't find the file, it returns None.
 
@@ -233,10 +255,12 @@ def get_manufacturer_name(manufacturer_id):
 
     """
     if not pnpidcache:
-        paths = ["/usr/lib/udev/hwdb.d/20-acpi-vendor.hwdb",  # systemd
-                 "/usr/share/hwdata/pnp.ids",  # hwdata, e.g. Red Hat
-                 "/usr/share/misc/pnp.ids",  # pnputils, e.g. Debian
-                 "/usr/share/libgnome-desktop/pnp.ids"]  # fallback gnome-desktop
+        paths = [
+            "/usr/lib/udev/hwdb.d/20-acpi-vendor.hwdb",  # systemd
+            "/usr/share/hwdata/pnp.ids",  # hwdata, e.g. Red Hat
+            "/usr/share/misc/pnp.ids",  # pnputils, e.g. Debian
+            "/usr/share/libgnome-desktop/pnp.ids",
+        ]  # fallback gnome-desktop
         if sys.platform in ("darwin", "win32"):
             paths.append(os.path.join(config.pydir, "pnp.ids"))  # fallback
         for path in paths:
@@ -263,9 +287,9 @@ def get_manufacturer_name(manufacturer_id):
                                 try:
                                     # Strip leading/trailing whitespace
                                     # (non-breaking spaces too)
-                                    id, name = line.strip(string.whitespace +
-                                                          "\u00a0").split(None,
-                                                                          1)
+                                    id, name = line.strip(
+                                        string.whitespace + "\u00a0"
+                                    ).split(None, 1)
                                 except ValueError:
                                     continue
                             pnpidcache[id] = name
@@ -311,14 +335,16 @@ def edid_parse_string(desc):
 
 
 def parse_edid(edid):
-    """ Parse raw EDID data (binary string) and return dict. """
+    """Parse raw EDID data (binary string) and return dict."""
     hash = md5(edid).hexdigest()
-    header = edid[HEADER[0]:HEADER[1]]
-    manufacturer_id = parse_manufacturer_id(edid[MANUFACTURER_ID[0]:MANUFACTURER_ID[1]])
+    header = edid[HEADER[0]: HEADER[1]]
+    manufacturer_id = parse_manufacturer_id(
+        edid[MANUFACTURER_ID[0]: MANUFACTURER_ID[1]]
+    )
     manufacturer = get_manufacturer_name(manufacturer_id)
 
-    product_id = struct.unpack("<H", edid[PRODUCT_ID[0]:PRODUCT_ID[1]])[0]
-    serial_32 = struct.unpack("<I", edid[SERIAL_32[0]:SERIAL_32[1]])[0]
+    product_id = struct.unpack("<H", edid[PRODUCT_ID[0]: PRODUCT_ID[1]])[0]
+    serial_32 = struct.unpack("<I", edid[SERIAL_32[0]: SERIAL_32[1]])[0]
     week_of_manufacture = ord(edid[WEEK_OF_MANUFACTURE])
     year_of_manufacture = ord(edid[YEAR_OF_MANUFACTURE]) + 1990
     edid_version = ord(edid[EDID_VERSION])
@@ -330,33 +356,43 @@ def parse_edid(edid):
         gamma = ord(edid[GAMMA]) / 100.0 + 1
     features = ord(edid[FEATURES])
 
-    red_x = edid_decode_fraction(ord(edid[HI_R_X]),
-                                 edid_get_bits(ord(edid[LO_RG_XY]), 6, 7))
-    red_y = edid_decode_fraction(ord(edid[HI_R_Y]),
-                                 edid_get_bits(ord(edid[LO_RG_XY]), 4, 5))
+    red_x = edid_decode_fraction(
+        ord(edid[HI_R_X]), edid_get_bits(ord(edid[LO_RG_XY]), 6, 7)
+    )
+    red_y = edid_decode_fraction(
+        ord(edid[HI_R_Y]), edid_get_bits(ord(edid[LO_RG_XY]), 4, 5)
+    )
 
-    green_x = edid_decode_fraction(ord(edid[HI_G_X]),
-                                   edid_get_bits(ord(edid[LO_RG_XY]), 2, 3))
-    green_y = edid_decode_fraction(ord(edid[HI_G_Y]),
-                                   edid_get_bits(ord(edid[LO_RG_XY]), 0, 1))
+    green_x = edid_decode_fraction(
+        ord(edid[HI_G_X]), edid_get_bits(ord(edid[LO_RG_XY]), 2, 3)
+    )
+    green_y = edid_decode_fraction(
+        ord(edid[HI_G_Y]), edid_get_bits(ord(edid[LO_RG_XY]), 0, 1)
+    )
 
-    blue_x = edid_decode_fraction(ord(edid[HI_B_X]),
-                                  edid_get_bits(ord(edid[LO_BW_XY]), 6, 7))
-    blue_y = edid_decode_fraction(ord(edid[HI_B_Y]),
-                                  edid_get_bits(ord(edid[LO_BW_XY]), 4, 5))
+    blue_x = edid_decode_fraction(
+        ord(edid[HI_B_X]), edid_get_bits(ord(edid[LO_BW_XY]), 6, 7)
+    )
+    blue_y = edid_decode_fraction(
+        ord(edid[HI_B_Y]), edid_get_bits(ord(edid[LO_BW_XY]), 4, 5)
+    )
 
-    white_x = edid_decode_fraction(ord(edid[HI_W_X]),
-                                   edid_get_bits(ord(edid[LO_BW_XY]), 2, 3))
-    white_y = edid_decode_fraction(ord(edid[HI_W_Y]),
-                                   edid_get_bits(ord(edid[LO_BW_XY]), 0, 1))
+    white_x = edid_decode_fraction(
+        ord(edid[HI_W_X]), edid_get_bits(ord(edid[LO_BW_XY]), 2, 3)
+    )
+    white_y = edid_decode_fraction(
+        ord(edid[HI_W_Y]), edid_get_bits(ord(edid[LO_BW_XY]), 0, 1)
+    )
 
     result = locals()
     if not manufacturer:
         del result["manufacturer"]
 
-    text_types = {BLOCK_TYPE_SERIAL_ASCII: "serial_ascii",
-                  BLOCK_TYPE_ASCII: "ascii",
-                  BLOCK_TYPE_MONITOR_NAME: "monitor_name"}
+    text_types = {
+        BLOCK_TYPE_SERIAL_ASCII: "serial_ascii",
+        BLOCK_TYPE_ASCII: "ascii",
+        BLOCK_TYPE_MONITOR_NAME: "monitor_name",
+    }
 
     # Parse descriptor blocks
     for start, stop in BLOCKS:
@@ -366,7 +402,7 @@ def parse_edid(edid):
             continue
         text_type = text_types.get(block[BLOCK_TYPE])
         if text_type:
-            desc = edid_parse_string(block[BLOCK_CONTENTS[0]:BLOCK_CONTENTS[1]])
+            desc = edid_parse_string(block[BLOCK_CONTENTS[0]: BLOCK_CONTENTS[1]])
             if desc is not None:
                 result[text_type] = desc
         elif block[BLOCK_TYPE] == BLOCK_TYPE_COLOR_POINT:
@@ -375,15 +411,15 @@ def parse_edid(edid):
                 # 3rd white point index in range 2...255
                 # 0 = do not use
                 if ord(block[i]) > i / 5:
-                    white_x = edid_decode_fraction(ord(edid[i + 2]),
-                                                   edid_get_bits(ord(edid[i + 1]),
-                                                                 2, 3))
+                    white_x = edid_decode_fraction(
+                        ord(edid[i + 2]), edid_get_bits(ord(edid[i + 1]), 2, 3)
+                    )
                     result["white_x_" + str(ord(block[i]))] = white_x
                     if not result.get("white_x"):
                         result["white_x"] = white_x
-                    white_y = edid_decode_fraction(ord(edid[i + 3]),
-                                                   edid_get_bits(ord(edid[i + 1]),
-                                                                 0, 1))
+                    white_y = edid_decode_fraction(
+                        ord(edid[i + 3]), edid_get_bits(ord(edid[i + 1]), 0, 1)
+                    )
                     result["white_y_" + str(ord(block[i]))] = white_y
                     if not result.get("white_y"):
                         result["white_y"] = white_y
@@ -394,7 +430,9 @@ def parse_edid(edid):
                             result["gamma"] = gamma
         elif block[BLOCK_TYPE] == BLOCK_TYPE_COLOR_MANAGEMENT_DATA:
             # TODO: Implement? How could it be used?
-            result["color_management_data"] = block[BLOCK_CONTENTS[0]:BLOCK_CONTENTS[1]]
+            result["color_management_data"] = block[
+                BLOCK_CONTENTS[0]: BLOCK_CONTENTS[1]
+            ]
 
     result["ext_flag"] = ord(edid[EXTENSION_FLAG])
     result["checksum"] = ord(edid[CHECKSUM])
