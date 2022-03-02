@@ -5523,7 +5523,7 @@ END_DATA
                                 # by a re-encode/decode step
                                 displays.append(
                                     "Chromecast %s: %s"
-                                    % (line[0], str(safe_str(value, enc), "UTF-8"))
+                                    % (line[0], safe_str(value, enc))
                                 )
                         elif arg == "-dprisma[:host]":
                             # Prisma (via Argyll CMS)
@@ -5535,7 +5535,7 @@ END_DATA
                                     "Prisma %s: %s @ %s"
                                     % (
                                         line[0],
-                                        str(safe_str(match[0][0], enc), "UTF-8"),
+                                        safe_str(match[0][0], enc),
                                         match[0][1],
                                     )
                                 )

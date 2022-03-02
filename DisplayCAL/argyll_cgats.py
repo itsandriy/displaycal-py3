@@ -117,12 +117,12 @@ def cal_to_vcgt(cal, return_cgats=False):
     data_format = cal.queryv1("DATA_FORMAT")
     if data_format:
         for field in required_fields:
-            if field not in list(data_format.values()):
+            if field.encode("utf-8") not in list(data_format.values()):
                 if debug:
                     print("[D] Missing required field:", field)
                 return None
         for field in list(data_format.values()):
-            if field not in required_fields:
+            if field.decode("utf-8") not in required_fields:
                 if debug:
                     print("[D] Unknown field:", field)
                 return None
@@ -462,7 +462,7 @@ END_DATA"""
     if include_neutrals:
         white = ti3.get_white_cie("XYZ")
         str_thresh = str(neutrals_ab_threshold)
-        round_digits = len(str_thresh[str_thresh.find(".") + 1 :])
+        round_digits = len(str_thresh[str_thresh.find(".") + 1:])
     for i, item in ti3.DATA.items():
         if not i:
             # Check if fields are missing

@@ -465,7 +465,6 @@ def safe_basestring(obj):
 
     Return obj if isinstance(obj, basestring). Otherwise, return unicode(obj),
     string(obj), or repr(obj), whichever succeeds first.
-
     """
     if isinstance(obj, env_errors):
         # Possible variations of environment-type errors:
@@ -483,6 +482,8 @@ def safe_basestring(obj):
         if hasattr(obj, "reason"):
             if isinstance(obj.reason, str):
                 obj.args = (obj.reason,)
+            elif isinstance(obj.reason, bytes):
+                obj.args = (str(obj.reason, "utf-8", "replace"),)
             else:
                 obj.args = obj.reason
         error = []
@@ -503,19 +504,26 @@ def safe_basestring(obj):
             error = list(obj.args)
         if getattr(obj, "filename", None) is not None:
             error.append(obj.filename)
-        error = [str(arg) for arg in error]
+
+        temp_error = []
+        for arg in error:
+            if isinstance(arg, str):
+                temp_error.append(arg)
+            elif isinstance(arg, bytes):
+                temp_error.append(str(arg, "utf-8", "replace"))
+            else:
+                temp_error.append(str(arg))
+        error = temp_error
         obj = " ".join(error)
     elif isinstance(obj, KeyError) and obj.args:
         obj = "Key does not exist: " + repr(obj.args[0])
     oobj = obj
     if not isinstance(obj, str):
         try:
-            obj = str(obj)
-        except UnicodeDecodeError:
-            try:
-                obj = str(obj)
-            except UnicodeEncodeError:
-                obj = repr(obj)
+            obj = str(obj, "utf-8", "replace")
+        except (UnicodeDecodeError, TypeError):
+            obj = repr(obj)
+
     if isinstance(oobj, Exception) and not isinstance(oobj, Warning):
         # if obj and oobj.__class__.__name__ in dir(exceptions):
         #     obj = obj[0].capitalize() + obj[1:]
@@ -532,7 +540,7 @@ def safe_str(obj, enc=fs_enc, errors="replace"):
     """Return string representation of obj"""
     obj = safe_basestring(obj)
     if isinstance(obj, bytes):
-        return obj.decode()
+        return obj.decode(enc, errors)
     return obj
 
 
