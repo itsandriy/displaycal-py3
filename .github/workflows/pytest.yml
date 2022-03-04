@@ -1,26 +1,31 @@
-name: PyTest
+name: Tests
 on: [push]
 
 jobs:
   build:
+    name: Run Python Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
 
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
 
-      - name: Setup Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
+    - uses: actions/checkout@v2
 
-        - name: Install Python dependencies
-          run: |
-            sudo apt install -y $(grep -o ^[^#][[:alnum:]-]* "packages.list")
-            python3 -m pip install --upgrade pip
-            pip3 install -r requirements.txt
+    - name: Setup timezone
+      uses: zcong1993/setup-timezone@master
+      with:
+        timezone: UTC
 
-        - name: Test with pytest
-          run: |
-            pytest --exitfirst --verbose --failed-first --cov=. --cov-report html
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install Python dependencies
+      run: |
+        sudo apt install -y $(grep -o ^[^#][[:alnum:]-]* "packages.list")
+        python3 -m pip install --upgrade pip
+        pip3 install -r requirements.txt
+
+    - name: Test with pytest
+      run: |
+        pytest --exitfirst --verbose --failed-first --cov=. --cov-report html
