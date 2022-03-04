@@ -3,6 +3,8 @@ on: [push]
 
 jobs:
   build:
+    env:
+      DISPLAY: :0
     name: Run Python Tests
     runs-on: ubuntu-20.04
 
@@ -15,6 +17,13 @@ jobs:
       with:
         timezone: UTC
 
+    - name: Setup xvfb
+     run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
+        # start xvfb in the background
+        sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
+
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -22,11 +31,10 @@ jobs:
 
     - name: Install Python dependencies
       run: |
-        sudo apt-get update
-        sudo apt install -y $(grep -o ^[^#][[:alnum:]-]* "packages.list")
+        sudo apt-get install -y $(grep -o ^[^#][[:alnum:]-]* "packages.list")
         python3 -m pip install --upgrade pip
-        pip3 install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.1-cp38-cp38-linux_x86_64.whl
-        pip3 install -r requirements.txt
+        pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.1-cp38-cp38-linux_x86_64.whl
+        pip install -r requirements.txt
 
     - name: Test with pytest
       run: |
