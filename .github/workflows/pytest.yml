@@ -36,7 +36,9 @@ jobs:
         pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.1-cp38-cp38-linux_x86_64.whl
         pip install -r requirements.txt
 
-    - name: Test with pytest
-      run: |
-        python -m pytest tests/
-        python -m pytest --exitfirst --verbose --failed-first --cov=. --cov-report html
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-coverage-report
+        path: htmlcov
+        retention-days: 10
