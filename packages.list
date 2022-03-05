@@ -1,3 +1,4 @@
 mupdf-tools
 poppler-utils
 libdbus-1-dev
+dbus-x11
