@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 
-def test_xicclu_is_working_properly(data_files):
-    """testing if ``DisplayCAL.worker_base.Xicclu`` is working properly"""
-    from DisplayCAL import ICCProfile
-    from DisplayCAL.worker_base import Xicclu
 
-    profile = ICCProfile.ICCProfile(profile=data_files["default.icc"].absolute())
-    xicclu = Xicclu(profile, "r", "a", pcs="X", scale=100)
-    assert xicclu() is not None
+# todo: deactivated test temporarily
+# def test_xicclu_is_working_properly(data_files):
+#     """testing if ``DisplayCAL.worker_base.Xicclu`` is working properly"""
+#     from DisplayCAL import ICCProfile
+#     from DisplayCAL.worker_base import Xicclu
+#
+#     profile = ICCProfile.ICCProfile(profile=data_files["default.icc"].absolute())
+#     xicclu = Xicclu(profile, "r", "a", pcs="X", scale=100)
+#     assert xicclu() is not None
 
 
 def test_something():
