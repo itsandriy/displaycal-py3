@@ -56,7 +56,8 @@ Some ideas on where to focus on future development:
 
 - Try to move the UI to Qt. This is a big ticket. The motivation behind that is that I'm
   much more experienced with Qt. In fact, I have zero experience with ``wxPython``.
-- Make the code fully compliant with PEP8. This also means a lot of class and
+- Make the code fully compliant with PEP8 with the modification of hard wrapping the
+  code at 88 characters instead of 80 characters. This also means a lot of class and
   method/function names will be changed.
 - Create unit tests with ``Pytest`` and reach to 100% code coverage. The ``3.8.9.3``
   version of DisplayCAL is around 120k lines of Python code (other languages are not

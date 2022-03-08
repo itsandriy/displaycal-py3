@@ -1,13 +1,13 @@
 certifi~=2021.10.8
 dbus-python~=1.2.18
 distro~=1.7.0
-numpy==1.22.3
+numpy~=1.22.3
 Pillow~=9.0.1
 PyChromecast==10.3.0
 pytest~=7.0.1
 pytest-cov~=3.0.0
 pytest-github-actions-annotate-failures~=0.1.6
-zeroconf==0.38.4
+zeroconf~=0.38.4
 black
 darglint
 flake8-docstrings
