@@ -3223,10 +3223,10 @@ class LUT16Type(ICCProfileTag):
             method = "apply_bpc"
         else:
             method = "apply_black_offset"
-        if pcs == "Lab":
+        if pcs == b"Lab":
             bp = colormath.Lab2XYZ(*legacy_PCSLab_uInt16_to_dec(*bp_row))
             wp = colormath.Lab2XYZ(*legacy_PCSLab_uInt16_to_dec(*wp_row))
-        elif not pcs or pcs == "XYZ":
+        elif not pcs or pcs == b"XYZ":
             if not pcs:
                 warnings.warn(
                     "LUT16Type.%s: PCS not specified, " "assuming XYZ" % method, Warning
@@ -3647,7 +3647,7 @@ BEGIN_DATA
                             if 0 < c < clutres - 1:
                                 for n in (-1, 1):
                                     yi, xi = (y, y + n)[j], (x + n, x)[j]
-                                    if -1 < xi < clutres and yi > -1 and yi < clutres:
+                                    if -1 < xi < clutres and -1 < yi < clutres:
                                         RGBn = grid[yi][xi]
                                         if debug_ == 2:
                                             if i < clutres - 1 or grid[y][x] != [
@@ -3674,7 +3674,7 @@ BEGIN_DATA
                                     ((y, y + n)[j], (x + n, x)[j]),
                                     (y - n, (x + n, x - n)[j]),
                                 ]:
-                                    if -1 < xi < clutres and yi > -1 and yi < clutres:
+                                    if -1 < xi < clutres and -1 < yi < clutres:
                                         RGBn = grid[yi][xi]
                                         if yi != y and xi != x:
                                             smooth = 1 / 3.0
@@ -5191,7 +5191,7 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
                     # Even ASCII description may contain non-ASCII chars, so
                     # assume system encoding and convert to unicode, replacing
                     # unknown chars
-                    value = value.decode()
+                    value = value.decode("utf-8", "replace")
                 return value
 
 
@@ -5726,7 +5726,7 @@ class XYZType(ICCProfileTag, XYZNumber):
     def ir(self):
         """Get illuminant-relative values"""
         pcs_illuminant = list(self.profile.illuminant.values())
-        if "chad" in self.profile.tags and self.profile.creator != "appl":
+        if b"chad" in self.profile.tags and self.profile.creator != b"appl":
             # Apple profiles have a bug where they contain a 'chad' tag,
             # but the media white is not under PCS illuminant
             if self is self.profile.tags.wtpt:
@@ -5765,7 +5765,7 @@ class XYZType(ICCProfileTag, XYZNumber):
     def pcs(self):
         """Get PCS-relative values"""
         if self in (self.profile.tags.wtpt, self.profile.tags.get("bkpt")) and (
-            "chad" not in self.profile.tags or self.profile.creator == "appl"
+            "chad" not in self.profile.tags or self.profile.creator == b"appl"
         ):
             # Apple profiles have a bug where they contain a 'chad' tag,
             # but the media white is not under PCS illuminant
@@ -6762,7 +6762,7 @@ class ICCProfile(object):
 
     @staticmethod
     def from_named_rgb_space(
-        rgb_space_name, iccv4=False, cat="Bradford", profile_class="mntr"
+        rgb_space_name, iccv4=False, cat="Bradford", profile_class=b"mntr"
     ):
         rgb_space = colormath.get_rgb_space(rgb_space_name)
         return ICCProfile.from_rgb_space(
@@ -6771,7 +6771,7 @@ class ICCProfile(object):
 
     @staticmethod
     def from_rgb_space(
-        rgb_space, description, iccv4=False, cat="Bradford", profile_class="mntr"
+        rgb_space, description, iccv4=False, cat="Bradford", profile_class=b"mntr"
     ):
         rx, ry = rgb_space[2:][0][:2]
         gx, gy = rgb_space[2:][1][:2]

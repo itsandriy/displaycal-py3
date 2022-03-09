@@ -376,11 +376,13 @@ class FloatSpin(wx.PyControl):
         """Default class constructor.
 
         :param parent: the :class:`FloatSpin` parent;
-        :param id: an identifier for the control: a value of -1 is taken to mean a default;
-        :param pos: the control position. A value of (-1, -1) indicates a default position,
-         chosen by either the windowing system or wxPython, depending on platform;
+        :param id: an identifier for the control: a value of -1 is taken to mean a
+            default;
+        :param pos: the control position. A value of (-1, -1) indicates a default
+            position, chosen by either the windowing system or wxPython, depending on
+            platform;
         :param size: the control size. A value of (-1, -1) indicates a default size,
-         chosen by either the windowing system or wxPython, depending on platform;
+            chosen by either the windowing system or wxPython, depending on platform;
         :param style: the window style;
         :param value: is the current value for :class:`FloatSpin`;
         :param min_val: the minimum value, ignored if ``None``;
