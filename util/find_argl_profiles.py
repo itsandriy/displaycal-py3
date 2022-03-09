@@ -17,6 +17,6 @@ for p in set(iccprofiles_home + iccprofiles):
             except Exception:
                 pass
             else:
-                if profile.creator == "argl":
+                if profile.creator == b"argl":
                     print(f)
                     print("")

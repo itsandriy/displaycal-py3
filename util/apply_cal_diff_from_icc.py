@@ -157,7 +157,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
     gamma = float(gamma)
 
     num_cal_entries = 4096
-    cal_entry_max = num_cal_entries - 1.0
+    # cal_entry_max = num_cal_entries - 1.0
 
     ogamma = {
         -2.4: "sRGB",
@@ -191,28 +191,32 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
     print("Use applycal to apply inverse cal?", applycal_inverse)
     print("Ensuring 256 entry TRC tags")
     _applycal_bug_workaround(profile)
+    existing_cgats_filename = f"{filename}.tmp.cal"
+    input_color_profile_filename = f"{filename}.tmp{ext}"
+    out_color_profile_filename = f"{filename}.calapplied{ext}"
     if (applycal or applycal_inverse) and existing_cgats:
         print("Writing TMP profile for applycal")
-        profile.write(filename + ".tmp" + ext)
+        profile.write(input_color_profile_filename)
+
     if applycal and existing_cgats:
         # Apply cal
-        existing_cgats.write(filename + ".tmp.cal")
+        existing_cgats.write(existing_cgats_filename)
         result = worker.exec_cmd(
             get_argyll_util("applycal"),
             [
                 "-v",
-                filename + ".tmp.cal",
-                filename + ".tmp" + ext,
-                filename + ".calapplied" + ext,
+                existing_cgats_filename,
+                input_color_profile_filename,
+                out_color_profile_filename,
             ],
             capture_output=True,
             log_output=True,
         )
-        if not result and not os.path.isfile(out_filename):
+        if not result and not os.path.isfile(out_color_profile_filename):
             raise Exception("applycal returned a non-zero exit code")
         elif isinstance(result, Exception):
             raise result
-        calapplied = ICCP.ICCProfile(filename + ".calapplied" + ext)
+        calapplied = ICCP.ICCProfile(out_color_profile_filename)
     else:
         calapplied = profile
 
@@ -280,7 +284,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
             slope_limit=0,
         )
 
-    out_filename = (
+    out_color_profile_filename = (
         filename
         + " %s%s" % (target_whitepoint and "%s " % owtpt[1:] or "", ogamma)
         + ext
@@ -418,16 +422,16 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
 
             result = worker.exec_cmd(
                 get_argyll_util("applycal"),
-                ["-v", ical_filename, filename + ".tmp" + ext, out_filename],
+                ["-v", ical_filename, filename + ".tmp" + ext, out_color_profile_filename],
                 capture_output=True,
                 log_output=True,
             )
-            if not result and not os.path.isfile(out_filename):
+            if not result and not os.path.isfile(out_color_profile_filename):
                 raise Exception("applycal returned a non-zero exit code")
             elif isinstance(result, Exception):
                 raise result
 
-            profile = ICCP.ICCProfile(out_filename)
+            profile = ICCP.ICCProfile(out_color_profile_filename)
 
     out_profile = profile
 
@@ -504,7 +508,7 @@ def main(icc_profile_filename, target_whitepoint=None, gamma=2.2, skip_cal=False
         + " %s%s" % (target_whitepoint and "%s " % owtpt[1:] or "", ogamma)
     )
     out_profile.calculateID()
-    out_profile.write(out_filename)
+    out_profile.write(out_color_profile_filename)
 
 
 if __name__ == "__main__":

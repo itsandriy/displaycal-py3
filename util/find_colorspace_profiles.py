@@ -18,7 +18,7 @@ for p in set(iccprofiles_home + iccprofiles):
             except Exception:
                 pass
             else:
-                if profile.profileClass == "spac":
+                if profile.profileClass == b"spac":
                     print(f)
                     print("ICC Version:", profile.version)
                     print("Color space:", profile.colorSpace)
