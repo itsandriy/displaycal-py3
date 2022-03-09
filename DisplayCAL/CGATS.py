@@ -1998,7 +1998,6 @@ Transform {
             device_labels = []
             for i in range(len(color_rep[0])):
                 channel = color_rep[0][i: i + 1]
-                channel = chr(channel).encode("utf-8")
                 device_labels.append(color_rep[0] + b"_" + channel)
             remove = []
             for _key, sample in data.items():
