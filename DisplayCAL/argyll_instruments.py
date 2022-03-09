@@ -441,6 +441,13 @@ vendors = [
 
 
 def get_canonical_instrument_name(instrument_name, replacements=None, inverse=False):
+    """
+
+    :param bytes instrument_name:
+    :param replacements:
+    :param inverse:
+    :return:
+    """
     replacements = replacements or {}
     if inverse:
         replacements = dict(zip(iter(replacements.values()), iter(replacements.keys())))
@@ -449,6 +456,11 @@ def get_canonical_instrument_name(instrument_name, replacements=None, inverse=Fa
 
 def remove_vendor_names(txt):
     for vendor in vendors:
-        txt = re.sub(re.compile(re.escape(vendor) + r"\s*", re.I), "", txt)
+        if isinstance(txt, bytes):
+            txt = re.sub(
+                re.compile(re.escape(bytes(vendor, "utf-8")) + rb"\s*", re.I), b"", txt
+            )
+        elif isinstance(txt, str):
+            txt = re.sub(re.compile(re.escape(vendor) + r"\s*", re.I), "", txt)
     txt = txt.strip()
     return txt
