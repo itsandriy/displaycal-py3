@@ -16,6 +16,7 @@ from time import localtime, strftime, time
 from DisplayCAL.meta import name as appname, script2pywname
 from DisplayCAL.multiprocess import mp
 from DisplayCAL.options import debug
+from DisplayCAL.safe_print import SafePrinter, safe_print as _safe_print
 from DisplayCAL.util_os import safe_glob
 
 logging.raiseExceptions = 0
@@ -167,27 +168,31 @@ class LogFile(object):
             self._logger.info(line)
 
 
-# class SafeLogger(SafePrinter):
-#     """
-#     Print and log safely, avoiding any UnicodeDe-/EncodingErrors on strings
-#     and converting all other objects to safe string representations.
-#     """
-#
-#     def __init__(self, log=True, print_=hasattr(sys.stdout, "isatty") and
-#                                         sys.stdout.isatty()):
-#         SafePrinter.__init__(self)
-#         self.log = log
-#         self.print_ = print_
-#
-#     def write(self, *args, **kwargs):
-#         if kwargs.get("print_", self.print_):
-#             _safe_print(*args, **kwargs)
-#         if kwargs.get("log", self.log):
-#             kwargs.update(fn=log, encoding=None)
-#             _safe_print(*args, **kwargs)
-#
-# safe_log = SafeLogger(print_=False)
-# safe_print = SafeLogger()
+class SafeLogger(SafePrinter):
+    """
+    Print and log safely, avoiding any UnicodeDe-/EncodingErrors on strings
+    and converting all other objects to safe string representations.
+    """
+
+    def __init__(self, log=True, print_=hasattr(sys.stdout, "isatty") and
+                                        sys.stdout.isatty()):
+        SafePrinter.__init__(self)
+        self.log = log
+        self.print_ = print_
+
+    def write(self, *args, **kwargs):
+        if kwargs.get("print_", self.print_):
+            _safe_print(*args, **kwargs)
+        if kwargs.get("log", self.log):
+            kwargs.update(fn=log, encoding=None)
+            _safe_print(*args, **kwargs)
+
+safe_log = SafeLogger(print_=False)
+safe_print = SafeLogger()
+
+
+safe_log = SafeLogger(print_=False)
+safe_print = SafeLogger()
 
 
 def get_file_logger(
