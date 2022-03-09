@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 
 from DisplayCAL import colormath
+from DisplayCAL.log import safe_print
 from DisplayCAL.options import debug, verbose
 from DisplayCAL.util_io import GzipFileProper, StringIOu as StringIO
 
@@ -475,13 +476,16 @@ class CGATS(dict):
             return dict.get(self, name, default)
 
     def get_colorants(self):
-        color_rep = (self.queryv1("COLOR_REP") or "").split("_")
+        color_rep = (self.queryv1("COLOR_REP") or b"").split(b"_")
         if len(color_rep) == 2:
             query = {}
             colorants = []
             for i in range(len(color_rep[0])):
-                for j, channelname in enumerate(color_rep[0]):
-                    query["_".join([color_rep[0], channelname])] = 100 if i == j else 0
+                for j in range(len(color_rep[0])):
+                    channelname = color_rep[0][j: j + 1]
+                    # the key should be str
+                    key = b"_".join([color_rep[0], channelname]).decode("utf-8")
+                    query[key] = 100 if i == j else 0
                 colorants.append(self.queryi1(query))
             return colorants
 
@@ -523,16 +527,12 @@ class CGATS(dict):
                             display = str(display)
                     if display:
                         tech += " (%s)" % display
-                desc = tech
+                desc = tech.encode("utf-8")  # TODO: This could be problematic
         if not desc and self.filename:
-            # Filesystem encoding can be different from UTF-8 (depending on
-            # platform), by default str will use FS enc
-            # This is not True anymore, after Python 3.6 even Windows switched to UTF-8
+            # With Python 3.6+ the encoding is always "utf-8" independent of the OS.
             desc = bytes(
                 str(os.path.splitext(os.path.basename(self.filename))[0]), "UTF-8"
             )
-        else:
-            desc = bytes(str(desc or ""), "UTF-8")
         return desc
 
     def __setattr__(self, name, value):
@@ -588,7 +588,7 @@ class CGATS(dict):
         elif self.type == b"DATA":
             data = self
         elif self.type == b"DATA_FORMAT":
-            result.append(" ".join(list(self.values())))
+            result.append(b" ".join(list(self.values())))
         else:
             if self.datetime:
                 result.append(self.datetime)
@@ -605,21 +605,27 @@ class CGATS(dict):
                 iterable = self._keys
             for key in iterable:
                 value = self[key]
+                if isinstance(value, str):
+                    print("value could not be a str: {}".format(value))
+                    value = value.encode("utf-8")
+
                 if key == "DATA":
                     data = value
-                elif isinstance(value, (float, int, str)):
+                elif isinstance(value, (float, int, bytes)):
                     if key not in ("NUMBER_OF_FIELDS", "NUMBER_OF_SETS"):
                         if isinstance(key, int):
-                            result.append(bytes(value))
+                            result.append(bytes(str(value), "utf-8"))
                         else:
                             if "KEYWORDS" in self and key in list(
                                 self["KEYWORDS"].values()
                             ):
                                 if self.emit_keywords:
                                     result.append(b'KEYWORD "%s"' % key.encode())
-                            if isinstance(value, str):
+                            if isinstance(value, bytes):
                                 # Need to escape single quote -> double quote
-                                value = value.replace('"', '""').encode()
+                                value = value.replace(b'"', b'""')
+                            if isinstance(value, (float, int)):
+                                value = bytes(str(value), "utf-8")
                             result.append(b'%s "%s"' % (key.encode(), value))
                 elif key not in ("DATA_FORMAT", "KEYWORDS"):
                     if (
@@ -628,7 +634,7 @@ class CGATS(dict):
                         and result[-1:][0] != b""
                     ):
                         result.append(b"")
-                    result.append(value)
+                    result.append(bytes(value))
             if self.type == b"SECTION":
                 result.append(b"END_" + self.key.encode())
             if self.type == b"SECTION" or data:
@@ -638,20 +644,24 @@ class CGATS(dict):
                 for item in list(data.parent["DATA_FORMAT"].values()):
                     if item in list(data.parent["KEYWORDS"].values()):
                         result.append(b'KEYWORD "%s"' % item)
-            result.append(b"NUMBER_OF_FIELDS %s" % len(data.parent["DATA_FORMAT"]))
+            result.append(
+                b"NUMBER_OF_FIELDS %s"
+                % bytes(str(len(data.parent["DATA_FORMAT"])), "utf-8")
+            )
             result.append(b"BEGIN_DATA_FORMAT")
             result.append(b" ".join(list(data.parent["DATA_FORMAT"].values())))
             result.append(b"END_DATA_FORMAT")
             result.append(b"")
-            result.append(b"NUMBER_OF_SETS %s" % (len(data)))
+            result.append(b"NUMBER_OF_SETS %s" % (bytes(str(len(data)), "utf-8")))
             result.append(b"BEGIN_DATA")
             for key in data:
                 result.append(
                     b" ".join(
                         [
                             rpad(
-                                data[key][item],
-                                data.vmaxlen + (1 if data[key][item] < 0 else 0),
+                                data[key][item.decode("utf-8")],
+                                data.vmaxlen
+                                + (1 if data[key][item.decode("utf-8")] < 0 else 0),
                             )
                             for item in list(data.parent["DATA_FORMAT"].values())
                         ]
@@ -1914,43 +1924,46 @@ Transform {
 
     def convert_XYZ_to_Lab(self):
         """Convert XYZ to D50 L*a*b* and add it as additional fields"""
-        color_rep = (self.queryv1("COLOR_REP") or "").split("_")
+        color_rep = (self.queryv1("COLOR_REP") or b"").split(b"_")
 
-        if color_rep[1] == "LAB":
+        if color_rep[1] == b"LAB":
             # Nothing to do
             return
 
         if (
             len(color_rep) != 2
-            or color_rep[0] not in ("RGB", "CMYK")
-            or color_rep[1] != "XYZ"
+            or color_rep[0] not in (b"RGB", b"CMYK")
+            or color_rep[1] != b"XYZ"
         ):
             raise NotImplementedError(
-                "Got unsupported color representation %s" % "_".join(color_rep)
+                "Got unsupported color "
+                "representation %s" % b"_".join(color_rep).decode("utf-8")
             )
 
         data = self.queryv1("DATA")
         if not data:
             raise CGATSError("No data")
 
-        if color_rep[0] == "RGB":
+        if color_rep[0] == b"RGB":
             white = data.queryv1({"RGB_R": 100, "RGB_G": 100, "RGB_B": 100})
-        elif color_rep[0] == "CMYK":
+        elif color_rep[0] == b"CMYK":
             white = data.queryv1({"CMYK_C": 0, "CMYK_M": 0, "CMYK_Y": 0, "CMYK_K": 0})
         if not white:
             raise CGATSError("Missing white patch")
 
         device_labels = []
-        for channel in color_rep[0]:
-            device_labels.append(color_rep[0] + "_" + channel)
+        for i in range(len(color_rep[0])):
+            channel = color_rep[0][i: i + 1]
+            device_labels.append(color_rep[0] + b"_" + channel)
 
         # Always XYZ
         cie_labels = []
-        for channel in color_rep[1]:
-            cie_labels.append(color_rep[1] + "_" + channel)
+        for i in range(len(color_rep[1])):
+            channel = color_rep[1][i: i + 1]
+            cie_labels.append(color_rep[1] + b"_" + channel)
 
         # Add entries to DATA_FORMAT
-        Lab_data_format = ("LAB_L", "LAB_A", "LAB_B")
+        Lab_data_format = (b"LAB_L", b"LAB_A", b"LAB_B")
         for label in Lab_data_format:
             if label not in list(data.parent.DATA_FORMAT.values()):
                 data.parent.DATA_FORMAT.add_data((label,))
@@ -1962,7 +1975,7 @@ Transform {
             for i, label in enumerate(Lab_data_format):
                 sample[label] = Lab[i]
 
-    def fix_zero_measurements(self, warn_only=False, logfile=print):
+    def fix_zero_measurements(self, warn_only=False, logfile=safe_print):
         """Fix (or warn about) <= zero measurements
 
         If XYZ/Lab = 0, the sample gets removed. If only one component of
@@ -1971,28 +1984,31 @@ Transform {
         effects if it's an 'essential' sample)
 
         """
-        color_rep = (self.queryv1("COLOR_REP") or "").split("_")
+        color_rep = (self.queryv1("COLOR_REP") or b"").split(b"_")
         data = self.queryv1("DATA")
         if len(color_rep) == 2 and data:
             # Check for XYZ/Lab = 0 readings
             cie_labels = []
-            for channel in color_rep[1]:
-                cie_labels.append(color_rep[1] + "_" + channel)
-                if color_rep[1] == "LAB":
+            for i in range(len(color_rep[1])):
+                channel = color_rep[1][i: i + 1]
+                cie_labels.append(color_rep[1] + b"_" + channel)
+                if color_rep[1] == b"LAB":
                     # Only check L* for zero values
                     break
             device_labels = []
-            for channel in color_rep[0]:
-                device_labels.append(color_rep[0] + "_" + channel)
+            for i in range(len(color_rep[0])):
+                channel = color_rep[0][i: i + 1]
+                channel = chr(channel).encode("utf-8")
+                device_labels.append(color_rep[0] + b"_" + channel)
             remove = []
             for _key, sample in data.items():
-                cie_values = [sample[label] for label in cie_labels]
+                cie_values = [sample[label.decode("utf-8")] for label in cie_labels]
                 # Check if zero
                 if [v for v in cie_values if v]:
                     # Not all zero. Check if some component(s) equal or below zero
                     if min(cie_values) <= 0:
                         for label in cie_labels:
-                            if sample[label] <= 0:
+                            if sample[label.decode("utf-8")] <= 0:
                                 if warn_only:
                                     if logfile:
                                         logfile.write(
@@ -2005,12 +2021,12 @@ Transform {
                                                         sample.queryv1(device_labels)
                                                     ).split()
                                                 ),
-                                                label,
+                                                label.decode("utf-8"),
                                             )
                                         )
                                 else:
                                     # Fudge to be nonzero
-                                    sample[label] = 0.000001
+                                    sample[label.decode("utf-8")] = 0.000001
                                     if logfile:
                                         logfile.write(
                                             "Fudged sample ID %i (%s %s) %s to be non-zero\n"
@@ -2022,12 +2038,14 @@ Transform {
                                                         sample.queryv1(device_labels)
                                                     ).split()
                                                 ),
-                                                label,
+                                                label.decode("utf-8"),
                                             )
                                         )
                     continue
                 # All zero
-                device_values = [sample[label] for label in device_labels]
+                device_values = [
+                    sample[label.decode("utf-8")] for label in device_labels
+                ]
                 if not max(device_values):
                     # Skip device black
                     continue
@@ -2109,7 +2127,7 @@ Transform {
                 # enough for roughly 19 bits integer
                 # device values
                 digits = 4
-            color_rep = (data.parent.queryv1("COLOR_REP") or "").split("_")[0]
+            color_rep = (data.parent.queryv1("COLOR_REP") or b"").split(b"_")[0]
             for labels in get_device_value_labels(color_rep):
                 for item in data.queryi(labels).values():
                     for label in labels:
@@ -2193,7 +2211,7 @@ Transform {
                     white.append(white1[label])
                 max_v = 1.0
             else:
-                is_Lab = "_LAB" in (dataset.queryv1("COLOR_REP") or "")
+                is_Lab = b"_LAB" in (dataset.queryv1("COLOR_REP") or b"")
                 if is_Lab:
                     labels = ("LAB_L", "LAB_A", "LAB_B")
                     index = 0  # Index of L* in labels
@@ -2255,7 +2273,6 @@ Transform {
                         data[i][label] = values[j]
                     else:
                         data[i][label] = max(0.0, values[j])
-
         return n
 
     def get_white_cie(self, colorspace=None):
@@ -2335,9 +2352,9 @@ Transform {
         if not stream_or_filename:
             stream_or_filename = self.filename
         if isinstance(stream_or_filename, str):
-            stream = open(stream_or_filename, "w")
+            stream = open(stream_or_filename, "wb")
         else:
             stream = stream_or_filename
-        stream.write(str(self))
+        stream.write(bytes(self))
         if isinstance(stream_or_filename, str):
             stream.close()
