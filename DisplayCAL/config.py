@@ -1641,9 +1641,9 @@ def get_standard_profiles(paths_only=False):
             else:
                 if (
                     profile.version < 4
-                    and profile.profileClass != "nmcl"
-                    and profile.colorSpace != "GRAY"
-                    and profile.connectionColorSpace in ("Lab", "XYZ")
+                    and profile.profileClass != b"nmcl"
+                    and profile.colorSpace != b"GRAY"
+                    and profile.connectionColorSpace in (b"Lab", b"XYZ")
                 ):
                     standard_profiles.append(profile)
     if paths_only:
