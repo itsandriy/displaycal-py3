@@ -465,7 +465,7 @@ END_DATA"""
     if include_neutrals:
         white = ti3.get_white_cie("XYZ")
         str_thresh = str(neutrals_ab_threshold)
-        round_digits = len(str_thresh[str_thresh.find(".") + 1 :])
+        round_digits = len(str_thresh[str_thresh.find(".") + 1:])
     for i, item in ti3.DATA.items():
         if not i:
             # Check if fields are missing

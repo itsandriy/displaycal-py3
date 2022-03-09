@@ -47,6 +47,13 @@ class OrderedDict(dict):
             )
         return dict.__eq__(self, other)
 
+    def __getitem__(self, item):
+        """Overridden __getitem__ method."""
+        if isinstance(item, slice):
+            return self.__getslice__(item.start, item.stop)
+        else:
+            return super(OrderedDict, self).__getitem__(item)
+
     def __getslice__(self, i, j):
         """Get a range of keys. Return a new OrderedDict."""
         keys = self._keys[i:j]

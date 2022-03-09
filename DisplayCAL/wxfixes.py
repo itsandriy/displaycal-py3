@@ -919,12 +919,13 @@ def get_bitmap_hover(bitmap, ctrl=None):
             RGBv = list(RGB.values())
             if not is_bw:
                 RGBv_max = max(RGBv)
-                if minv == 256 and alphabuffer[j] > "\x20":
+                if minv == 256 and alphabuffer[j] > 32:
                     # If a pixel is at least 12.5% opaque, check if it's value
                     # is less than or equal the previously seen minimum pixel
                     # value as a crude means to determine if the graphic
                     # contains a black outline.
                     minv = min(RGBv_max, minv)
+
             for k in range(3):
                 if is_bw:
                     v = color[k]
