@@ -6,7 +6,6 @@ import errno
 import logging
 import math
 import multiprocessing as mp
-import multiprocessing.managers
 import multiprocessing.pool
 import sys
 import threading
@@ -149,6 +148,7 @@ def pool_slice(
             target=progress_logger,
             args=(num_workers * num_batches, progress * num_workers * num_batches),
             name="ProcessProgressLogger",
+            group=None,
         ).start()
 
     pool = Pool(num_workers)
@@ -240,7 +240,6 @@ class WorkerFunc(object):
 
 
 class Mapper(object):
-
     """Wrap 'func' with optional arguments.
 
     To be used as function argument for Pool.map
@@ -269,7 +268,13 @@ class NonDaemonicProcess(mp.Process):
 class NonDaemonicPool(mp.pool.Pool):
     """Pool that has non-daemonic workers"""
 
-    Process = NonDaemonicProcess
+    def Process(self, *args, **kwargs):
+        # Process is a function after Python 3.7+
+        # Process = NonDaemonicProcess -- This will not work with Python3.7+
+        proc = super(NonDaemonicPool, self).Process(*args, **kwargs)
+        proc.__class__ = NonDaemonicProcess  # TODO: This is not cool, find a better way
+        #                                            of doing it.
+        return proc
 
 
 class FakeManager(object):
@@ -286,7 +291,7 @@ class FakeManager(object):
 
 
 class FakePool(object):
-    """Fake pool"""
+    """Fake pool."""
 
     def __init__(
         self, processes=None, initializer=None, initargs=(), maxtasksperchild=None
@@ -310,8 +315,7 @@ class FakePool(object):
 
 
 class FakeQueue(object):
-
-    """Fake queue"""
+    """Fake queue."""
 
     def __init__(self):
         self.queue = []
@@ -330,11 +334,15 @@ class FakeQueue(object):
 
 
 class Result(object):
-
-    """Result proxy"""
+    """Result proxy."""
 
     def __init__(self, result):
         self.result = result
 
     def get(self):
+        """Return result.
+
+        Returns:
+            WorkerFunc: WorkerFunc instance as the result.
+        """
         return self.result
