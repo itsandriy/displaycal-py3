@@ -1774,8 +1774,7 @@ class BaseFrame(wx.Frame):
                                 row, col = -1, -1
                             if (
                                 -1 < row < child.GetNumberRows()
-                                and col > -1
-                                and col < child.GetNumberCols()
+                                and -1 < col < child.GetNumberCols()
                             ):
                                 if child.IsEditable() and not child.IsReadOnly(
                                     row, col

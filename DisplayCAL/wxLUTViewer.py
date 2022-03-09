@@ -1266,9 +1266,9 @@ class LUTFrame(BaseFrame):
         profile = self.profile
 
         # Final number of coordinates
-        if profile.connectionColorSpace == "RGB":
+        if profile.connectionColorSpace == b"RGB":
             size = 256
-        elif profile.connectionColorSpace == "Lab":
+        elif profile.connectionColorSpace == b"Lab":
             size = 1001
         else:
             size = 1024
@@ -1308,8 +1308,8 @@ class LUTFrame(BaseFrame):
             "RGB",
             "GRAY",
             "CMYK",
-        ) or profile.connectionColorSpace not in ("Lab", "XYZ", "RGB"):
-            if profile.colorSpace not in ("RGB", "GRAY", "CMYK"):
+        ) or profile.connectionColorSpace not in (b"Lab", b"XYZ", b"RGB"):
+            if profile.colorSpace not in (b"RGB", b"GRAY", b"CMYK"):
                 unsupported_colorspace = profile.colorSpace
             else:
                 unsupported_colorspace = profile.connectionColorSpace
@@ -1323,9 +1323,9 @@ class LUTFrame(BaseFrame):
             )
             return
 
-        if profile.colorSpace == "GRAY":
+        if profile.colorSpace == b"GRAY":
             direction = "b"
-        elif profile.connectionColorSpace == "RGB":
+        elif profile.connectionColorSpace == b"RGB":
             direction = "f"
         elif "B2A0" in profile.tags:
             direction = {0: "b", 1: "if", 2: "f", 3: "ib"}.get(
@@ -1366,7 +1366,7 @@ class LUTFrame(BaseFrame):
             pcs = "x"
             for Lab in Lab_triplets:
                 XYZ_triplets.append(colormath.Lab2XYZ(*Lab))
-        elif profile.connectionColorSpace == "RGB":
+        elif profile.connectionColorSpace == b"RGB":
             use_icclu = False
             pcs = None
             intent = None
@@ -1404,8 +1404,8 @@ class LUTFrame(BaseFrame):
         if self.client.errors:
             return
 
-        if direction in ("b", "if") or profile.connectionColorSpace == "RGB":
-            if direction == "if" and profile.colorSpace == "RGB":
+        if direction in ("b", "if") or profile.connectionColorSpace == b"RGB":
+            if direction == "if" and profile.colorSpace == b"RGB":
                 Lbp = self.worker.xicclu(
                     profile, [[0, 0, 0]], intent, "f", order, "l", use_icclu=use_icclu
                 )[0][0]
@@ -1470,7 +1470,7 @@ class LUTFrame(BaseFrame):
         else:
             Lab_triplets = odata
 
-        if profile.colorSpace in ("RGB", "GRAY"):
+        if profile.colorSpace in (b"RGB", b"GRAY"):
             maxv = 255
         else:
             maxv = 100
@@ -1488,7 +1488,7 @@ class LUTFrame(BaseFrame):
                 ):
                     continue
                 v *= maxv
-                if profile.connectionColorSpace == "RGB":
+                if profile.connectionColorSpace == b"RGB":
                     x = j / (size - 1.0) * maxv
                     if i == 0:
                         self.rTRC.append([x, v])
@@ -1514,7 +1514,7 @@ class LUTFrame(BaseFrame):
                         self.bTRC.append([Z, v])
                     elif i == 3:
                         self.kTRC.append([Y, v])
-        if profile.connectionColorSpace == "RGB":
+        if profile.connectionColorSpace == b"RGB":
             return
         if use_trc_tags:
             if has_same_trc:
@@ -1652,7 +1652,7 @@ class LUTFrame(BaseFrame):
         self.toggle_clut.SetValue("B2A0" in profile.tags or "A2B0" in profile.tags)
         if (self.rTRC and self.gTRC and self.bTRC) or (
             self.toggle_clut.GetValue()
-            and profile.colorSpace in ("RGB", "GRAY", "CMYK")
+            and profile.colorSpace in (b"RGB", b"GRAY", b"CMYK")
         ):
             try:
                 self.lookup_tone_response_curves()
@@ -2046,7 +2046,7 @@ class LUTFrame(BaseFrame):
         if self.plot_mode_select.GetStringSelection() not in (
             lang.getstr("[rgb]TRC"),
             lang.getstr("gamut"),
-        ) or (self.profile and self.profile.connectionColorSpace == "RGB"):
+        ) or (self.profile and self.profile.connectionColorSpace == b"RGB"):
             self.xLabel = "".join(yLabel)
         else:
             if self.show_as_L.GetValue():
@@ -2060,16 +2060,16 @@ class LUTFrame(BaseFrame):
         self.show_as_L.Enable(bool(curves))
         self.show_as_L.Show(
             self.plot_mode_select.GetStringSelection() == lang.getstr("[rgb]TRC")
-            and self.profile.connectionColorSpace != "RGB"
+            and self.profile.connectionColorSpace != b"RGB"
         )
         self.toggle_clut.Show(
-            self.profile.colorSpace == "RGB"
-            and self.profile.connectionColorSpace != "RGB"
+            self.profile.colorSpace == b"RGB"
+            and self.profile.connectionColorSpace != b"RGB"
             and self.plot_mode_select.GetStringSelection() == lang.getstr("[rgb]TRC")
-            and ("B2A0" in self.profile.tags or "A2B0" in self.profile.tags)
+            and ("B2A0" in self.profile.tags or b"A2B0" in self.profile.tags)
         )
         self.toggle_clut.Enable(
-            self.profile.connectionColorSpace != "RGB"
+            self.profile.connectionColorSpace != b"RGB"
             and self.plot_mode_select.GetStringSelection() == lang.getstr("[rgb]TRC")
             and isinstance(self.profile.tags.get("rTRC"), ICCP.CurveType)
             and isinstance(self.profile.tags.get("gTRC"), ICCP.CurveType)
@@ -2121,7 +2121,7 @@ class LUTFrame(BaseFrame):
         if hasattr(self, "rendering_intent_select"):
             self.rendering_intent_select.Show(
                 self.plot_mode_select.GetStringSelection() == lang.getstr("[rgb]TRC")
-                and self.profile.connectionColorSpace != "RGB"
+                and self.profile.connectionColorSpace != b"RGB"
             )
         if hasattr(self, "direction_select"):
             self.direction_select.Show(
@@ -2324,7 +2324,7 @@ class LUTFrame(BaseFrame):
                     if (
                         self.plot_mode_select.GetStringSelection()
                         == lang.getstr("[rgb]TRC")
-                        and self.profile.connectionColorSpace != "RGB"
+                        and self.profile.connectionColorSpace != b"RGB"
                     ):
                         if self.show_as_L.GetValue():
                             format = "L* %.2f", "%s %.2f"
@@ -2365,7 +2365,7 @@ class LUTFrame(BaseFrame):
                     if (
                         self.plot_mode_select.GetStringSelection()
                         == lang.getstr("[rgb]TRC")
-                        and self.profile.connectionColorSpace != "RGB"
+                        and self.profile.connectionColorSpace != b"RGB"
                     ):
                         pointXY = pointXY[1], pointXY[0]
                 else:
@@ -2385,7 +2385,7 @@ class LUTFrame(BaseFrame):
                         if (
                             self.plot_mode_select.GetStringSelection()
                             == lang.getstr("[rgb]TRC")
-                            and self.profile.connectionColorSpace != "RGB"
+                            and self.profile.connectionColorSpace != b"RGB"
                         ):
                             x = v
                             y = pointXY[1]
@@ -2418,7 +2418,7 @@ class LUTFrame(BaseFrame):
                             break
                     if gamma:
                         legend.append("Gamma " + " ".join(gamma))
-                if self.profile.connectionColorSpace != "RGB":
+                if self.profile.connectionColorSpace != b"RGB":
                     self.add_tone_values(legend)
                 legend = [", ".join(legend[:-1])] + [legend[-1]]
                 self.SetStatusText("\n".join(legend))

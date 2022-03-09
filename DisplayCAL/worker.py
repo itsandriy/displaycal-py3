@@ -1199,19 +1199,19 @@ def get_options_from_cprt(cprt):
     """Extract options used for dispcal and colprof from profile copyright."""
     if not isinstance(cprt, str):
         if isinstance(cprt, (ICCP.TextDescriptionType, ICCP.MultiLocalizedUnicodeType)):
-            cprt = str(cprt)
+            cprt = bytes(cprt)
         else:
-            cprt = str(cprt, fs_enc, "replace")
-    dispcal_args = cprt.split(" dispcal ")
+            cprt = bytes(cprt, fs_enc, "replace")
+    dispcal_args = cprt.split(b" dispcal ")
     colprof_args = None
     if len(dispcal_args) > 1:
-        dispcal_args[1] = dispcal_args[1].split(" colprof ")
+        dispcal_args[1] = dispcal_args[1].split(b" colprof ")
         if len(dispcal_args[1]) > 1:
             colprof_args = dispcal_args[1][1]
         dispcal_args = dispcal_args[1][0]
     else:
         dispcal_args = None
-        colprof_args = cprt.split(" colprof ")
+        colprof_args = cprt.split(b" colprof ")
         if len(colprof_args) > 1:
             colprof_args = colprof_args[1]
         else:
@@ -1510,27 +1510,36 @@ def make_argyll_compatible_path(path):
     This is currently only effective under Windows to make sure that any
     unicode 'division' slashes in the profile name are replaced with
     underscores.
-
     """
     skip = -1
-    if re.match(r"\\\\\?\\", path, re.I):
+    regex = r"\\\\\?\\"
+    driver_letter_escape_char = ":"
+    os_path_sep = os.path.sep
+    if isinstance(path, bytes):
+        regex = regex.encode("utf-8")
+        driver_letter_escape_char = driver_letter_escape_char.encode("utf-8")
+        os_path_sep = os_path_sep.encode("utf-8")
+
+    if re.match(regex, path, re.I):
         # Don't forget about UNC paths:
         # \\?\UNC\Server\Volume\File
         # \\?\C:\File
         skip = 2
-    parts = path.split(os.path.sep)
+
+    parts = path.split(os_path_sep)
     if sys.platform == "win32" and len(parts) > skip + 1:
         driveletterpart = parts[skip + 1]
         if (
             len(driveletterpart) == 2
             and driveletterpart[0].upper() in string.ascii_uppercase
-            and driveletterpart[1] == ":"
+            and driveletterpart[1] == driver_letter_escape_char
         ):
             skip += 1
+
     for i, part in enumerate(parts):
         if i > skip:
             parts[i] = make_filename_safe(part)
-    return os.path.sep.join(parts)
+    return os_path_sep.join(parts)
 
 
 def set_argyll_bin(parent=None, silent=False, callafter=None, callafter_args=()):
@@ -2150,6 +2159,18 @@ class Worker(WorkerBase):
     def __init__(self, owner=None):
         """Create and return a new worker instance."""
         WorkerBase.__init__(self)
+        self.argyll_bin_dir = None
+        self.argyll_version = [0, 0, 0]
+        self.argyll_version_string = "0.0.0"
+        self._displays = []
+        self.display_edid = []
+        self.display_manufacturers = []
+        self.display_names = []
+        self.display_rects = []
+        self.displays = []
+        self.instruments = []
+        self.lut_access = []
+
         self.send_buffer = None
         self.owner = owner  # owner should be a wxFrame or similar
         if sys.platform == "win32":
@@ -2410,7 +2431,7 @@ class Worker(WorkerBase):
                     return exception
                 else:
                     ccxx_instrument = get_canonical_instrument_name(
-                        str(cgats.queryv1("INSTRUMENT") or ""),
+                        str(cgats.queryv1("INSTRUMENT").decode("utf-8") or ""),
                         {
                             "DTP94-LCD mode": "DTP94",
                             "eye-one display": "i1 Display",
@@ -3681,6 +3702,7 @@ END_DATA
             return
         self.log("%s: Prompting to reposition instrument sensor" % appname)
         self.progress_wnd.Pulse(" " * 4)
+        fullscreen = False
         if self.use_madvr:
             fullscreen = self.madtpg.is_fullscreen()
             self.madtpg_show_osd(
@@ -3959,8 +3981,8 @@ END_DATA
 
         for profile in (profile_in, profile_out):
             if (
-                profile.profileClass not in ("mntr", "link", "scnr", "spac")
-                or profile.colorSpace != "RGB"
+                profile.profileClass not in (b"mntr", b"link", b"scnr", b"spac")
+                or profile.colorSpace != b"RGB"
             ):
                 raise NotImplementedError(
                     lang.getstr(
@@ -3968,7 +3990,7 @@ END_DATA
                         (profile.profileClass, profile.colorSpace),
                     )
                 )
-            if profile_in.profileClass == "link":
+            if profile_in.profileClass == b"link":
                 break
 
         # Setup temp dir
@@ -7227,7 +7249,7 @@ while 1:
                     if len(errors):
                         for line in errors:
                             if (
-                                "Instrument Access Failed" in line
+                                b"Instrument Access Failed" in line
                                 and "-N" in cmdline[:-1]
                             ):
                                 cmdline.remove("-N")
@@ -7235,10 +7257,10 @@ while 1:
                                 break
                             if (
                                 line.strip()
-                                and line.find("User Aborted") < 0
+                                and line.find(b"User Aborted") < 0
                                 and line.find(
-                                    "XRandR 1.2 is faulty - falling back "
-                                    "to older extensions"
+                                    b"XRandR 1.2 is faulty - falling back "
+                                    b"to older extensions"
                                 )
                                 < 0
                             ):
@@ -7486,7 +7508,7 @@ while 1:
     def generate_A2B0(self, profile, clutres=None, logfile=None):
 
         # Lab cLUT is currently not implemented and should NOT be used!
-        if profile.connectionColorSpace != "XYZ":
+        if profile.connectionColorSpace != b"XYZ":
             raise Error(
                 lang.getstr(
                     "profile.unsupported",
@@ -7696,8 +7718,7 @@ while 1:
                         a, b = colormath.XYZ2Lab(*[v * 100 for v in XYZ])[1:]
                 idata.append((L, a, b))
 
-        pcs = profile.connectionColorSpace[0].lower()
-
+        pcs = profile.connectionColorSpace[0:1].lower().decode("utf-8")
         if source == "B2A":
             # NOTE:
             # Argyll's B2A tables are slightly inaccurate:
@@ -7707,6 +7728,7 @@ while 1:
             # black point as expected)
 
             # TODO: How to deal with this?
+            # TODO: Erkan Ozgur Yilmaz, please do a research for this issue.
             pass
 
         if method == 2:
@@ -7824,7 +7846,7 @@ while 1:
 
         matrices = []
 
-        if profile.connectionColorSpace == "Lab":
+        if profile.connectionColorSpace == b"Lab":
             # L*a*b* LUT
             # Use identity matrix for Lab as mandated by ICC spec
             itable.matrix = colormath.Matrix3x3([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -8253,7 +8275,7 @@ while 1:
                     "Using %s XYZ: %.4f %.4f %.4f\n" % (("RGB"[i],) + tuple(XYZrgb[i]))
                 )
 
-        if profile.connectionColorSpace == "XYZ":
+        if profile.connectionColorSpace == b"XYZ":
             # Construct the final matrix
             Xr, Yr, Zr = XYZrgb[0]
             Xg, Yg, Zg = XYZrgb[1]
@@ -8340,7 +8362,7 @@ while 1:
         for j in vrange:
             if self.thread_abort:
                 raise Info(lang.getstr("aborted"))
-            if profile.connectionColorSpace == "XYZ":
+            if profile.connectionColorSpace == b"XYZ":
                 v = [rinterp[i](j / maxval) for i in range(3)]
             else:
                 # CIELab PCS encoding
@@ -9075,10 +9097,10 @@ usage: spotread [-options] [logfile]
 
     def get_instrument_name(self):
         """Return name of currently configured instrument"""
-        n = getcfg("comport.number") - 1
-        if 0 <= n < len(self.instruments):
-            return self.instruments[n]
-        return ""
+        try:
+            return self.instruments[getcfg("comport.number") - 1]
+        except IndexError:
+            return ""
 
     def get_real_displays(self):
         """Get real (nonvirtual) displays"""
@@ -10855,8 +10877,8 @@ usage: spotread [-options] [logfile]
                 collink = None
                 if (
                     "A2B0" in profile.tags
-                    and profile.connectionColorSpace == "XYZ"
-                    and (gamap or profile.colorSpace != "RGB")
+                    and profile.connectionColorSpace == b"XYZ"
+                    and (gamap or profile.colorSpace != b"RGB")
                     and getcfg("profile.b2a.hires")
                 ):
                     collink = get_argyll_util("collink")
@@ -10890,7 +10912,7 @@ usage: spotread [-options] [logfile]
                                 gamap_profile.write(stream)
                                 stream.close()
                                 gamap_profiles.append(gamap_profile)
-                            if profile.colorSpace == "RGB" and has_B2A:
+                            if profile.colorSpace == b"RGB" and has_B2A:
                                 # Only table 0 (colorimetric) in display profile.
                                 # Assign it to table 1 as per ICC spec to prepare
                                 # for adding table 0 (perceptual) and 2 (saturation)
@@ -10898,7 +10920,7 @@ usage: spotread [-options] [logfile]
                         else:
                             gamap_profile = None
                 tables = []
-                if gamap_profile or (collink and profile.colorSpace != "RGB"):
+                if gamap_profile or (collink and profile.colorSpace != b"RGB"):
                     self.log("-" * 80)
                     self.log("Creating CIECAM02 gamut mapping using collink")
                     size = getcfg("profile.b2a.hires.size")
@@ -10913,7 +10935,7 @@ usage: spotread [-options] [logfile]
                     if is_regular_grid:
                         # Do not preserve output shaper curves in devicelink
                         collink_args.append("-no")
-                    if profile.colorSpace == "RGB" and self.argyll_version >= [1, 7]:
+                    if profile.colorSpace == b"RGB" and self.argyll_version >= [1, 7]:
                         # Use RGB->RGB forced black point hack
                         collink_args.append("-b")
                     if gamap_profile:
@@ -10923,7 +10945,7 @@ usage: spotread [-options] [logfile]
                         ]:
                             if getcfg(cfgname):
                                 tables.append((tableno, getcfg(cfgname + "_intent")))
-                    if profile.colorSpace != "RGB":
+                    if profile.colorSpace != b"RGB":
                         # Create colorimetric table for non-RGB profile
                         tables.insert(0, (1, "r"))
                         if not gamap_profile:
@@ -11188,8 +11210,8 @@ usage: spotread [-options] [logfile]
                         profile.tags.A2B2 = profile.tags.A2B0
 
                 if (
-                    profile.colorSpace == "RGB"
-                    and profile.connectionColorSpace in ("XYZ", "Lab")
+                    profile.colorSpace == b"RGB"
+                    and profile.connectionColorSpace in (b"XYZ", b"Lab")
                     and "A2B0" in profile.tags
                     and (getcfg("profile.b2a.hires") or "B2A1" in profile.tags)
                 ):
@@ -11369,8 +11391,8 @@ usage: spotread [-options] [logfile]
                 # A2B processing
                 process_A2B = (
                     "A2B0" in profile.tags
-                    and profile.colorSpace == "RGB"
-                    and profile.connectionColorSpace in ("XYZ", "Lab")
+                    and profile.colorSpace == b"RGB"
+                    and profile.connectionColorSpace in (b"XYZ", b"Lab")
                     and (
                         getcfg("profile.b2a.hires")
                         or getcfg("profile.quality.b2a") in ("l", "n")
@@ -11396,7 +11418,7 @@ usage: spotread [-options] [logfile]
                 if profchanged and tables:
                     # Make sure we match Argyll colprof i.e. have a complete
                     # set of tables
-                    if profile.colorSpace != "RGB":
+                    if profile.colorSpace != b"RGB":
                         if len(tables) == 1:
                             # We only created a colorimetric table, the
                             # others are still low quality. Assign
@@ -11422,7 +11444,7 @@ usage: spotread [-options] [logfile]
                 # are done, because we may end up using them for lookup!
                 if (
                     getcfg("profile.type") in ("X", "s", "S")
-                    and profile.colorSpace == "RGB"
+                    and profile.colorSpace == b"RGB"
                 ):
                     if getcfg("profile.type") == "X":
                         if (
@@ -12112,8 +12134,8 @@ usage: spotread [-options] [logfile]
         else:
             profile_path = profile.fileName
         if (
-            profile.profileClass == "mntr"
-            and profile.colorSpace == "RGB"
+            profile.profileClass == b"mntr"
+            and profile.colorSpace == b"RGB"
             and not (self.tempdir and profile_path.startswith(self.tempdir))
         ):
             setcfg("last_cal_or_icc_path", profile_path)
@@ -13184,7 +13206,7 @@ usage: spotread [-options] [logfile]
             inoutfile + ".ti3", options_dispcal, self.options_colprof
         )
         if ti3:
-            color_rep = (ti3.queryv1("COLOR_REP") or "").split("_")
+            color_rep = (ti3.queryv1("COLOR_REP").decode("utf-8") or "").split("_")
             # Prepare ChromaticityType tag
             self.log("Preparing ChromaticityType tag from TI3 colorants")
             colorants = ti3.get_colorants()
@@ -13837,7 +13859,7 @@ usage: spotread [-options] [logfile]
                         Error(lang.getstr("profile.invalid") + "\n" + profile_path),
                         None,
                     )
-                if profile.profileClass != "mntr" or profile.colorSpace != "RGB":
+                if profile.profileClass != b"mntr" or profile.colorSpace != b"RGB":
                     return (
                         Error(
                             lang.getstr(
@@ -14604,7 +14626,10 @@ usage: spotread [-options] [logfile]
         show_remaining_time=True,
         fancy=True,
     ):
-        """Start a worker process.
+        # The following statement is super hacky, I didn't want to use it but the
+        # original developer wanted to add the ``appname`` into the docstring
+        # programmatically. So, I think this is the best but hacky way to do it.
+        self.start.__func__.__doc__ = f"""Start a worker process.
 
         Also show a progress dialog while the process is running.
 
@@ -14614,7 +14639,7 @@ usage: spotread [-options] [logfile]
         ckwargs             consumer keyword arguments.
         wargs               producer arguments.
         wkwargs             producer keyword arguments.
-        progress_title      progress dialog title. Defaults to '%s'.
+        progress_title      progress dialog title. Defaults to '{appname}'.
         progress_msg        progress dialog message. Defaults to ''.
         progress_start      show progress dialog after delay (ms).
         resume              resume previous progress dialog (elapsed time etc).
@@ -14628,8 +14653,7 @@ usage: spotread [-options] [logfile]
                             progress dialog)
         fancy               Use fancy progress dialog with animated throbber &
                             sound fx
-
-        """ % appname
+        """
         if ckwargs is None:
             ckwargs = {}
         if wkwargs is None:
@@ -15573,7 +15597,7 @@ BEGIN_DATA
         raise_exceptions=False,
     ):
         """Lookup CIE or device values through profile"""
-        if profile.colorSpace == "RGB":
+        if profile.colorSpace == b"RGB":
             labels = ("RGB_R", "RGB_G", "RGB_B")
         else:
             labels = ("CMYK_C", "CMYK_M", "CMYK_Y", "CMYK_K")
@@ -15711,7 +15735,7 @@ BEGIN_DATA
         colorspace = profile.colorSpace
 
         # required fields for ti1
-        if colorspace == "CMYK":
+        if colorspace == b"CMYK":
             required = ("CMYK_C", "CMYK_M", "CMYK_Y", "CMYK_K")
         else:
             required = ("RGB_R", "RGB_G", "RGB_B")
@@ -15741,7 +15765,7 @@ BEGIN_DATA
                 )
             )
 
-        if colorspace == "RGB" and white_patches:
+        if colorspace == b"RGB" and white_patches:
             # make sure the first four patches are white so the whitepoint can be
             # averaged
             white_rgb = {"RGB_R": 100, "RGB_G": 100, "RGB_B": 100}
@@ -15768,7 +15792,7 @@ BEGIN_DATA
                         value = "0"
                     white.update({label: value})
             white_added_count = 0
-            if profile.profileClass != "link":
+            if profile.profileClass != b"link":
                 if white_patches_total:
                     # Ensure total of n white patches
                     while len(data.queryi(white_rgb)) < white_patches:
@@ -15846,7 +15870,7 @@ BEGIN_DATA
         gray = []
         igray = []
         igray_idx = []
-        if colorspace == "RGB":
+        if colorspace == b"RGB":
             # treat r=g=b specially: set expected a=b=0
             for i, cie in enumerate(odata):
                 r, g, b = idata[i]
@@ -15888,59 +15912,59 @@ BEGIN_DATA
                 odata[igray_idx[i]] = cie
 
         # write output ti3
-        ofile = StringIO()
+        ofile = BytesIO()
         if pcs:
-            ofile.write("CTI3   \n")
+            ofile.write(b"CTI3   \n")
             ofile.write(
-                '\nDESCRIPTOR "Argyll Calibration Target chart information 3"\n'
+                b'\nDESCRIPTOR "Argyll Calibration Target chart information 3"\n'
             )
         else:
-            ofile.write("CTI1   \n")
+            ofile.write(b"CTI1   \n")
             ofile.write(
-                '\nDESCRIPTOR "Argyll Calibration Target chart information 1"\n'
+                b'\nDESCRIPTOR "Argyll Calibration Target chart information 1"\n'
             )
-        ofile.write('KEYWORD "DEVICE_CLASS"\n')
+        ofile.write(b'KEYWORD "DEVICE_CLASS"\n')
         ofile.write(
-            'DEVICE_CLASS "' + ("DISPLAY" if colorspace == "RGB" else "OUTPUT") + '"\n'
+            b'DEVICE_CLASS "' + (b"DISPLAY" if colorspace == b"RGB" else b"OUTPUT") + b'"\n'
         )
         include_sample_name = False
         for i, cie in enumerate(odata):
             if i == 0:
                 icolor = profile.colorSpace
-                if icolor == "RGB":
-                    olabel = "RGB_R RGB_G RGB_B"
-                elif icolor == "CMYK":
-                    olabel = "CMYK_C CMYK_M CMYK_Y CMYK_K"
+                if icolor == b"RGB":
+                    olabel = b"RGB_R RGB_G RGB_B"
+                elif icolor == b"CMYK":
+                    olabel = b"CMYK_C CMYK_M CMYK_Y CMYK_K"
                 else:
                     raise ValueError("Unknown color representation " + icolor)
-                if color_rep == "LAB":
-                    ilabel = "LAB_L LAB_A LAB_B"
-                elif color_rep in ("XYZ", "RGB"):
-                    ilabel = "XYZ_X XYZ_Y XYZ_Z"
+                if color_rep == b"LAB":
+                    ilabel = b"LAB_L LAB_A LAB_B"
+                elif color_rep in (b"XYZ", b"RGB"):
+                    ilabel = b"XYZ_X XYZ_Y XYZ_Z"
                 else:
                     raise ValueError("Unknown CIE color representation " + color_rep)
-                ofile.write('KEYWORD "COLOR_REP"\n')
+                ofile.write(b'KEYWORD "COLOR_REP"\n')
                 if icolor == color_rep:
-                    ofile.write('COLOR_REP "' + icolor + '"\n')
+                    ofile.write(b'COLOR_REP "' + icolor + b'"\n')
                 else:
-                    ofile.write('COLOR_REP "' + icolor + "_" + color_rep + '"\n')
+                    ofile.write(b'COLOR_REP "' + icolor + b"_" + color_rep + b'"\n')
 
-                ofile.write("\n")
-                ofile.write("NUMBER_OF_FIELDS ")
+                ofile.write(b"\n")
+                ofile.write(b"NUMBER_OF_FIELDS ")
                 if include_sample_name:
-                    ofile.write(str(2 + len(icolor) + len(color_rep)) + "\n")
+                    ofile.write(bytes(str(2 + len(icolor) + len(color_rep))) + b"\n")
                 else:
-                    ofile.write(str(1 + len(icolor) + len(color_rep)) + "\n")
-                ofile.write("BEGIN_DATA_FORMAT\n")
-                ofile.write("SAMPLE_ID ")
+                    ofile.write(bytes(str(1 + len(icolor) + len(color_rep))) + b"\n")
+                ofile.write(b"BEGIN_DATA_FORMAT\n")
+                ofile.write(b"SAMPLE_ID ")
                 if include_sample_name:
-                    ofile.write("SAMPLE_NAME " + olabel + " " + ilabel + "\n")
+                    ofile.write(b"SAMPLE_NAME " + olabel + b" " + ilabel + b"\n")
                 else:
-                    ofile.write(olabel + " " + ilabel + "\n")
-                ofile.write("END_DATA_FORMAT\n")
-                ofile.write("\n")
-                ofile.write("NUMBER_OF_SETS " + str(len(odata)) + "\n")
-                ofile.write("BEGIN_DATA\n")
+                    ofile.write(olabel + b" " + ilabel + b"\n")
+                ofile.write(b"END_DATA_FORMAT\n")
+                ofile.write(b"\n")
+                ofile.write(b"NUMBER_OF_SETS " + bytes(str(len(odata))) + b"\n")
+                ofile.write(b"BEGIN_DATA\n")
             if pcs == "x":
                 # Need to scale XYZ coming from xicclu, Lab is already scaled
                 cie = [round(n * 100.0, 5 - len(str(int(abs(n * 100.0))))) for n in cie]
@@ -15951,28 +15975,28 @@ BEGIN_DATA
                     round(n * 100.0, 5 - len(str(int(abs(n * 100.0)))))
                     for n in colormath.RGB2XYZ(*[n / 100.0 for n in cie])
                 ]
-            device = [str(n) for n in idata[i]]
-            cie = [str(n) for n in cie]
+            device = [bytes(str(n)) for n in idata[i]]
+            cie = [bytes(str(n)) for n in cie]
             if include_sample_name:
                 ofile.write(
-                    str(i)
-                    + " "
-                    + data[i - 1][1].strip('"')
-                    + " "
-                    + " ".join(device)
-                    + " "
-                    + " ".join(cie)
-                    + "\n"
+                    bytes(str(i))
+                    + b" "
+                    + data[i - 1][1].strip(b'"')
+                    + b" "
+                    + b" ".join(device)
+                    + b" "
+                    + b" ".join(cie)
+                    + b"\n"
                 )
             else:
                 ofile.write(
-                    str(i) + " " + " ".join(device) + " " + " ".join(cie) + "\n"
+                    bytes(str(i)) + b" " + b" ".join(device) + b" " + b" ".join(cie) + b"\n"
                 )
-        ofile.write("END_DATA\n")
+        ofile.write(b"END_DATA\n")
         ofile.seek(0)
         ti3 = CGATS.CGATS(ofile)[0]
 
-        if colorspace == "RGB" and white_patches and profile.profileClass == "link":
+        if colorspace == b"RGB" and white_patches and profile.profileClass == b"link":
             if white_patches_total:
                 # Ensure total of n white patches
                 while len(ti3.DATA.queryi(white_rgb)) < white_patches:

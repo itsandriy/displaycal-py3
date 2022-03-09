@@ -403,7 +403,7 @@ class ReportFrame(BaseFrame):
 
     def set_simulate_whitepoint(self, set_whitepoint_simulate_relative=False):
         sim_profile = self.get_simulation_profile()
-        is_prtr_profile = sim_profile and sim_profile.profileClass == "prtr"
+        is_prtr_profile = sim_profile and sim_profile.profileClass == b"prtr"
         if set_whitepoint_simulate_relative:
             setcfg(
                 "measurement_report.whitepoint.simulate",
@@ -506,18 +506,18 @@ class ReportFrame(BaseFrame):
                     (
                         which == "simulation"
                         and (
-                            profile.profileClass not in ("mntr", "prtr")
-                            or profile.colorSpace not in ("CMYK", "RGB")
+                            profile.profileClass not in (b"mntr", b"prtr")
+                            or profile.colorSpace not in (b"CMYK", b"RGB")
                         )
                     )
                     or (
                         which == "output"
                         and (
-                            profile.profileClass != "mntr"
-                            or profile.colorSpace != "RGB"
+                            profile.profileClass != b"mntr"
+                            or profile.colorSpace != b"RGB"
                         )
                     )
-                    or (which == "devlink" and profile.profileClass != "link")
+                    or (which == "devlink" and profile.profileClass != b"link")
                 ):
                     show_result_dialog(
                         NotImplementedError(

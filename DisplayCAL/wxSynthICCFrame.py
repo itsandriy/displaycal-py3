@@ -446,7 +446,7 @@ class SynthICCFrame(BaseFrame):
             if profile.colorSpace not in (
                 "RGB",
                 "GRAY",
-            ) or profile.connectionColorSpace not in ("Lab", "XYZ"):
+            ) or profile.connectionColorSpace not in (b"Lab", b"XYZ"):
                 show_result_dialog(
                     Error(
                         lang.getstr(
@@ -916,7 +916,7 @@ class SynthICCFrame(BaseFrame):
             if not ICCP.s15f16_is_equal(
                 (XYZ["wX"], XYZ["wY"], XYZ["wZ"]), colormath.get_whitepoint("D50")
             ) and (
-                profile.profileClass not in ("mntr", "prtr")
+                profile.profileClass not in (b"mntr", b"prtr")
                 or colormath.is_similar_matrix(
                     colormath.get_cat_matrix(self.cat),
                     colormath.get_cat_matrix("Bradford"),

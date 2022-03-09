@@ -1316,14 +1316,14 @@ class LUT3DFrame(BaseFrame):
                 if (
                     which in ("input", "output")
                     and (
-                        profile.profileClass not in ("mntr", "link", "scnr", "spac")
-                        or profile.colorSpace != "RGB"
+                        profile.profileClass not in (b"mntr", b"link", b"scnr", b"spac")
+                        or profile.colorSpace != b"RGB"
                     )
                 ) or (
                     which == "abstract"
                     and (
-                        profile.profileClass != "abst"
-                        or profile.colorSpace not in ("Lab", "XYZ")
+                        profile.profileClass != b"abst"
+                        or profile.colorSpace not in (b"Lab", b"XYZ")
                     )
                 ):
                     show_result_dialog(
@@ -1336,7 +1336,7 @@ class LUT3DFrame(BaseFrame):
                         parent=self,
                     )
                 else:
-                    if profile.profileClass == "link":
+                    if profile.profileClass == b"link":
                         if which == "output":
                             self.input_profile_ctrl.SetPath(path)
                             if self.getcfg("3dlut.output.profile") == path:
@@ -1493,7 +1493,7 @@ class LUT3DFrame(BaseFrame):
                                 bool(self.getcfg("3dlut.output.profile"))
                                 and os.path.isfile(self.getcfg("3dlut.output.profile"))
                             )
-                            or profile.profileClass == "link"
+                            or profile.profileClass == b"link"
                         )
                         and (
                             self.getcfg("3dlut.format") != "madVR"

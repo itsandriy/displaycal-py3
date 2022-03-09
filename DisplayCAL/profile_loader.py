@@ -909,7 +909,7 @@ if sys.platform == "win32":
                 except IOError as exception:
                     print(exception)
                     continue
-                if profile.profileClass == "mntr":
+                if profile.profileClass == b"mntr":
                     profiles.append((profile.getDescription(), os.path.basename(pth)))
             natsort_key = natsort_key_factory()
             profiles.sort(key=lambda item: natsort_key(item[0]))

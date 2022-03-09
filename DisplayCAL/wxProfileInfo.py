@@ -293,10 +293,10 @@ class GamutCanvas(LUTCanvas):
             profile = self.profiles.get(len(self.pcs_data) - 1 - i)
             if (
                 profile
-                and profile.profileClass == "nmcl"
+                and profile.profileClass == b"nmcl"
                 and "ncl2" in profile.tags
                 and isinstance(profile.tags.ncl2, ICCP.NamedColor2Type)
-                and profile.connectionColorSpace in ("Lab", "XYZ")
+                and profile.connectionColorSpace in (b"Lab", b"XYZ")
             ):
                 # Named color profile
                 for j, (x, y) in enumerate(coords):
@@ -439,8 +439,8 @@ class GamutCanvas(LUTCanvas):
 
             if (
                 not profile
-                or profile.profileClass == "link"
-                or profile.connectionColorSpace not in ("Lab", "XYZ")
+                or profile.profileClass == b"link"
+                or profile.connectionColorSpace not in (b"Lab", b"XYZ")
             ):
                 self.set_pcs_data(i)
                 self.profiles[i] = None
@@ -463,14 +463,14 @@ class GamutCanvas(LUTCanvas):
 
             pcs_triplets = []
             if (
-                profile.profileClass == "nmcl"
+                profile.profileClass == b"nmcl"
                 and "ncl2" in profile.tags
                 and isinstance(profile.tags.ncl2, ICCP.NamedColor2Type)
-                and profile.connectionColorSpace in ("Lab", "XYZ")
+                and profile.connectionColorSpace in (b"Lab", b"XYZ")
             ):
                 for k, v in profile.tags.ncl2.items():
                     color = list(v.pcs.values())
-                    if profile.connectionColorSpace == "Lab":
+                    if profile.connectionColorSpace == b"Lab":
                         # Need to convert to XYZ
                         color = colormath.Lab2XYZ(*color)
                     if intent == "a" and "wtpt" in profile.tags:
@@ -497,31 +497,31 @@ class GamutCanvas(LUTCanvas):
                 continue
             else:
                 channels = {
-                    "XYZ": 3,
-                    "Lab": 3,
-                    "Luv": 3,
-                    "YCbr": 3,
-                    "Yxy": 3,
-                    "RGB": 3,
-                    "GRAY": 1,
-                    "HSV": 3,
-                    "HLS": 3,
-                    "CMYK": 4,
-                    "CMY": 3,
-                    "2CLR": 2,
-                    "3CLR": 3,
-                    "4CLR": 4,
-                    "5CLR": 5,
-                    "6CLR": 6,
-                    "7CLR": 7,
-                    "8CLR": 8,
-                    "9CLR": 9,
-                    "ACLR": 10,
-                    "BCLR": 11,
-                    "CCLR": 12,
-                    "DCLR": 13,
-                    "ECLR": 14,
-                    "FCLR": 15,
+                    b"XYZ": 3,
+                    b"Lab": 3,
+                    b"Luv": 3,
+                    b"YCbr": 3,
+                    b"Yxy": 3,
+                    b"RGB": 3,
+                    b"GRAY": 1,
+                    b"HSV": 3,
+                    b"HLS": 3,
+                    b"CMYK": 4,
+                    b"CMY": 3,
+                    b"2CLR": 2,
+                    b"3CLR": 3,
+                    b"4CLR": 4,
+                    b"5CLR": 5,
+                    b"6CLR": 6,
+                    b"7CLR": 7,
+                    b"8CLR": 8,
+                    b"9CLR": 9,
+                    b"ACLR": 10,
+                    b"BCLR": 11,
+                    b"CCLR": 12,
+                    b"DCLR": 13,
+                    b"ECLR": 14,
+                    b"FCLR": 15,
                 }.get(profile.colorSpace)
 
                 if not channels:
@@ -537,7 +537,7 @@ class GamutCanvas(LUTCanvas):
 
                 # Create input values
                 device_values = []
-                if profile.colorSpace in ("Lab", "Luv", "XYZ", "Yxy"):
+                if profile.colorSpace in (b"Lab", b"Luv", b"XYZ", b"Yxy"):
                     # Use ICC PCSXYZ encoding range
                     minv = 0.0
                     maxv = 0xFFFF / 32768.0
@@ -553,43 +553,43 @@ class GamutCanvas(LUTCanvas):
                             for l in range(self.size):
                                 device_value[k] = minv + step * l
                                 device_values.append(list(device_value))
-                if profile.colorSpace in ("HLS", "HSV", "Lab", "Luv", "YCbr", "Yxy"):
+                if profile.colorSpace in (b"HLS", b"HSV", b"Lab", b"Luv", b"YCbr", b"Yxy"):
                     # Convert to actual color space
                     # TODO: Handle HLS and YCbr
                     tmp = list(device_values)
                     device_values = []
                     for j, values in enumerate(tmp):
-                        if profile.colorSpace == "HSV":
+                        if profile.colorSpace == b"HSV":
                             HSV = list(colormath.RGB2HSV(*values))
                             device_values.append(HSV)
-                        elif profile.colorSpace == "Lab":
+                        elif profile.colorSpace == b"Lab":
                             Lab = list(colormath.XYZ2Lab(*[v * 100 for v in values]))
                             device_values.append(Lab)
-                        elif profile.colorSpace == "Luv":
+                        elif profile.colorSpace == b"Luv":
                             Luv = list(colormath.XYZ2Luv(*[v * 100 for v in values]))
                             device_values.append(Luv)
-                        elif profile.colorSpace == "Yxy":
+                        elif profile.colorSpace == b"Yxy":
                             xyY = list(colormath.XYZ2xyY(*values))
                             device_values.append(xyY)
 
                 # Add white
-                if profile.colorSpace == "RGB":
+                if profile.colorSpace == b"RGB":
                     device_values.append([1.0] * channels)
-                elif profile.colorSpace == "HLS":
+                elif profile.colorSpace == b"HLS":
                     device_values.append([0, 1, 0])
-                elif profile.colorSpace == "HSV":
+                elif profile.colorSpace == b"HSV":
                     device_values.append([0, 0, 1])
-                elif profile.colorSpace in ("Lab", "Luv", "YCbr"):
-                    if profile.colorSpace == "YCbr":
+                elif profile.colorSpace in (b"Lab", b"Luv", b"YCbr"):
+                    if profile.colorSpace == b"YCbr":
                         device_values.append([1.0, 0.0, 0.0])
                     else:
                         device_values.append([100.0, 0.0, 0.0])
-                elif profile.colorSpace in ("XYZ", "Yxy"):
-                    if profile.colorSpace == "XYZ":
+                elif profile.colorSpace in (b"XYZ", b"Yxy"):
+                    if profile.colorSpace == b"XYZ":
                         device_values.append(list(profile.tags.wtpt.pcs.values()))
                     else:
                         device_values.append(profile.tags.wtpt.pcs.xyY)
-                elif profile.colorSpace != "GRAY":
+                elif profile.colorSpace != b"GRAY":
                     device_values.append([0.0] * channels)
 
                 if debug:
@@ -626,7 +626,7 @@ class GamutCanvas(LUTCanvas):
                             " ".join(("%3.4f",) * len(pcs_triplet)) % tuple(pcs_triplet)
                         )
                     pcs_triplets.append(pcs_triplet)
-                    if profile.connectionColorSpace == "Lab":
+                    if profile.connectionColorSpace == b"Lab":
                         pcs_triplets[-1] = list(colormath.Lab2XYZ(*pcs_triplets[-1]))
 
             if len(self.pcs_data) < i + 1:
@@ -1467,7 +1467,7 @@ class ProfileInfoFrame(LUTFrame):
         self.client.errors = []
         if (self.rTRC and self.gTRC and self.bTRC) or (
             self.toggle_clut.GetValue()
-            and profile.colorSpace in ("RGB", "GRAY", "CMYK")
+            and profile.colorSpace in (b"RGB", b"GRAY", b"CMYK")
         ):
             if "vcgt" in profile.tags or "MS00" in profile.tags:
                 choice.append(lang.getstr("vcgt"))

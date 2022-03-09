@@ -186,7 +186,7 @@ def _mp_generate_B2A_clut(
             else:
                 Linterp = interp_list[0]
     m2i = m2
-    if profile.connectionColorSpace == "XYZ":
+    if profile.connectionColorSpace == b"XYZ":
         m2i = m2.inverted()
     for a in chunk:
         if thread_abort_event.is_set():
@@ -197,7 +197,7 @@ def _mp_generate_B2A_clut(
         for b in range(clutres):
             for c in range(clutres):
                 d, e, f = [v * step for v in (a, b, c)]
-                if profile.connectionColorSpace == "XYZ":
+                if profile.connectionColorSpace == b"XYZ":
                     # Apply TRC to XYZ values to distribute them optimally
                     # across cLUT grid points.
                     XYZ = [interp[i](v) for i, v in enumerate((d, e, f))]
@@ -664,13 +664,13 @@ class Xicclu(WorkerBase):
         args.append("-f" + direction)
         self.output_scale = 1.0
         if is_profile:
-            if profile.profileClass not in ("abst", "link"):
+            if profile.profileClass not in (b"abst", b"link"):
                 args.append("-i" + intent)
                 if order != "n":
                     args.append("-o" + order)
-            if profile.profileClass != "link":
+            if profile.profileClass != b"link":
                 if direction in ("f", "ib") and (
-                    pcs == "x" or (profile.connectionColorSpace == "XYZ" and not pcs)
+                    pcs == "x" or (profile.connectionColorSpace == b"XYZ" and not pcs)
                 ):
                     # In case of forward lookup with XYZ PCS, use 0..100 scaling
                     # internally so we get extra precision from xicclu for the
