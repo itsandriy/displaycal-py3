@@ -184,7 +184,7 @@ from DisplayCAL.util_os import (
     which,
 )
 from DisplayCAL.util_str import (
-    ellipsis,
+    ellipsis_,
     make_filename_safe,
     safe_str,
     strtr,
@@ -1503,15 +1503,15 @@ class GamapFrame(BaseFrame):
                 if event and (
                     (
                         src_viewcond in [None].extend(self.viewconds_out_nondisplay)
-                        and profile.profileClass in ("mntr", "spac")
+                        and profile.profileClass in (b"mntr", b"spac")
                     )
                     or (
                         src_viewcond not in self.viewconds_out_nondisplay
-                        and profile.profileClass not in ("mntr", "spac")
+                        and profile.profileClass not in (b"mntr", b"spac")
                     )
                 ):
                     # pre-select suitable viewing condition
-                    if profile.profileClass == "prtr":
+                    if profile.profileClass == b"prtr":
                         src_viewcond = "pp"
                     else:
                         src_viewcond = "mt"
@@ -1522,7 +1522,7 @@ class GamapFrame(BaseFrame):
                     if not self.gamap_out_viewcond_ctrl.Selection:
                         current_profile = get_current_profile(True)
                         if current_profile:
-                            if current_profile.profileClass == "prtr":
+                            if current_profile.profileClass == b"prtr":
                                 out_viewcond = "pp"
                             else:
                                 out_viewcond = "mt"
@@ -1907,7 +1907,6 @@ class MainFrame(ReportFrame, BaseFrame):
                 self.load_display_profile_cal(None)
 
         self.init_timers()
-
         if verbose >= 1:
             print(lang.getstr("ready"))
 
@@ -1923,7 +1922,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.logoffset = 0
         logbuffer.seek(0)
         msg = "".join(
-            [line.decode("UTF-8", "replace") for line in logbuffer][self.logoffset:]
+            [line.decode("UTF-8", "replace") for line in logbuffer][self.logoffset :]
         ).rstrip()
         logbuffer.truncate(0)
         if msg:
@@ -4521,17 +4520,18 @@ class MainFrame(ReportFrame, BaseFrame):
         """Show the currently selected correction matrix and list all files
         in ccmx directories below
 
-        force	If True, reads the ccmx directory again, otherwise uses a
-                previously cached result if available
-
+        :param force: If True, reads the ccmx directory again, otherwise uses a
+            previously cached result if available
         """
         items = [lang.getstr("colorimeter_correction.file.none"), lang.getstr("auto")]
         self.ccmx_item_paths = []
         index = 0
         ccxx_path = None
         ccmx = getcfg("colorimeter_correction_matrix_file").split(":", 1)
+
         if len(ccmx) > 1 and not os.path.isfile(ccmx[1]):
             ccmx = ccmx[:1]
+
         if force or not getattr(self, "ccmx_cached_paths", None):
             ccmx_paths = self.get_argyll_data_files("lu", "*.ccmx")
             ccss_paths = self.get_argyll_data_files("lu", "*.ccss")
@@ -4541,8 +4541,7 @@ class MainFrame(ReportFrame, BaseFrame):
             mapping = {
                 "Dell_U2413_25Jul12.ccss": "GBrLED_25Jul12.ccss",  # HCFR
                 "necpa242w_full.ccss": "necpa242w_full.ccss",  # HCFR
-                # necpa242w_full.ccss is bad - not done with native
-                # primaries
+                # necpa242w_full.ccss is bad - not done with native primaries
                 "Panasonic VVX17P051J00.ccss": "PanasonicVVX17P051J00.ccss",
             }
             imapping = {}
@@ -4592,11 +4591,11 @@ class MainFrame(ReportFrame, BaseFrame):
                         malformed_ccxx.append(path)
                     continue
                 if desc == lstr:
-                    desc = cgats.get_descriptor()
+                    desc = cgats.get_descriptor()  # this is bytes
                 # If the description is not the same as the 'sane'
                 # filename, add the filename after the description
                 # (max 31 chars)
-                # See also colorimeter_correction_check_overwite, the
+                # See also colorimeter_correction_check_overwrite, the
                 # way the filename is processed must be the same
                 if (
                     add_basename_to_desc_on_mismatch
@@ -4605,25 +4604,26 @@ class MainFrame(ReportFrame, BaseFrame):
                     )
                     != os.path.splitext(os.path.basename(path))[0]
                 ):
-                    desc = "%s <%s>" % (
-                        ellipsis(desc, 66, "m"),
-                        ellipsis(os.path.basename(path), 31, "m"),
+                    desc = b"%s <%s>" % (
+                        ellipsis_(desc, 66, "m"),
+                        ellipsis_(os.path.basename(path), 31, "m"),
                     )
                 else:
-                    desc = ellipsis(desc, 100, "m")
+                    desc = ellipsis_(desc, 100, "m")
                 self.ccmx_cached_descriptors[path] = desc
+                # get_canonical_instrument_name: returns bytes
                 self.ccmx_instruments[path] = get_canonical_instrument_name(
-                    str(cgats.queryv1("INSTRUMENT") or ""),
+                    cgats.queryv1("INSTRUMENT") or b"",
                     {
-                        "DTP94-LCD mode": "DTP94",
-                        "eye-one display": "i1 Display",
-                        "Spyder 2 LCD": "Spyder2",
-                        "Spyder 3": "Spyder3",
+                        b"DTP94-LCD mode": b"DTP94",
+                        b"eye-one display": b"i1 Display",
+                        b"Spyder 2 LCD": b"Spyder2",
+                        b"Spyder 3": b"Spyder3",
                     },
                 )
-                key = "%s\0%s" % (
+                key = b"%s\0%s" % (
                     self.ccmx_instruments[path],
-                    str(cgats.queryv1("DISPLAY") or ""),
+                    cgats.queryv1("DISPLAY") or b"",
                 )
                 if not self.ccmx_mapping.get(key) or (
                     len(ccmx) > 1 and path == ccmx[1]
@@ -4632,9 +4632,14 @@ class MainFrame(ReportFrame, BaseFrame):
                     self.ccmx_mapping[key] = path
             else:
                 continue
-            if self.worker.get_instrument_name().lower().replace(
-                " ", ""
-            ) in self.ccmx_instruments.get(path, "").lower().replace(" ", "") or (
+
+            instrument_name = self.worker.get_instrument_name()
+            if isinstance(instrument_name, str):
+                instrument_name = instrument_name.encode("utf-8")
+
+            if instrument_name.lower().replace(b" ", b"") in self.ccmx_instruments.get(
+                path, b""
+            ).lower().replace(b" ", b"") or (
                 path.lower().endswith(".ccss")
                 and self.worker.instrument_supports_ccss()
             ):
@@ -4726,24 +4731,24 @@ class MainFrame(ReportFrame, BaseFrame):
                         != os.path.splitext(os.path.basename(ccmx[1]))[0]
                     ):
                         desc = "%s <%s>" % (
-                            ellipsis(desc, 66, "m"),
-                            ellipsis(os.path.basename(ccmx[1]), 31, "m"),
+                            ellipsis_(desc, 66, "m"),
+                            ellipsis_(os.path.basename(ccmx[1]), 31, "m"),
                         )
                     else:
-                        desc = ellipsis(desc, 100, "m")
+                        desc = ellipsis_(desc, 100, "m")
                     self.ccmx_cached_descriptors[ccmx[1]] = desc
                     self.ccmx_instruments[ccmx[1]] = get_canonical_instrument_name(
-                        str(cgats.queryv1("INSTRUMENT") or ""),
+                        (cgats.queryv1("INSTRUMENT") or b""),
                         {
-                            "DTP94-LCD mode": "DTP94",
-                            "eye-one display": "i1 Display",
-                            "Spyder 2 LCD": "Spyder2",
-                            "Spyder 3": "Spyder3",
+                            b"DTP94-LCD mode": b"DTP94",
+                            b"eye-one display": b"i1 Display",
+                            b"Spyder 2 LCD": b"Spyder2",
+                            b"Spyder 3": b"Spyder3",
                         },
                     )
                     key = "%s\0%s" % (
                         self.ccmx_instruments[ccmx[1]],
-                        str(cgats.queryv1("DISPLAY") or ""),
+                        (cgats.queryv1("DISPLAY") or b"").decode("utf-8"),
                     )
                     self.ccmx_mapping[key] = ccmx[1]
             if desc and (
@@ -8722,11 +8727,11 @@ class MainFrame(ReportFrame, BaseFrame):
                     show_result_dialog(msg, self)
                     return
             if i in (0, 1) and use_sim:
-                if use_sim_as_output and profile.colorSpace == "RGB":
+                if use_sim_as_output and profile.colorSpace == b"RGB":
                     if i == 0 and use_devlink:
                         devlink = profile
                 else:
-                    if profile.colorSpace != "RGB":
+                    if profile.colorSpace != b"RGB":
                         use_sim_as_output = False
                         devlink = None
                     sim_profile = profile
@@ -9140,7 +9145,8 @@ class MainFrame(ReportFrame, BaseFrame):
         # Check if we need to apply calibration
         if not use_sim_as_output or (
             devlink
-            and "-a" not in parse_argument_string(
+            and "-a"
+            not in parse_argument_string(
                 devlink.tags.get("meta", {})
                 .get("collink.args", {})
                 .get("value", "-a" if getcfg("3dlut.output.profile.apply_cal") else "")
@@ -9543,7 +9549,10 @@ class MainFrame(ReportFrame, BaseFrame):
                         )
                         != filename
                     ):
-                        ccmx = "%s &amp;lt;%s&amp;gt;" % (desc, ellipsis(ccmx, 31, "m"))
+                        ccmx = "%s &amp;lt;%s&amp;gt;" % (
+                            desc,
+                            ellipsis_(ccmx, 31, "m"),
+                        )
                     if cgats.get(0, cgats).type == "CCMX":
                         reference_observer = cgats.queryv1("REFERENCE_OBSERVER")
                         if (
@@ -13378,7 +13387,6 @@ class MainFrame(ReportFrame, BaseFrame):
         if len(cgats_list) == 2:
             instrument = colorimeter_ti3.queryv1("TARGET_INSTRUMENT")
             if instrument:
-                instrument = str(instrument)
                 instrument = get_canonical_instrument_name(instrument)
             observer = getcfg("colorimeter_correction.observer.reference")
             if observer == "1931_2":
@@ -13409,7 +13417,6 @@ class MainFrame(ReportFrame, BaseFrame):
                 )
         target_instrument = reference_ti3.queryv1("TARGET_INSTRUMENT")
         if target_instrument:
-            target_instrument = str(target_instrument)
             target_instrument = get_canonical_instrument_name(target_instrument)
             description = "%s (%s)" % (description, target_instrument)
         args = []
@@ -14264,7 +14271,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         check = self.worker.spyder4_cal_exists()
                     else:
                         check = False
-                    if instrument in self.worker.instruments_ and not check:
+                    if instrument in self.worker.instruments and not check:
                         getattr(dlg, name).SetValue(True)
                         break
                 dlg.sizer3.Add(
@@ -15886,7 +15893,7 @@ class MainFrame(ReportFrame, BaseFrame):
             "B2A0" in profile.tags
             and isinstance(profile.tags.B2A0, ICCP.LUT16Type)
             and profile.tags.B2A0.clut_grid_steps < 17
-            and profile.creator == "argl"
+            and profile.creator == b"argl"
         ):
             # Nope. Not allowing to install. Offer to re-generate B2A
             # tables.
@@ -15924,7 +15931,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 result = Error(
                     lang.getstr("profile.required_tags_missing", "LUT16Type")
                 )
-            elif profile.connectionColorSpace not in ("XYZ", "Lab"):
+            elif profile.connectionColorSpace not in (b"XYZ", b"Lab"):
                 result = Error(
                     lang.getstr(
                         "profile.unsupported",
@@ -16062,7 +16069,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         tags[tagname] = profile.tags[tagname]
             else:
                 try:
-                    ti3 = open(path, "r", newline="")
+                    ti3 = open(path, "rb")
                 except Exception:
                     InfoDialog(
                         self,
@@ -16073,7 +16080,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     return
             ti3_lines = [line.strip() for line in ti3]
             ti3.close()
-            if "CAL" not in ti3_lines:
+            if b"CAL" not in ti3_lines:
                 dlg = ConfirmDialog(
                     self,
                     msg=lang.getstr("dialog.ti3_no_cal_info"),
@@ -16167,8 +16174,8 @@ class MainFrame(ReportFrame, BaseFrame):
                         collected_path = os.path.join(
                             tmp_working_dir, os.path.basename(ti3_path)
                         )
-                        with open(collected_path, "w") as ti3_file:
-                            ti3_file.write("\n".join(ti3_lines))
+                        with open(collected_path, "wb") as ti3_file:
+                            ti3_file.write(b"\n".join(ti3_lines))
                         collected_paths.append(collected_path)
                     # Average the TI3 files
                     args = ["-v"] + collected_paths + [ti3_tmp_path]
@@ -16229,7 +16236,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     ti3 = CGATS.CGATS(ti3_tmp_path)
                     if (
                         ti3.queryv1("COLOR_REP")
-                        and ti3.queryv1("COLOR_REP")[:3] == "RGB"
+                        and ti3.queryv1("COLOR_REP")[:3] == b"RGB"
                     ):
                         self.worker.options_targen = ["-d3"]
                 except Exception as exception:
@@ -18991,6 +18998,7 @@ class MainFrame(ReportFrame, BaseFrame):
         if self.worker.progress_wnd and self.worker.progress_wnd.IsShown():
             self.Lower()
             self.worker.progress_wnd.Raise()
+        self.update_layout()
 
     def OnClose(self, event=None):
         if getattr(self.worker, "thread", None) and self.worker.thread.is_alive():
@@ -19197,9 +19205,9 @@ class StartupFrame(start_cls):
                     rec709_gamma18 = list(colormath.get_rgb_space("Rec. 709"))
                     rec709_gamma18[0] = 1.8
                     rec709_gamma18_profile = ICCP.ICCProfile.from_rgb_space(
-                        rec709_gamma18, "Rec. 709 gamma 1.8"
+                        rec709_gamma18, b"Rec. 709 gamma 1.8"
                     )
-                    rec709_gamma18_io = StringIO(rec709_gamma18_profile.data)
+                    rec709_gamma18_io = BytesIO(rec709_gamma18_profile.data)
                     try:
                         rec709_gamma18_cms = PIL.ImageCms.getOpenProfile(
                             rec709_gamma18_io
