@@ -341,7 +341,7 @@ class Image(object):
             w, h = len(self.data[0]), len(self.data)
         ihdr.extend([struct.pack(">I", w), struct.pack(">I", h)])
         # IHDR: Bit depth
-        ihdr.append(chr(self.bitdepth))
+        ihdr.append(bytes(str(chr(self.bitdepth)), "utf-8"))
         # IHDR: Color type 2 (truecolor)
         ihdr.append(b"\2")
         # IHDR: Compression method 0 (deflate)
