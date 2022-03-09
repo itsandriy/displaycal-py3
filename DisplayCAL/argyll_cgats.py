@@ -22,16 +22,19 @@ cals = {}
 
 
 def quote_nonoption_args(args):
-    """Puts quotes around all arguments which are not options
+    """Put quotes around all arguments which are not options.
+
     (ie. which do not start with a hyphen '-')
     """
     args = list(args)
     for i, arg in enumerate(args):
         # first convert everything to bytes
         if not isinstance(arg, bytes):
-            arg = bytes(arg, "utf-8")
+            arg = bytes(str(arg), "utf-8")
         if arg[0:1] != b"-":
             args[i] = b'"%s"' % arg
+        else:
+            args[i] = arg
     return args
 
 
@@ -40,9 +43,7 @@ def add_dispcal_options_to_cal(cal, options_dispcal):
     options_dispcal = quote_nonoption_args(options_dispcal)
     try:
         cgats = CGATS.CGATS(cal)
-        cgats[0].add_section(
-            "ARGYLL_DISPCAL_ARGS", " ".join(options_dispcal).encode("UTF-7", "replace")
-        )
+        cgats[0].add_section("ARGYLL_DISPCAL_ARGS", b" ".join(options_dispcal))
         return cgats
     except Exception:
         print(traceback.format_exc())
@@ -56,13 +57,14 @@ def add_options_to_ti3(ti3, options_dispcal=None, options_colprof=None):
             options_colprof = quote_nonoption_args(options_colprof)
             cgats[0].add_section(
                 "ARGYLL_COLPROF_ARGS",
-                " ".join(options_colprof).encode("UTF-7", "replace"),
+                b" ".join(options_colprof),
             )
+
         if options_dispcal and 1 in cgats:
             options_dispcal = quote_nonoption_args(options_dispcal)
             cgats[1].add_section(
                 "ARGYLL_DISPCAL_ARGS",
-                " ".join(options_dispcal).encode("UTF-7", "replace"),
+                b" ".join(options_dispcal),
             )
         return cgats
     except BaseException:
@@ -131,7 +133,7 @@ def cal_to_vcgt(cal, return_cgats=False):
         if debug:
             print("[D] No entries found in calibration", cal.filename)
         return None
-    vcgt = ICCP.VideoCardGammaTableType("", "vcgt")
+    vcgt = ICCP.VideoCardGammaTableType(b"", "vcgt")
     vcgt.update(
         {
             "channels": 3,
@@ -228,7 +230,7 @@ def extract_cal_from_profile(
     ):
         # When vcgt is nonlinear, prefer it
         # Check for video levels encoding
-        if cgats.queryv1("TV_OUTPUT_ENCODING") == "YES":
+        if cgats.queryv1("TV_OUTPUT_ENCODING") == b"YES":
             black, white = (16, 235)
         else:
             output_enc = cgats.queryv1("OUTPUT_ENCODING")
@@ -259,9 +261,9 @@ def extract_cal_from_profile(
                             # Can't be right. Metadata says it's video encoded,
                             # but clearly exceeds the encoding range.
                             print(
-                                "Warning: Metadata claims video levels (%s..%s) but vcgt value %s exceeds "
-                                "encoding range. Using values as-is."
-                                % (round(black, 2), round(white, 2), lvl)
+                                "Warning: Metadata claims video levels (%s..%s) but "
+                                "vcgt value %s exceeds encoding range. Using values "
+                                "as-is." % (round(black, 2), round(white, 2), lvl)
                             )
                             encoding_mismatch = True
                             break
@@ -276,7 +278,8 @@ def extract_cal_from_profile(
                     cgats[0].add_keyword("TV_OUTPUT_ENCODING", "YES")
                 else:
                     cgats[0].add_keyword(
-                        "OUTPUT_ENCODING", " ".join(str(v) for v in (black, white))
+                        "OUTPUT_ENCODING",
+                        b" ".join(bytes(str(v), "utf-8") for v in (black, white)),
                     )
             else:
                 print("Warning - no un-scaling applied - no calibration data!")
@@ -292,27 +295,27 @@ def extract_cal_from_ti3(ti3):
 
     """
     if isinstance(ti3, CGATS.CGATS):
-        ti3 = str(ti3)
-    if isinstance(ti3, str):
-        ti3 = StringIO(ti3)
+        ti3 = bytes(ti3)
+    if isinstance(ti3, bytes):
+        ti3 = BytesIO(ti3)
     cal = False
     cal_lines = []
     for line in ti3:
         line = line.strip()
-        if line == "CAL":
-            line = "CAL    "  # Make sure CGATS file identifiers are
+        if line == b"CAL":
+            line = b"CAL    "  # Make sure CGATS file identifiers are
             # always a minimum of 7 characters
             cal = True
         if cal:
             cal_lines.append(line)
-            if line == "END_DATA":
+            if line == b"END_DATA":
                 break
     try:
         ti3.close()
     except AttributeError:
         pass
 
-    return "\n".join(cal_lines)
+    return b"\n".join(cal_lines)
 
 
 def extract_fix_copy_cal(source_filename, target_filename=None):
@@ -432,7 +435,7 @@ def extract_device_gray_primaries(
     ti3 = ti3.queryi1("DATA")
     ti3.filename = filename
     ti3_extracted = CGATS.CGATS(
-        """CTI3
+        b"""CTI3
 DEVICE_CLASS "DISPLAY"
 COLOR_REP "RGB_XYZ"
 BEGIN_DATA_FORMAT
@@ -462,7 +465,7 @@ END_DATA"""
     if include_neutrals:
         white = ti3.get_white_cie("XYZ")
         str_thresh = str(neutrals_ab_threshold)
-        round_digits = len(str_thresh[str_thresh.find(".") + 1:])
+        round_digits = len(str_thresh[str_thresh.find(".") + 1 :])
     for i, item in ti3.DATA.items():
         if not i:
             # Check if fields are missing
@@ -534,13 +537,13 @@ def ti3_to_ti1(ti3_data):
     ti3 = CGATS.CGATS(ti3_data)
     if not ti3:
         return ""
-    ti3[0].type = "CTI1"
-    ti3[0].DESCRIPTOR = "Argyll Calibration Target chart information 1"
-    ti3[0].ORIGINATOR = "Argyll targen"
+    ti3[0].type = b"CTI1"
+    ti3[0].DESCRIPTOR = b"Argyll Calibration Target chart information 1"
+    ti3[0].ORIGINATOR = b"Argyll targen"
     if hasattr(ti3[0], "COLOR_REP"):
-        color_rep = ti3[0].COLOR_REP.split("_")[0]
+        color_rep = ti3[0].COLOR_REP.split(b"_")[0]
     else:
-        color_rep = "RGB"
+        color_rep = b"RGB"
     ti3[0].add_keyword("COLOR_REP", color_rep)
     ti3[0].remove_keyword("DEVICE_CLASS")
     if hasattr(ti3[0], "LUMINANCE_XYZ_CDM2"):
@@ -553,13 +556,19 @@ def ti3_to_ti1(ti3_data):
 def vcgt_to_cal(profile):
     """Return a CAL (CGATS instance) from vcgt"""
     cgats = CGATS.CGATS(file_identifier="CAL")
-    context = cgats.add_data({"DESCRIPTOR": "Argyll Device Calibration State"})
-    context.add_data({"ORIGINATOR": "vcgt"})
+    context = cgats.add_data({"DESCRIPTOR": b"Argyll Device Calibration State"})
+    context.add_data({"ORIGINATOR": b"vcgt"})
     context.add_data(
-        {"CREATED": strftime("%a %b %d %H:%M:%S %Y", profile.dateTime.timetuple())}
+        {
+            "CREATED": bytes(
+                strftime("%a %b %d %H:%M:%S %Y", profile.dateTime.timetuple()),
+                "utf-8",
+                "replace",
+            )
+        }
     )
-    context.add_keyword("DEVICE_CLASS", "DISPLAY")
-    context.add_keyword("COLOR_REP", "RGB")
+    context.add_keyword("DEVICE_CLASS", b"DISPLAY")
+    context.add_keyword("COLOR_REP", b"RGB")
     context.add_keyword("RGB_I")
     key = "DATA_FORMAT"
     context[key] = CGATS.CGATS()
@@ -567,7 +576,7 @@ def vcgt_to_cal(profile):
     context[key].parent = context
     context[key].root = cgats
     context[key].type = key
-    context[key].add_data(("RGB_I", "RGB_R", "RGB_G", "RGB_B"))
+    context[key].add_data((b"RGB_I", b"RGB_R", b"RGB_G", b"RGB_B"))
     key = "DATA"
     context[key] = CGATS.CGATS()
     context[key].key = key
@@ -576,7 +585,7 @@ def vcgt_to_cal(profile):
     context[key].type = key
     values = profile.tags.vcgt.getNormalizedValues()
     for i, triplet in enumerate(values):
-        context[key].add_data(("%.7f" % (i / float(len(values) - 1)),) + triplet)
+        context[key].add_data((b"%.7f" % (i / float(len(values) - 1)),) + triplet)
     return cgats
 
 
