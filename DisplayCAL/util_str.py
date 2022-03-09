@@ -188,39 +188,39 @@ subst = dict(safesubst)
 subst.update(
     {
         # Latin-1 supplement
-        "\u00a6": b"|",
-        "\u00ab": b"<<",
-        "\u00bb": b">>",
-        "\u00bc": b"1/4",
-        "\u00bd": b"1/2",
-        "\u00be": b"3/4",
-        "\u00f7": b":",
+        "\u00a6": "|",
+        "\u00ab": "<<",
+        "\u00bb": ">>",
+        "\u00bc": "1/4",
+        "\u00bd": "1/2",
+        "\u00be": "3/4",
+        "\u00f7": ":",
         # General punctuation
-        "\u201c": b"\x22",
-        "\u201d": b"\x22",
-        "\u201f": b"\x22",
-        "\u2033": b"\x22",
-        "\u2036": b"\x22",
-        "\u2039": b"<",
-        "\u203a": b">",
-        "\u203d": b"!?",
-        "\u2044": b"/",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u201f": '"',
+        "\u2033": '"',
+        "\u2036": '"',
+        "\u2039": "<",
+        "\u203a": ">",
+        "\u203d": "!?",
+        "\u2044": "/",
         # Number forms
-        "\u2153": b"1/3",
-        "\u2154": b"2/3",
-        "\u215b": b"1/8",
-        "\u215c": b"3/8",
-        "\u215d": b"5/8",
-        "\u215e": b"7/8",
+        "\u2153": "1/3",
+        "\u2154": "2/3",
+        "\u215b": "1/8",
+        "\u215c": "3/8",
+        "\u215d": "5/8",
+        "\u215e": "7/8",
         # Arrows
-        "\u2190": b"<-",
-        "\u2192": b"->",
-        "\u2194": b"<->",
+        "\u2190": "<-",
+        "\u2192": "->",
+        "\u2194": "<->",
         # Mathematical operators
-        "\u226a": b"<<",
-        "\u226b": b">>",
-        "\u2264": b"<=",
-        "\u2265": b"=>",
+        "\u226a": "<<",
+        "\u226b": ">>",
+        "\u2264": "<=",
+        "\u2265": "=>",
     }
 )
 
@@ -267,7 +267,6 @@ def safe_asciize(obj):
 
     This function either takes a string or an exception as argument (when used
     as error handler for encode or decode).
-
     """
     chars = b""
     if isinstance(obj, Exception):
@@ -280,8 +279,10 @@ def safe_asciize(obj):
                     subst_char = normalencode(char).strip() or subst_char
             chars += subst_char
         return chars, obj.end
-    else:
+    elif isinstance(obj, str):
         return obj.encode("ASCII", "safe_asciize")
+    elif isinstance(obj, bytes):
+        return obj.decode("utf-8").encode("ASCII", "safe_asciize")
 
 
 codecs.register_error("safe_asciize", safe_asciize)
@@ -311,14 +312,17 @@ def make_ascii_printable(text, subst=b""):
     return b"".join([char if char in ascii_printable else subst for char in text])
 
 
-def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
-    """Make sure unicode string is safe to use as filename.
+def make_filename_safe(unistr, encoding=fs_enc, substitute="_", concat=True):
+    """Make sure string is safe to use as filename.
 
     I.e. turn characters that are invalid in the filesystem encoding into ASCII
     equivalents and replace characters that are invalid in filenames with
     substitution character.
-
     """
+    if not isinstance(unistr, (str, bytes)):
+        raise TypeError("unistr should be a str or bytes, not {}".format(
+            unistr.__class__.__name__
+        ))
     # Turn characters that are invalid in the filesystem encoding into ASCII
     # substitution character '?'
     # NOTE that under Windows, encoding with the filesystem encoding may
@@ -327,23 +331,38 @@ def make_filename_safe(unistr, encoding=fs_enc, subst="_", concat=True):
     # under Windows supports Unicode by wrapping the win32 ASCII API, so it is
     # a non-Unicode program from that point of view. This problem presumably
     # doesn't exist with Python 3.x which uses the win32 Unicode API)
-    unidec = unistr.encode(encoding, "replace").decode(encoding)
+    if isinstance(unistr, str):
+        # str
+        unidec = unistr.encode(encoding, "replace").decode(encoding, "replace")
+        pattern = r"[\\/:*?\"<>|]"
+        plus = "+"
+        uniout = ""
+        question_mark = "?"
+        if isinstance(substitute, bytes):
+            substitute = substitute.decode(encoding)
+    else:
+        # bytes
+        unidec = unistr.decode(encoding, "replace").encode(encoding, "replace")
+        pattern = rb"[\\/:*?\"<>|]"
+        plus = b"+"
+        uniout = b""
+        question_mark = b"?"
+        if isinstance(substitute, str):
+            substitute = substitute.encode(encoding)
+
     # Replace substitution character '?' with ASCII equivalent of original char
-    uniout = ""
-    for i, c in enumerate(unidec):
-        if c == "?":
-            # Note: We prevent IndexError by using slice notation which will
-            # return an empty string if unistr should be somehow shorter than
-            # unidec. Technically, this should never happen, but who knows
-            # what hidden bugs and quirks may linger in the Python 2.x Unicode
-            # implementation...
-            c = safe_asciize(unistr[i: i + 1])
+    for i in range(len(unidec)):
+        c = unidec[i: i + 1]
+        if c == question_mark:
+            c = safe_asciize(unistr[i: i + 1])  # this will always be bytes
+            if isinstance(unistr, str):
+                c = c.decode(encoding)
         uniout += c
     # Remove invalid chars
-    pattern = r"[\\/:*?\"<>|]"
     if concat:
-        pattern += "+"
-    uniout = re.sub(pattern, subst, uniout)
+        pattern += plus
+
+    uniout = re.sub(pattern, substitute, uniout)
     return uniout
 
 
@@ -400,18 +419,20 @@ def create_replace_function(template, values):
     return replace_function
 
 
-def ellipsis(text, maxlen=64, pos="r"):
-    """Truncate text to maxlen characters and add elipsis if it was longer.
+def ellipsis_(text, maxlen=64, pos="r"):
+    """Truncate text to maxlen characters and add ellipsis if it was longer.
 
-    Elipsis position can be 'm' (middle) or 'r' (right).
-
+    Ellipsis position can be 'm' (middle) or 'r' (right).
     """
     if len(text) <= maxlen:
         return text
+    ellipsis_char = "\u2026"
+    if isinstance(text, bytes):
+        ellipsis_char = b"u\xc2\x826"
     if pos == "r":
-        return text[: maxlen - 1] + "\u2026"
+        return text[: maxlen - 1] + ellipsis_char
     elif pos == "m":
-        return text[: maxlen / 2] + "\u2026" + text[-maxlen / 2 + 1:]
+        return text[: int(maxlen / 2)] + ellipsis_char + text[int(-maxlen / 2 + 1):]
 
 
 def hexunescape(match):
@@ -556,8 +577,21 @@ def strtr(txt, replacements):
     elif isinstance(replacements, str):
         for srch in replacements:
             txt = txt.replace(srch, "")
+    elif isinstance(replacements, bytes):
+        for srch in replacements:
+            txt = txt.replace(srch, b"")
         return txt
     for srch, sub in replacements:
+        if isinstance(txt, bytes):
+            if not isinstance(srch, bytes):
+                srch = srch.encode("utf-8")
+            if not isinstance(sub, bytes):
+                sub = sub.encode("utf-8")
+        elif isinstance(txt, str):
+            if not isinstance(srch, str):
+                srch = srch.decode("utf-8")
+            if not isinstance(sub, str):
+                sub = sub.decode("utf-8")
         txt = txt.replace(srch, sub)
     return txt
 
