@@ -1,36 +1,44 @@
-# DisplayCAL (a.k.a DispCalGUI) Python 3 update project
+DisplayCAL Python 3 Project
+===========================
 
-This is a project intended to modernize the DisplayCAL code for use with Python 3. It
-was started as it appears that the DisplayCAL author is not interested in or motivated
-to do so (Python 3 support has been a known issue with DisplayCAL for more than two
-years now).
+This project intended to modernize the DisplayCAL code including Python 3 support.
+
+Florian Höch, the original developer, did an incredible job of creating and maintaining
+DisplayCAL for all these years. But, it seems that, during the pandemic, very
+understandably, he lost his passion to the project. Now, it is time for us, the
+DisplayCAL users, to contribute back to this great tool.
+
+This project is based on the ``3.8.9.3`` version of DisplayCAL.
+
+Status Update (10 March 2022)
+-----------------------------
+
+Here is one of the early screenshots showing the tool working with Python 3.9: 
 
 ![image](https://user-images.githubusercontent.com/1786804/152724907-fdea50c1-8b69-454e-8634-93880c16aeff.png)
 
+Currently, DisplayCAL is working with Python 3.9.7 + wxPython 4.1.1.
 
-Status Update
-=============
+Here is a list of things that is working:
 
-Under Python 3.9.7 here is a list of things that is working:
-
-What is working
----------------
-
-- The UI is starting with some annoying error messages (issue #9).
-- Calibration + Profiling is working.
+- The UI and general functionality.
+- Calibration + Profiling.
+- Installing the created profile.
 
 What is not working (yet)
 -------------------------
 
-- Installing the profile at the end of the profiling session. There are tons
-  of ``bytes/str/unicode`` related bugs. Hopefully I'm solving them fairly quickly,
-  albeit one by one.
+- Language support, all the menus are showing the bare keys of the items. This will soon
+  be fixed.
+- There are tons of ``bytes/str`` related issues, getting fixed very quickly but more
+  tests are needed.
+- Please create [issues](https://github.com/eoyilmaz/displaycal-py3/issues)
 
 How to install
 --------------
 
-Currently, there is no RPM, DEB, APP or MSI packages. To test the code you can either
-run it directly from the source or install it as a ``sdist`` package:
+Currently, there is no ``RPM``, ``DEB``, ``APP`` or ``MSI`` packages. To test the code
+you can either run it directly from the source or install it as a ``sdist`` package:
 
 ```shell
 git clone https://github.com/eoyilmaz/displaycal-py3
@@ -44,10 +52,8 @@ This should install the code as an ``sdist``. To run the UI:
 displaycal
 ```
 
-You may need browse to the ``bin`` folder of you ``python`` interpreter. I used
-a ``virtualenv`` through ``PyCharm`` to develop and test the code.
-
-Have fun!
+You may need browse to the ``bin`` folder of you ``python`` interpreter. I used a
+``virtualenv`` through ``PyCharm`` to develop and test the code.
 
 Road Map
 --------
@@ -71,13 +77,23 @@ Some ideas on where to focus on future development:
 - Replace the ``wexpect.py`` with the latest release of ``Pexpect``. I'm not very
   familiar with this module, and there is no comment in the code on why we have
   a ``wexpect.py`` instead of using the PyPI version of ``Pexpect``.
-- Replace the ``DisplayCAL.ordereddict.OrderedDict`` with the real thing.
+- Replace the ``DisplayCAL.ordereddict.OrderedDict`` with the pure Python ``dict`` which
+  is ordered after Python 3.6.
 - Replace ``os.path`` related stuff with ``pathlib``.
 - Organize the module structure, move UI related stuff in to ``ui`` module etc., move
-  non-source files into their own folders and ``data``.
+  non-source files into their own folders.
 - Remove all the hackery that includes ``exec()``. I know, there should be a reason for
   them to exist, but this generally is considered as ``hacking``.
 - Update the ``Remaining time`` calculation during profiling to estimate the time by
   also considering the luminance of the remaining patches to have a better estimation.
   Because, patches with higher luminance values are measured quickly than patches with
   lower luminance values.
+
+Issues related to these ideas have been created. If you have a feature request, you can
+create more issues or share your comment on the already created issues or create merge
+requests that are fixing little or big things.
+
+Because there are very little automated tests, **I need the code to be tested
+constantly**. Please help me with that.
+
+Have fun!
