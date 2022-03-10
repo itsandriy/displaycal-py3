@@ -18,6 +18,7 @@ class OrderedDict(dict):
     and implements several sequence methods (__delslice__, __getslice__,
     __setslice__, index, insert, reverse, sort).
 
+    TODO: OrderedDict is deprecated and will be replaced with the standard Python dict.
     """
 
     missing = object()
@@ -73,7 +74,7 @@ class OrderedDict(dict):
         inst_dict = vars(self).copy()
         self._keys = tmp
         if inst_dict:
-            return (self.__class__, (items,), inst_dict)
+            return self.__class__, (items,), inst_dict
         return self.__class__, (items,)
 
     def __repr__(self):
@@ -91,7 +92,7 @@ class OrderedDict(dict):
         return reversed(self._keys)
 
     def __setitem__(self, key, value):
-        if key not in self:
+        if key not in self._keys:
             self._keys.append(key)
         dict.__setitem__(self, key, value)
 
@@ -249,7 +250,7 @@ class OrderedDict(dict):
             raise TypeError("update expected at most 1 arguments, got %i" % len(args))
         for iterable in args:
             if hasattr(iterable, "items"):
-                self.update(iter(iterable.items()))
+                self.update(list(iter(iterable.items())))
             elif hasattr(iterable, "keys"):
                 for key in list(iterable.keys()):
                     self[key] = iterable[key]
@@ -257,7 +258,7 @@ class OrderedDict(dict):
                 for key, value in iterable:
                     self[key] = value
         if kwargs:
-            self.update(iter(kwargs.items()))
+            self.update(list(iter(kwargs.items())))
 
     def values(self):
         return list(map(self.get, self._keys))
