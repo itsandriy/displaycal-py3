@@ -885,7 +885,7 @@ class SynthICCFrame(BaseFrame):
         rgb=True,
         rolloff=True,
         bpc=False,
-        profile_class="mntr",
+        profile_class=b"mntr",
         tech=None,
         ciis=None,
     ):

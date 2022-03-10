@@ -2,11 +2,8 @@
 
 
 import re
-import subprocess as sp
-import math
 import os
 import sys
-import tempfile
 
 from DisplayCAL.config import (
     defaults,
@@ -35,7 +32,6 @@ from DisplayCAL.util_str import strtr, universal_newlines, wrap
 from DisplayCAL.worker import (
     Error,
     UnloggedError,
-    UnloggedInfo,
     check_set_argyll_bin,
     get_argyll_util,
     make_argyll_compatible_path,
@@ -51,9 +47,7 @@ from DisplayCAL.wxwindows import (
     CustomCheckBox,
     CustomGrid,
     CustomRowLabelRenderer,
-    ConfirmDialog,
     FileDrop,
-    InfoDialog,
     SimpleBook,
     TwoWaySplitter,
 )
@@ -553,7 +547,14 @@ class GamutCanvas(LUTCanvas):
                             for l in range(self.size):
                                 device_value[k] = minv + step * l
                                 device_values.append(list(device_value))
-                if profile.colorSpace in (b"HLS", b"HSV", b"Lab", b"Luv", b"YCbr", b"Yxy"):
+                if profile.colorSpace in (
+                    b"HLS",
+                    b"HSV",
+                    b"Lab",
+                    b"Luv",
+                    b"YCbr",
+                    b"Yxy",
+                ):
                     # Convert to actual color space
                     # TODO: Handle HLS and YCbr
                     tmp = list(device_values)
@@ -926,9 +927,8 @@ class GamutViewOptions(wx_Panel):
 
     @property
     def comparison_profile(self):
-        return list(self.comparison_profiles.values())[
-            self.comparison_profile_select.GetSelection()
-        ]
+        index = max(self.comparison_profile_select.GetSelection(), 0)
+        return list(self.comparison_profiles.values())[index]
 
     def comparison_profile_drop_handler(self, path):
         try:
@@ -945,21 +945,16 @@ class GamutViewOptions(wx_Panel):
             self.comparison_profile_select_handler(None)
 
     def comparison_profile_select_handler(self, event):
-        if self.comparison_profile_select.GetSelection() > 0:
+        index = self.comparison_profile_select.GetSelection()
+        if index > 0:
             self.comparison_profile_select.SetToolTipString(
                 self.comparison_profile.fileName
             )
         else:
             self.comparison_profile_select.SetToolTip(None)
-        self.comparison_whitepoint_bmp.Show(
-            self.comparison_profile_select.GetSelection() > 0
-        )
-        self.comparison_whitepoint_legend.Show(
-            self.comparison_profile_select.GetSelection() > 0
-        )
-        self.comparison_profile_bmp.Show(
-            self.comparison_profile_select.GetSelection() > 0
-        )
+        self.comparison_whitepoint_bmp.Show(index > 0)
+        self.comparison_whitepoint_legend.Show(index > 0)
+        self.comparison_profile_bmp.Show(index > 0)
         self.DrawCanvas(0, reset=False)
 
     def comparison_profiles_sort(self):
