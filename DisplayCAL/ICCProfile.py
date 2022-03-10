@@ -3314,7 +3314,7 @@ class LUT16Type(ICCProfileTag):
                     ]
                     for y in range(g)
                 ]
-                for x in range(g**i / g)
+                for x in range(int(g**i / g))
             ]
         return self._clut
 
@@ -7754,14 +7754,14 @@ class ICCProfile(object):
                 elif sig in ("bkpt", "wtpt"):
                     format = {"bkpt": "%6.4f", "wtpt": "%6.2f"}[sig]
                     info[name] = ""
-                    if self.profileClass == "mntr" and sig == "wtpt":
+                    if self.profileClass == b"mntr" and sig == b"wtpt":
                         info["    Is illuminant"] = "Yes"
-                    if self.profileClass != "prtr":
+                    if self.profileClass != b"prtr":
                         label = "Illuminant-relative"
                     else:
                         label = "PCS-relative"
                     # if self.connectionColorSpace == "Lab" and self.profileClass == "prtr":
-                    if self.profileClass == "prtr":
+                    if self.profileClass == b"prtr":
                         color = [" ".join([format % v for v in tag.ir.Lab])]
                         info["    %s Lab" % label] = " ".join(color)
                     else:
