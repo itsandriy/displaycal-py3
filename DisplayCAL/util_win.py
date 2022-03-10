@@ -78,9 +78,9 @@ DISPLAY_DEVICE_ATTACHED = 0x2
 MONITORINFOF_PRIMARY = 0x1
 
 # Icm.h
-CLASS_MONITOR = struct.unpack("!L", "mntr")[0]
-CLASS_PRINTER = struct.unpack("!L", "prtr")[0]
-CLASS_SCANNER = struct.unpack("!L", "scnr")[0]
+CLASS_MONITOR = struct.unpack("!L", b"mntr")[0]
+CLASS_PRINTER = struct.unpack("!L", b"prtr")[0]
+CLASS_SCANNER = struct.unpack("!L", b"scnr")[0]
 
 # ShellExecute
 SEE_MASK_FLAG_NO_UI = 0x00000400
