@@ -25,7 +25,6 @@ from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
 from DisplayCAL.ordereddict import OrderedDict
 
-# from collections import OrderedDict
 from DisplayCAL.util_decimal import float2dec
 from DisplayCAL.util_os import waccess
 from DisplayCAL.worker import (
@@ -212,8 +211,8 @@ class LUTCanvas(plot.PlotCanvas):
         xLabel=None,
         yLabel=None,
         channels=None,
-        colorspace="RGB",
-        connection_colorspace="RGB",
+        colorspace=b"RGB",
+        connection_colorspace=b"RGB",
     ):
         if not title:
             title = ""
@@ -229,9 +228,9 @@ class LUTCanvas(plot.PlotCanvas):
         maxv = 4095
         linear_points = []
 
-        if colorspace in ("YCbr", "RGB", "GRAY", "HSV", "HLS"):
+        if colorspace in (b"YCbr", b"RGB", b"GRAY", b"HSV", b"HLS"):
             axis_y = 255.0
-            if connection_colorspace in ("Lab", "XYZ"):
+            if connection_colorspace in (b"Lab", b"XYZ"):
                 axis_x = 100.0
             else:
                 axis_x = 255.0
@@ -282,7 +281,7 @@ class LUTCanvas(plot.PlotCanvas):
                         for n, y in data[channel]:
                             if not detect_increments and set_linear_points:
                                 linear_points.append([n, n])
-                            if connection_colorspace == "Lab":
+                            if connection_colorspace == b"Lab":
                                 n = colormath.XYZ2Lab(0, n / axis_x * 100, 0)[0] * (
                                     axis_x / 100.0
                                 )
@@ -313,11 +312,11 @@ class LUTCanvas(plot.PlotCanvas):
                                 and values[-1][0] == values[-1][1]
                             ):
                                 values.append([i - 1, i - 1])
-                            if connection_colorspace == "Lab":
+                            if connection_colorspace == b"Lab":
                                 n = colormath.XYZ2Lab(0, n / axis_x * 100, 0)[0] * (
                                     axis_x / 100.0
                                 )
-                            if connection_colorspace in ("Lab", "XYZ"):
+                            if connection_colorspace in (b"Lab", b"XYZ"):
                                 values.append([n, j])
                                 idx = int(round(n / 255.0 * 4095))
                                 self.point_grid[channel][idx] = j
@@ -332,7 +331,7 @@ class LUTCanvas(plot.PlotCanvas):
                 # float2dec(v) fixes miniscule deviations in the calculated gamma
                 # n = float2dec(n, 8)
                 if not detect_increments:
-                    linear_points.append([i, (i)])
+                    linear_points.append([i, i])
                 for channel, color in enumerate(("red", "green", "blue")):
                     if channel not in points:
                         continue
@@ -340,11 +339,11 @@ class LUTCanvas(plot.PlotCanvas):
                     v = float2dec(math.pow(step * i / 100.0, vcgt[color + "Gamma"]))
                     vmax = float2dec(vcgt[color + "Max"] * axis_x)
                     n = vmin + v * (vmax - vmin)
-                    if connection_colorspace == "Lab":
+                    if connection_colorspace == b"Lab":
                         n = colormath.XYZ2Lab(0, float(n) / axis_x * 100, 0)[0] * (
                             axis_x / 100.0
                         )
-                    if connection_colorspace in ("Lab", "XYZ"):
+                    if connection_colorspace in (b"Lab", b"XYZ"):
                         points[channel].append([n, i])
                         idx = int(round(float(n) / 255.0 * 4095))
                         self.point_grid[channel][idx] = i
@@ -404,7 +403,7 @@ class LUTCanvas(plot.PlotCanvas):
         for channel, values in points.items():
             channel_label = channels[channel]
             if not identical:
-                color = self.colors.get(colorspace + "_" + channel_label, "white")
+                color = self.colors.get(colorspace.decode("utf-8") + "_" + channel_label, "white")
             # Note: We need to make sure each point is a float because it
             # might be a decimal.Decimal, which can't be divided by floats!
             points_quantized = [
@@ -734,7 +733,7 @@ class LUTCanvas(plot.PlotCanvas):
             else:
                 self._zoomfactor = max_abs_y / max_abs_axis_y
 
-    def zoom(self, direction=1):
+    def zoom(self, direction=1.0):
         _zoomfactor = 0.025 * direction
         if 0 < self._zoomfactor + _zoomfactor <= 5:
             self._zoomfactor += _zoomfactor
@@ -1079,7 +1078,9 @@ class LUTFrame(BaseFrame):
 
     def handle_errors(self):
         if self.client.errors:
-            show_result_dialog(Error("\n\n".join(set(self.client.errors))), self)
+            show_result_dialog(
+                Error("\n\n".join([str(e) for e in set(self.client.errors)])), self
+            )
             self.client.errors = []
 
     def install_vcgt_handler(self, event):
@@ -1305,9 +1306,9 @@ class LUTFrame(BaseFrame):
             return
 
         if profile.colorSpace not in (
-            "RGB",
-            "GRAY",
-            "CMYK",
+            b"RGB",
+            b"GRAY",
+            b"CMYK",
         ) or profile.connectionColorSpace not in (b"Lab", b"XYZ", b"RGB"):
             if profile.colorSpace not in (b"RGB", b"GRAY", b"CMYK"):
                 unsupported_colorspace = profile.colorSpace
@@ -1848,7 +1849,7 @@ class LUTFrame(BaseFrame):
         self.Freeze()
         curves = None
         curves_colorspace = self.profile.colorSpace
-        connection_colorspace = "RGB"
+        connection_colorspace = b"RGB"
         if self.profile and self.plot_mode_select.Items:
             if self.plot_mode_select.GetStringSelection() == lang.getstr("vcgt"):
                 # Convert calibration information from embedded WCS profile
@@ -1956,7 +1957,7 @@ class LUTFrame(BaseFrame):
                 ):
                     tables = self.profile.tags.B2A2.output
                 entry_count = len(tables[0])
-                if curves_colorspace != "RGB":
+                if curves_colorspace != b"RGB":
                     maxv = 100
                 else:
                     maxv = 255
@@ -1964,7 +1965,7 @@ class LUTFrame(BaseFrame):
                 data = []
                 for i, table in enumerate(tables):
                     xp = lin
-                    if curves_colorspace == "Lab" and i == 0:
+                    if curves_colorspace == b"Lab" and i == 0:
                         if to_pcs:
                             table = [v / 65280.0 * 65535.0 for v in table]
                         else:
@@ -1976,7 +1977,7 @@ class LUTFrame(BaseFrame):
                                 for v in range(entry_count)
                             ]
                     yp = [v / 65535.0 * maxv for v in table]
-                    if curves_colorspace == "Lab" and i == 0:
+                    if curves_colorspace == b"Lab" and i == 0:
                         # Interpolate to given size and use the same y axis
                         # for all channels
                         xi = numpy.interp(lin, yp, xp)
@@ -1992,54 +1993,54 @@ class LUTFrame(BaseFrame):
                 curves = {"data": data, "entryCount": entry_count, "entrySize": 2}
         yLabel = []
         numchannels = {
-            "XYZ": 3,
-            "Lab": 3,
-            "Luv": 3,
-            "YCbr": 3,
-            "Yxy": 3,
-            "RGB": 3,
-            "GRAY": 1,
-            "HSV": 3,
-            "HLS": 3,
-            "CMYK": 4,
-            "CMY": 3,
-            "2CLR": 2,
-            "3CLR": 3,
-            "4CLR": 4,
-            "5CLR": 5,
-            "6CLR": 6,
-            "7CLR": 7,
-            "8CLR": 8,
-            "9CLR": 9,
-            "ACLR": 10,
-            "BCLR": 11,
-            "CCLR": 12,
-            "DCLR": 13,
-            "ECLR": 14,
-            "FCLR": 15,
+            b"XYZ": 3,
+            b"Lab": 3,
+            b"Luv": 3,
+            b"YCbr": 3,
+            b"Yxy": 3,
+            b"RGB": 3,
+            b"GRAY": 1,
+            b"HSV": 3,
+            b"HLS": 3,
+            b"CMYK": 4,
+            b"CMY": 3,
+            b"2CLR": 2,
+            b"3CLR": 3,
+            b"4CLR": 4,
+            b"5CLR": 5,
+            b"6CLR": 6,
+            b"7CLR": 7,
+            b"8CLR": 8,
+            b"9CLR": 9,
+            b"ACLR": 10,
+            b"BCLR": 11,
+            b"CCLR": 12,
+            b"DCLR": 13,
+            b"ECLR": 14,
+            b"FCLR": 15,
         }.get(curves_colorspace, 3)
         is_ktrc = (
             self.plot_mode_select.GetStringSelection() == lang.getstr("[rgb]TRC")
-            and curves_colorspace != "RGB"
+            and curves_colorspace != b"RGB"
             and False
         )
         if is_ktrc:
-            curves_colorspace = "GRAY"
+            curves_colorspace = b"GRAY"
             numchannels = 1
         for channel, toggle in enumerate(self.toggles):
             toggle.Show(channel < numchannels)
             if channel < numchannels:
-                if curves_colorspace == "GRAY":
+                if curves_colorspace == b"GRAY":
                     toggle.Label = "R=G=B"
-                elif curves_colorspace == "YCbr":
+                elif curves_colorspace == b"YCbr":
                     toggle.Label = ("Y", "Cb", "Cr")[channel]
-                elif curves_colorspace.endswith("CLR"):
-                    curves_colorspace = "nCLR"
+                elif curves_colorspace.endswith(b"CLR"):
+                    curves_colorspace = b"nCLR"
                     toggle.Label = "%i" % channel
-                elif curves_colorspace == "Lab":
+                elif curves_colorspace == b"Lab":
                     toggle.Label = ("L*", "a*", "b*")[channel]
                 else:
-                    toggle.Label = curves_colorspace[channel]
+                    toggle.Label = curves_colorspace[channel : channel + 1].decode("utf-8")
                 if toggle.GetValue():
                     yLabel.append(toggle.Label)
             toggle.Enable(bool(curves))
@@ -2050,10 +2051,10 @@ class LUTFrame(BaseFrame):
             self.xLabel = "".join(yLabel)
         else:
             if self.show_as_L.GetValue():
-                connection_colorspace = "Lab"
+                connection_colorspace = b"Lab"
                 self.xLabel = "L*"
             else:
-                connection_colorspace = "XYZ"
+                connection_colorspace = b"XYZ"
                 self.xLabel = "Y"
         self.yLabel = "".join(yLabel)
 
