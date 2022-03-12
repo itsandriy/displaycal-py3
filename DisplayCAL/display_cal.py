@@ -19225,7 +19225,7 @@ class StartupFrame(start_cls):
                     else:
                         if "icc_profile" in pim.info:
                             # Get embedded ICC profile from image
-                            inprofile_io = StringIO(pim.info["icc_profile"])
+                            inprofile_io = BytesIO(pim.info["icc_profile"])
                             # Convert from display profile to wx Rec. 709 gamma 1.8
                             try:
                                 inprofile_cms = PIL.ImageCms.getOpenProfile(
