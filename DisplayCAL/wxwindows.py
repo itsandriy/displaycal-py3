@@ -1084,7 +1084,6 @@ class BaseFrame(wx.Frame):
                         data = split_command_line(line)
                         response = None
                         # Non-UI commands
-                        print("Code is here F1")
                         if data[0] == "getappname" and len(data) == 1:
                             response = pyname
                         elif data[0] == "getcfg" and len(data) < 3:

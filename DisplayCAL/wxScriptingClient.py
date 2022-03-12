@@ -243,7 +243,6 @@ class ScriptingClientFrame(SimpleTerminal):
             self.add_error_text(lang.getstr("not_connected") + "\n")
 
     def get_app_info(self):
-        print("Code is here H1")
         commands = ["setresponseformat plain", "getcommands", "getappname"]
         try:
             for command in commands:

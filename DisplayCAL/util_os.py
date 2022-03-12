@@ -923,13 +923,10 @@ class FileLock(object):
         _exception_cls = IOError
 
     def __init__(self, file_, exclusive=False, blocking=False):
-        print("FileLock: Code is here B1")
         self._file = file_
         self.exclusive = exclusive
         self.blocking = blocking
-        print("FileLock: Code is here B2")
         self.lock()
-        print("FileLock: Code is here B3")
 
     def __enter__(self):
         return self
@@ -938,7 +935,6 @@ class FileLock(object):
         self.unlock()
 
     def lock(self):
-        print("FileLock: Code is here C1")
         if sys.platform == "win32":
             mode = 0
             if self.exclusive:
@@ -950,27 +946,17 @@ class FileLock(object):
             fn = win32file.LockFileEx
             args = (self._handle, mode, 0, -0x10000, self._overlapped)
         else:
-            print("FileLock: Code is here C2")
             if self.exclusive:
-                print("FileLock: Code is here C3")
                 op = fcntl.LOCK_EX
-                print("FileLock: Code is here C4")
             else:
-                print("FileLock: Code is here C5")
                 op = fcntl.LOCK_SH
-            print("FileLock: Code is here C6")
             if not self.blocking:
-                print("FileLock: Code is here C7")
                 op |= fcntl.LOCK_NB
-            print("FileLock: Code is here C8")
             fn = fcntl.flock
-            print("FileLock: Code is here C9")
             args = (self._file.fileno(), op)
-        print("FileLock: Code is here C10")
         print("fn:", fn)
         print("args:", args)
         self._call(fn, args, FileLock.LockingError)
-        print("FileLock: Code is here C11")
 
     def unlock(self):
         if self._file.closed:
@@ -985,15 +971,10 @@ class FileLock(object):
 
     @staticmethod
     def _call(fn, args, exception_cls):
-        print("FileLock: Code is here D1")
         try:
-            print("FileLock: Code is here D2A")
             fn(*args)
-            print("FileLock: Code is here D2B")
         except FileLock._exception_cls as exception:
-            print("FileLock: Code is here D3")
             raise exception_cls(*exception.args)
-        print("FileLock: Code is here D4")
 
     class Error(Exception):
         pass
