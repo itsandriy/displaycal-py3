@@ -1874,12 +1874,12 @@ class Sudo(object):
             if man:
                 manproc = sp.Popen([man, "sudo"], stdout=sp.PIPE, stderr=sp.PIPE)
                 # Strip formatting
-                stdout = re.sub(b".\x08", b"", manproc.communicate()[0:1])
+                stdout = re.sub(b".\x08", b"", manproc.communicate()[0])
                 self.availoptions = {
                     "E": bool(re.search(rb"-E\W", stdout)),
-                    "l [command]": bool(re.search(r"-l\W(?:.*?\W)?command\W", stdout)),
-                    "K": bool(re.search(r"-K\W", stdout)),
-                    "k": bool(re.search(r"-k\W", stdout)),
+                    "l [command]": bool(re.search(rb"-l\W(?:.*?\W)?command\W", stdout)),
+                    "K": bool(re.search(rb"-K\W", stdout)),
+                    "k": bool(re.search(rb"-k\W", stdout)),
                 }
             if debug:
                 print(
@@ -1942,7 +1942,7 @@ class Sudo(object):
 
         The return value will be a tuple (auth_successful, password).
 
-        auth_succesful will be a custom class that will always have length 0 if
+        auth_successful will be a custom class that will always have length 0 if
         authentication was not successful or the command is not allowed (even
         if the actual string length is non-zero), thus allowing for easy
         boolean comparisons.

@@ -71,3 +71,10 @@ def test_generate_b2a_from_inverse_table(data_files, argyll):
     logfile = io.StringIO()
     result = worker.generate_B2A_from_inverse_table(icc_profile1, logfile=logfile)
     assert result is True
+
+
+def test_sudo_class_initialization():
+    """Test worker.Sudo class initialization"""
+    from DisplayCAL.worker import Sudo
+    sudo = Sudo()
+    assert sudo is not None
