@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import builtins
-import locale
 import os
 import re
 

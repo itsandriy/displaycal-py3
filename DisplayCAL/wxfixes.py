@@ -88,7 +88,7 @@ if "phoenix" in wx.PlatformInfo:
     wx.MODERN = wx.FONTFAMILY_MODERN
     wx.TELETYPE = wx.FONTFAMILY_TELETYPE
 
-    wx.NORMAL = wx.FONTWEIGHT_NORMAL | wx.FONTSTYLE_NORMAL
+    wx.NORMAL = int(float(wx.FONTWEIGHT_NORMAL | wx.FONTSTYLE_NORMAL) / 100) * 100
     wx.LIGHT = wx.FONTWEIGHT_LIGHT
     wx.BOLD = wx.FONTWEIGHT_BOLD
 

@@ -2407,7 +2407,6 @@ class MainFrame(ReportFrame, BaseFrame):
         lang.update_defaults()
 
         # Translate controls and labels
-
         BaseFrame.setup_language(self)
 
         settings = [lang.getstr("settings.new")]
@@ -2417,9 +2416,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 lstr = "* " + lstr
             settings.append(lstr)
         self.calibration_file_ctrl.SetItems(settings)
-
         self.setup_observer_ctrl()
-
         self.whitepoint_ctrl.SetItems(
             [
                 lang.getstr("as_measured"),
@@ -4149,8 +4146,7 @@ class MainFrame(ReportFrame, BaseFrame):
             self.GetMenuBar()
             menuitem = self.menu_advanced_options.FindItemById(
                 self.menu_advanced_options.FindItem(
-                    # lang.getstr("use_separate_lut_access")
-                    "use_separate_lut_access"
+                    lang.getstr("use_separate_lut_access")
                 )
             )
             menuitem.Check(use_lut_ctrl)

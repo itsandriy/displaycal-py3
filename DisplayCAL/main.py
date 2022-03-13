@@ -574,14 +574,9 @@ def _exit(lockfilename, oport):
             print("Waiting for thread %s to exit" % thread.getName())
             thread.join()
             print(thread.getName(), "exited")
-    print("code is here 1")
     if lockfilename and os.path.isfile(lockfilename):
-        print("code is here 2")
         with AppLock(lockfilename, "r+", True, True) as lock:
-            print("code is here 3A")
             _update_lockfile(lockfilename, oport, lock)
-            print("code is here 3B")
-        print("code is here 4")
     print("Exiting", pyname)
 
 

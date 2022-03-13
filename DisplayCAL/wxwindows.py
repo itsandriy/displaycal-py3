@@ -2170,7 +2170,7 @@ class BaseFrame(wx.Frame):
                 menubar.SetMenuLabel(
                     menu_pos,
                     "&" + lang.getstr(GTKMenuItemGetFixedLabel(self._menulabels[menu])),
-                )
+                    )
                 self.setup_menu_language(menu)
             if sys.platform == "darwin":
                 wx.GetApp().SetMacHelpMenuTitleName(lang.getstr("menu.help"))
@@ -2233,29 +2233,29 @@ class BaseFrame(wx.Frame):
     def setup_menu_language(self, menu):
         if not hasattr(self, "_menuitems"):
             self._menuitems = {}
+
         if menu not in self._menuitems:
             # Backup un-translated labels
-            try:
-                self._menuitems[menu] = [
-                    (item, item.Label) for item in menu.GetMenuItems()
-                ]
-            except AttributeError:
-                self._menuitems[menu] = [
-                    (item, item.GetItemLabelText()) for item in menu.GetMenuItems()
-                ]
+            self._menuitems[menu] = []
+            for item in menu.GetMenuItems():
+                item_label = item.GetItemLabelText()
+                self._menuitems[menu].append((item, item_label))
 
         for item, label in self._menuitems[menu]:
-            try:
-                item_label = item.Label
-            except AttributeError:
-                item_label = item.GetItemLabelText()
-
-            if item_label:
+            item_label = item.GetItemLabelText()
+            if item_label and item_label != "":
                 label = GTKMenuItemGetFixedLabel(label)
+                localized_label = lang.getstr(label)
                 if item.Accel:
-                    item.Text = lang.getstr(label) + "\t" + item.Accel.ToString()
+                    localized_label_text_with_accel = "{}\t{}".format(
+                        localized_label,
+                        item.Accel.ToString()
+                    )
+                    # item.Text = localized_label_text_with_accel
+                    item.SetItemLabel(localized_label_text_with_accel)
                 else:
-                    item.Text = lang.getstr(label)
+                    # item.Text = localized_label
+                    item.SetItemLabel(localized_label)
             if item.SubMenu:
                 self.setup_menu_language(item.SubMenu)
 
