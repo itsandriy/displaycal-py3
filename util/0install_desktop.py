@@ -7,7 +7,7 @@ import re
 import shutil
 import sys
 
-from DisplayCAL.meta import name as appname, domain, script2pywname
+from DisplayCAL.meta import name as appname, DOMAIN, script2pywname
 
 
 def zeroinstall_desktop(datadir="/usr/share"):
@@ -15,7 +15,7 @@ def zeroinstall_desktop(datadir="/usr/share"):
     appdir = os.path.join(datadir, "applications")
     if not os.path.isdir(appdir):
         os.makedirs(appdir)
-    feeduri = "http://%s/0install/%s.xml" % (domain.lower(), appname)
+    feeduri = f"http://{DOMAIN}/0install/{appname}.xml"
     for desktopfilename in glob(os.path.join("misc", "%s*.desktop" % appname.lower())):
         desktopbasename = os.path.basename(desktopfilename)
         scriptname = re.sub(r"\.desktop$", "", desktopbasename)

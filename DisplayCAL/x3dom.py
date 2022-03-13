@@ -12,7 +12,7 @@ import urllib.parse
 
 from DisplayCAL.config import get_data_path
 from DisplayCAL.defaultpaths import cache as cachepath
-from DisplayCAL.meta import domain
+from DisplayCAL.meta import DOMAIN
 from DisplayCAL.options import verbose, debug
 from DisplayCAL.util_io import GzipFileProper
 from DisplayCAL.util_str import StrList, create_replace_function
@@ -171,7 +171,7 @@ class Tag(object):
 
         # Get HTML template from cache or online
         html = get_resource(
-            "https://%s/x3d-viewer/release/x3d-viewer.html" % domain.lower(), True
+            f"https://{DOMAIN}/x3d-viewer/release/x3d-viewer.html", True
         )
         if cache or embed:
             # Update resources in HTML

@@ -141,7 +141,7 @@ from DisplayCAL.meta import (
     VERSION_BASE,
     author,
     name as appname,
-    domain,
+    DOMAIN,
     version,
     version_short,
     get_latest_changelog_entry,
@@ -358,7 +358,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
         chglog_file = "CHANGES.html"
     resp = http_request(
         parent,
-        domain,
+        DOMAIN,
         "GET",
         "/" + version_file,
         failure_msg=lang.getstr("update_check.fail"),
@@ -377,12 +377,12 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
     try:
         newversion_tuple = tuple(int(n) for n in data.decode().split("."))
     except ValueError:
-        print(lang.getstr("update_check.fail.version", domain))
+        print(lang.getstr("update_check.fail.version", DOMAIN))
         if not silent:
             wx.CallAfter(
                 InfoDialog,
                 parent,
-                msg=lang.getstr("update_check.fail.version", domain),
+                msg=lang.getstr("update_check.fail.version", DOMAIN),
                 ok=lang.getstr("ok"),
                 bitmap=geticon(32, "dialog-error"),
                 log=False,
@@ -393,7 +393,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
         APP_IS_UPTODATE = newversion_tuple <= curversion_tuple
     if newversion_tuple > curversion_tuple:
         # Get changelog
-        resp = http_request(parent, domain, "GET", "/" + chglog_file, silent=True)
+        resp = http_request(parent, DOMAIN, "GET", "/" + chglog_file, silent=True)
         chglog = None
         if resp:
             readme = str(resp.read())
@@ -421,7 +421,7 @@ def app_update_check(parent=None, silent=False, snapshot=False, argyll=False):
                 )
                 chglog = re.sub(
                     re.compile(r'href="(#[^"]+)"', flags=re.I),
-                    r'href="https://%s/\1"' % domain,
+                    rf'href="https://{DOMAIN}/\1"',
                     chglog,
                 )
         if not wx.GetApp():
@@ -616,7 +616,7 @@ def app_update_confirm(
                     "--refresh",
                     "--version",
                     newversion,
-                    "http://%s/0install/%s.xml" % (domain.lower(), appname),
+                    f"http://{DOMAIN}/0install/{appname}.xml",
                 ],
                 **kwargs,
             )
@@ -671,8 +671,7 @@ def app_update_confirm(
                 worker.download,
                 ckwargs={"exit": dlname == appname},
                 wargs=(
-                    "https://%s/download%s/%s%s%s%s"
-                    % (domain.lower(), folder, dlname, sep, newversion, suffix),
+                    f"https://{DOMAIN}/download{folder}/{dlname}{sep}{sep}{suffix}",
                 ),
                 progress_msg=lang.getstr("downloading"),
                 fancy=False,
@@ -689,7 +688,7 @@ def app_update_confirm(
             else:
                 # Linux
                 path += "-linux"
-        launch_file("https://" + domain + path)
+        launch_file(f"https://{DOMAIN}{path}")
     elif not argyll:
         # Check for Argyll update
         if check_argyll_bin():
@@ -744,7 +743,7 @@ def donation_message(parent=None):
     dlg.sizer0.SetSizeHints(dlg)
     dlg.sizer0.Layout()
     if dlg.ShowModal() == wx.ID_OK:
-        launch_file("https://" + domain + "/#donate")
+        launch_file(f"https://{DOMAIN}/#donate")
         show_again = False
     else:
         show_again = not chkbox.Value
@@ -1151,7 +1150,7 @@ def upload_colorimeter_correction(parent=None, params=None):
     # Check for duplicate
     resp = http_request(
         parent,
-        "colorimetercorrections." + domain,
+        f"colorimetercorrections.{DOMAIN}",
         "GET",
         path,
         # Remove CREATED date for calculating hash
@@ -1179,7 +1178,7 @@ def upload_colorimeter_correction(parent=None, params=None):
         params["put"] = True
         resp = http_request(
             parent,
-            "colorimetercorrections." + domain,
+            f"colorimetercorrections.{DOMAIN}",
             "POST",
             path,
             params,
@@ -3099,7 +3098,7 @@ class MainFrame(ReportFrame, BaseFrame):
         self.Bind(wx.EVT_MENU, self.license_handler, self.menuitem_license)
         menuitem = help.FindItemById(help.FindItem("go_to_website"))
         self.Bind(
-            wx.EVT_MENU, lambda event: launch_file("https://%s/" % domain), menuitem
+            wx.EVT_MENU, lambda event: launch_file(f"https://{DOMAIN}/"), menuitem
         )
         menuitem = help.FindItemById(help.FindItem("help_support"))
         self.Bind(wx.EVT_MENU, self.help_support_handler, menuitem)
@@ -5808,7 +5807,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 if result and not isinstance(result, Exception):
                     return result
             # Download from web
-            path = self.worker.download("https://%s/spyd2" % domain.lower())
+            path = self.worker.download(f"https://{DOMAIN}/spyd2")
             if isinstance(path, Exception):
                 return path
             elif not path:
@@ -7971,7 +7970,7 @@ class MainFrame(ReportFrame, BaseFrame):
             http_request,
             ckwargs={},
             wkwargs={
-                "domain": domain.lower() if test else "icc.opensuse.org",
+                "DOMAIN": DOMAIN if test else "icc.opensuse.org",
                 "request_type": "POST",
                 "path": "/print_r_post.php" if test else "/upload",
                 "params": params,
@@ -12395,7 +12394,7 @@ class MainFrame(ReportFrame, BaseFrame):
             ckwargs={"parent": self},
             wargs=(
                 self,
-                "colorimetercorrections." + domain,
+                f"colorimetercorrections.{DOMAIN}",
                 "GET",
                 "/index.php",
                 params,
@@ -14700,7 +14699,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 # We always (re-)download the i1D3 package because it may contain
                 # additional corrections not present in i1Profiler
                 result = self.worker.download(
-                    "https://%s/%s" % (domain.lower(), name), force=name == "i1d3"
+                    f"https://{DOMAIN}/{name}", force=name == "i1d3"
                 )
                 if isinstance(result, Exception):
                     break
@@ -18751,7 +18750,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     self.aboutdialog.panel,
                     -1,
                     label=appname,
-                    URL="https://%s/" % domain,
+                    URL=f"https://{DOMAIN}/",
                 ),
                 wx.StaticText(
                     self.aboutdialog.panel, -1, " %s © %s" % (version_title, author)
@@ -18898,10 +18897,10 @@ class MainFrame(ReportFrame, BaseFrame):
             launch_file(license)
 
     def help_support_handler(self, event):
-        launch_file("https://%s/#help" % domain)
+        launch_file(f"https://{DOMAIN}/#help")
 
     def bug_report_handler(self, event):
-        launch_file("https://%s/#reportbug" % domain)
+        launch_file(f"https://{DOMAIN}/#reportbug")
 
     def app_update_check_handler(self, event, silent=False, argyll=False):
         if (

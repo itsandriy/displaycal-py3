@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from DisplayCAL.meta import domain
+from DisplayCAL.meta import DOMAIN
 
 tplpth = os.path.join(os.path.dirname(__file__), "..", "misc", "README.template.html")
 with open(tplpth, "r") as tpl:
@@ -32,7 +32,7 @@ if chglog:
     )
     chglog = re.sub(
         re.compile(r'href="(#[^"]+)"', flags=re.I),
-        r'href="https://%s/\1"' % domain,
+        rf'href="https://{DOMAIN}/\1"',
         chglog,
     )
 

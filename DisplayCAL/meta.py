@@ -40,10 +40,10 @@ longdesc = (
     "LUTs, as well as optional CIECAM02 gamut mapping to "
     "take into account varying viewing conditions."
 )
-domain = "displaycal.net"
-author_email = "florian" + chr(0o100) + domain
+DOMAIN = "displaycal.net"
+author_email = "florian" + chr(0o100) + DOMAIN
 name = "DisplayCAL"
-appstream_id = ".".join(reversed([name] + domain.lower().split(".")))
+appstream_id = ".".join(reversed([name] + DOMAIN.split(".")))
 name_html = '<span class="appname">Display<span>CAL</span></span>'
 
 py_minversion = (3, 8)

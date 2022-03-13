@@ -57,7 +57,7 @@ if sys.platform == "win32":
     )
     from DisplayCAL.debughelpers import Error, UnloggedError, handle_error
     from DisplayCAL.edid import get_edid
-    from DisplayCAL.meta import domain
+    from DisplayCAL.meta import DOMAIN
     from DisplayCAL.ordereddict import OrderedDict
 
     # from collections import OrderedDict
@@ -167,8 +167,7 @@ if sys.platform == "win32":
                                         "--offline",
                                         "--command=run-apply-profiles",
                                         "--",
-                                        "http://%s/0install/%s.xml"
-                                        % (domain.lower(), appname),
+                                        f"http://{DOMAIN}/0install/{appname}.xml",
                                         "--task",
                                     ]
                                 )
@@ -2234,7 +2233,7 @@ class ProfileLoader(object):
                                 "--no-wait",
                                 "--offline",
                                 "--command=run-apply-profiles",
-                                "http://%s/0install/%s.xml" % (domain.lower(), appname),
+                                f"http://{DOMAIN}/0install/{appname}.xml",
                             ]
                         )
                     else:
