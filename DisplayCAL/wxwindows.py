@@ -5240,14 +5240,14 @@ def fancytext_RenderToRenderer(text, renderer, enclose=True):
     text = safe_str(text, "UTF-8")
     try:
         if enclose:
-            text = '<?xml version="1.0"?><FancyText>{}</FancyText>'.format(text)
+            text = f'<?xml version="1.0"?><FancyText>{text}</FancyText>'
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = renderer.startElement
         p.EndElementHandler = renderer.endElement
         p.CharacterDataHandler = renderer.characterData
         p.Parse(text, 1)
     except xml.parsers.expat.error as err:
-        raise ValueError('error parsing text text "{}": {}'.format(text, err))
+        raise ValueError('error parsing text text "{text}": {err}')
 
 
 fancytext.RenderToRenderer = fancytext_RenderToRenderer
