@@ -205,7 +205,8 @@ wxEVT_FLOATSPIN = wx.NewEventType()
 # -----------------------------------#
 
 EVT_FLOATSPIN = wx.PyEventBinder(wxEVT_FLOATSPIN, 1)
-""" Emitted when the user changes the value of :class:`FloatSpin`, either with the mouse or""" """ with the keyboard. """
+# Emitted when the user changes the value of :class:`FloatSpin`, either with the mouse
+# or with the keyboard.
 
 # ---------------------------------------------------------------------------- #
 # Class FloatSpinEvent
@@ -349,11 +350,11 @@ class FloatTextCtrl(wx.TextCtrl):
 
 
 class FloatSpin(wx.PyControl):
-    """:class:`FloatSpin` implements a floating point :class:`SpinCtrl`. It is built using a custom
-    :class:`PyControl`, composed by a :class:`TextCtrl` and a :class:`SpinButton`. In order to
-    correctly handle floating points numbers without rounding errors or non-exact
-    floating point representations, :class:`FloatSpin` uses the great :class:`FixedPoint` class
-    from Tim Peters.
+    """:class:`FloatSpin` implements a floating point :class:`SpinCtrl`. It is built
+    using a custom :class:`PyControl`, composed by a :class:`TextCtrl` and a
+    :class:`SpinButton`. In order to correctly handle floating points numbers without
+    rounding errors or non-exact floating point representations, :class:`FloatSpin` uses
+    the great :class:`FixedPoint` class from Tim Peters.
     """
 
     _spinwidth = 0
@@ -967,7 +968,7 @@ class FloatSpin(wx.PyControl):
         max_val = self._max if self._max is not None else self._spinbutton.Max
         # Scale the value to the spinbutton range
         spinvalue = int(
-            round(((value - min_val) / float(max_val - min_val)) * self._spinbutton.Max)
+            round((float(value - min_val) / float(max_val - min_val)) * self._spinbutton.Max)
         )
         # Setting the spin button value causes a EVT_SPIN event to be generated
         # under GTK, which we need to ignore
@@ -1035,7 +1036,7 @@ class FloatSpin(wx.PyControl):
             self.SetValue(value)
 
     def ClampValue(self, var):
-        """Clamps `var` between `_min` and `_max` depending if the range has
+        """Clamps `var` between `_min` and `_max` depending on the range has
         been specified.
 
         :param var: the value to be clamped.
@@ -1044,12 +1045,12 @@ class FloatSpin(wx.PyControl):
         """
 
         if self._min is not None:
-            if var < self._min:
+            if float(var) < float(self._min):
                 var = self._min
                 return var
 
         if self._max is not None:
-            if var > self._max:
+            if float(var) > float(self._max):
                 var = self._max
 
         return var
@@ -1285,10 +1286,10 @@ class FloatSpin(wx.PyControl):
         if not self.HasRange():
             return True
         if self._min is not None:
-            if value < self._min:
+            if float(value) < float(self._min):
                 return False
         if self._max is not None:
-            if value > self._max:
+            if float(value) > float(self._max):
                 return False
         return True
 
@@ -1314,9 +1315,7 @@ class FloatSpin(wx.PyControl):
 
 
 if wx.VERSION >= (3,):
-
     # Use wx.SpinCtrlDouble
-
     EVT_FLOATSPIN = wx.EVT_SPINCTRLDOUBLE
 
     class FloatSpin(wx.SpinCtrlDouble):

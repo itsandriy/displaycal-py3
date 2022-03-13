@@ -329,7 +329,10 @@
                                 <orient>wxHORIZONTAL</orient>
                                 <object class="sizeritem">
                                   <object class="wxSpinCtrl" name="min_display_update_delay_ms">
-                                    <size>105,-1</size>
+<!-- Don't set this smaller than 142 which will raise a ton of:                                             -->
+<!-- Gtk-CRITICAL **: (timestamp): gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkSpinButton -->
+<!-- Errors!!!                                                                                              -->
+                                    <size>142,-1</size>
                                   </object>
                                 </object>
                                 <object class="sizeritem">
@@ -352,7 +355,10 @@
                             </object>
                             <object class="sizeritem">
                               <object class="FloatSpin" name="display_settle_time_mult">
-                                <size>105,-1</size>
+<!-- Don't set this smaller than 142 which will raise a ton of:                                             -->
+<!-- Gtk-CRITICAL **: (timestamp): gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkSpinButton -->
+<!-- Errors!!!                                                                                              -->
+                                <size>142,-1</size>
                                 <digits>6</digits>
                               </object>
                               <flag>wxRIGHT|wxALIGN_CENTRE_VERTICAL</flag>

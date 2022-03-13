@@ -14194,7 +14194,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def import_colorimeter_corrections_handler(
         self, event, paths=None, callafter=None, callafter_args=()
     ):
-        """Convert correction matrices from other profiling softwares to Argyll's
+        """Convert correction matrices from other profiling software to Argyll's
         CCMX or CCSS format (or to spyd4cal.bin in case of the Spyder4/5)
 
         Currently supported: iColor Display (native import to CCMX),
@@ -14356,7 +14356,7 @@ class MainFrame(ReportFrame, BaseFrame):
     def import_colorimeter_correction(
         self, result, i1d3, i1d3ccss, spyd4, spyd4en, icd, oeminst, path, asroot
     ):
-        """Import colorimter correction(s) from path"""
+        """Import colorimeter correction(s) from path"""
         if debug:
             print("import_colorimeter_correction <-")
             print("   result:", result)
