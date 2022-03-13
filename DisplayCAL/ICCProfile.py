@@ -2919,7 +2919,7 @@ class CRInterpolation(object):
             while len(p) < 4:
                 p.insert(0, p[0] - (p[1] - p[0]))
         else:
-            p = self.points[lbound: ubound + 1]
+            p = self.points[lbound : ubound + 1]
             # extend to the right linearly
             while len(p) < 4:
                 p.append(p[-1] - (p[-2] - p[-1]))
@@ -3304,7 +3304,7 @@ class LUT16Type(ICCProfileTag):
                                 52
                                 + n * i * 2
                                 + o * 2 * (g * x + y)
-                                + z * 2: 54
+                                + z * 2 : 54
                                 + n * i * 2
                                 + o * 2 * (g * x + y)
                                 + z * 2
@@ -3396,7 +3396,7 @@ BEGIN_DATA
             self._input = [
                 [
                     uInt16Number(
-                        tagData[52 + n * 2 * z + y * 2: 54 + n * 2 * z + y * 2]
+                        tagData[52 + n * 2 * z + y * 2 : 54 + n * 2 * z + y * 2]
                     )
                     for y in range(n)
                 ]
@@ -3554,7 +3554,7 @@ BEGIN_DATA
                             + n * i * 2
                             + m * 2 * z
                             + y * 2
-                            + g**i * o * 2: 54
+                            + g**i * o * 2 : 54
                             + n * i * 2
                             + m * 2 * z
                             + y * 2
@@ -4372,8 +4372,10 @@ class CurveType(ICCProfileTag, list):
         self[:] = []
         if not callable(power):
             exp = power
+
             def power(a):
                 return colormath.specialpow(a, exp)
+
         for i in range(0, size):
             self.append(vmin + power(float(i) / (size - 1)) * (vmax - vmin))
 
@@ -4430,7 +4432,7 @@ class ParametricCurveType(ICCProfileTag):
         fntype = uInt16Number(tagData[8:10])
         numparams = {0: 1, 1: 3, 2: 4, 3: 5, 4: 7}.get(fntype)
         for i, param in enumerate("gabcdef"[:numparams]):
-            self.params[param] = s15Fixed16Number(tagData[12 + i * 4: 12 + i * 4 + 4])
+            self.params[param] = s15Fixed16Number(tagData[12 + i * 4 : 12 + i * 4 + 4])
 
     def apply(self, v):
         if len(self.params) == 1:
@@ -4531,7 +4533,7 @@ class DictType(ICCProfileTag, AODict):
             return
         elements = {}
         for n in range(0, numrecords):
-            record = tagData[16 + n * recordlen: 16 + (n + 1) * recordlen]
+            record = tagData[16 + n * recordlen : 16 + (n + 1) * recordlen]
             if len(record) < recordlen:
                 print(
                     "Error (non-critical): '%s' record %s too short (expected %s bytes, got %s bytes)"
@@ -4555,8 +4557,8 @@ class DictType(ICCProfileTag, AODict):
                     # Optional:
                     # Bytes 16..23, 24..23: Display name offset and size
                     # Bytes 24..27, 28..31: Display value offset and size
-                    offset = uInt32Number(record[offsetpos: offsetpos + 4])
-                    size = uInt32Number(record[offsetpos + 4: offsetpos + 8])
+                    offset = uInt32Number(record[offsetpos : offsetpos + 4])
+                    size = uInt32Number(record[offsetpos + 4 : offsetpos + 8])
                     if offset > 0:
                         if (offset, size) in elements:
                             # Use existing element if same offset and size
@@ -4564,7 +4566,7 @@ class DictType(ICCProfileTag, AODict):
                             # mutable types i.e. MultiLocalizedUnicodeType
                             data = elements[(offset, size)]
                         else:
-                            data = tagData[offset: offset + size]
+                            data = tagData[offset : offset + size]
                             try:
                                 if key.startswith("display_"):
                                     data = MultiLocalizedUnicodeType(data, "mluc")
@@ -4758,7 +4760,7 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict):  # ICC v4
             )
             if recordSize < 12:
                 recordSize = 12
-        records = tagData[16: 16 + recordSize * recordsCount]
+        records = tagData[16 : 16 + recordSize * recordsCount]
         for _count in range(recordsCount):
             record = records[:recordSize]
             if len(record) < 12:
@@ -4771,7 +4773,7 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict):  # ICC v4
                 recordLanguageCode,
                 recordCountryCode,
                 str(
-                    tagData[recordOffset: recordOffset + recordLength],
+                    tagData[recordOffset : recordOffset + recordLength],
                     "utf-16-be",
                     "replace",
                 ),
@@ -4888,7 +4890,7 @@ class ProfileSequenceDescType(ICCProfileTag, list):
                         count = 1  # Skip remaining
                         break
                     desc[desc_type] = cls(desc_data)
-                    desc_data = desc_data[len(desc[desc_type].tagData):]
+                    desc_data = desc_data[len(desc[desc_type].tagData) :]
                 self.append(desc)
                 count -= 1
 
@@ -4983,17 +4985,17 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
             return
         ASCIIDescriptionLength = uInt32Number(tagData[8:12])
         if ASCIIDescriptionLength:
-            ASCIIDescription = tagData[12: 12 + ASCIIDescriptionLength].strip(
+            ASCIIDescription = tagData[12 : 12 + ASCIIDescriptionLength].strip(
                 b"\0\n\r "
             )
             if ASCIIDescription:
                 self.ASCII = ASCIIDescription
         unicodeOffset = 12 + ASCIIDescriptionLength
         self.unicodeLanguageCode = uInt32Number(
-            tagData[unicodeOffset: unicodeOffset + 4]
+            tagData[unicodeOffset : unicodeOffset + 4]
         )
         unicodeDescriptionLength = uInt32Number(
-            tagData[unicodeOffset + 4: unicodeOffset + 8]
+            tagData[unicodeOffset + 4 : unicodeOffset + 8]
         )
         if unicodeDescriptionLength:
             if unicodeOffset + 8 + unicodeDescriptionLength * 2 > len(tagData):
@@ -5010,7 +5012,7 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
                 tagData[
                     unicodeOffset
                     + 8
-                    + unicodeDescriptionLength: unicodeOffset
+                    + unicodeDescriptionLength : unicodeOffset
                     + 8
                     + unicodeDescriptionLength
                     + 2
@@ -5026,7 +5028,9 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
             else:
                 charBytes = 2
             unicodeDescription = tagData[
-                unicodeOffset + 8: unicodeOffset + 8
+                unicodeOffset
+                + 8 : unicodeOffset
+                + 8
                 + (unicodeDescriptionLength) * charBytes
             ]
             try:
@@ -5105,12 +5109,12 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
         macOffset = unicodeOffset + 8 + unicodeDescriptionLength * charBytes
         self.macScriptCode = 0
         if len(tagData) > macOffset + 2:
-            self.macScriptCode = uInt16Number(tagData[macOffset: macOffset + 2])
-            macDescriptionLength = ord(tagData[macOffset + 2: macOffset + 3])
+            self.macScriptCode = uInt16Number(tagData[macOffset : macOffset + 2])
+            macDescriptionLength = ord(tagData[macOffset + 2 : macOffset + 3])
             if macDescriptionLength:
                 try:
                     macDescription = str(
-                        tagData[macOffset + 3: macOffset + 3 + macDescriptionLength],
+                        tagData[macOffset + 3 : macOffset + 3 + macDescriptionLength],
                         "mac-" + encodings["mac"][self.macScriptCode],
                         errors="replace",
                     ).strip("\0\n\r ")
@@ -5410,7 +5414,7 @@ class VideoCardGammaTableType(VideoCardGammaType):
             j = 0
             while j < entryCount:
                 index = 6 + i * entryCount * entrySize + j * entrySize
-                self.data[i].append(hex2int[entrySize](data[index: index + entrySize]))
+                self.data[i].append(hex2int[entrySize](data[index : index + entrySize]))
                 j = j + 1
             i = i + 1
 
@@ -5563,7 +5567,7 @@ class TagData(object):
         return item in str(self)
 
     def __str__(self):
-        return self.tagData[self.offset: self.offset + self.size]
+        return self.tagData[self.offset : self.offset + self.size]
 
 
 class WcsProfilesTagType(ICCProfileTag, ADict):
@@ -5576,13 +5580,13 @@ class WcsProfilesTagType(ICCProfileTag, ADict):
             j = i * 8
             if len(tagData) < 16 + j:
                 break
-            offset = uInt32Number(tagData[8 + j: 12 + j])
-            size = uInt32Number(tagData[12 + j: 16 + j])
+            offset = uInt32Number(tagData[8 + j : 12 + j])
+            size = uInt32Number(tagData[12 + j : 16 + j])
             if offset and size:
                 from io import StringIO
                 from xml.etree import ElementTree
 
-                it = ElementTree.iterparse(StringIO(tagData[offset: offset + size]))
+                it = ElementTree.iterparse(StringIO(tagData[offset : offset + size]))
                 for _event, elem in it:
                     elem.tag = elem.tag.split("}", 1)[-1]  # Strip all namespaces
                 self[modelname] = it.root
@@ -5874,7 +5878,7 @@ class NamedColor2Value(object):
         deviceCoords = []
         if deviceCoordCount > 0:
             for i in range(38, 38 + deviceCoordCount * 2, 2):
-                deviceCoords.append(uInt16Number(valueData[i: i + 2]))
+                deviceCoords.append(uInt16Number(valueData[i : i + 2]))
         self.devicevalues = deviceCoords
         if device == "Lab":
             # L* range 0..100 + (25500 / 65280.0)
@@ -5974,7 +5978,7 @@ class NamedColor2Type(ICCProfileTag, AODict):
             end = start + (stride * colorCount)
             for i in range(start, end, stride):
                 nc2 = NamedColor2Value(
-                    tagData[i: i + stride], deviceCoordCount, pcs=pcs, device=device
+                    tagData[i : i + stride], deviceCoordCount, pcs=pcs, device=device
                 )
                 keys.append(nc2.name)
                 values.append(nc2)
@@ -6549,7 +6553,7 @@ class ICCProfile(object):
                 if debug:
                     print("tagCount:", tagCount)
 
-                tagTable = self._data[132: 132 + tagCount * 12]
+                tagTable = self._data[132 : 132 + tagCount * 12]
                 self._tagoffsets = []
                 discard_len = 0
                 tags = {}
@@ -7402,11 +7406,13 @@ class ICCProfile(object):
         )
         info["Creator"] = hexrepr(self.creator, manufacturers)
         info["Checksum"] = "0x%s" % binascii.hexlify(self.ID).upper().decode()
-        calcID = self.calculateID(False)
+        calculated_id = self.calculateID(False)
         if self.ID != b"\0" * 16:
-            info["    Checksum OK"] = {True: "Yes"}.get(self.ID == calcID, "No")
-        if self.ID != calcID:
-            info["    Calculated checksum"] = "0x%s" % binascii.hexlify(calcID).upper()
+            info["    Checksum OK"] = {True: "Yes"}.get(self.ID == calculated_id, "No")
+        if self.ID != calculated_id:
+            info["    Calculated checksum"] = (
+                "0x%s" % binascii.hexlify(calculated_id).upper().decode()
+            )
         for sig, tag in self.tags.items():
             name = tags.get(sig, "'%s'" % sig)
             if isinstance(tag, chromaticAdaptionTag):
@@ -7422,13 +7428,12 @@ class ICCProfile(object):
                     if self.colorSpace.endswith(b"CLR"):
                         colorant_name = ""
                     else:
-                        colorant_name = "(%s) " % self.colorSpace[i: i + 1]
+                        colorant_name = "(%s) " % self.colorSpace[i : i + 1]
                     info["    Channel %i %sxy" % (i + 1, colorant_name)] = " ".join(
                         "%6.4f" % v for v in channel
                     )
             elif isinstance(tag, ColorantTableType):
                 info["Colorants (PCS-relative)"] = ""
-                maxlen = max(list(map(len, list(tag.keys()))))
                 for colorant_name, colorant in tag.items():
                     values = list(colorant.values())
                     if "".join(list(colorant.keys())) == "Lab":
