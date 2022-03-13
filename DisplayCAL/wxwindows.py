@@ -5236,19 +5236,18 @@ fancytext.Renderer.getCurrentColor = fancytext_Renderer_getCurrentColor
 fancytext.Renderer.getCurrentFont = fancytext_Renderer_getCurrentFont
 
 
-def fancytext_RenderToRenderer(str, renderer, enclose=True):
-    str = safe_str(str, "UTF-8")
+def fancytext_RenderToRenderer(str_, renderer, enclose=True):
+    str_ = safe_str(str_, "UTF-8")
     try:
         if enclose:
-            str = '<?xml version="1.0"?><FancyText>%s</FancyText>' % str
+            str_ = '<?xml version="1.0"?><FancyText>{}</FancyText>'.format(str_)
         p = xml.parsers.expat.ParserCreate()
-        p.returns_unicode = 1
         p.StartElementHandler = renderer.startElement
         p.EndElementHandler = renderer.endElement
         p.CharacterDataHandler = renderer.characterData
-        p.Parse(str, 1)
+        p.Parse(str_, 1)
     except xml.parsers.expat.error as err:
-        raise ValueError('error parsing text text "%s": %s' % (str, err))
+        raise ValueError('error parsing text text "{}": {}'.format(str_, err))
 
 
 fancytext.RenderToRenderer = fancytext_RenderToRenderer
