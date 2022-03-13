@@ -269,8 +269,8 @@ def replace_placeholders(
             gmtime(lastmod_time or os.stat(tmpl_path).st_mtime),
         )
         + "+0000",
-        "DOMAIN": domain.lower(),
-        "REVERSEDOMAIN": ".".join(reversed(domain.split("."))),
+        "DOMAIN": DOMAIN.lower(),
+        "REVERSEDOMAIN": ".".join(reversed(DOMAIN.split("."))),
         "ISODATE": strftime(
             "%Y-%m-%d", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)
         ),
@@ -299,9 +299,9 @@ def replace_placeholders(
         "PY_MINVERSION": ".".join(str(n) for n in py_minversion),
         "VERSION": version,
         "VERSION_SHORT": re.sub(r"(?:\.0){1,2}$", "", version),
-        "URL": f"https://{domain.lower()}/",
+        "URL": f"https://{DOMAIN.lower()}/",
         # For share counts...
-        "HTTPURL": f"http://{domain.lower()}/",
+        "HTTPURL": f"http://{DOMAIN.lower()}/",
         "WX_MINVERSION": ".".join(str(n) for n in wx_minversion),
         "YEAR": strftime("%Y", gmtime(lastmod_time or os.stat(tmpl_path).st_mtime)),
     }
@@ -524,7 +524,7 @@ def setup():
         return
 
     global name, name_html, author, author_email, description, longdesc
-    global domain, py_maxversion, py_minversion
+    global DOMAIN, py_maxversion, py_minversion
     global version, version_lin, version_mac
     global version_src, version_tuple, version_win
     global wx_minversion, appstream_id

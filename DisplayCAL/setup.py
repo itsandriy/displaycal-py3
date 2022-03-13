@@ -1034,7 +1034,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
         ],
         "data_files": data_files,
         "description": description,
-        "download_url": "https://%(domain)s/download/"
+        "download_url": "https://%(DOMAIN)s/download/"
         "%(name)s-%(version)s.tar.gz"
         % {"DOMAIN": DOMAIN, "name": name, "version": version},
         "ext_modules": ext_modules,
