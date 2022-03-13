@@ -3885,7 +3885,7 @@ class ColorantTableType(ICCProfileTag, AODict):
                 uInt16Number(data[36:38]),
             ]
             for i, pcsvalue in enumerate(pcsvalues):
-                if pcs in ("Lab", "RGB", "CMYK", "YCbr"):
+                if pcs in (b"Lab", b"RGB", b"CMYK", b"YCbr"):
                     keys = ["L", "a", "b"]
                     if i == 0:
                         # L* range 0..100 + (25500 / 65280.0)
@@ -3893,7 +3893,7 @@ class ColorantTableType(ICCProfileTag, AODict):
                     else:
                         # a, b range -128..127 + (255 / 256.0)
                         pcsvalues[i] = -128 + (pcsvalue / 65536.0 * 256)
-                elif pcs == "XYZ":
+                elif pcs == b"XYZ":
                     # X, Y, Z range 0..100 + (32767 / 32768.0)
                     keys = ["X", "Y", "Z"]
                     pcsvalues[i] = pcsvalue / 32768.0 * 100
