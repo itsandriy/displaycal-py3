@@ -5247,7 +5247,7 @@ def fancytext_RenderToRenderer(text, renderer, enclose=True):
         p.CharacterDataHandler = renderer.characterData
         p.Parse(text, True)
     except xml.parsers.expat.error as err:
-        raise ValueError(f'error parsing text text "{text}": {err}')
+        raise ValueError(f'error parsing text text "{text}": {err}') from err
 
 
 fancytext.RenderToRenderer = fancytext_RenderToRenderer
