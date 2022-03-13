@@ -63,7 +63,7 @@ from DisplayCAL.meta import (
     author_ascii,
     description,
     longdesc,
-    domain,
+    DOMAIN,
     name,
     py_maxversion,
     py_minversion,
@@ -214,7 +214,7 @@ plist_dict = {
     "CFBundleDevelopmentRegion": "English",
     "CFBundleExecutable": name,
     "CFBundleGetInfoString": version,
-    "CFBundleIdentifier": ".".join(reversed(domain.split("."))) + "." + name,
+    "CFBundleIdentifier": ".".join(reversed(DOMAIN.split("."))) + "." + name,
     "CFBundleInfoDictionaryVersion": "6.0",
     "CFBundleLongVersionString": version,
     "CFBundleName": name,
@@ -1036,7 +1036,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
         "description": description,
         "download_url": "https://%(domain)s/download/"
         "%(name)s-%(version)s.tar.gz"
-        % {"domain": domain, "name": name, "version": version},
+        % {"DOMAIN": DOMAIN, "name": name, "version": version},
         "ext_modules": ext_modules,
         "license": "GPL v3",
         "long_description": longdesc,
@@ -1057,7 +1057,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
         "requires": requires,
         "provides": [name],
         "scripts": [],
-        "url": "https://%s/" % domain,
+        "url": f"https://{DOMAIN}/",
         "version": msiversion if "bdist_msi" in sys.argv[1:] else version,
     }
 

@@ -14,6 +14,7 @@ import mimetypes
 import os
 import pipes
 from io import BytesIO
+from pathlib import Path
 
 import distro
 import platform
@@ -146,7 +147,7 @@ from DisplayCAL.defaultpaths import (
 from DisplayCAL.edid import WMIError, get_edid
 from DisplayCAL.log import DummyLogger, LogFile, get_file_logger, log
 from DisplayCAL import madvr
-from DisplayCAL.meta import VERSION, VERSION_BASE, domain, name as appname, version
+from DisplayCAL.meta import VERSION, VERSION_BASE, DOMAIN, name as appname, version
 from DisplayCAL.multiprocess import cpu_count, pool_slice
 from DisplayCAL.options import (
     always_fail_download,
@@ -5637,12 +5638,12 @@ END_DATA
                     if sys.platform == "win32" and i < len(monitors):
                         # Get monitor description using win32api
                         device = util_win.get_active_display_device(
-                            monitors[i][b"Device"]
+                            monitors[i]["Device"]
                         )
                         if device:
-                            desc.append(device.DeviceString.decode(fs_enc, "replace"))
+                            desc.append(device.DeviceString)
                         # Deal with HiDPI - update monitor rect
-                        m_left, m_top, m_right, m_bottom = monitors[i][b"Monitor"]
+                        m_left, m_top, m_right, m_bottom = monitors[i]["Monitor"]
                         m_width = m_right - m_left
                         m_height = m_bottom - m_top
                         self.display_rects[i] = wx.Rect(
@@ -9675,7 +9676,7 @@ usage: spotread [-options] [logfile]
                 # Download version info
                 resp = http_request(
                     None,
-                    domain,
+                    DOMAIN,
                     "GET",
                     "/Argyll/VERSION",
                     failure_msg=lang.getstr("update_check.fail"),
@@ -9693,7 +9694,7 @@ usage: spotread [-options] [logfile]
 
             if not os.path.isfile(installer):
                 installer_zip = self.download(
-                    "https://%s/Argyll/%s.zip" % (domain, installer_basename)
+                    f"https://{DOMAIN}/Argyll/{installer_basename}.zip"
                 )
                 if isinstance(installer_zip, Exception):
                     return installer_zip
@@ -10277,7 +10278,7 @@ usage: spotread [-options] [logfile]
                             "--no-wait",
                             "--offline",
                             "--command=run-apply-profiles",
-                            "http://%s/0install/%s.xml" % (domain.lower(), appname),
+                            f"http://{DOMAIN}/0install/{appname}.xml"
                         ]
                     )
                 else:
@@ -10494,7 +10495,7 @@ usage: spotread [-options] [logfile]
                     executable = (
                         "0launch --console --offline "
                         "--command=run-apply-profiles "
-                        "http://%s/0install/%s.xml" % (domain.lower(), appname)
+                        f"http://{DOMAIN}/0install/{appname}.xml"
                     )
                 else:
                     icon = os.path.join(
@@ -16243,7 +16244,7 @@ BEGIN_DATA
 
     def _download(self, uri, force=False, download_dir=None):
         if test_badssl:
-            uri = "https://%s.badssl.com/" % test_badssl
+            uri = f"https://{test_badssl}.badssl.com/"
         orig_uri = uri
         total_size = None
         filename = os.path.basename(uri)
@@ -16253,8 +16254,8 @@ BEGIN_DATA
         response = None
         hashes = None
         is_main_dl = uri.startswith(
-            "https://%s/download/" % domain.lower()
-        ) or uri.startswith("https://%s/Argyll/" % domain.lower())
+            f"https://{DOMAIN}/download/"
+        ) or uri.startswith(f"https://{DOMAIN}/Argyll/")
         if is_main_dl:
             # Always force connection to server even if local file exists for
             # displaycal.net/downloads/* and displaycal.net/Argyll/*
@@ -16295,7 +16296,7 @@ BEGIN_DATA
                 if always_fail_download or test_badssl:
                     raise urllib.error.URLError("")
                 newurl = getattr(LoggingHTTPRedirectHandler, "newurl", uri)
-                if is_main_dl or not newurl.startswith("https://%s/" % domain.lower()):
+                if is_main_dl or not newurl.startswith(f"https://{DOMAIN}/"):
                     # Get SHA-256 hashes so we can verify the downloaded file.
                     # Only do this for 3rd party hosts/mirrors (no sense
                     # doing it for files downloaded securely directly from
@@ -16304,7 +16305,7 @@ BEGIN_DATA
                     # or portable archive)
                     noredir = urllib.request.build_opener(NoHTTPRedirectHandler)
                     noredir.addheaders = list(get_default_headers().items())
-                    hashes = noredir.open("https://%s/sha256sums.txt" % domain.lower())
+                    hashes = noredir.open(f"https://{DOMAIN}/sha256sums.txt")
             except (
                 socket.error,
                 urllib.error.URLError,
@@ -16334,7 +16335,7 @@ BEGIN_DATA
                     orig_uri,
                 )
             uri = response.geturl()
-            filename = os.path.basename(uri)
+            filename = Path(Path(uri).name)
             if hashes:
                 # Read max. 64 KB hashes
                 hashesdata = hashes.read(1024 * 64)
@@ -16349,8 +16350,9 @@ BEGIN_DATA
                         return DownloadError(
                             lang.getstr("file.hash.malformed", filename), orig_uri
                         )
-                    hashesdict[name_hash[1].lstrip("*")] = name_hash[0]
-                expectedhash_hex = hashesdict.get(filename, "").lower()
+                        hashesdict[Path(name_hash[1].decode().lstrip("*"))] = \
+                            name_hash[0]
+                    expectedhash_hex = hashesdict[filename]
                 if not expectedhash_hex:
                     response.close()
                     return DownloadError(
@@ -16408,7 +16410,7 @@ BEGIN_DATA
                             print(exception)
                 return mksfile_exception
             print(lang.getstr("downloading"), uri, "\u2192", download_path)
-            self.recent.write(lang.getstr("downloading") + " " + filename + "\n")
+            self.recent.write(lang.getstr(f"downloading {filename}\n"))
             min_chunk_size = 1024 * 8
             chunk_size = min_chunk_size
             bytes_so_far = 0
@@ -16578,19 +16580,19 @@ BEGIN_DATA
         if hashes:
             # Verify hash. Compare to expected hash
             actualhash_hex = actualhash.hexdigest()
-            if actualhash_hex != expectedhash_hex:
+            if actualhash_hex != expectedhash_hex.decode():
                 return Error(
                     lang.getstr(
                         "file.hash.verification.fail",
                         (
                             download_path,
-                            "SHA-256=" + expectedhash_hex,
-                            "SHA-256=" + actualhash_hex,
+                            f"SHA-256= {expectedhash_hex.decode()}",
+                            f"SHA-256= {actualhash_hex}",
                         ),
                     )
                 )
             else:
-                print("Verified hash SHA-256=" + actualhash_hex)
+                print(f"Verified hash SHA-256= {actualhash_hex}")
         return download_path
 
     def process_argyll_download(self, result, exit=False):

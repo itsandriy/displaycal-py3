@@ -538,7 +538,7 @@ def setup():
         description,
         lastmod,
         longdesc,
-        domain,
+        DOMAIN,
         py_maxversion,
         py_minversion,
         version,
@@ -744,16 +744,16 @@ def setup():
                 "AppName": name,
                 "AppVerName": version,
                 "AppPublisher": author,
-                "AppPublisherURL": f"https://{domain}/",
-                "AppSupportURL": f"https://{domain}/",
-                "AppUpdatesURL": f"https://{domain}/",
+                "AppPublisherURL": f"https://{DOMAIN}/",
+                "AppSupportURL": f"https://{DOMAIN}/",
+                "AppUpdatesURL": f"https://{DOMAIN}/",
                 "VersionInfoVersion": ".".join(map(str, version_tuple)),
                 "VersionInfoTextVersion": version,
                 "AppVersion": version,
                 "Platform": get_platform(),
                 "PythonVersion": sys.version[:3],
-                "URL": f"https://{domain.lower()}/",
-                "HTTPURL": f"http://{domain.lower()}/",
+                "URL": f"https://{DOMAIN}/",
+                "HTTPURL": f"http://{DOMAIN}/",
             }
             inno_template.close()
             inno_path = Path(
@@ -1220,7 +1220,7 @@ def setup():
                         if group.getAttribute("arch").startswith("Linux"):
                             python = "http://repo.roscidus.com/python/python"
                         else:
-                            python = f"http://{domain.lower()}/0install/python.xml"
+                            python = f"http://{DOMAIN}/0install/python.xml"
 
                         runner.setAttribute("interface", python)
                         runner.setAttribute(
@@ -1288,7 +1288,7 @@ def setup():
                     archive.setAttribute("extract", extract)
                     archive.setAttribute(
                         "href",
-                        f"http://{domain.lower()}/download.php?version={version}&"
+                        f"http://{DOMAIN}/download.php?version={version}&"
                         f"suffix=.tar.gz{folder}",
                     )
                     archive.setAttribute("size", str(os.stat(archive_path).st_size))
@@ -1361,7 +1361,7 @@ def setup():
 
                             icon.setAttribute(
                                 "href",
-                                f"http://{domain.lower()}/theme/icons/{subdir}{filename}.{ext}",
+                                f"http://{DOMAIN}/theme/icons/{subdir}{filename}.{ext}",
                             )
                             icon.setAttribute("type", mime_type)
                             entry_point.appendChild(icon)
@@ -1437,7 +1437,7 @@ def setup():
             if zeroinstall_version < "2.8":
                 zeroinstall_version = "2.8"
 
-            feed_uri = f"http://{domain.lower()}/0install/{name}.xml"
+            feed_uri = f"http://{DOMAIN}/0install/{name}.xml"
             dist_dir = Path(pydir, "dist", "0install", name + "-0install")
 
             for script, desc in scripts + [
@@ -1462,7 +1462,7 @@ def setup():
                     {
                         "NAME": bundlename,
                         "EXECUTABLE": script,
-                        "ID": ".".join(reversed(domain.split("."))) + "." + script,
+                        "ID": ".".join(reversed(DOMAIN.split("."))) + "." + script,
                     },
                 )
 
@@ -1528,7 +1528,7 @@ def setup():
 <plist version="1.0">
 <dict>
     <key>URL</key>
-    <string>https://{domain.lower()}/</string>
+    <string>https://{DOMAIN}/</string>
 </dict>
 </plist>
 """

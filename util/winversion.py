@@ -12,7 +12,7 @@ sys.path.insert(
 )
 
 
-from DisplayCAL.meta import author, description, domain, name, version, version_tuple
+from DisplayCAL.meta import author, description, DOMAIN, name, version, version_tuple
 
 
 def mktempver(
@@ -22,7 +22,7 @@ def mktempver(
     tempver_str = version_template.read().decode(encoding, "replace") % {
         "filevers": str(version_tuple),
         "prodvers": str(version_tuple),
-        "CompanyName": domain,
+        "CompanyName": DOMAIN,
         "FileDescription": description_,
         "FileVersion": version,
         "InternalName": name_,
