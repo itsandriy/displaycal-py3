@@ -240,7 +240,6 @@ def _main(module, name, applockfilename, probe_ports=True):
                             if appsocket.send("getappname"):
                                 print("Sent scripting request, awaiting response...")
                                 data_read = appsocket.read()
-                                print("data_read: {}".format(data_read))
                                 incoming = data_read.rstrip("\4")
                                 print("Got response: %r" % incoming)
                                 if incoming:
@@ -267,7 +266,6 @@ def _main(module, name, applockfilename, probe_ports=True):
                             if appsocket.send(data):
                                 print("Sent scripting request, awaiting response...")
                                 data_read = appsocket.read()
-                                print("data_read: {}".format(data_read))
                                 incoming = data_read.rstrip("\4")
                                 print("Got response: %r" % incoming)
                                 if module == "apply-profiles":

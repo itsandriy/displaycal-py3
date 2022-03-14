@@ -4240,6 +4240,7 @@ class CurveType(ICCProfileTag, list):
         ambient_cdm2=5,
         maxsignal=1.0,
         size=None,
+        logfile=None,
     ):
         """Set the response to the Hybrid Log-Gamma (HLG) function
 

@@ -17697,12 +17697,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 # Second try to find the correct display by comparing
                 # the EDID hash (if present)
                 profile_tags_meta = profile.tags.get("meta", {})
-                print(f"display_name: {display_name}")
-                print(f"profile_tags_meta: {profile_tags_meta}")
-                print(f"type(profile_tags_meta): {type(profile_tags_meta)}")
-                print(f"type(profile_tags_meta): {type(profile_tags_meta)}")
                 edid_md5 = profile_tags_meta.get("EDID_md5", {}).get("value")
-                print("edid_md5: {}".format(edid_md5))
                 if display_name or edid_md5:
                     display_name_indexes = []
                     edid_md5_indexes = []
