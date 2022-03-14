@@ -361,7 +361,7 @@
                                 <size>142,-1</size>
                                 <digits>6</digits>
                               </object>
-                              <flag>wxRIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+                              <flag>wxLEFT|wxALIGN_CENTRE_VERTICAL</flag>
                               <border>16</border>
                             </object>
                             <cols>2</cols>
@@ -389,7 +389,7 @@
                             </object>
                             <object class="sizeritem">
                               <object class="FloatSpin" name="ffp_insertion_interval">
-                                <size>75,-1</size>
+                                <size>100,-1</size>
                                 <increment>0.1</increment>
                                 <digits>1</digits>
                               </object>
@@ -412,7 +412,7 @@
                             </object>
                             <object class="sizeritem">
                               <object class="FloatSpin" name="ffp_insertion_duration">
-                                <size>55,-1</size>
+                                <size>100,-1</size>
                                 <increment>0.1</increment>
                                 <digits>1</digits>
                               </object>
@@ -435,7 +435,7 @@
                             </object>
                             <object class="sizeritem">
                               <object class="wxSpinCtrl" name="ffp_insertion_level">
-                                <size>55,-1</size>
+                                <size>100,-1</size>
                                 <min>0</min>
                                 <max>100</max>
                               </object>
@@ -997,9 +997,9 @@
                                 </object>
                                 <object class="sizeritem">
                                   <object class="wxSpinCtrl" name="black_output_offset_intctrl">
-                                    <size>65,-1</size>
+                                    <size>142,-1</size>
                                     <min>0</min>
-                                    <max>100</max>
+                                    <max>142</max>
                                     <XRCED>
                                       <events>EVT_TEXT</events>
                                     </XRCED>
@@ -1033,7 +1033,7 @@
                                 </object>
                                 <object class="sizeritem">
                                   <object class="FloatSpin" name="ambient_viewcond_adjust_textctrl">
-                                    <size>95,-1</size>
+                                    <size>140,-1</size>
                                     <min_val>0.0</min_val>
                                     <max_val>16777216</max_val>
                                     <increment>0.1</increment>
@@ -1099,7 +1099,7 @@
                                 </object>
                                 <object class="sizeritem">
                                   <object class="wxSpinCtrl" name="black_point_correction_intctrl">
-                                    <size>65,-1</size>
+                                    <size>100,-1</size>
                                     <min>0</min>
                                     <max>100</max>
                                     <XRCED>
@@ -1138,7 +1138,7 @@
                                 </object>
                                 <object class="sizeritem">
                                   <object class="FloatSpin" name="black_point_rate_floatctrl">
-                                    <size>65,-1</size>
+                                    <size>100,-1</size>
                                     <value>4.0</value>
                                     <min_val>0.05</min_val>
                                     <max_val>20</max_val>
@@ -1776,7 +1776,7 @@
                                     </object>
                                     <object class="sizeritem">
                                       <object class="wxSpinCtrl" name="lut3d_hdr_hue_intctrl">
-                                        <size>65,-1</size>
+                                        <size>142,-1</size>
                                         <min>0</min>
                                         <max>100</max>
                                         <XRCED>
@@ -1896,7 +1896,7 @@
                                       <object class="wxBoxSizer">
                                         <object class="sizeritem">
                                           <object class="FloatSpin" name="lut3d_hdr_ambient_luminance_ctrl">
-                                            <size>75,-1</size>
+                                            <size>100,-1</size>
                                             <min_val>0.01</min_val>
                                             <max_val>10000</max_val>
                                             <increment>0.01</increment>
@@ -2145,7 +2145,7 @@
                                         </object>
                                         <object class="sizeritem">
                                           <object class="wxSpinCtrl" name="lut3d_trc_black_output_offset_intctrl">
-                                            <size>65,-1</size>
+                                            <size>142,-1</size>
                                             <min>0</min>
                                             <max>100</max>
                                             <XRCED>
