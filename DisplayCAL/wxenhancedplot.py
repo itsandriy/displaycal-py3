@@ -114,6 +114,7 @@ import wx
 from DisplayCAL.wxfixes import get_dc_font_scale
 
 # Needs Numeric or numarray or NumPy
+# TODO: Can we just use NumPy, it should be available in all the targeted platforms.
 try:
     import numpy as _Numeric
 except ImportError:
@@ -131,7 +132,6 @@ except ImportError:
             downloading source or binaries."""
             raise ImportError("Numeric,numarray or NumPy not found. \n" + msg)
 else:
-    _Numeric.Float = _Numeric.float
     _Numeric.Float64 = _Numeric.float64
     _Numeric.Int32 = _Numeric.int32
 np = _Numeric
@@ -688,7 +688,7 @@ class PolyMarker(PolyPoints):
     def _circle(self, dc, coords, size=1):
         fact = 2.5 * size
         wh = 5.0 * size
-        rect = _Numeric.zeros((len(coords), 4), _Numeric.Float) + [0.0, 0.0, wh, wh]
+        rect = _Numeric.zeros((len(coords), 4), float) + [0.0, 0.0, wh, wh]
         rect[:, 0:2] = coords - [fact, fact]
         dc.DrawEllipseList(rect.astype(_Numeric.Int32))
 
@@ -698,7 +698,7 @@ class PolyMarker(PolyPoints):
     def _square(self, dc, coords, size=1):
         fact = 2.5 * size
         wh = 5.0 * size
-        rect = _Numeric.zeros((len(coords), 4), _Numeric.Float) + [0.0, 0.0, wh, wh]
+        rect = _Numeric.zeros((len(coords), 4), float) + [0.0, 0.0, wh, wh]
         rect[:, 0:2] = coords - [fact, fact]
         dc.DrawRectangleList(rect.astype(_Numeric.Int32))
 

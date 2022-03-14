@@ -2,6 +2,7 @@
 
 
 from datetime import datetime
+import html
 from html.parser import HTMLParser
 
 htmlparser = HTMLParser()
@@ -2418,7 +2419,7 @@ class BaseFrame(wx.Frame):
                 elif isinstance(child, wx.ComboBox) and "gtk3" in wx.PlatformInfo:
                     # ComboBox is not wide enough to accomodate its text
                     # box under GTK3
-                    child.MinSize = max(child.MinSize[0], 170 * scale), child.MinSize[1]
+                    child.MinSize = max(child.MinSize[0], int(170 * scale)), child.MinSize[1]
                 child.SetMaxFontSize(11)
                 if sys.platform == "darwin":
                     # Work around ComboBox issues on Mac OS X
@@ -2881,7 +2882,6 @@ bitmaps = {}
 
 
 class BitmapBackgroundPanel(wx.PyPanel):
-
     """A panel with a background bitmap"""
 
     def __init__(self, *args, **kwargs):
@@ -3773,7 +3773,7 @@ class BorderGradientButton(GradientButton):
             retWidth += bmpWidth
             retHeight = max(bmpHeight, retHeight)
 
-        return wx.Size(retWidth + constant, retHeight + constant)
+        return wx.Size(int(retWidth + constant), int(retHeight + constant))
 
     def Enable(self, enable=True):
         self._enabled = enable
@@ -5594,13 +5594,7 @@ class BetterStaticFancyText_SetLabelMarkup(BetterStaticFancyTextBase, wx.Panel):
         markup = label.replace("<font", "<span")
         markup = markup.replace("</font>", "</span>")
         # Decode entities
-        try:
-            markup = htmlparser.unescape(markup)
-        except AttributeError:
-            # Python3.9+
-            from html import unescape
-
-            markup = unescape(markup)
+        markup = html.unescape(markup)
         self._st.SetLabelMarkup(markup)
         # Figure out min size
         minw = 0
@@ -5625,13 +5619,7 @@ class BetterStaticFancyText_SetLabelMarkup(BetterStaticFancyTextBase, wx.Panel):
                     text = re.sub(r"<[^>]*?>", "", text)
                     text = text.replace("<", "").replace(">", "")
                     # Decode entities
-                    try:
-                        text = htmlparser.unescape(text)
-                    except AttributeError:
-                        # Python 3.9+
-                        from html import unescape
-
-                        text = unescape(text)
+                    text = html.unescape(text)
                     te = self.GetFullTextExtent(text, font)[:2]
                     w += te[0]
                     h = max(te[1], h)
@@ -7026,7 +7014,7 @@ class TabButton(PlateButton):
 
         height += 16 * self.dpiscale  # Tab hilite
 
-        best = wx.Size(width, height)
+        best = wx.Size(int(width), int(height))
         self.CacheBestSize(best)
         return best
 

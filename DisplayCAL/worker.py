@@ -10957,7 +10957,7 @@ usage: spotread [-options] [logfile]
                         # Get inking rules from colprof extra args
                         extra_args = getcfg("extra_args.colprof")
                         inking = re.findall(
-                            r"-[Kk](?:[zhxr]|p[0-9\.\s]+)|" "-[Ll][0-9\.\s]+",
+                            r"-[Kk](?:[zhxr]|p[0-9.\s]+)|" "-[Ll][0-9.\s]+",
                             extra_args,
                         )
                         if inking:

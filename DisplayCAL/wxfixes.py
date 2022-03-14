@@ -818,7 +818,8 @@ wx.grid.Grid.GetSelection = GridGetSelection
 
 
 def adjust_font_size_for_gcdc(font):
-    font.SetPointSize(get_gcdc_font_size(font.PointSize))
+    size = get_gcdc_font_size(font.PointSize)
+    font.SetPointSize(int(size))
     return font
 
 
@@ -1456,7 +1457,7 @@ class PlateButton(platebtn.PlateButton):
         if self._menu is not None or self._style & platebtn.PB_STYLE_DROPARROW:
             width += 12 * self.dpiscale
 
-        best = wx.Size(width, height)
+        best = wx.Size(int(width), int(height))
         self.CacheBestSize(best)
         return best
 

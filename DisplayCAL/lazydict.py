@@ -181,7 +181,7 @@ class LazyDict(dict):
                 )
                 return
             try:
-                with codecs.open(path, "rU", self.encoding, self.errors) as f:
+                with codecs.open(path, "r", self.encoding, self.errors) as f:
                     self.parse(f)
             except EnvironmentError as exception:
                 if raise_exceptions:

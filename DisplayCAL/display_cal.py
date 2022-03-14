@@ -2100,11 +2100,11 @@ class MainFrame(ReportFrame, BaseFrame):
         hovercolor = btn._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
         btn.SetBitmapHover(geticon(16, "info" + hovercolor))
         btn.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "info")))
-        self.display_instrument_info_panel.Sizer.Add((0, 14 * scale))
+        self.display_instrument_info_panel.Sizer.Add((0, int(14 * scale)))
         self.display_instrument_info_panel.Sizer.Add(
-            btn, flag=wx.LEFT, border=(16 + 32 + 7) * scale
+            btn, flag=wx.LEFT, border=int((16 + 32 + 7) * scale)
         )
-        self.display_instrument_info_panel.Sizer.Add((0, 12 * scale))
+        self.display_instrument_info_panel.Sizer.Add((0, int(12 * scale)))
         self.display_tech_info_show_btn = btn
 
         # Button panel
@@ -2117,7 +2117,7 @@ class MainFrame(ReportFrame, BaseFrame):
             # sizer.Insert(sizer.GetItemIndex(self.buttonpanel), separator,
             # flag=wx.EXPAND)
             self.buttonpanelheader = BitmapBackgroundPanel(
-                self.panel, size=(-1, 15 * scale)
+                self.panel, size=(-1, int(15 * scale))
             )
             # bmp = getbitmap("theme/gradient", False)
             bmp = getbitmap("theme/shadow-bordertop", False)
