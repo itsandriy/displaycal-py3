@@ -551,7 +551,7 @@ class PolyLine(PolyPoints):
         style = self.attributes["style"]
         if not isinstance(colour, wx.Colour):
             colour = wx.NamedColour(colour)
-        pen = wx.Pen(colour, width, style)
+        pen = wx.Pen(colour, int(width), style)
         pen.SetCap(wx.CAP_BUTT)
         dc.SetPen(pen)
         if coord is None:
@@ -597,7 +597,7 @@ class PolySpline(PolyLine):
         style = self.attributes["style"]
         if not isinstance(colour, wx.Colour):
             colour = wx.NamedColour(colour)
-        pen = wx.Pen(colour, width, style)
+        pen = wx.Pen(colour, int(width), style)
         pen.SetCap(wx.CAP_ROUND)
         dc.SetPen(pen)
         if coord is None:
@@ -665,7 +665,7 @@ class PolyMarker(PolyPoints):
         if fillcolour and not isinstance(fillcolour, wx.Colour):
             fillcolour = wx.NamedColour(fillcolour)
 
-        dc.SetPen(wx.Pen(colour, width))
+        dc.SetPen(wx.Pen(colour, int(width)))
         if fillcolour:
             dc.SetBrush(wx.Brush(fillcolour, fillstyle))
         else:
@@ -977,7 +977,7 @@ class PlotCanvas(wx.Panel):
         self._gridColour = wx.NamedColour("black")
 
         # Default Pens
-        self._tickPen = wx.Pen(wx.BLACK, self._pointSize[0])
+        self._tickPen = wx.Pen(wx.BLACK, int(self._pointSize[0]))
         self._tickLength = tuple(-x * 2 for x in self._pointSize)
 
     def SetCursor(self, cursor):
@@ -1745,7 +1745,7 @@ class PlotCanvas(wx.Panel):
                 - titleWH[0] / 2.0,
                 self.plotbox_origin[1] - self.plotbox_size[1],
             )
-            dc.DrawText(graphics.getTitle(), titlePos[0], titlePos[1])
+            dc.DrawText(graphics.getTitle(), int(titlePos[0]), int(titlePos[1]))
 
         # draw label text
         self._drawAxesLabels(
@@ -1783,10 +1783,10 @@ class PlotCanvas(wx.Panel):
         ptx, pty, rectWidth, rectHeight = self._point2ClientCoord(p1, p2)
         # allow graph to overlap axis lines by adding units to width and height
         dc.SetClippingRegion(
-            ptx * self._pointSize[0],
-            pty * self._pointSize[1],
-            rectWidth * self._pointSize[0] + 2,
-            rectHeight * self._pointSize[1] + 1,
+            int(ptx * self._pointSize[0]),
+            int(pty * self._pointSize[1]),
+            int(rectWidth * self._pointSize[0] + 2),
+            int(rectHeight * self._pointSize[1] + 1),
         )
         # Draw extras
         self._drawExtras(dc, p1, p2, scale, shift)
@@ -2172,7 +2172,7 @@ class PlotCanvas(wx.Panel):
                 trhc[0] + legendLHS + legendSymExt[0] + 5 * self._pointSize[0],
                 trhc[1] + s + lineHeight / 2.0 - legendTextExt[1] / 2,
             )
-            dc.DrawText(legend, pnt[0], pnt[1])
+            dc.DrawText(legend, int(pnt[0]), int(pnt[1]))
         dc.SetFont(self._getFont(self._fontSizeAxis))  # reset
 
     def _titleLablesWH(self, dc, graphics):
@@ -2302,7 +2302,7 @@ class PlotCanvas(wx.Panel):
         penWidth = (
             self.printerScale * self._pointSize[0]
         )  # increases thickness for printing only
-        dc.SetPen(wx.Pen(self._gridColour, penWidth))
+        dc.SetPen(wx.Pen(self._gridColour, int(penWidth)))
 
         # set length of tick marks--long ones make grid
         if self._gridEnabled:
@@ -2343,18 +2343,18 @@ class PlotCanvas(wx.Panel):
                     w = dc.GetTextExtent(label)[0]
                     pt = scale * _Numeric.array([x, y]) + shift
                     dc.DrawLine(
-                        pt[0], pt[1], pt[0], pt[1] + d
+                        int(pt[0]), int(pt[1]), int(pt[0]), int(pt[1] + d)
                     )  # draws tick mark d units
                     if text:
                         dc.DrawText(
                             label,
-                            pt[0] - w / 2.0,
-                            pt[1] + 2 * self._pointSize[1] - xoffset,
+                            int(pt[0] - w / 2.0),
+                            int(pt[1] + 2 * self._pointSize[1] - xoffset),
                         )
                 a1 = scale * _Numeric.array([lower, y]) + shift
                 a2 = scale * _Numeric.array([upper, y]) + shift
                 dc.DrawLine(
-                    a1[0], a1[1], a2[0], a2[1]
+                    int(a1[0]), int(a1[1]), int(a2[0]), int(a2[1])
                 )  # draws upper and lower axis line
                 text = 0  # axis values not drawn on top side
 
@@ -2366,16 +2366,16 @@ class PlotCanvas(wx.Panel):
                 for y, label in yticks:
                     w = dc.GetTextExtent(label)[0]
                     pt = scale * _Numeric.array([x, y]) + shift
-                    dc.DrawLine(pt[0], pt[1], pt[0] - d, pt[1])
+                    dc.DrawLine(int(pt[0]), int(pt[1]), int(pt[0] - d), int(pt[1]))
                     if text:
                         dc.DrawText(
                             label,
-                            pt[0] - w - 3 * self._pointSize[0] + yoffset,
-                            pt[1] - 0.5 * h,
+                            int(pt[0] - w - 3 * self._pointSize[0] + yoffset),
+                            int(pt[1] - 0.5 * h),
                         )
                 a1 = scale * _Numeric.array([x, lower]) + shift
                 a2 = scale * _Numeric.array([x, upper]) + shift
-                dc.DrawLine(a1[0], a1[1], a2[0], a2[1])
+                dc.DrawLine(int(a1[0]), int(a1[1]), int(a2[0]), int(a2[1]))
                 text = 0  # axis values not drawn on right side
 
     @TempStyle("pen")
@@ -2422,13 +2422,13 @@ class PlotCanvas(wx.Panel):
                 lines = []
                 for x, _label in xticks:
                     pt = scale_and_shift_point(x, p1[1], scale, shift)
-                    lines.append((pt[0], pt[1], pt[0], pt[1] - xTickLength))
+                    lines.append((int(pt[0]), int(pt[1]), int(pt[0]), int(pt[1] - xTickLength)))
                 dc.DrawLineList(lines)
             if ticks.top:
                 lines = []
                 for x, _label in xticks:
                     pt = scale_and_shift_point(x, p2[1], scale, shift)
-                    lines.append((pt[0], pt[1], pt[0], pt[1] + xTickLength))
+                    lines.append((int(pt[0]), int(pt[1]), int(pt[0]), int(pt[1] + xTickLength)))
                 dc.DrawLineList(lines)
 
         if self.ySpec != "none":
@@ -2442,7 +2442,7 @@ class PlotCanvas(wx.Panel):
                 lines = []
                 for y, _label in yticks:
                     pt = scale_and_shift_point(p2[0], y, scale, shift)
-                    lines.append((pt[0], pt[1], pt[0] - yTickLength, pt[1]))
+                    lines.append((int(pt[0]), int(pt[1]), int(pt[0] - yTickLength), int(pt[1])))
                 dc.DrawLineList(lines)
 
     def _drawExtras(self, dc, p1, p2, scale, shift):
@@ -2454,11 +2454,11 @@ class PlotCanvas(wx.Panel):
             x, y = x * self._pointSize[0], y * self._pointSize[1]
             if self._centerLinesEnabled in ("Horizontal", True):
                 dc.DrawLine(
-                    scale[0] * p1[0] + shift[0], y, scale[0] * p2[0] + shift[0], y
+                    int(scale[0] * p1[0] + shift[0]), int(y), int(scale[0] * p2[0] + shift[0]), int(y)
                 )
             if self._centerLinesEnabled in ("Vertical", True):
                 dc.DrawLine(
-                    x, scale[1] * p1[1] + shift[1], x, scale[1] * p2[1] + shift[1]
+                    int(x), int(scale[1] * p1[1] + shift[1]), int(x), int(scale[1] * p2[1] + shift[1])
                 )
 
         if self._diagonalsEnabled:
@@ -2467,9 +2467,9 @@ class PlotCanvas(wx.Panel):
             x2, y2 = self.PositionUserToScreen(b2)
             x2, y2 = x2 * self._pointSize[0], y2 * self._pointSize[1]
             if self._diagonalsEnabled in ("Bottomleft-Topright", True):
-                dc.DrawLine(x1, y1, x2, y2)
+                dc.DrawLine(int(x1), int(y1), int(x2), int(y2))
             if self._diagonalsEnabled in ("Bottomright-Topleft", True):
-                dc.DrawLine(x1, y2, x2, y1)
+                dc.DrawLine(int(x1), int(y2), int(x2), int(y1))
 
     def _drawAxesLabels(
         self, dc, graphics, lhsW, rhsW, bottomH, topH, xLabelWH, yLabelWH
@@ -2494,7 +2494,7 @@ class PlotCanvas(wx.Panel):
             - xLabelWH[0] / 2.0,
             self.plotbox_origin[1] - xLabelWH[1] - yTickLength,
         )
-        dc.DrawText(graphics.xLabel, xLabelPos[0], xLabelPos[1])
+        dc.DrawText(graphics.xLabel, int(xLabelPos[0]), int(xLabelPos[1]))
         yLabelPos = (
             self.plotbox_origin[0] - 1 * self._pointSize[0] + xTickLength,
             self.plotbox_origin[1]
@@ -2503,7 +2503,9 @@ class PlotCanvas(wx.Panel):
             + yLabelWH[0] / 2.0,
         )
         if graphics.yLabel:  # bug fix for Linux
-            dc.DrawRotatedText(graphics.yLabel, yLabelPos[0], yLabelPos[1], 90)
+            dc.DrawRotatedText(
+                graphics.yLabel, int(yLabelPos[0]), int(yLabelPos[1]), 90
+            )
 
     def _xticks(self, *args):
         if self._logscale[0]:
@@ -3068,7 +3070,7 @@ class TestFrame(wx.Frame):
         legend = mDataDict["legend"]
         # make a string to display
         s = "Crv# %i, '%s', Pt. (%.2f,%.2f), PtInd %i" % (cNum, legend, px, py, pntIn)
-        dc.DrawText(s, sx, sy + 1)
+        dc.DrawText(s, int(sx), int(sy + 1))
         # -----------
 
     def OnMouseLeftDown(self, event):

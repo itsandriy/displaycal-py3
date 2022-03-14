@@ -850,7 +850,7 @@ def get_dc_font_scale(dc):
 
 def get_dc_font_size(size, dc):
     """Get correct font size for DC"""
-    return size * get_dc_font_scale(dc)
+    return int(size * get_dc_font_scale(dc))
 
 
 def get_gcdc_font_size(size):
@@ -1264,7 +1264,9 @@ class GenBitmapButton(GenButton, _GenBitmapButton):
             bmp = self.BitmapFocus
         bw, bh = bmp.GetWidth(), bmp.GetHeight()
         hasMask = bmp.GetMask() is not None
-        dc.DrawBitmap(bmp, (width - bw) / 2 + dx, (height - bh) / 2 + dy, hasMask)
+        dc.DrawBitmap(
+            bmp, int((width - bw) / 2 + dx), int((height - bh) / 2 + dy), hasMask
+        )
 
     def GetBitmapHover(self):
         return self.bmpHover
@@ -1499,7 +1501,7 @@ class PlateButton(platebtn.PlateButton):
         if bmp is not None and bmp.IsOk():
             bw, bh = bmp.GetSize()
             ypos = (self.GetSize()[1] - bh) // 2
-            gc.DrawBitmap(bmp, xpos, ypos, bmp.GetMask() is not None)
+            gc.DrawBitmap(bmp, int(xpos), int(ypos), bmp.GetMask() is not None)
             return bw + xpos
         else:
             return xpos
@@ -1579,8 +1581,8 @@ class PlateButton(platebtn.PlateButton):
         if self._state["cur"] != platebtn.PLATE_PRESSED or not self.IsEnabled():
             txt_x = self.__DrawBitmap(gc, interactable)
             t_x = max((width - tw - (txt_x + space)) // 2, txt_x + space)
-            gc.DrawText(self.Label, t_x, txt_y)
-            self.__DrawDropArrow(gc, width - 10, (height // 2) - 2)
+            gc.DrawText(self.Label, int(t_x), int(txt_y))
+            self.__DrawDropArrow(gc, int(width - 10), int((height // 2) - 2))
 
     def __LeaveWindow(self):
         """Handle updating the buttons state when the mouse cursor leaves"""

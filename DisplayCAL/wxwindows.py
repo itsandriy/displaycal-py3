@@ -1075,7 +1075,7 @@ class BaseFrame(wx.Frame):
                 while "\n" in buffer and self and getattr(self, "listening", False):
                     end = buffer.find("\n")
                     line = buffer[:end].strip()
-                    buffer = buffer[end + 1:]
+                    buffer = buffer[end + 1 :]
                     if line:
                         command_timestamp = datetime.now().strftime(
                             "%Y-%m-%dTH:%M:%S.%f"
@@ -2171,7 +2171,7 @@ class BaseFrame(wx.Frame):
                 menubar.SetMenuLabel(
                     menu_pos,
                     "&" + lang.getstr(GTKMenuItemGetFixedLabel(self._menulabels[menu])),
-                    )
+                )
                 self.setup_menu_language(menu)
             if sys.platform == "darwin":
                 wx.GetApp().SetMacHelpMenuTitleName(lang.getstr("menu.help"))
@@ -2249,8 +2249,7 @@ class BaseFrame(wx.Frame):
                 localized_label = lang.getstr(label)
                 if item.Accel:
                     localized_label_text_with_accel = "{}\t{}".format(
-                        localized_label,
-                        item.Accel.ToString()
+                        localized_label, item.Accel.ToString()
                     )
                     # item.Text = localized_label_text_with_accel
                     item.SetItemLabel(localized_label_text_with_accel)
@@ -2419,7 +2418,10 @@ class BaseFrame(wx.Frame):
                 elif isinstance(child, wx.ComboBox) and "gtk3" in wx.PlatformInfo:
                     # ComboBox is not wide enough to accomodate its text
                     # box under GTK3
-                    child.MinSize = max(child.MinSize[0], int(170 * scale)), child.MinSize[1]
+                    child.MinSize = (
+                        max(child.MinSize[0], int(170 * scale)),
+                        child.MinSize[1],
+                    )
                 child.SetMaxFontSize(11)
                 if sys.platform == "darwin":
                     # Work around ComboBox issues on Mac OS X
@@ -3077,7 +3079,7 @@ class BitmapBackgroundPanelText(BitmapBackgroundPanel):
                     int(round(bgblend * bgcolor.Blue() + blend * color.Blue())),
                 )
             dc.SetTextForeground(color)
-            dc.DrawText(line, x, y)
+            dc.DrawText(line, int(x), int(y))
 
 
 class ConfirmDialog(BaseInteractiveDialog):
@@ -3809,7 +3811,7 @@ class BorderGradientButton(GradientButton):
         x, y, width, height = clientRect
 
         gradientRect.SetHeight(
-            gradientRect.GetHeight() / 2 + ((capture == self and [1] or [0])[0])
+            int(gradientRect.GetHeight() / 2 + ((capture == self and [1] or [0])[0]))
         )
 
         fgcolor = self.ForegroundColour
@@ -5742,7 +5744,7 @@ class LogWindow(InvincibleFrame):
                 wx.FONTFAMILY_TELETYPE,
                 wx.FONTSTYLE_NORMAL,
                 wx.FONTWEIGHT_NORMAL,
-                **{kwarg: "Consolas"}
+                **{kwarg: "Consolas"},
             )
         elif sys.platform == "darwin":
             font = wx.Font(
@@ -5750,7 +5752,7 @@ class LogWindow(InvincibleFrame):
                 wx.FONTFAMILY_TELETYPE,
                 wx.FONTSTYLE_NORMAL,
                 wx.FONTWEIGHT_NORMAL,
-                **{kwarg: "Monaco"}
+                **{kwarg: "Monaco"},
             )
         else:
             font = wx.Font(
@@ -5830,7 +5832,7 @@ class LogWindow(InvincibleFrame):
                 line = line.replace("\u2500", "-")
             tsmatch = re.match(self._tspattern, line)
             if tsmatch:
-                line = line[len(tsmatch.group()):]
+                line = line[len(tsmatch.group()) :]
                 ts = tsmatch.group(1)
             elif line[:15] == self._linecontinuation:
                 ts = line[:13]
@@ -6841,7 +6843,7 @@ class SimpleTerminal(InvincibleFrame):
                 wx.FONTFAMILY_TELETYPE,
                 wx.FONTSTYLE_NORMAL,
                 wx.FONTWEIGHT_NORMAL,
-                **{kwarg: "Consolas"}
+                **{kwarg: "Consolas"},
             )
         elif sys.platform == "darwin":
             font = wx.Font(
@@ -6849,7 +6851,7 @@ class SimpleTerminal(InvincibleFrame):
                 wx.FONTFAMILY_TELETYPE,
                 wx.FONTSTYLE_NORMAL,
                 wx.FONTWEIGHT_NORMAL,
-                **{kwarg: "Monaco"}
+                **{kwarg: "Monaco"},
             )
         else:
             font = wx.Font(
@@ -7145,7 +7147,9 @@ class TabButton(PlateButton):
             gc.SetBrush(wx.Brush(color))
 
         # gc.DrawRoundedRectangle(1, 1, width - 2, height - 2, rad)
-        gc.DrawRectangle(0, height + 10 * self.dpiscale, width, 8 * self.dpiscale)
+        gc.DrawRectangle(
+            0, int(height + 10 * self.dpiscale), int(width), int(8 * self.dpiscale)
+        )
         return True
 
     def __DrawButton(self):
@@ -7183,7 +7187,7 @@ class TabButton(PlateButton):
         if wx.Platform in ["__WXGTK__", "__WXMSW__"]:
             gc.SetBrush(self.GetBackgroundBrush(gc))
             gc.SetPen(wx.TRANSPARENT_PEN)
-            gc.DrawRectangle(0, 0, width, height)
+            gc.DrawRectangle(0, 0, int(width), int(height))
 
         gc.SetBrush(wx.TRANSPARENT_BRUSH)
 
@@ -7192,7 +7196,7 @@ class TabButton(PlateButton):
             or self._pressed
             or self.HasFocus()
         ) and self.IsEnabled():
-            hl = self.__DrawHighlight(gc, width, height)
+            hl = self.__DrawHighlight(gc, int(width), int(height))
         else:
             hl = False
 
@@ -7211,7 +7215,7 @@ class TabButton(PlateButton):
         t_x = max(
             (width - tw - (txt_x + 8 * self.dpiscale)) // 2, txt_x + 8 * self.dpiscale
         )
-        gc.DrawText(self.Label, t_x, txt_y)
+        gc.DrawText(self.Label, int(t_x), int(txt_y))
         # self.__DrawDropArrow(gc, width - 10, (height // 2) - 2)
 
 
@@ -7418,7 +7422,7 @@ class TooltipWindow(InvincibleFrame):
                 # Use as header
                 header = wx.StaticText(self.panel, -1, "\n".join(msg[: i + 1]))
                 self.sizer2.Add(header, flag=wx.LEFT, border=margin)
-                msg = msg[i + 1:]
+                msg = msg[i + 1 :]
                 break
         self.sizer3 = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer2.Add(self.sizer3, flag=wx.EXPAND)
@@ -7555,8 +7559,7 @@ class TwoWaySplitter(FourWaySplitter):
         sashwidth, sashheight = self._sashbitmap.GetSize()
 
         dc.DrawRectangle(splitx, 0, sashwidth, height)
-
-        dc.DrawBitmap(self._sashbitmap, splitx, height / 2 - sashheight / 2, True)
+        dc.DrawBitmap(self._sashbitmap, int(splitx), int(height / 2 - sashheight / 2), True)
 
     def GetExpandedSize(self):
         return self._expandedsize
