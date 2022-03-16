@@ -9,19 +9,20 @@ from DisplayCAL.util_dbus import DBusObject, DBusException, BUSTYPE_SESSION
 from DisplayCAL.util_x import get_display as _get_x_display
 
 if sys.platform == "darwin":
-    # Mac OS X has universal binaries in two flavors:
+    # Mac OS X has universal binaries in three flavors:
     # - i386 & PPC
     # - i386 & x86_64
+    # - i386 & ARM
     if platform.architecture()[0].startswith("64"):
+        # TODO: Intel vs ARM (Apple Silicon) distinction
         from DisplayCAL.lib64.RealDisplaySizeMM import *
     else:
         from DisplayCAL.lib32.RealDisplaySizeMM import *
 else:
-    # Linux and Windows have separate files
+    # elif sys.platform == "win32":
+    # Windows have separate files
     if platform.architecture()[0].startswith("64"):
-        if sys.version_info[:2] == (3, 6):
-            from DisplayCAL.lib64.python36.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 7):
+        if sys.version_info[:2] == (3, 7):
             from DisplayCAL.lib64.python37.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 8):
             from DisplayCAL.lib64.python38.RealDisplaySizeMM import *
@@ -30,9 +31,7 @@ else:
         elif sys.version_info[:2] == (3, 10):
             from DisplayCAL.lib64.python310.RealDisplaySizeMM import *
     else:
-        if sys.version_info[:2] == (3, 6):
-            from DisplayCAL.lib32.python36.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 7):
+        if sys.version_info[:2] == (3, 7):
             from DisplayCAL.lib32.python37.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 8):
             from DisplayCAL.lib32.python38.RealDisplaySizeMM import *
@@ -40,6 +39,11 @@ else:
             from DisplayCAL.lib32.python39.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 10):
             from DisplayCAL.lib32.python310.RealDisplaySizeMM import *
+# else:
+#     # For Linux use the ``xrandr`` command output which supplies everything more
+#     # precisely than the C-Extension
+#     pass
+
 
 _displays = None
 
@@ -49,6 +53,14 @@ _enumerate_displays = enumerate_displays
 
 
 def GetXRandROutputXID(display_no=0):
+    """Return the XRandR output X11 ID of a given display.
+
+    Args:
+        display_no (int): Display number.
+
+    Returns:
+        dict:
+    """
     display = get_display(display_no)
     if display:
         return display.get("output", 0)
@@ -56,6 +68,14 @@ def GetXRandROutputXID(display_no=0):
 
 
 def RealDisplaySizeMM(display_no=0):
+    """Return the size (in mm) of a given display.
+
+    Args:
+        display_no (int): Display number.
+
+    Returns:
+        (int, int): The display size in mm.
+    """
     display = get_display(display_no)
     if display:
         return display.get("size_mm", (0, 0))
@@ -63,13 +83,14 @@ def RealDisplaySizeMM(display_no=0):
 
 
 def enumerate_displays():
+    """Enumerate and return a list of displays."""
     global _displays
     _displays = _enumerate_displays()
     for display in _displays:
         desc = display.get("description")
         if desc:
             match = re.findall(
-                r"(.+?),? at (-?\d+), (-?\d+), width (\d+), height (\d+)", desc
+                rb"(.+?),? at (-?\d+), (-?\d+), width (\d+), height (\d+)", desc
             )
             if len(match):
                 if sys.platform not in ("darwin", "win32"):
@@ -83,10 +104,10 @@ def enumerate_displays():
                         if wayland_display:
                             display.update(wayland_display)
                     else:
-                        xrandr_name = re.search(r", Output (.+)", match[0][0])
+                        xrandr_name = re.search(rb", Output (.+)", match[0][0])
                         if xrandr_name:
                             display["xrandr_name"] = xrandr_name.group(1)
-                desc = "%s @ %s, %s, %sx%s" % match[0]
+                desc = b"%s @ %s, %s, %sx%s" % match[0]
                 display["description"] = desc
     return _displays
 
@@ -110,8 +131,8 @@ def get_display(display_no=0):
         for display in _displays:
             desc = display.get("description")
             if desc:
-                geometry = "".join(desc.split("@ ")[-1:])
-                if argyll_display.endswith("@ " + geometry):
+                geometry = b"".join(desc.split(b"@ ")[-1:])
+                if argyll_display.endswith((b"@ " + geometry).decode("utf-8")):
                     return display
 
 

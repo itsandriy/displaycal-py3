@@ -61,13 +61,13 @@
 
 #if PY_MAJOR_VERSION >= 3
   #define IS_PY3K
-  #define PyBaseString_Type            PyUnicode_Type
-  #define PyStringObject               PyUnicodeObject
-  #define PyString_Type                PyUnicode_Type
-  #define PyString_Check               PyUnicode_Check
-  #define PyString_CheckExact          PyUnicode_CheckExact
-  #define PyString_FromString          PyUnicode_FromString
-  #define PyString_FromStringAndSize   PyUnicode_FromStringAndSize
+  #define PyBaseString_Type            PyBytes_Type
+  #define PyStringObject               PyBytesObject
+  #define PyString_Type                PyBytes_Type
+  #define PyString_Check               PyBytes_Check
+  #define PyString_CheckExact          PyBytes_CheckExact
+  #define PyString_FromString          PyBytes_FromString
+  #define PyString_FromStringAndSize   PyBytes_FromStringAndSize
 #endif
 
 
@@ -112,7 +112,7 @@ void free_disppaths(disppath **paths);
 /* Display enumeration code */
 /* ===================================================================== */
 
-int callback_ddebug = 0;	/* Diagnostic global for get_displays() and get_a_display() */  
+int callback_ddebug = 0;	/* Diagnostic global for get_displays() and get_a_display() */
                             /* and events */
 
 #ifdef NT
@@ -459,7 +459,7 @@ disppath **get_displays() {
                     if (CFStringGetCString(values[j], vbuf, 50, kCFStringEncodingMacRoman))
                         v = vbuf;
                 }
-                /* We're only grabing the english description... */
+                /* We're only grabbing the english description... */
                 if (k != NULL && v != NULL && strcmp(k, "en_US") == 0) {
                     strncpy(desc, v, 49);
                     desc[49] = '\000';
@@ -1328,6 +1328,7 @@ static PyObject * enumerate_displays(PyObject *self, PyObject *args)
             PyDict_SetItemString(d, "size", value);
 
             size = get_real_screen_size_mm_disp(dp[i]);
+            // TODO: The ``value`` doesn't match realworld!!!
             value = Py_BuildValue("(i,i)", size.width_mm, size.height_mm);
             PyDict_SetItemString(d, "size_mm", value);
 
@@ -1360,9 +1361,7 @@ static PyObject * enumerate_displays(PyObject *self, PyObject *args)
             PyDict_SetItemString(d, "icc_profile_atom_id", value);
 
             if (dp[i]->edid_len > 0 && dp[i]->edid != NULL &&
-//              (value = PyString_FromStringAndSize(dp[i]->edid, dp[i]->edid_len)) != NULL) {
-// TODO: The line above was causing Unicode errors, replaced with the line below, but we may lost some functionality, this needs to be checked properly.
-                (value = PyString_FromString(dp[i]->edid)) != NULL) {
+              (value = PyString_FromStringAndSize(dp[i]->edid, dp[i]->edid_len)) != NULL) {
                 PyDict_SetItemString(d, "edid", value);
             }
 #if RANDR_MAJOR == 1 && RANDR_MINOR >= 2
