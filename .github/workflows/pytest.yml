@@ -38,12 +38,10 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
 
-    # Disabled temporarily for debugging reasons
-    #- name: Compile C-Extensions
-    #  run: |
-    #    sudo chmod a+rw /etc/udev/rules.d
-    #    python3 setup.py install
-    #    cp ./build/lib.linux-x86_64-3.8/DisplayCAL/lib64/python38/RealDisplaySizeMM.cpython-38-x86_64-linux-gnu.so ./DisplayCAL/lib64/python38/
+    - name: Compile C-Extensions
+      run: |
+        sudo chmod a+rw /etc/udev/rules.d
+        python3 setup.py install
 
     - name: Test with pytest
       run: |
