@@ -228,7 +228,7 @@ def parse_manufacturer_id(block):
     The range is always ASCII charcode 64 to 95.
 
     """
-    h = combine_hi_8lo(ord(block[0]), ord(block[1]))
+    h = combine_hi_8lo(block[0], block[1])
     manufacturer_id = []
     for shift in (10, 5, 0):
         manufacturer_id.append(chr(((h >> shift) & 0x1F) + ord("A") - 1))
@@ -345,46 +345,46 @@ def parse_edid(edid):
 
     product_id = struct.unpack("<H", edid[PRODUCT_ID[0]: PRODUCT_ID[1]])[0]
     serial_32 = struct.unpack("<I", edid[SERIAL_32[0]: SERIAL_32[1]])[0]
-    week_of_manufacture = ord(edid[WEEK_OF_MANUFACTURE])
-    year_of_manufacture = ord(edid[YEAR_OF_MANUFACTURE]) + 1990
-    edid_version = ord(edid[EDID_VERSION])
-    edid_revision = ord(edid[EDID_REVISION])
+    week_of_manufacture = edid[WEEK_OF_MANUFACTURE]
+    year_of_manufacture = edid[YEAR_OF_MANUFACTURE] + 1990
+    edid_version = edid[EDID_VERSION]
+    edid_revision = edid[EDID_REVISION]
 
-    max_h_size_cm = ord(edid[MAX_H_SIZE_CM])
-    max_v_size_cm = ord(edid[MAX_V_SIZE_CM])
+    max_h_size_cm = edid[MAX_H_SIZE_CM]
+    max_v_size_cm = edid[MAX_V_SIZE_CM]
     if edid[GAMMA] != "\xff":
-        gamma = ord(edid[GAMMA]) / 100.0 + 1
-    features = ord(edid[FEATURES])
+        gamma = edid[GAMMA] / 100.0 + 1
+    features = edid[FEATURES]
 
     red_x = edid_decode_fraction(
-        ord(edid[HI_R_X]), edid_get_bits(ord(edid[LO_RG_XY]), 6, 7)
+        edid[HI_R_X], edid_get_bits(edid[LO_RG_XY], 6, 7)
     )
     red_y = edid_decode_fraction(
-        ord(edid[HI_R_Y]), edid_get_bits(ord(edid[LO_RG_XY]), 4, 5)
+        edid[HI_R_Y], edid_get_bits(edid[LO_RG_XY], 4, 5)
     )
 
     green_x = edid_decode_fraction(
-        ord(edid[HI_G_X]), edid_get_bits(ord(edid[LO_RG_XY]), 2, 3)
+        edid[HI_G_X], edid_get_bits(edid[LO_RG_XY], 2, 3)
     )
     green_y = edid_decode_fraction(
-        ord(edid[HI_G_Y]), edid_get_bits(ord(edid[LO_RG_XY]), 0, 1)
+        edid[HI_G_Y], edid_get_bits(edid[LO_RG_XY], 0, 1)
     )
 
     blue_x = edid_decode_fraction(
-        ord(edid[HI_B_X]), edid_get_bits(ord(edid[LO_BW_XY]), 6, 7)
+        edid[HI_B_X], edid_get_bits(edid[LO_BW_XY], 6, 7)
     )
     blue_y = edid_decode_fraction(
-        ord(edid[HI_B_Y]), edid_get_bits(ord(edid[LO_BW_XY]), 4, 5)
+        edid[HI_B_Y], edid_get_bits(edid[LO_BW_XY], 4, 5)
     )
 
     white_x = edid_decode_fraction(
-        ord(edid[HI_W_X]), edid_get_bits(ord(edid[LO_BW_XY]), 2, 3)
+        edid[HI_W_X], edid_get_bits(edid[LO_BW_XY], 2, 3)
     )
     white_y = edid_decode_fraction(
-        ord(edid[HI_W_Y]), edid_get_bits(ord(edid[LO_BW_XY]), 0, 1)
+        edid[HI_W_Y], edid_get_bits(edid[LO_BW_XY], 0, 1)
     )
 
-    result = locals()
+    result = locals()  # this could not be good
     if not manufacturer:
         del result["manufacturer"]
 
@@ -410,22 +410,22 @@ def parse_edid(edid):
                 # 2nd white point index in range 1...255
                 # 3rd white point index in range 2...255
                 # 0 = do not use
-                if ord(block[i]) > i / 5:
+                if block[i] > i / 5:
                     white_x = edid_decode_fraction(
-                        ord(edid[i + 2]), edid_get_bits(ord(edid[i + 1]), 2, 3)
+                        edid[i + 2], edid_get_bits(edid[i + 1], 2, 3)
                     )
-                    result["white_x_" + str(ord(block[i]))] = white_x
+                    result["white_x_" + str(block[i])] = white_x
                     if not result.get("white_x"):
                         result["white_x"] = white_x
                     white_y = edid_decode_fraction(
-                        ord(edid[i + 3]), edid_get_bits(ord(edid[i + 1]), 0, 1)
+                        edid[i + 3], edid_get_bits(edid[i + 1], 0, 1)
                     )
-                    result["white_y_" + str(ord(block[i]))] = white_y
+                    result["white_y_" + str(block[i])] = white_y
                     if not result.get("white_y"):
                         result["white_y"] = white_y
                     if block[i + 4] != "\xff":
-                        gamma = ord(block[i + 4]) / 100.0 + 1
-                        result["gamma_" + str(ord(block[i]))] = gamma
+                        gamma = block[i + 4] / 100.0 + 1
+                        result["gamma_" + str(block[i])] = gamma
                         if not result.get("gamma"):
                             result["gamma"] = gamma
         elif block[BLOCK_TYPE] == BLOCK_TYPE_COLOR_MANAGEMENT_DATA:
@@ -434,9 +434,9 @@ def parse_edid(edid):
                 BLOCK_CONTENTS[0]: BLOCK_CONTENTS[1]
             ]
 
-    result["ext_flag"] = ord(edid[EXTENSION_FLAG])
-    result["checksum"] = ord(edid[CHECKSUM])
-    result["checksum_valid"] = sum(ord(char) for char in edid) % 256 == 0
+    result["ext_flag"] = edid[EXTENSION_FLAG]
+    result["checksum"] = edid[CHECKSUM]
+    result["checksum_valid"] = sum(char for char in edid) % 256 == 0
 
     if len(edid) > 128 and result["ext_flag"] > 0:
         # Parse extension blocks
