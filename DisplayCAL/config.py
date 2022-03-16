@@ -57,10 +57,6 @@ from DisplayCAL.util_str import create_replace_function, strtr
 from DisplayCAL import colormath, encodedstdio
 
 
-# Runtime configuration
-# if ascii:
-#     enc = "ASCII"
-
 exe = sys.executable
 exedir = os.path.dirname(exe)
 exename = os.path.basename(exe)
@@ -90,7 +86,10 @@ else:
     pyname, pyext = os.path.splitext(os.path.basename(pypath))
     pydir = os.path.dirname(exe if isexe else os.path.abspath(__file__))
 
-data_dirs = [pydir]
+data_dirs = [
+    pydir,
+    os.path.join(os.path.dirname(pydir), 'share', 'DisplayCAL'),
+]
 extra_data_dirs = []
 # Search directories on PATH for data directories so Argyll reference files
 # can be found automatically if Argyll directory not explicitly configured
