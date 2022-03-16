@@ -8,7 +8,8 @@ DisplayCAL for all these years. But, it seems that, during the pandemic, very
 understandably, he lost his passion to the project. Now, it is time for us, the
 DisplayCAL users, to contribute back to this great tool.
 
-This project is based on the ``3.8.9.3`` version of DisplayCAL.
+This project is based on the ``HEAD`` of the Sourceforge version, which has 5 extra
+commits that Florian has created after the ``3.8.9.3`` release on 14 Jan 2020.
 
 Status Update (10 March 2022)
 -----------------------------
