@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #from DisplayCAL import config
-#from DisplayCAL import RealDisplaySizeMM
+from DisplayCAL import RealDisplaySizeMM
 
 # todo: temporarily disabled because test tries to access temporary directory
 #  which is no longer present (or never created) with github actions
@@ -19,33 +19,36 @@
 #     config.initcfg()
 #     result = RealDisplaySizeMM.GetXRandROutputXID(0)
 #     assert result != 0
-#
-#
-# def test_enumerate_displays():
-#     """Test DisplayCAL.RealDisplaySizeMM.enumerate_displays() function."""
-#     RealDisplaySizeMM._displays = None
-#     assert RealDisplaySizeMM._displays is None
-#     result = RealDisplaySizeMM.enumerate_displays()
-#     assert result[0]['description'] != ''
-#     assert result[0]['edid'] != ''
-#     assert result[0]['icc_profile_atom_id'] != ''
-#     assert result[0]['icc_profile_output_atom_id'] != ''
-#     assert result[0]['name'] != ''
-#     assert result[0]['output'] != ''
-#     assert result[0]['pos'] != ''
-#     assert result[0]['ramdac_screen'] != ''
-#     assert result[0]['screen'] != ''
-#     assert result[0]['size'] != ''
-#     assert isinstance(result[0]['size'][0], int)
-#     assert isinstance(result[0]['size'][1], int)
-#     assert result[0]['size_mm'] != ''
-#     assert isinstance(result[0]['size_mm'][0], int)
-#     assert isinstance(result[0]['size_mm'][1], int)
-#     assert result[0]['x11_screen'] != ''
-#     assert result[0]['xrandr_name'] != ''
-#     assert RealDisplaySizeMM._displays is not None
-#
-#
+
+
+# todo: edid can not be collected from xvfb, no physical display available
+def test_enumerate_displays():
+    """Test DisplayCAL.RealDisplaySizeMM.enumerate_displays() function."""
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
+    result = RealDisplaySizeMM.enumerate_displays()
+    assert result[0]['description'] != ''
+    #assert result[0]['edid'] != ''
+    assert result[0]['icc_profile_atom_id'] != ''
+    assert result[0]['icc_profile_output_atom_id'] != ''
+    assert result[0]['name'] != ''
+    assert result[0]['output'] != ''
+    assert result[0]['pos'] != ''
+    assert result[0]['ramdac_screen'] != ''
+    assert result[0]['screen'] != ''
+    assert result[0]['size'] != ''
+    assert isinstance(result[0]['size'][0], int)
+    assert isinstance(result[0]['size'][1], int)
+    assert result[0]['size_mm'] != ''
+    assert isinstance(result[0]['size_mm'][0], int)
+    assert isinstance(result[0]['size_mm'][1], int)
+    assert result[0]['x11_screen'] != ''
+    #assert result[0]['xrandr_name'] != ''
+    assert RealDisplaySizeMM._displays is not None
+
+
+# todo: temporarily disabled because test tries to access temporary directory
+#  which is no longer present (or never created) with github actions
 # def test_get_display():
 #     """Test DisplayCAL.RealDisplaySizeMM.get_display() function."""
 #     config.initcfg()
