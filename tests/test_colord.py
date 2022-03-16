@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from DisplayCAL.edid import get_edid
+#from DisplayCAL.edid import get_edid
 
 
 # todo: temporarily disabled because test tries to access temporary directory

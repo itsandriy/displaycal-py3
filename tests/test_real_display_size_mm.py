@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from DisplayCAL import config
-from DisplayCAL import RealDisplaySizeMM
+#from DisplayCAL import config
+#from DisplayCAL import RealDisplaySizeMM
 
 # todo: temporarily disabled because test tries to access temporary directory
 #  which is no longer present (or never created) with github actions
