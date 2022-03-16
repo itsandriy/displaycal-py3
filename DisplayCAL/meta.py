@@ -18,6 +18,7 @@ try:
 except ImportError:
     build = lastmod = "0000-00-00T00:00:00.0Z"
     VERSION = None
+    VERSION_STRING = None
 
 from DisplayCAL.options import test_update
 
@@ -25,8 +26,14 @@ if not VERSION or test_update:
     VERSION = VERSION_BASE = (0, 0, 0, 0)
     VERSION_STRING = ".".join(str(n) for n in VERSION)
 
-author = "Florian Höch"
-author_ascii = "Florian Hoech"
+author = ", ".join([
+    "Florian Höch",
+    "Erkan Özgür Yılmaz"
+])
+author_ascii = ", ".join([
+    "Florian Hoech",
+    "Erkan Ozgur Yilmaz"
+])
 description = (
     "Display calibration and profiling with a focus on accuracy and versatility"
 )
@@ -41,7 +48,12 @@ longdesc = (
     "take into account varying viewing conditions."
 )
 DOMAIN = "displaycal.net"
-author_email = "florian" + chr(0o100) + DOMAIN
+author_email = ", ".join(
+    [
+        "{}{}{}".format("florian", chr(0o100), DOMAIN),
+        "{}{}{}".format("eoyilmaz", chr(0o100), "gmail.com"),
+    ]
+)
 name = "DisplayCAL"
 appstream_id = ".".join(reversed([name] + DOMAIN.split(".")))
 name_html = '<span class="appname">Display<span>CAL</span></span>'
@@ -85,6 +97,6 @@ def script2pywname(script):
         name + "-eecolor-to-madvr-converter": name + "-eeColor-to-madVR-converter",
     }
     if script.lower().startswith(name.lower()):
-        pyw = name + script[len(name):]
+        pyw = name + script[len(name) :]
         return a2b.get(pyw, pyw)
     return script
