@@ -43,7 +43,7 @@ you can either run it directly from the source or install it as a ``sdist`` pack
 ```shell
 git clone https://github.com/eoyilmaz/displaycal-py3
 cd ./displaycal-py3/
-python setup.py install --install-data $HOME/.local/
+python setup.py install
 ```
 
 This should install the code as an ``sdist``. To run the UI:
@@ -54,6 +54,15 @@ displaycal
 
 You may need browse to the ``bin`` folder of you ``python`` interpreter. I used a
 ``virtualenv`` through ``PyCharm`` to develop and test the code.
+
+ATTENTION!
+----------
+
+Previously the ``--install-data=$HOME/.local`` option has to be used with the
+``setup.py`` script in order to let the DisplayCAL to find the required data files. But
+it is not needed anymore, and it is a good idea to delete the ``DisplayCAL*`` files and
+folders from the ``site-packages`` folder of your ``python`` interpreter if you used
+that option in a previous version of ``DisplayCAL-py3``.
 
 Road Map
 --------
