@@ -39,6 +39,7 @@ pyparsing
 pytest
 pytest-cov
 pytest-github-actions-annotate-failures
+pytest-xdist
 python-dateutil
 requests
 six

@@ -93,6 +93,25 @@ def test_safe_basestring_8():
     )
 
 
+def test_safe_basestring_9():
+    """testing if safe_basestring() is working properly"""
+    from _socket import gaierror
+    gai_error = gaierror("test some key values not being correct")
+    assert (
+        safe_basestring(gai_error)
+        == "test some key values not being correct"
+    )
+
+
+def test_safe_basestring_10():
+    """testing if safe_basestring() is working properly"""
+    gai_error = OSError("test some key values not being correct")
+    assert (
+        safe_basestring(gai_error)
+        == "test some key values not being correct"
+    )
+
+
 def test_safe_string_1():
     """testing if safe_string() is working properly"""
     obj = "Test value"

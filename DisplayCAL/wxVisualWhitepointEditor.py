@@ -648,7 +648,7 @@ class Colour(object):
     def GetPyColour(self):
         """Returns the wxPython :class:`Colour` associated with this instance."""
 
-        return wx.Colour(self.r, self.g, self.b, self._alpha)
+        return wx.Colour(int(self.r), int(self.g), int(self.b), int(self._alpha))
 
 
 class BasePyControl(wx.PyControl):

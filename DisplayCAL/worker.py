@@ -2010,7 +2010,7 @@ class Sudo(object):
             self._expect_timeout(["Password:", wexpect.EOF], 10)
             if p.after == "Password:":
                 msg = lang.getstr("dialog.enter_password")
-                errstr = p.before.strip().decode(enc, "replace")
+                errstr = p.before.strip()
                 if errstr:
                     print(errstr)
                     msg = "\n\n".join([errstr, msg])
@@ -2080,7 +2080,7 @@ class Sudo(object):
                 or ("sudo exited prematurely with " "status %s" % p.exitstatus),
                 0,
             )
-        return p.before.strip().decode(enc, "replace")
+        return p.before.strip()
 
     def kill(self):
         """Remove cached credentials"""
@@ -2951,14 +2951,14 @@ class Worker(WorkerBase):
             .ljust(int(math.ceil(len(self._pwdstr[10:]) / 4.0) * 4), "=")
             .encode(),
             "base64",
-        )
+        ).decode("utf-8")
 
     @pwd.setter
     def pwd(self, pwd):
         encoded_user_name = codecs.encode(
             md5(getpass.getuser().encode()).hexdigest().encode(), "base64"
-        )[:5]
-        encoded_pwd = codecs.encode(pwd.encode(), "base64").decode().rstrip("=\n")
+        )[:5].decode("utf-8")
+        encoded_pwd = codecs.encode(pwd.encode(), "base64").decode("utf-8").rstrip("=\n")
         self._pwdstr = "/tmp/%s%s" % (encoded_user_name, encoded_pwd)
 
     def get_argyll_instrument_conf(self, what=None):
@@ -7146,7 +7146,7 @@ while 1:
                                 self.auth_timestamp = 0
                             else:
                                 self._safe_send(
-                                    self.pwd.encode(enc, "replace") + os.linesep,
+                                    self.pwd + os.linesep,
                                     obfuscate=True,
                                 )
                                 pwdsent = True
@@ -7594,9 +7594,8 @@ while 1:
         """Generate a profile's B2A table by inverting the A2B table
         (default A2B1 or A2B0)
 
-        It is also poosible to re-generate a B2A table by interpolating
+        It is also possible to re-generate a B2A table by interpolating
         the B2A table itself.
-
         """
 
         if tableno is None:

@@ -4643,7 +4643,11 @@ class MainFrame(ReportFrame, BaseFrame):
                 if len(ccmx) > 1 and ccmx[0] != "AUTO" and ccmx[1] == path:
                     ccxx_path = path
                 items.append(
-                    "%s: %s" % (types.get(os.path.splitext(path)[1].lower()[1:]), desc)
+                    "%s: %s"
+                    % (
+                        types.get(os.path.splitext(path)[1].lower()[1:]),
+                        desc if isinstance(desc, str) else desc.decode("utf-8"),
+                    )
                 )
                 self.ccmx_item_paths.append(path)
         items_paths = []
@@ -4756,7 +4760,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 items.insert(
                     2,
                     "%s: %s"
-                    % (types.get(os.path.splitext(ccmx[1])[1].lower()[1:]), desc),
+                    % (types.get(os.path.splitext(ccmx[1])[1].lower()[1:]), desc.decode("utf-8")),
                 )
                 self.ccmx_item_paths.insert(0, ccmx[1])
                 if ccmx[0] != "AUTO":

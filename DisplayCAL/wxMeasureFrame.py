@@ -50,7 +50,6 @@ def get_default_size():
     which uses the same code as Argyll to determine that size.
 
     This function is used internally.
-
     """
     display_sizes = []
     display_sizes_mm = []

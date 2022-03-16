@@ -78,3 +78,65 @@ def test_sudo_class_initialization():
     from DisplayCAL.worker import Sudo
     sudo = Sudo()
     assert sudo is not None
+
+
+def test_download_method_1():
+    """Test Worker.download() method."""
+    from DisplayCAL.meta import DOMAIN
+    from DisplayCAL.worker import Worker
+    worker = Worker()
+    uri = f"https://{DOMAIN}/i1d3"
+    result = worker.download(uri)
+    assert result is not None
+
+
+def test_download_method_2():
+    """Test Worker.download() method."""
+    from DisplayCAL.meta import DOMAIN
+    from DisplayCAL.worker import Worker
+    worker = Worker()
+    uri = f"https://{DOMAIN}/i1d3"
+    result = worker.download(uri, force=True)
+    assert result is not None
+
+
+def test_download_method_3():
+    """Test Worker.download() method."""
+    from DisplayCAL.meta import DOMAIN
+    from DisplayCAL.worker import Worker
+    worker = Worker()
+    uri = f"https://{DOMAIN}/spyd2"
+    result = worker.download(uri)
+    assert result is not None
+
+
+def test_download_method_4():
+    """Test Worker.download() method."""
+    from DisplayCAL.meta import DOMAIN
+    from DisplayCAL.worker import Worker
+    worker = Worker()
+    uri = f"https://{DOMAIN}/spyd2"
+    result = worker.download(uri, force=True)
+    assert result is not None
+
+
+def test_get_display_name_1():
+    """Testing Worker.get_display_name() method."""
+    from DisplayCAL.worker import Worker
+    from DisplayCAL.config import initcfg, setcfg
+    initcfg()
+    setcfg("display.number", 1)
+    worker = Worker()
+    result = worker.get_display_name(False, True, False)
+    assert result == ""
+
+
+def test_get_pwd():
+    """Testing Worker.get_display_name() method."""
+    from DisplayCAL.worker import Worker
+    from DisplayCAL.config import initcfg
+    initcfg()
+    worker = Worker()
+    test_value = "test_value"
+    worker.pwd = test_value
+    assert worker.pwd == test_value

@@ -481,7 +481,7 @@ def replace_control_chars(txt, replacement=" ", collapse=False):
     return txt
 
 
-def safe_basestring(obj):
+def safe_basestring(obj, enc="utf-8", errors="replace"):
     """Return a unicode or string representation of obj
 
     Return obj if isinstance(obj, basestring). Otherwise, return unicode(obj),
@@ -504,7 +504,7 @@ def safe_basestring(obj):
             if isinstance(obj.reason, str):
                 obj.args = (obj.reason,)
             elif isinstance(obj.reason, bytes):
-                obj.args = (str(obj.reason, "utf-8", "replace"),)
+                obj.args = (str(obj.reason, enc, errors),)
             else:
                 obj.args = obj.reason
         error = []
@@ -531,7 +531,7 @@ def safe_basestring(obj):
             if isinstance(arg, str):
                 temp_error.append(arg)
             elif isinstance(arg, bytes):
-                temp_error.append(str(arg, "utf-8", "replace"))
+                temp_error.append(str(arg, enc, errors))
             else:
                 temp_error.append(str(arg))
         error = temp_error
@@ -541,13 +541,11 @@ def safe_basestring(obj):
     oobj = obj
     if not isinstance(obj, str):
         try:
-            obj = str(obj, "utf-8", "replace")
+            obj = str(obj, enc, errors)
         except (UnicodeDecodeError, TypeError):
             obj = repr(obj)
 
     if isinstance(oobj, Exception) and not isinstance(oobj, Warning):
-        # if obj and oobj.__class__.__name__ in dir(exceptions):
-        #     obj = obj[0].capitalize() + obj[1:]
         module = getattr(oobj, "__module__", "")
         package = safe_basestring.__module__.split(".")[0]  # Our own package
         if not module.startswith(package + "."):
@@ -559,10 +557,7 @@ def safe_basestring(obj):
 
 def safe_str(obj, enc=fs_enc, errors="replace"):
     """Return string representation of obj"""
-    obj = safe_basestring(obj)
-    if isinstance(obj, bytes):
-        return obj.decode(enc, errors)
-    return obj
+    return safe_basestring(obj, enc=enc, errors=errors)
 
 
 def strtr(txt, replacements):

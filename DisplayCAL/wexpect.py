@@ -1066,6 +1066,10 @@ class spawn_unix(object):
         if self.logfile_send is not None:
             self.logfile_send.write(s)
             self.logfile_send.flush()
+        if not isinstance(s, bytes):
+            if not isinstance(s, str):
+                s = str(s)
+            s = s.encode("utf-8")
         c = os.write(self.child_fd, s)
         return c
 
@@ -1617,13 +1621,14 @@ class spawn_unix(object):
 
     def __interact_writen(self, fd, data):
         """This is used by the ``interact()`` method."""
-        while data != "" and self.isalive():
+        if not isinstance(data, bytes):
+            data = data.encode("utf-8")
+        while data != b"" and self.isalive():
             n = os.write(fd, data)
             data = data[n:]
 
     def __interact_read(self, fd):
         """This is used by the ``interact()`` method."""
-
         return os.read(fd, 1000)
 
     def __interact_copy(
