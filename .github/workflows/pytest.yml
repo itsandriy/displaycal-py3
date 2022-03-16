@@ -39,6 +39,7 @@ jobs:
 
     - name: Compile C-Extensions
       run: |
+        sudo chmod a+rw /etc/udev/rules.d
         python3 setup.py install
 
     - name: Test with pytest
