@@ -121,6 +121,35 @@ def check_call(  # pylint: disable=too-many-arguments
     monkeypatch.undo()
 
 
+# Duplicate the code because overloading is a mess due to this bug:
+# https://github.com/python/mypy/issues/11373
+@contextlib.contextmanager
+def check_call_str(  # pylint: disable=too-many-arguments
+    mock_class: str,
+    return_value: Any = None,
+    call_args_list: List[Tuple[Any, ...]] | None = None,
+    call_kwargs_list: List[Dict[str, Any]] | None = None,
+    call_count: int = 1,
+    as_property: bool = False,
+) -> Generator[CallList, None, None]:
+    """
+    Context manager for mocking and checking a call to a method.
+
+    See `check_call` documentation.
+    """
+    assert (call_args_list is not None and call_kwargs_list is not None) or (
+        call_args_list is None and call_kwargs_list is None
+    ), (
+        "call_args and call_kwargs must be None or have a value " "(list/dict if empty)"
+    )
+    monkeypatch = MonkeyPatch()
+    calls = _mp_call(monkeypatch, mock_class, return_value, as_property)
+    yield calls
+    m_name = mock_class
+    assert_calls(call_count, call_args_list, call_kwargs_list, calls, m_name)
+    monkeypatch.undo()
+
+
 def assert_calls(
     call_count: int,
     call_args_list: List[Tuple[Any, ...]] | None,
