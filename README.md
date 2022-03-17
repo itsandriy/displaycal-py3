@@ -25,12 +25,15 @@ Here is a list of things that is working:
 - The UI and general functionality.
 - Calibration + Profiling.
 - Installing the created profile.
+- Installing the created profile as root.
+- Profile info window.
+- and a lot of other stuff is working properly.
 
 What is not working (yet)
 -------------------------
 
-- Language support, all the menus are showing the bare keys of the items. This will soon
-  be fixed.
+- ~~Language support, all the menus are showing the bare keys of the items. This will soon
+  be fixed.~~ (Fixed)
 - There are tons of ``bytes/str`` related issues, getting fixed very quickly but more
   tests are needed.
 - Please create [issues](https://github.com/eoyilmaz/displaycal-py3/issues)
@@ -80,10 +83,10 @@ Some ideas on where to focus on future development:
   included) and there are no tests (or the repository I adapted doesn't contain any
   tests). This is a nightmare and super hard to maintain.
 - Maybe I'm not experienced enough, and I'm wrong on saying this, but I don't see the
-  motivation behind having a C-Extension for EDID, XRandr etc. stuff. It should be
-  possible to cover all the functionality of this extension and stay purely in Python.
-  It is super hard to debug (for me at least) and super hard to maintain (again, for
-  me).
+  motivation behind having a C-Extension for ``EDID``, ``XRandr`` etc. stuff. It should
+  be possible to cover all the functionality of this extension and stay purely in
+  Python. It is super hard to debug (for me at least) and super hard to maintain (again,
+  for me).
 - Replace the ``wexpect.py`` with the latest release of ``Pexpect``. I'm not very
   familiar with this module, and there is no comment in the code on why we have
   a ``wexpect.py`` instead of using the PyPI version of ``Pexpect``.
