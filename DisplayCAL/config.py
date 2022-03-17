@@ -88,7 +88,7 @@ else:
 
 data_dirs = [
     pydir,
-    os.path.join(os.path.dirname(pydir), 'share', 'DisplayCAL'),
+    os.path.join(os.path.dirname(pydir), "share", "DisplayCAL"),
 ]
 extra_data_dirs = []
 # Search directories on PATH for data directories so Argyll reference files
@@ -514,16 +514,17 @@ def get_argyll_data_dir():
         )
 
 
-def get_display_name(n=None, include_geometry=False):
+def get_display_name(disp_index=None, include_geometry=False):
     """Return name of currently configured display"""
-    if n is None:
-        n = getcfg("display.number") - 1
+    if disp_index is None:
+        disp_index = getcfg("display.number") - 1
     displays = getcfg("displays")
-    if 0 <= n < len(displays):
-        if include_geometry:
-            return displays[n]
-        else:
-            return split_display_name(displays[n])
+    if 0 <= disp_index < len(displays):
+        return (
+            displays[disp_index]
+            if include_geometry
+            else split_display_name(displays[disp_index])
+        )
     return ""
 
 
@@ -565,9 +566,9 @@ def get_display_number(display_no):
             display = " ".join(display.split(" ")[:-1])
         for i in range(wx.Display.GetCount()):
             geometry = "%i, %i, %ix%i" % tuple(wx.Display(i).Geometry)
-            if display.endswith("@ " + geometry):
+            if display.endswith(f"@ {geometry}"):
                 if debug:
-                    print("[D] Found display %s at index %i" % (geometry, i))
+                    print(f"[D] Found display {geometry} at index {i}")
                 return i
     return 0
 
