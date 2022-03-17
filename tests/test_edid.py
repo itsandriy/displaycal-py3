@@ -7,7 +7,8 @@ from tests.data.display_data import DisplayData
 def test_get_edid():
     """Testing DisplayCAL.colord.device_id_from_edid() function."""
     from DisplayCAL.edid import get_edid
-
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
     with check_call(config, "getcfg", DisplayData.CFG_DATA, call_count=2):
         with check_call(
             RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()

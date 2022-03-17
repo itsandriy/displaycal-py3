@@ -8,6 +8,8 @@ from tests.data.display_data import DisplayData
 
 def test_real_display_size_mm():
     """Test DisplayCAL.RealDisplaySizeMM.RealDisplaySizeMM() function."""
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
     with check_call(
         RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
     ):
@@ -20,6 +22,8 @@ def test_real_display_size_mm():
 
 def test_xrandr_output_x_id_1():
     """Test DisplayCAL.RealDisplaySizeMM.GetXRandROutputXID() function."""
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
     with check_call(
         RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
     ):
@@ -72,6 +76,8 @@ def test_get_display():
 
 def test_get_x_display():
     """Test DisplayCAL.RealDisplaySizeMM.get_x_display() function."""
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
     with check_call(
         RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
     ):
@@ -83,6 +89,8 @@ def test_get_x_display():
 
 def test_get_x_icc_profile_atom_id():
     """Test DisplayCAL.RealDisplaySizeMM.get_x_icc_profile_atom_id() function."""
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
     with check_call(
         RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
     ):
@@ -94,6 +102,8 @@ def test_get_x_icc_profile_atom_id():
 
 def test_get_x_icc_profile_output_atom_id():
     """Test DisplayCAL.RealDisplaySizeMM.get_x_icc_profile_atom_id() function."""
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
     with check_call(
         RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
     ):
