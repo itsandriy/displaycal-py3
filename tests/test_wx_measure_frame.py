@@ -2,7 +2,7 @@
 
 import wx
 
-from DisplayCAL import RealDisplaySizeMM
+from DisplayCAL import RealDisplaySizeMM, config
 from DisplayCAL.dev.mocks import check_call, check_call_str
 from DisplayCAL.wxMeasureFrame import get_default_size
 from tests.data.display_data import DisplayData
@@ -19,11 +19,13 @@ def test_get_default_size_1():
     if not app:
         app = wx.PySimpleApp()
     with check_call_str("DisplayCAL.wxMeasureFrame.getcfg", DisplayData.CFG_DATA):
-        with check_call(
-            RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
-        ):
-            with check_call(wx, "DisplaySize", DisplayData.DISPLAY_DATA["size"]):
-                with check_call(wx, "DisplaySizeMM", DisplayData.DISPLAY_DATA["size_mm"]):
+        with check_call_str("DisplayCAL.wxMeasureFrame.get_display_number",
+                        DisplayData.DISPLAY_DATA["screen"]):
+            with check_call(wx, "Display", DisplayData(), call_count=2):
+            #with check_call(wx, "DisplaySizeMM", DisplayData.DISPLAY_DATA["size_mm"]):
+                with check_call(RealDisplaySizeMM, "RealDisplaySizeMM", DisplayData.DISPLAY_DATA["size"]):
+            #with check_call(wx, "DisplaySize", DisplayData.DISPLAY_DATA["size"]):
+                #with check_call(wx, "DisplaySizeMM", DisplayData.DISPLAY_DATA["size_mm"]):
                     result = get_default_size()
     assert isinstance(result, int)
     assert result > 1

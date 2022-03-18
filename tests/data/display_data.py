@@ -1,6 +1,8 @@
 """Sample DisplayData class."""
 from typing import Dict, List
 
+from wx import Rect
+
 
 class DisplayData:
     """Sample Display."""
@@ -33,6 +35,16 @@ class DisplayData:
     CFG_DATA = [
         "Monitor 1, Output DP-2 @ 0, 0, 1280x1024",
     ]
+
+    @property
+    def Geometry(self) -> Rect:
+        """Return a wx Rect as display geometry."""
+        return Rect(
+            self.DISPLAY_DATA["pos"][0],
+            self.DISPLAY_DATA["pos"][1],
+            self.DISPLAY_DATA["size"][0],
+            self.DISPLAY_DATA["size"][1],
+        )
 
     @staticmethod
     def enumerate_displays() -> List[Dict]:
