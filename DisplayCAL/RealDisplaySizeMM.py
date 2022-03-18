@@ -76,8 +76,7 @@ def RealDisplaySizeMM(display_no=0):
     Returns:
         (int, int): The display size in mm.
     """
-    display = get_display(display_no)
-    if display:
+    if display := get_display(display_no):
         return display.get("size_mm", (0, 0))
     return 0, 0
 
@@ -87,7 +86,7 @@ def enumerate_displays():
     global _displays
     _displays = _enumerate_displays()
     for display in _displays:
-        desc = display.get("description")
+        desc = display["description"]
         if desc:
             match = re.findall(
                 rb"(.+?),? at (-?\d+), (-?\d+), width (\d+), height (\d+)", desc
@@ -129,8 +128,7 @@ def get_display(display_no=0):
         if argyll_display.endswith(" [PRIMARY]"):
             argyll_display = " ".join(argyll_display.split(" ")[:-1])
         for display in _displays:
-            desc = display.get("description")
-            if desc:
+            if desc := display["description"]:
                 geometry = b"".join(desc.split(b"@ ")[-1:])
                 if argyll_display.endswith((b"@ " + geometry).decode("utf-8")):
                     return display
@@ -194,20 +192,16 @@ def get_wayland_display(x, y, w, h):
 
 
 def get_x_display(display_no=0):
-    display = get_display(display_no)
-    if display:
-        name = display.get("name")
-        if name:
+    if display := get_display(display_no):
+        if name := display.get("name"):
             return _get_x_display(name)
 
 
 def get_x_icc_profile_atom_id(display_no=0):
-    display = get_display(display_no)
-    if display:
+    if display := get_display(display_no):
         return display.get("icc_profile_atom_id")
 
 
 def get_x_icc_profile_output_atom_id(display_no=0):
-    display = get_display(display_no)
-    if display:
+    if display := get_display(display_no):
         return display.get("icc_profile_output_atom_id")

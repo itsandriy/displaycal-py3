@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
+from DisplayCAL import RealDisplaySizeMM, config
+from DisplayCAL.dev.mocks import check_call
+from tests.data.display_data import DisplayData
 
 
 def test_get_edid():
     """Testing DisplayCAL.colord.device_id_from_edid() function."""
-    from DisplayCAL.config import initcfg
     from DisplayCAL.edid import get_edid
-    initcfg()
-    result = get_edid(0)
+    RealDisplaySizeMM._displays = None
+    assert RealDisplaySizeMM._displays is None
+    with check_call(config, "getcfg", DisplayData.CFG_DATA, call_count=2):
+        with check_call(
+            RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
+        ):
+            result = get_edid(0)
     assert isinstance(result, dict)
     assert "blue_x" in result
     assert isinstance(result["blue_y"], float)
