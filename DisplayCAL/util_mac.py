@@ -141,6 +141,8 @@ def get_model_id():
         output, errors = p.communicate()
     except BaseException:
         return None
+    # TODO: There is possibly an error waiting for us here in the next line. Not on Mac
+    #       can not test it right now!
     return "".join(output).split(None, 1)[-1].strip()
 
 

@@ -131,7 +131,6 @@ def test_get_display_name_1():
     """Testing Worker.get_display_name() method."""
     from DisplayCAL.worker import Worker
     from DisplayCAL.config import initcfg, setcfg
-
     initcfg()
     setcfg("display.number", 1)
     worker = Worker()
@@ -165,5 +164,3 @@ def test_update_profile_1(random_icc_profile):
         "DisplayCAL.worker.Worker.get_display_edid", DisplayData.DISPLAY_DATA_2
     ):
         worker.update_profile(icc_profile_path, tags=True)
-    # TODO: In my mini-pc with 16 GB RAM and 4.3 GB of SWAP (the SWAP is probably small)
-    #       this test runs out of memory!!!

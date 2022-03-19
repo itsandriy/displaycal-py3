@@ -70,14 +70,14 @@ HI_W_Y = 34
 BLOCKS = ((54, 72), (72, 90), (90, 108), (108, 126))
 BLOCK_TYPE = 3
 BLOCK_CONTENTS = (5, 18)
-BLOCK_TYPE_SERIAL_ASCII = "\xff"
-BLOCK_TYPE_ASCII = "\xfe"
-BLOCK_TYPE_MONITOR_NAME = "\xfc"
-BLOCK_TYPE_COLOR_POINT = "\xfb"
-BLOCK_TYPE_COLOR_MANAGEMENT_DATA = "\xf9"
+BLOCK_TYPE_SERIAL_ASCII = b"\xff"
+BLOCK_TYPE_ASCII = b"\xfe"
+BLOCK_TYPE_MONITOR_NAME = b"\xfc"
+BLOCK_TYPE_COLOR_POINT = b"\xfb"
+BLOCK_TYPE_COLOR_MANAGEMENT_DATA = b"\xf9"
 EXTENSION_FLAG = 126
 CHECKSUM = 127
-BLOCK_DI_EXT = "\x40"
+BLOCK_DI_EXT = b"\x40"
 TRC = (81, 127)
 
 pnpidcache = {}
@@ -323,88 +323,88 @@ def edid_parse_string(desc):
     # Remember: In C, NULL terminates a string, so do the same here
     # Replace newline with NULL, then strip anything after first NULL byte
     # (if any), then strip trailing whitespace
-    desc = strtr(desc[:13], {"\n": "\0", "\r": "\0"}).split("\0")[0].rstrip()
+    desc = strtr(desc[:13], {b"\n": b"\x00", b"\r": b"\x00"}).split(b"\x00")[0].rstrip()
     if desc:
         # Replace all non-printable chars with NULL
         # Afterwards, the amount of NULL bytes is the number of replaced chars
-        desc = make_ascii_printable(desc, subst="\0")
-        if desc.count("\0") <= 4:
+        desc = make_ascii_printable(desc, substitute=b"\x00")
+        if desc.count(b"\x00") <= 4:
             # Only use string if max 4 replaced chars
             # Replace any NULL chars with dashes to make a printable string
-            return desc.replace("\0", "-")
+            return desc.replace(b"\0", b"-")
 
 
 def parse_edid(edid):
     """Parse raw EDID data (binary string) and return dict."""
-    hash = md5(edid).hexdigest()
-    header = edid[HEADER[0]: HEADER[1]]
-    manufacturer_id = parse_manufacturer_id(
-        edid[MANUFACTURER_ID[0]: MANUFACTURER_ID[1]]
-    )
-    manufacturer = get_manufacturer_name(manufacturer_id)
+    result = {
+        "edid": edid,
+        "hash": md5(edid).hexdigest(),
+        "header": edid[HEADER[0] : HEADER[1]],
+        "manufacturer_id": parse_manufacturer_id(
+            edid[MANUFACTURER_ID[0] : MANUFACTURER_ID[1]]
+        ),
+    }
+    manufacturer = get_manufacturer_name(result["manufacturer_id"])
+    if manufacturer:
+        result["manufacturer"] = manufacturer
 
-    product_id = struct.unpack("<H", edid[PRODUCT_ID[0]: PRODUCT_ID[1]])[0]
-    serial_32 = struct.unpack("<I", edid[SERIAL_32[0]: SERIAL_32[1]])[0]
-    week_of_manufacture = edid[WEEK_OF_MANUFACTURE]
-    year_of_manufacture = edid[YEAR_OF_MANUFACTURE] + 1990
-    edid_version = edid[EDID_VERSION]
-    edid_revision = edid[EDID_REVISION]
+    result["product_id"] = struct.unpack("<H", edid[PRODUCT_ID[0] : PRODUCT_ID[1]])[0]
+    result["serial_32"] = struct.unpack("<I", edid[SERIAL_32[0] : SERIAL_32[1]])[0]
+    result["week_of_manufacture"] = edid[WEEK_OF_MANUFACTURE]
+    result["year_of_manufacture"] = edid[YEAR_OF_MANUFACTURE] + 1990
+    result["edid_version"] = edid[EDID_VERSION]
+    result["edid_revision"] = edid[EDID_REVISION]
 
-    max_h_size_cm = edid[MAX_H_SIZE_CM]
-    max_v_size_cm = edid[MAX_V_SIZE_CM]
-    if edid[GAMMA] != "\xff":
-        gamma = edid[GAMMA] / 100.0 + 1
-    features = edid[FEATURES]
+    result["max_h_size_cm"] = edid[MAX_H_SIZE_CM]
+    result["max_v_size_cm"] = edid[MAX_V_SIZE_CM]
+    if edid[GAMMA] != b"\xff":
+        result["gamma"] = edid[GAMMA] / 100.0 + 1
+    result["features"] = edid[FEATURES]
 
-    red_x = edid_decode_fraction(
+    result["red_x"] = edid_decode_fraction(
         edid[HI_R_X], edid_get_bits(edid[LO_RG_XY], 6, 7)
     )
-    red_y = edid_decode_fraction(
+    result["red_y"] = edid_decode_fraction(
         edid[HI_R_Y], edid_get_bits(edid[LO_RG_XY], 4, 5)
     )
 
-    green_x = edid_decode_fraction(
+    result["green_x"] = edid_decode_fraction(
         edid[HI_G_X], edid_get_bits(edid[LO_RG_XY], 2, 3)
     )
-    green_y = edid_decode_fraction(
+    result["green_y"] = edid_decode_fraction(
         edid[HI_G_Y], edid_get_bits(edid[LO_RG_XY], 0, 1)
     )
 
-    blue_x = edid_decode_fraction(
+    result["blue_x"] = edid_decode_fraction(
         edid[HI_B_X], edid_get_bits(edid[LO_BW_XY], 6, 7)
     )
-    blue_y = edid_decode_fraction(
+    result["blue_y"] = edid_decode_fraction(
         edid[HI_B_Y], edid_get_bits(edid[LO_BW_XY], 4, 5)
     )
 
-    white_x = edid_decode_fraction(
+    result["white_x"] = edid_decode_fraction(
         edid[HI_W_X], edid_get_bits(edid[LO_BW_XY], 2, 3)
     )
-    white_y = edid_decode_fraction(
+    result["white_y"] = edid_decode_fraction(
         edid[HI_W_Y], edid_get_bits(edid[LO_BW_XY], 0, 1)
     )
-
-    result = locals()  # this could not be good
-    if not manufacturer:
-        del result["manufacturer"]
 
     text_types = {
         BLOCK_TYPE_SERIAL_ASCII: "serial_ascii",
         BLOCK_TYPE_ASCII: "ascii",
         BLOCK_TYPE_MONITOR_NAME: "monitor_name",
     }
-
     # Parse descriptor blocks
     for start, stop in BLOCKS:
         block = edid[start:stop]
-        if block[:BLOCK_TYPE] != "\0\0\0":
+        if block[:BLOCK_TYPE] != b"\x00\x00\x00":
             # Ignore pixel clock data
             continue
-        text_type = text_types.get(block[BLOCK_TYPE])
+        text_type = text_types.get(block[BLOCK_TYPE:BLOCK_TYPE + 1])
         if text_type:
-            desc = edid_parse_string(block[BLOCK_CONTENTS[0]: BLOCK_CONTENTS[1]])
+            desc = edid_parse_string(block[BLOCK_CONTENTS[0] : BLOCK_CONTENTS[1]])
             if desc is not None:
-                result[text_type] = desc
+                result[text_type] = desc.decode("utf-8")
         elif block[BLOCK_TYPE] == BLOCK_TYPE_COLOR_POINT:
             for i in (5, 10):
                 # 2nd white point index in range 1...255
@@ -431,7 +431,7 @@ def parse_edid(edid):
         elif block[BLOCK_TYPE] == BLOCK_TYPE_COLOR_MANAGEMENT_DATA:
             # TODO: Implement? How could it be used?
             result["color_management_data"] = block[
-                BLOCK_CONTENTS[0]: BLOCK_CONTENTS[1]
+                BLOCK_CONTENTS[0] : BLOCK_CONTENTS[1]
             ]
 
     result["ext_flag"] = edid[EXTENSION_FLAG]

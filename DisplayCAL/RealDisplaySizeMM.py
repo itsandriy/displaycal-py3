@@ -36,9 +36,18 @@ else:
         elif sys.version_info[:2] == (3, 10):
             from DisplayCAL.lib32.python310.RealDisplaySizeMM import *
 # else:
-#     # TODO: For Linux use the ``xrandr`` command output which supplies everything more
-#     #       precisely than the C-Extension
 #     pass
+
+# TODO: For Linux use the ``xrandr`` command output which supplies everything.
+#
+# ``xrandr --verbose`` gives all the info we need, including EDID which needs to
+# be decoded:
+#
+# ```python
+# import codecs
+# edid = codecs.decode(xrandr_edid_data, "hex")
+# ```
+#
 
 
 _displays = None

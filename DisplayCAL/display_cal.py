@@ -4772,7 +4772,6 @@ class MainFrame(ReportFrame, BaseFrame):
                 # Prefer CCSS
                 ccmx[1] = self.ccmx_mapping.get("\0%s" % display_name, "")
             if not self.worker.instrument_supports_ccss() or not ccmx[1]:
-
                 instrument_name = self.worker.get_instrument_name()
                 print("instrument_name: {}".format(instrument_name))
                 print("display_name   : {}".format(display_name))
