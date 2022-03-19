@@ -34,6 +34,9 @@ class ReportFrame(BaseFrame):
 
         self.SetIcons(config.get_icon_bundle([256, 48, 32, 16], appname))
 
+        self.XYZbpin = None
+        self.XYZbpout = None
+
         res = TempXmlResource(get_data_path(os.path.join("xrc", "report.xrc")))
         res.InsertHandler(xh_fancytext.StaticFancyTextCtrlXmlHandler())
         res.InsertHandler(xh_filebrowsebutton.FileBrowseButtonWithHistoryXmlHandler())
@@ -922,6 +925,8 @@ class ReportFrame(BaseFrame):
             opatches = patches
             # Scale integration time based on display technology
             tech = getcfg("display.technology").lower()
+            if isinstance(tech, bytes):
+                tech = tech.decode("utf-8")
             prop = [1, 1]
             if "plasma" in tech or "crt" in tech:
                 prop[0] = 1.9

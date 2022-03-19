@@ -133,7 +133,6 @@ def get_default_size():
 
 
 class MeasureFrame(InvincibleFrame):
-
     """A rectangular window to set the measure area size for dispcal/dispread."""
 
     exitcode = 1

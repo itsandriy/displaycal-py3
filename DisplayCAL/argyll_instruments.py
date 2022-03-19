@@ -443,7 +443,7 @@ vendors = [
 def get_canonical_instrument_name(instrument_name, replacements=None, inverse=False):
     """
 
-    :param bytes instrument_name:
+    :param (bytes, str) instrument_name:
     :param replacements:
     :param inverse:
     :return:

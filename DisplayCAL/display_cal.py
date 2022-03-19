@@ -4610,15 +4610,15 @@ class MainFrame(ReportFrame, BaseFrame):
                 self.ccmx_instruments[path] = get_canonical_instrument_name(
                     cgats.queryv1("INSTRUMENT") or b"",
                     {
-                        b"DTP94-LCD mode": b"DTP94",
-                        b"eye-one display": b"i1 Display",
-                        b"Spyder 2 LCD": b"Spyder2",
-                        b"Spyder 3": b"Spyder3",
+                        "DTP94-LCD mode": "DTP94",
+                        "eye-one display": "i1 Display",
+                        "Spyder 2 LCD": "Spyder2",
+                        "Spyder 3": "Spyder3",
                     },
-                )
-                key = b"%s\0%s" % (
+                ).decode("utf-8")
+                key = "%s\0%s" % (
                     self.ccmx_instruments[path],
-                    cgats.queryv1("DISPLAY") or b"",
+                    (cgats.queryv1("DISPLAY") or b"").decode("utf-8"),
                 )
                 if not self.ccmx_mapping.get(key) or (
                     len(ccmx) > 1 and path == ccmx[1]
@@ -4629,12 +4629,9 @@ class MainFrame(ReportFrame, BaseFrame):
                 continue
 
             instrument_name = self.worker.get_instrument_name()
-            if isinstance(instrument_name, str):
-                instrument_name = instrument_name.encode("utf-8")
-
-            if instrument_name.lower().replace(b" ", b"") in self.ccmx_instruments.get(
-                path, b""
-            ).lower().replace(b" ", b"") or (
+            if instrument_name.lower().replace(" ", "") in self.ccmx_instruments.get(
+                path, ""
+            ).lower().replace(" ", "") or (
                 path.lower().endswith(".ccss")
                 and self.worker.instrument_supports_ccss()
             ):
@@ -4642,13 +4639,12 @@ class MainFrame(ReportFrame, BaseFrame):
                 # currently selected instrument or if it is a CCSS
                 if len(ccmx) > 1 and ccmx[0] != "AUTO" and ccmx[1] == path:
                     ccxx_path = path
-                items.append(
-                    "%s: %s"
-                    % (
-                        types.get(os.path.splitext(path)[1].lower()[1:]),
-                        desc if isinstance(desc, str) else desc.decode("utf-8"),
-                    )
+
+                item_text = "%s: %s" % (
+                    types.get(os.path.splitext(path)[1].lower()[1:]),
+                    desc if isinstance(desc, str) else desc.decode("utf-8"),
                 )
+                items.append(item_text)
                 self.ccmx_item_paths.append(path)
         items_paths = []
         for i, item in enumerate(items[2:]):
@@ -4737,14 +4733,14 @@ class MainFrame(ReportFrame, BaseFrame):
                         desc = ellipsis_(desc, 100, "m")
                     self.ccmx_cached_descriptors[ccmx[1]] = desc
                     self.ccmx_instruments[ccmx[1]] = get_canonical_instrument_name(
-                        (cgats.queryv1("INSTRUMENT") or b""),
+                        cgats.queryv1("INSTRUMENT") or b"",
                         {
-                            b"DTP94-LCD mode": b"DTP94",
-                            b"eye-one display": b"i1 Display",
-                            b"Spyder 2 LCD": b"Spyder2",
-                            b"Spyder 3": b"Spyder3",
+                            "DTP94-LCD mode": "DTP94",
+                            "eye-one display": "i1 Display",
+                            "Spyder 2 LCD": "Spyder2",
+                            "Spyder 3": "Spyder3",
                         },
-                    )
+                    ).decode("utf-8")
                     key = "%s\0%s" % (
                         self.ccmx_instruments[ccmx[1]],
                         (cgats.queryv1("DISPLAY") or b"").decode("utf-8"),
@@ -4760,7 +4756,10 @@ class MainFrame(ReportFrame, BaseFrame):
                 items.insert(
                     2,
                     "%s: %s"
-                    % (types.get(os.path.splitext(ccmx[1])[1].lower()[1:]), desc.decode("utf-8")),
+                    % (
+                        types.get(os.path.splitext(ccmx[1])[1].lower()[1:]),
+                        desc.decode("utf-8"),
+                    ),
                 )
                 self.ccmx_item_paths.insert(0, ccmx[1])
                 if ccmx[0] != "AUTO":
@@ -4773,8 +4772,12 @@ class MainFrame(ReportFrame, BaseFrame):
                 # Prefer CCSS
                 ccmx[1] = self.ccmx_mapping.get("\0%s" % display_name, "")
             if not self.worker.instrument_supports_ccss() or not ccmx[1]:
+
+                instrument_name = self.worker.get_instrument_name()
+                print("instrument_name: {}".format(instrument_name))
+                print("display_name   : {}".format(display_name))
                 ccmx[1] = self.ccmx_mapping.get(
-                    "%s\0%s" % (self.worker.get_instrument_name(), display_name), ""
+                    "%s\0%s" % (instrument_name, display_name), ""
                 )
             cgats = None
         elif not ccmx[0] and len(ccmx) < 2:
@@ -16680,7 +16683,6 @@ class MainFrame(ReportFrame, BaseFrame):
         """Get paths of Argyll data files.
 
         scope should be a string containing "l" (local system) and/or "u" (user)
-
         """
         data_files = []
         if sys.platform != "darwin":

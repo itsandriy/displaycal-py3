@@ -524,7 +524,7 @@ class CGATS(dict):
                         if display:
                             # Localized tech will be unicode always, need to
                             # make sure display is as well
-                            display = str(display)
+                            display = display.decode("utf-8") if isinstance(display, bytes) else display
                     if display:
                         tech += " (%s)" % display
                 desc = tech.encode("utf-8")  # TODO: This could be problematic
