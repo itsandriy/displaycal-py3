@@ -17,7 +17,7 @@ from tests.data.display_data import DisplayData
 def fixture_size_in_mm(request: SubRequest) -> Tuple[int, int]:
     """Return display size in mm (width, height)."""
     return (
-        DisplayData.DISPLAY_DATA["size"]
+        DisplayData.DISPLAY_DATA_1["size"]
         if request.param == "size_available"
         else (0, 0)
     )
@@ -33,19 +33,19 @@ def test_get_default_size_1(real_display: bool, size_in_mm: Tuple[int, int]) -> 
     with check_call_str("DisplayCAL.wxMeasureFrame.getcfg", DisplayData.CFG_DATA):
         with check_call_str(
             "DisplayCAL.wxMeasureFrame.get_display_number",
-            DisplayData.DISPLAY_DATA["screen"],
+            DisplayData.DISPLAY_DATA_1["screen"],
         ):
             with check_call(wx, "Display", DisplayData()):
                 if real_display:
                     with check_call(
                         RealDisplaySizeMM,
                         "RealDisplaySizeMM",
-                        DisplayData.DISPLAY_DATA["size"],
+                        DisplayData.DISPLAY_DATA_1["size"],
                     ):
                         result = get_default_size()
                 else:
                     with check_call(
-                        wx, "DisplaySize", DisplayData.DISPLAY_DATA["size"]
+                        wx, "DisplaySize", DisplayData.DISPLAY_DATA_1["size"]
                     ):
                         with check_call(wx, "DisplaySizeMM", size_in_mm):
                             result = get_default_size()

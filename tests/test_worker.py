@@ -4,6 +4,7 @@ import io
 
 import pytest
 
+from DisplayCAL.dev.mocks import check_call_str
 from DisplayCAL.worker import make_argyll_compatible_path, Worker
 
 
@@ -13,6 +14,7 @@ from DisplayCAL.worker import make_argyll_compatible_path, Worker
 #     """
 #     from DisplayCAL.worker import get_options_from_profile
 #     options = get_options_from_profile(profile=data_files["default.ti3"].absolute())
+from tests.data.display_data import DisplayData
 
 
 def test_make_argyll_compatible_path_1():
@@ -76,6 +78,7 @@ def test_generate_b2a_from_inverse_table(data_files, argyll):
 def test_sudo_class_initialization():
     """Test worker.Sudo class initialization"""
     from DisplayCAL.worker import Sudo
+
     sudo = Sudo()
     assert sudo is not None
 
@@ -84,6 +87,7 @@ def test_download_method_1():
     """Test Worker.download() method."""
     from DisplayCAL.meta import DOMAIN
     from DisplayCAL.worker import Worker
+
     worker = Worker()
     uri = f"https://{DOMAIN}/i1d3"
     result = worker.download(uri)
@@ -94,6 +98,7 @@ def test_download_method_2():
     """Test Worker.download() method."""
     from DisplayCAL.meta import DOMAIN
     from DisplayCAL.worker import Worker
+
     worker = Worker()
     uri = f"https://{DOMAIN}/i1d3"
     result = worker.download(uri, force=True)
@@ -104,6 +109,7 @@ def test_download_method_3():
     """Test Worker.download() method."""
     from DisplayCAL.meta import DOMAIN
     from DisplayCAL.worker import Worker
+
     worker = Worker()
     uri = f"https://{DOMAIN}/spyd2"
     result = worker.download(uri)
@@ -114,6 +120,7 @@ def test_download_method_4():
     """Test Worker.download() method."""
     from DisplayCAL.meta import DOMAIN
     from DisplayCAL.worker import Worker
+
     worker = Worker()
     uri = f"https://{DOMAIN}/spyd2"
     result = worker.download(uri, force=True)
@@ -124,6 +131,7 @@ def test_get_display_name_1():
     """Testing Worker.get_display_name() method."""
     from DisplayCAL.worker import Worker
     from DisplayCAL.config import initcfg, setcfg
+
     initcfg()
     setcfg("display.number", 1)
     worker = Worker()
@@ -140,3 +148,22 @@ def test_get_pwd():
     test_value = "test_value"
     worker.pwd = test_value
     assert worker.pwd == test_value
+
+
+def test_update_profile_1(random_icc_profile):
+    """Testing Worker.update_profile() method."""
+    from DisplayCAL import worker
+    from DisplayCAL.worker import Worker
+    from DisplayCAL.config import initcfg
+    worker.dbus_session = None
+    worker.dbus_system = None
+    initcfg()
+    worker = Worker()
+
+    icc_profile, icc_profile_path = random_icc_profile
+    with check_call_str(
+        "DisplayCAL.worker.Worker.get_display_edid", DisplayData.DISPLAY_DATA_2
+    ):
+        worker.update_profile(icc_profile_path, tags=True)
+    # TODO: In my mini-pc with 16 GB RAM and 4.3 GB of SWAP (the SWAP is probably small)
+    #       this test runs out of memory!!!

@@ -96,3 +96,22 @@ def argyll():
 
     # cleanup the test
     shutil.rmtree(argyll_temp_path)
+
+
+@pytest.fixture(scope="function")
+def random_icc_profile():
+    """Create a random ICCProfile suitable for modification."""
+    import tempfile
+    from DisplayCAL import colormath
+    from DisplayCAL import ICCProfile
+    rec709_gamma18 = list(colormath.get_rgb_space("Rec. 709"))
+    icc_profile = ICCProfile.ICCProfile.from_rgb_space(
+        rec709_gamma18, b"Rec. 709 gamma 1.8"
+    )
+    icc_profile_path = tempfile.mktemp(suffix=".icc")
+    icc_profile.write(icc_profile_path)
+
+    yield icc_profile, icc_profile_path
+
+    # clean the file
+    os.remove(icc_profile_path)

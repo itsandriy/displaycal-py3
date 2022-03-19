@@ -1147,7 +1147,7 @@ def get_cfg_option_from_args(option_name, argmatch, args, whole=False):
                 option = args[iarg[0] + 1]
         else:
             # Option value follows argument directly
-            option = iarg[1][len(argmatch):]
+            option = iarg[1][len(argmatch) :]
     return option
 
 
@@ -2135,7 +2135,7 @@ class WPopen(sp.Popen):
                     offset = buf.find(pattern)
                     self.after = buf[offset:]
                     self.before = buf[:offset]
-                    self.match = buf[offset: offset + len(pattern)]
+                    self.match = buf[offset : offset + len(pattern)]
                     return self.match
             sleep(0.01)
         if timeout is not None:
@@ -2392,7 +2392,7 @@ class Worker(WorkerBase):
                 if farg:
                     # Remove -F (darken background) as we relay colors to
                     # pattern generator
-                    args = args[: farg[0]] + args[farg[0] + 1:]
+                    args = args[: farg[0]] + args[farg[0] + 1 :]
             elif getcfg("measure.darken_background") and not farg:
                 args.append("-F")
         if (
@@ -2958,7 +2958,9 @@ class Worker(WorkerBase):
         encoded_user_name = codecs.encode(
             md5(getpass.getuser().encode()).hexdigest().encode(), "base64"
         )[:5].decode("utf-8")
-        encoded_pwd = codecs.encode(pwd.encode(), "base64").decode("utf-8").rstrip("=\n")
+        encoded_pwd = (
+            codecs.encode(pwd.encode(), "base64").decode("utf-8").rstrip("=\n")
+        )
         self._pwdstr = "/tmp/%s%s" % (encoded_user_name, encoded_pwd)
 
     def get_argyll_instrument_conf(self, what=None):
@@ -5119,7 +5121,7 @@ END_DATA
                                     cube_data.append(b"DOMAIN_MIN 0.0 0.0 0.0\n")
                                     fp_offset = str(maxval).find(".")
                                     domain_max = b"DOMAIN_MAX %s %s %s\n" % (
-                                        (b"%%.%if" % len(str(maxval)[fp_offset + 1:]),)
+                                        (b"%%.%if" % len(str(maxval)[fp_offset + 1 :]),)
                                         * 3
                                     )
                                     cube_data.append(domain_max % ((maxval,) * 3))
@@ -5266,7 +5268,7 @@ END_DATA
             lut.append(["DOMAIN_MIN 0.0 0.0 0.0"])
             fp_offset = str(maxval).find(".")
             domain_max = "DOMAIN_MAX %s %s %s" % (
-                ("%%.%if" % len(str(maxval)[fp_offset + 1:]),) * 3
+                ("%%.%if" % len(str(maxval)[fp_offset + 1 :]),) * 3
             )
             lut.append([domain_max % ((maxval,) * 3)])
             lut.append([])
@@ -5453,7 +5455,7 @@ END_DATA
                     n += 1
                     line = line.strip()
                     if argyll_version_string is None and "version" in line.lower():
-                        argyll_version_string = line[line.lower().find("version") + 8:]
+                        argyll_version_string = line[line.lower().find("version") + 8 :]
                         if argyll_version_string != self.argyll_version_string:
                             self.set_argyll_version_from_string(argyll_version_string)
                         print("ArgyllCMS " + self.argyll_version_string)
@@ -7456,7 +7458,7 @@ while 1:
                             errmsg = "".join(self.output[i:])
                         startpos = errmsg.find(": Error")
                         if startpos > -1:
-                            errmsg = errmsg[startpos + 2:]
+                            errmsg = errmsg[startpos + 2 :]
                 if errmsg:
                     return UnloggedError(errmsg.strip())
         if self.exec_cmd_returnvalue is not None:
@@ -7931,7 +7933,7 @@ while 1:
                     *colormath.adapt(
                         *colormath.RGB2XYZ(0, 0, 1, "Rec. 2020"),
                         whitepoint_source="D65",
-                        cat=cat
+                        cat=cat,
                     )
                 )
                 bx2, by2, bY2 = xyYrgb[2]
@@ -8128,7 +8130,7 @@ while 1:
                     colormath.adapt(
                         *colormath.RGB2XYZ(*components),
                         whitepoint_source="D65",
-                        cat=cat
+                        cat=cat,
                     )
                 )
             XYZrgb_sequence = [XYZrgb, XYZsrgb]
@@ -8829,7 +8831,7 @@ while 1:
                     if start > -1:
                         display_name = (
                             display_name[:start]
-                            + display_name[start + len(manufacturer):]
+                            + display_name[start + len(manufacturer) :]
                         ).lstrip()
                         display_name = re.sub(r"^[^([{\w]+", "", display_name)
             display.append(display_name)
@@ -10277,7 +10279,7 @@ usage: spotread [-options] [logfile]
                             "--no-wait",
                             "--offline",
                             "--command=run-apply-profiles",
-                            f"http://{DOMAIN}/0install/{appname}.xml"
+                            f"http://{DOMAIN}/0install/{appname}.xml",
                         ]
                     )
                 else:
@@ -10847,7 +10849,7 @@ usage: spotread [-options] [logfile]
                 XYZbp = colormath.adapt(
                     *XYZbp,
                     whitepoint_source=[v / XYZwp[1] for v in XYZwp],
-                    cat=profile.guess_cat() or "Bradford"
+                    cat=profile.guess_cat() or "Bradford",
                 )
                 XYZbp = tuple(XYZbp)
 
@@ -12028,7 +12030,7 @@ usage: spotread [-options] [logfile]
                                 XYZbp = colormath.adapt(
                                     *XYZbp,
                                     whitepoint_source=RGB_XYZ[(100, 100, 100)],
-                                    cat=cat
+                                    cat=cat,
                                 )
                         if XYZbp:
                             # Add black back in
@@ -12179,17 +12181,19 @@ usage: spotread [-options] [logfile]
             edid = self.get_display_edid()
             if edid:
                 profile.device["manufacturer"] = (
-                    b"\0\0" + edid["edid"][9] + edid["edid"][8]
+                    b"\0\0" + edid["edid"][9:10] + edid["edid"][8:9]
                 )
-                profile.device["model"] = b"\0\0" + edid["edid"][11] + edid["edid"][10]
+                profile.device["model"] = (
+                    b"\0\0" + edid["edid"][11:12] + edid["edid"][10:11]
+                )
                 # Add Apple-specific 'mmod' tag (TODO: need full spec)
                 mmod = (
                     b"mmod"
                     + (b"\x00" * 6)
                     + edid["edid"][8:10]
                     + (b"\x00" * 2)
-                    + edid["edid"][11]
-                    + edid["edid"][10]
+                    + edid["edid"][11:12]
+                    + edid["edid"][10:11]
                     + (b"\x00" * 4)
                     + (b"\x00" * 20)
                 )
@@ -13727,7 +13731,7 @@ usage: spotread [-options] [logfile]
                 and self.options_dispcal[index + 1][0] != "-"
             ):
                 self.options_dispcal = (
-                    self.options_dispcal[:index] + self.options_dispcal[index + 2:]
+                    self.options_dispcal[:index] + self.options_dispcal[index + 2 :]
                 )
         # Strip options we may override (basically all the stuff which can be
         # added by add_measurement_features. -X is repeated because it can
@@ -15488,7 +15492,7 @@ BEGIN_DATA
                 bp_in=RGBscaled[0],
                 bp_out=bp_out,
                 wp_out=RGBscaled[-1],
-                weight=True
+                weight=True,
             )
             cal += "%f %f %f %f\n" % (i / 255.0, R, G, B)
         cal += "END_DATA"
@@ -15925,7 +15929,9 @@ BEGIN_DATA
             )
         ofile.write(b'KEYWORD "DEVICE_CLASS"\n')
         ofile.write(
-            b'DEVICE_CLASS "' + (b"DISPLAY" if colorspace == b"RGB" else b"OUTPUT") + b'"\n'
+            b'DEVICE_CLASS "'
+            + (b"DISPLAY" if colorspace == b"RGB" else b"OUTPUT")
+            + b'"\n'
         )
         include_sample_name = False
         for i, cie in enumerate(odata):
@@ -15990,7 +15996,12 @@ BEGIN_DATA
                 )
             else:
                 ofile.write(
-                    bytes(str(i)) + b" " + b" ".join(device) + b" " + b" ".join(cie) + b"\n"
+                    bytes(str(i))
+                    + b" "
+                    + b" ".join(device)
+                    + b" "
+                    + b" ".join(cie)
+                    + b"\n"
                 )
         ofile.write(b"END_DATA\n")
         ofile.seek(0)
@@ -16252,9 +16263,9 @@ BEGIN_DATA
         download_path = os.path.join(download_dir, filename)
         response = None
         hashes = None
-        is_main_dl = uri.startswith(
-            f"https://{DOMAIN}/download/"
-        ) or uri.startswith(f"https://{DOMAIN}/Argyll/")
+        is_main_dl = uri.startswith(f"https://{DOMAIN}/download/") or uri.startswith(
+            f"https://{DOMAIN}/Argyll/"
+        )
         if is_main_dl:
             # Always force connection to server even if local file exists for
             # displaycal.net/downloads/* and displaycal.net/Argyll/*
@@ -16349,8 +16360,9 @@ BEGIN_DATA
                         return DownloadError(
                             lang.getstr("file.hash.malformed", filename), orig_uri
                         )
-                        hashesdict[Path(name_hash[1].decode().lstrip("*"))] = \
-                            name_hash[0]
+                        hashesdict[Path(name_hash[1].decode().lstrip("*"))] = name_hash[
+                            0
+                        ]
                     expectedhash_hex = hashesdict[filename]
                 if not expectedhash_hex:
                     response.close()
