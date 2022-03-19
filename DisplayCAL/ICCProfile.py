@@ -7615,6 +7615,8 @@ class ICCProfile(object):
                 info[name] = ""
                 for language, countries in tag.items():
                     for country, value in countries.items():
+                        if isinstance(country, bytes):
+                            country = country.decode("utf-8")
                         if country.strip("\0 "):
                             country = "/" + country
                         info["    %s%s" % (language, country)] = value

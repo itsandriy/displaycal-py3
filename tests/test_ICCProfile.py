@@ -1,7 +1,22 @@
 # -*- coding: utf-8 -*-
 """Tests for the DisplayCAL.ICCProfile module."""
+import binascii
+import datetime
+from time import strftime
 
 from DisplayCAL import ICCProfile, colormath
+from DisplayCAL.ICCProfile import (
+    uInt8Number_tohex,
+    uInt32Number_tohex,
+    s15Fixed16Number_tohex,
+    uInt16Number_tohex,
+    DictType,
+    hexrepr,
+    cmms,
+    dateTimeNumber,
+    ICCProfileTag,
+    Text,
+)
 
 
 def test_iccprofile_from_rgb_space():
@@ -74,9 +89,6 @@ def test_iccprofile_from_rgb_space():
         ["    Maximum Y", "100.00"],
     ]
     # can't set the created checksum properly
-    import binascii
-    from time import strftime
-
     expected_result[6] = [
         "Created",
         strftime("%Y-%m-%d %H:%M:%S", icc.dateTime.timetuple()),
@@ -137,8 +149,6 @@ def test_iccprofile_get_info():
     display_manufacturer = None
     display_name = "Monitor 1, Output DP-2"
     cat = "Bradford"
-
-    from DisplayCAL import ICCProfile
 
     ICCProfile.debug = True
     icc = ICCProfile.ICCProfile.from_chromaticities(
@@ -219,9 +229,6 @@ def test_iccprofile_get_info():
     ]
 
     # can't set the created checksum properly
-    import binascii
-    from time import strftime
-
     expected_result[6] = [
         "Created",
         strftime("%Y-%m-%d %H:%M:%S", icc.dateTime.timetuple()),
@@ -248,8 +255,6 @@ def test_iccprofile_from_xyz():
     display_name = b"Monitor 1, Output DP-2"
     cat = "Bradford"
 
-    from DisplayCAL import ICCProfile
-
     ICCProfile.debug = True
     mtx = ICCProfile.ICCProfile.from_XYZ(
         XYZ["r"],
@@ -269,8 +274,6 @@ def test_iccprofile_from_xyz():
 
 def test_uInt8Number_tohex_is_working_properly():
     """Testing if uInt8Number_tohex is working properly."""
-    from DisplayCAL.ICCProfile import uInt8Number_tohex
-
     test_value = 1321
     result = uInt8Number_tohex(test_value)
     expected_value = b")"
@@ -279,8 +282,6 @@ def test_uInt8Number_tohex_is_working_properly():
 
 def test_uInt32Number_tohex_is_working_properly():
     """Testing if uInt32Number_tohex is working properly."""
-    from DisplayCAL.ICCProfile import uInt32Number_tohex
-
     test_value = 132123
     result = uInt32Number_tohex(test_value)
     expected_value = b"\x00\x02\x04\x1b"
@@ -289,8 +290,6 @@ def test_uInt32Number_tohex_is_working_properly():
 
 def test_s15Fixed16Number_tohex_is_working_properly():
     """Testing if s15Fixed16Number_tohex is working properly."""
-    from DisplayCAL.ICCProfile import s15Fixed16Number_tohex
-
     test_value = 123.12
     result = s15Fixed16Number_tohex(test_value)
     expected_value = b"\x00{\x1e\xb8"
@@ -299,8 +298,6 @@ def test_s15Fixed16Number_tohex_is_working_properly():
 
 def test_uInt16Number_tohex_tohex_is_working_properly():
     """Testing if uInt16Number_tohex is working properly."""
-    from DisplayCAL.ICCProfile import uInt16Number_tohex
-
     test_value = 12123
     result = uInt16Number_tohex(test_value)
     expected_value = b"/["
@@ -309,8 +306,6 @@ def test_uInt16Number_tohex_tohex_is_working_properly():
 
 def test_dict_type():
     """Testing the DictType."""
-    from DisplayCAL.ICCProfile import DictType
-
     d = DictType()
     d.update(
         {
@@ -340,8 +335,6 @@ def test_sample_icc_file_1(data_files):
     Args:
         data_files: A fixture supplying data files.
     """
-    from DisplayCAL import ICCProfile
-
     icc_profile = ICCProfile.ICCProfile(profile=data_files["default.icc"].absolute())
     result = icc_profile.get_info()
 
@@ -428,8 +421,6 @@ def test_sample_icc_file_1(data_files):
 
 def test_hexrepr_is_with_mapping_supplied():
     """Testing DisplayCAL.ICCProfile.hexrepr with a mapping is supplied."""
-    from DisplayCAL.ICCProfile import hexrepr, cmms
-
     test_bytes_string = b"ADBE"
     expected_result = "0x41444245 'ADBE' Adobe"
     result = hexrepr(test_bytes_string, mapping=cmms)
@@ -438,8 +429,6 @@ def test_hexrepr_is_with_mapping_supplied():
 
 def test_hexrepr_is_without_mapping_supplied():
     """Testing DisplayCAL.ICCProfile.hexrepr with no mapping is supplied."""
-    from DisplayCAL.ICCProfile import hexrepr
-
     test_bytes_string = b"ADBE"
     expected_result = "0x41444245 'ADBE'"
     result = hexrepr(test_bytes_string)
@@ -448,9 +437,6 @@ def test_hexrepr_is_without_mapping_supplied():
 
 def test_date_time_number_is_working_properly():
     """Testing if DisplayCAL.ICCProfile.dataTimeNumber function is working properly."""
-    import datetime
-    from DisplayCAL.ICCProfile import dateTimeNumber
-
     test_value = b"\x07\xe6\x00\x02\x00\x13\x00\x12\x00*\x002"
     expected_result = datetime.datetime(2022, 2, 19, 18, 42, 50)
     result = dateTimeNumber(test_value)
@@ -459,8 +445,6 @@ def test_date_time_number_is_working_properly():
 
 def test_icc_profile_tag_is_working_properly():
     """Testing if the ``ICCProfileTag`` class is working properly."""
-    from DisplayCAL.ICCProfile import ICCProfileTag
-
     tag_data = b"\0\0\0\0"
     tag_signature = "desc"
     tag = ICCProfileTag(tag_data, tag_signature)
@@ -471,8 +455,6 @@ def test_icc_profile_tag_is_working_properly():
 
 def test_text_tag_is_working_properly():
     """Testing if the ``Text`` Tag is working properly."""
-    from DisplayCAL.ICCProfile import Text
-
     test_data = b"some text"
     t = Text(test_data)
     t.tagData = test_data
@@ -582,9 +564,9 @@ def test_for_issue_31_2(data_files):
         ["        ΔE 2000 to daylight locus", "1.32"],
         ["        ΔE 2000 to blackbody locus", "5.68"],
         ["Colorants (PCS-relative)", ""],
-        ["    b'Red' XYZ", ' 61.86  31.08   1.65 (xy 0.6539 0.3286)'],
-        ["    b'Green' XYZ", ' 20.25  62.90   5.88 (xy 0.2275 0.7065)'],
-        ["    b'Blue' XYZ", ' 14.58   6.30  75.18 (xy 0.1518 0.0656)'],
+        ["    b'Red' XYZ", " 61.86  31.08   1.65 (xy 0.6539 0.3286)"],
+        ["    b'Green' XYZ", " 20.25  62.90   5.88 (xy 0.2275 0.7065)"],
+        ["    b'Blue' XYZ", " 14.58   6.30  75.18 (xy 0.1518 0.0656)"],
         ["Video card gamma table", ""],
         ["    Bitdepth", "16"],
         ["    Channels", "3"],
@@ -644,5 +626,103 @@ def test_for_issue_31_2(data_files):
         ["    GAMUT_coverage(dci-p3)", "0.8745"],
         ["    GAMUT_coverage(srgb)", "0.9997"],
         ["    GAMUT_coverage(adobe-rgb)", "0.9997"],
+    ]
+    assert result == expected_result
+
+
+def test_for_issue_31_3(data_files):
+    """Test for issue #31, an ICC files reported to be creating errors."""
+    icc_file_path = data_files["SW271 PM PenalNative_KB1_160_2022-03-17.icc"]
+    icc = ICCProfile.ICCProfile(icc_file_path)
+    result = icc.get_info()
+    expected_result = [
+        ["Size", "10656 Bytes (10.41 KiB)"],
+        ["Preferred CMM", "0x6170706C 'appl' Apple"],
+        ["ICC version", "4.0"],
+        ["Profile class", "Display device profile"],
+        ["Color model", "RGB"],
+        ["Profile connection space (PCS)", "XYZ"],
+        ["Created", "2022-03-17 15:42:00"],
+        ["Platform", "Apple"],
+        ["Is embedded", "No"],
+        ["Can be used independently", "Yes"],
+        ["Device", ""],
+        ["    Manufacturer", "0x00000000"],
+        ["    Model", "0x00000000"],
+        ["    Media attributes", "Reflective, Glossy, Positive, Color"],
+        ["Default rendering intent", "Perceptual"],
+        ["PCS illuminant XYZ", " 96.42 100.00  82.49 (xy 0.3457 0.3585, CCT 5000K)"],
+        ["Creator", "0x52442020 'RD  '"],
+        ["Checksum", "0xC61B1DD94A0ED672203190C72F1EBA61"],
+        ["    Checksum OK", "No"],
+        ["    Calculated checksum", "0x4D726857D69314B83F8396D2C3DDBBF9"],
+        ["Description", ""],
+        ["    ASCII", "SW271 PM PenalNative_KB1_160_2022-03-17"],
+        ["    Macintosh", "SW271 PM PenalNative_KB1_160_2022-03-17"],
+        ["'dscm'", ""],
+        ["    b'en'/US", ""],
+        ["Characterization target", "[5938 Bytes]"],
+        [
+            "Copyright",
+            "Copyright © 2011-2020 Remote Director, LLC. All Rights Reserved.",
+        ],
+        ["Media white point", ""],
+        ["    Illuminant-relative XYZ", " 96.42 100.00  82.49 (xy 0.3457 0.3585)"],
+        ["    Illuminant-relative CCT", "5000K"],
+        ["        ΔE 2000 to daylight locus", "0.08"],
+        ["        ΔE 2000 to blackbody locus", "4.73"],
+        ["    PCS-relative XYZ", " 96.42 100.00  82.49 (xy 0.3457 0.3585)"],
+        ["    PCS-relative CCT", "5000K"],
+        ["Media black point", ""],
+        ["    Illuminant-relative XYZ", "0.1480 0.1434 0.3220 (xy 0.2413 0.2338)"],
+        ["    Illuminant-relative CCT", "746507K"],
+        ["    PCS-relative XYZ", "0.1480 0.1434 0.3220 (xy 0.2413 0.2338)"],
+        ["    PCS-relative CCT", "746507K"],
+        ["Red matrix column", ""],
+        ["    Illuminant-relative XYZ", " 58.29  27.40   0.96 (xy 0.6727 0.3162)"],
+        ["    PCS-relative XYZ", " 61.66  28.85   0.60 (xy 0.6768 0.3166)"],
+        ["Green matrix column", ""],
+        ["    Illuminant-relative XYZ", " 18.42  65.25   7.42 (xy 0.2022 0.7163)"],
+        ["    PCS-relative XYZ", " 20.43  65.05   6.39 (xy 0.2223 0.7081)"],
+        ["Blue matrix column", ""],
+        ["    Illuminant-relative XYZ", " 18.33   7.35 100.53 (xy 0.1453 0.0582)"],
+        ["    PCS-relative XYZ", " 14.33   6.10  75.50 (xy 0.1494 0.0636)"],
+        ["Luminance", "158.49 cd/m²"],
+        ["Red tone response curve", "Gamma 2.2"],
+        ["Green tone response curve", "Gamma 2.2"],
+        ["Blue tone response curve", "Gamma 2.2"],
+        ["Chromatic adaptation transform", "Bradford"],
+        ["    Matrix", "1.0479 0.0229 -0.0502"],
+        ["        ", "0.0296 0.9905 -0.0171"],
+        ["        ", "-0.0093 0.0151 0.7517"],
+        ["Video card gamma table", ""],
+        ["    Bitdepth", "16"],
+        ["    Channels", "3"],
+        ["    Number of entries per channel", "256"],
+        ["    Channel 1 gamma at 50% input", "1.00"],
+        ["    Channel 1 minimum", "0.0000%"],
+        ["    Channel 1 maximum", "100.00%"],
+        ["    Channel 1 unique values", "256 @ 8 Bit"],
+        ["    Channel 1 is linear", "Yes"],
+        ["    Channel 2 gamma at 50% input", "1.00"],
+        ["    Channel 2 minimum", "0.0000%"],
+        ["    Channel 2 maximum", "100.00%"],
+        ["    Channel 2 unique values", "256 @ 8 Bit"],
+        ["    Channel 2 is linear", "Yes"],
+        ["    Channel 3 gamma at 50% input", "1.00"],
+        ["    Channel 3 minimum", "0.0000%"],
+        ["    Channel 3 maximum", "100.00%"],
+        ["    Channel 3 unique values", "256 @ 8 Bit"],
+        ["    Channel 3 is linear", "Yes"],
+        ["'pICS'", "[1275 Bytes]"],
+        ["'pMC '", "'pMC ' [1000 Bytes]"],
+    ]
+    expected_result[6] = [
+        "Created",
+        strftime("%Y-%m-%d %H:%M:%S", icc.dateTime.timetuple()),
+    ]
+    expected_result[17] = [
+        "Checksum",
+        "0x{}".format(binascii.hexlify(icc.ID).upper().decode()),
     ]
     assert result == expected_result
