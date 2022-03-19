@@ -22,26 +22,22 @@ else:
     # elif sys.platform == "win32":
     # Windows have separate files
     if platform.architecture()[0].startswith("64"):
-        if sys.version_info[:2] == (3, 7):
-            from DisplayCAL.lib64.python37.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 8):
+        if sys.version_info[:2] == (3, 8):
             from DisplayCAL.lib64.python38.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 9):
             from DisplayCAL.lib64.python39.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 10):
             from DisplayCAL.lib64.python310.RealDisplaySizeMM import *
     else:
-        if sys.version_info[:2] == (3, 7):
-            from DisplayCAL.lib32.python37.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 8):
+        if sys.version_info[:2] == (3, 8):
             from DisplayCAL.lib32.python38.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 9):
             from DisplayCAL.lib32.python39.RealDisplaySizeMM import *
         elif sys.version_info[:2] == (3, 10):
             from DisplayCAL.lib32.python310.RealDisplaySizeMM import *
 # else:
-#     # For Linux use the ``xrandr`` command output which supplies everything more
-#     # precisely than the C-Extension
+#     # TODO: For Linux use the ``xrandr`` command output which supplies everything more
+#     #       precisely than the C-Extension
 #     pass
 
 
