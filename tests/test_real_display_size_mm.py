@@ -46,7 +46,6 @@ def test_enumerate_displays():
         RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
     ):
         result = RealDisplaySizeMM.enumerate_displays()
-    print(result)
     assert result[0]["description"] != ""
     assert result[0]["edid"] != ""
     assert result[0]["icc_profile_atom_id"] != ""

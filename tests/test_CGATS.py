@@ -326,7 +326,6 @@ def test_cgats_with_sample_ti3_data(data_files):
     cgats = CGATS.CGATS(cgats=data_files["0_16.ti3"].absolute())
 
     assert isinstance(cgats, CGATS.CGATS)
-    print(cgats[0])
     assert cgats[0]["DESCRIPTOR"] == b"Argyll Calibration Target chart information 3"
     assert cgats[0]["ORIGINATOR"] == b"Argyll dispread"
     assert cgats[0]["DEVICE_CLASS"] == b"DISPLAY"
