@@ -3,14 +3,25 @@ on: [push]
 
 jobs:
   build:
+    name: Performing tests for Python ${{ matrix.python-version }}
     env:
       DISPLAY: :0
-    name: Run Python Tests
     runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: False
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
 
     steps:
 
     - uses: actions/checkout@v2
+
+    - name: Set Environment Variables
+      run: echo "py_version=$(echo ${{ matrix.python-version }} | tr -d .)" >> $GITHUB_ENV
 
     - name: Setup timezone
       uses: zcong1993/setup-timezone@master
@@ -24,17 +35,17 @@ jobs:
         # start xvfb in the background
         sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
 
-    - name: Setup Python 3.8
+    - name: Setup Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: ${{ matrix.python-version }}
 
     - name: Install Python dependencies
       run: |
         sudo apt-get install -y $(grep -o ^[^#][[:alnum:]-]*.* "packages.list")
         python3 -m pip install --upgrade pip
         pip install wheel
-        pip install https://wxpython.p5k.org/wxPython-4.1.1-cp38-cp38-linux_x86_64.whl
+        pip install https://wxpython.p5k.org/wxPython-4.1.1-cp${{ env.py_version }}-cp${{ env.py_version }}-linux_x86_64.whl
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
 
@@ -42,7 +53,7 @@ jobs:
       run: |
         sudo chmod a+rw /etc/udev/rules.d
         python3 setup.py install
-        cp ./build/lib.linux-x86_64-3.8/DisplayCAL/lib64/python38/RealDisplaySizeMM.cpython-38-x86_64-linux-gnu.so ./DisplayCAL/lib64/python38/
+        cp ./build/lib.linux-x86_64-${{ matrix.python-version }}/DisplayCAL/lib64/python${{ env.py_version }}/RealDisplaySizeMM.cpython-${{ env.py_version }}-x86_64-linux-gnu.so ./DisplayCAL/lib64/python${{ env.py_version }}/
 
     - name: Test with pytest
       run: |
