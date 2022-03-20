@@ -5145,8 +5145,7 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
             b"desc",
             b"\0" * 4,
             uInt32Number_tohex(len(self.ASCII) + 1),  # count of ASCII chars + 1
-            str(self.ASCII).encode("ASCII", "replace")
-            + b"\0",  # ASCII desc, \0 terminated
+            self.ASCII + b"\0",  # ASCII desc, \0 terminated
             uInt32Number_tohex(self.get("unicodeLanguageCode", 0)),
         ]
         if "Unicode" in self:
@@ -7354,9 +7353,9 @@ class ICCProfile(object):
             and device["manufacturer"][0:2] == b"\0\0"
             and device["manufacturer"][2:4] != b"\0\0"
         ):
-            mnft_id = device["manufacturer"][3] + device["manufacturer"][2]
+            mnft_id = device["manufacturer"][3:4] + device["manufacturer"][2:3]
             mnft_id = edid.parse_manufacturer_id(mnft_id)
-            manufacturer = edid.get_manufacturer_name(mnft_id)
+            manufacturer = edid.get_manufacturer_name(mnft_id)  # this is str
         else:
             manufacturer = (
                 re.sub(b"[^\x20-\x7e]", b"", device.get("manufacturer", b""))
@@ -7597,7 +7596,7 @@ class ICCProfile(object):
                 info["    Manufacturer"] = "0x%s %s" % (
                     binascii.hexlify(tag.manufacturer).upper(),
                     edid.get_manufacturer_name(
-                        edid.parse_manufacturer_id(tag.manufacturer.ljust(2, "\0")[:2])
+                        edid.parse_manufacturer_id(tag.manufacturer.ljust(2, b"\0")[:2])
                     )
                     or "",
                 )
@@ -7672,10 +7671,10 @@ class ICCProfile(object):
                     )
             elif isinstance(tag, TextDescriptionType):
                 if not tag.get("Unicode") and not tag.get("Macintosh"):
-                    info["%s (ASCII)" % name] = tag.ASCII.decode()
+                    info["%s (ASCII)" % name] = tag.ASCII.decode("utf-8")
                 else:
                     info[name] = ""
-                    info["    ASCII"] = tag.ASCII.decode()
+                    info["    ASCII"] = tag.ASCII.decode("utf-8")
                     if tag.get("Unicode"):
                         info["    Unicode"] = tag.Unicode
                     if tag.get("Macintosh"):

@@ -226,7 +226,6 @@ def parse_manufacturer_id(block):
     """Parse the manufacturer id and return decoded string.
 
     The range is always ASCII charcode 64 to 95.
-
     """
     h = combine_hi_8lo(block[0], block[1])
     manufacturer_id = []
