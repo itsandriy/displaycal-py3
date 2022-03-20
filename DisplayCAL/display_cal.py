@@ -834,12 +834,13 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
     for i, item in enumerate(json):
         # CGATS is byte string based, make sure to encode Unicode back to UTF-8
         # for parsing
-        cgats[i] = safe_str(item.get("cgats", ""), "UTF-8")
+        # CGATS accepts ``bytes`` data only
+        cgats[i] = item.get("cgats", "").encode("utf-8")
         try:
             ccxx = CGATS.CGATS(cgats[i])
         except CGATS.CGATSError as exception:
             print(exception)
-            cgats[i] = ""
+            cgats[i] = b""
             ccxx = CGATS.CGATS()
         ccxx = ccxx.get(0, ccxx)
         index = dlg_list_ctrl.InsertStringItem(i, "")
@@ -935,7 +936,7 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
             ),
         )
         fit_method = ccxx.queryv1("FIT_METHOD")
-        if fit_method and fit_method != "xy":
+        if fit_method and fit_method != b"xy":
             fit_method = lang.getstr("perceptual")
         dlg_list_ctrl.SetStringItem(
             index,
@@ -1003,7 +1004,7 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
     if result != wx.ID_OK:
         return False
     # Important: Do not use parsed CGATS, order of keywords may be
-    # different than raw data so MD5 will be different
+    # different from raw data so MD5 will be different
     colorimeter_correction_check_overwrite(parent, cgats[index])
 
 
@@ -1031,7 +1032,7 @@ def colorimeter_correction_check_overwrite(
             return False
     try:
         with open(path, "wb") as cgatsfile:
-            cgatsfile.write((cgats.rstrip("\n") + "\n").encode())
+            cgatsfile.write(cgats.rstrip(b"\n") + b"\n")
     except EnvironmentError as exception:
         show_result_dialog(exception, parent)
         return False
@@ -1083,15 +1084,20 @@ def get_cgats_measurement_mode(cgats, instrument):
 
 
 def get_cgats_path(cgats):
-    descriptor = re.search(r'\nDESCRIPTOR\s+"(.+?)"\n', cgats)
+    descriptor = re.search(rb'\nDESCRIPTOR\s+"(.+?)"\n', cgats)
     if descriptor:
         descriptor = descriptor.groups()[0]
-    description = str(descriptor or lang.getstr("unnamed"))
-    name = re.sub(r"[\\/:;*?\"<>|]+", "_", make_argyll_compatible_path(description))[
-        :255
-    ]
+    descriptor = descriptor.decode("utf-8")
+    description = descriptor or lang.getstr("unnamed")
+    name = re.sub(
+        r"[\\/:;*?\"<>|]+",
+        "_",
+        make_argyll_compatible_path(description)
+    )[:255]
+    extension = cgats[:7].strip().lower().decode("utf-8")
     return os.path.join(
-        config.get_argyll_data_dir(), "%s.%s" % (name, cgats[:7].strip().lower())
+        config.get_argyll_data_dir(),
+        "%s.%s" % (name, extension)
     )
 
 
@@ -4587,6 +4593,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     continue
                 if desc == lstr:
                     desc = cgats.get_descriptor()  # this is bytes
+                    desc = desc.decode("utf-8")
                 # If the description is not the same as the 'sane'
                 # filename, add the filename after the description
                 # (max 31 chars)
@@ -4599,7 +4606,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     )
                     != os.path.splitext(os.path.basename(path))[0]
                 ):
-                    desc = b"%s <%s>" % (
+                    desc = "%s <%s>" % (
                         ellipsis_(desc, 66, "m"),
                         ellipsis_(os.path.basename(path), 31, "m"),
                     )
