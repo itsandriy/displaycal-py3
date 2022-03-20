@@ -12,3 +12,4 @@ __pycache__/
 /DisplayCAL.egg-info/SOURCES.txt
 /DisplayCAL.egg-info/PKG-INFO
 /DisplayCAL.egg-info/dependency_links.txt
+*.blend1
