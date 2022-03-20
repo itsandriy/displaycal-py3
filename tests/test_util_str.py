@@ -2,11 +2,12 @@
 
 from DisplayCAL.util_str import (
     asciize,
+    ellipsis_,
+    make_ascii_printable,
+    make_filename_safe,
     safe_basestring,
     safe_str,
     strtr,
-    ellipsis_,
-    make_filename_safe,
 )
 from DisplayCAL.ICCProfile import TextDescriptionType
 
@@ -237,4 +238,36 @@ def test_make_filename_safe_8():
     test_value = b"this/is not:suitable*for?filesystem \\"
     result = make_filename_safe(test_value, substitute=b"-")
     expected_result = b"this-is not-suitable-for-filesystem -"
+    assert result == expected_result
+
+
+def test_make_ascii_printable_1():
+    """Test DisplayCAL.util_str.make_ascii_printable() function."""
+    test_value = b'TYPR371U504L\n'
+    result = make_ascii_printable(test_value, substitute=b"\x00")
+    expected_result = b"TYPR371U504L\n"
+    assert result == expected_result
+
+
+def test_make_ascii_printable_2():
+    """Test DisplayCAL.util_str.make_ascii_printable() function."""
+    test_value = b'\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n'
+    result = make_ascii_printable(test_value, substitute=b"\x00")
+    expected_result = b'\x00\x00\x00\x00\x00\x00TYPR371U504L\n'
+    assert result == expected_result
+
+
+def test_make_ascii_printable_3():
+    """Test DisplayCAL.util_str.make_ascii_printable() function."""
+    test_value = b'\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n'
+    result = make_ascii_printable(test_value, substitute="\x00")
+    expected_result = b'\x00\x00\x00\x00\x00\x00TYPR371U504L\n'
+    assert result == expected_result
+
+
+def test_make_ascii_printable_4():
+    """Test DisplayCAL.util_str.make_ascii_printable() function."""
+    test_value = '\xcf\xff\xaf\xf0\x99\x80TYPR371U504L\n'
+    result = make_ascii_printable(test_value, substitute=b"\x00")
+    expected_result = '\x00\x00\x00\x00\x00\x00TYPR371U504L\n'
     assert result == expected_result

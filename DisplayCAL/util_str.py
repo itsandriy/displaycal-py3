@@ -308,8 +308,35 @@ def escape(obj):
 codecs.register_error("escape", escape)
 
 
-def make_ascii_printable(text, subst=b""):
-    return b"".join([char if char in ascii_printable else subst for char in text])
+def make_ascii_printable(text, substitute=b""):
+    """Make ASCII printable.
+
+    Args:
+        text (bytes, str): A ``bytes`` or ``str`` value.
+        substitute (bytes, str): A ``bytes`` or ``str`` value.
+
+    Returns:
+        bytes or str:
+    """
+    buffer = []
+    joiner = ""
+    temp_ascii_printable = ascii_printable
+    if isinstance(text, bytes):
+        joiner = b""
+        temp_ascii_printable = ascii_printable.encode("utf-8")
+        if isinstance(substitute, str):
+            substitute = substitute.encode("utf-8")
+    else:
+        if isinstance(substitute, bytes):
+            substitute = substitute.decode("utf-8")
+
+    for i in range(len(text)):
+        char = text[i: i + 1]
+        if char in temp_ascii_printable:
+            buffer.append(char)
+        else:
+            buffer.append(substitute)
+    return joiner.join(buffer)
 
 
 def make_filename_safe(unistr, encoding=fs_enc, substitute="_", concat=True):
