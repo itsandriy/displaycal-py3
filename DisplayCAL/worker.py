@@ -2431,8 +2431,9 @@ class Worker(WorkerBase):
                 except (IOError, CGATS.CGATSError) as exception:
                     return exception
                 else:
+                    ccxx_instrument_from_cgats = cgats.queryv1("INSTRUMENT") or b""
                     ccxx_instrument = get_canonical_instrument_name(
-                        str(cgats.queryv1("INSTRUMENT").decode("utf-8") or ""),
+                        ccxx_instrument_from_cgats,
                         {
                             "DTP94-LCD mode": "DTP94",
                             "eye-one display": "i1 Display",
