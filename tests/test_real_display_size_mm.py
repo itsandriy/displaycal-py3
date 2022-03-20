@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+from unittest import mock
+
+import pytest
+from _pytest.monkeypatch import MonkeyPatch
+
 from DisplayCAL import RealDisplaySizeMM, config
 from DisplayCAL.dev.mocks import check_call
 from tests.data.display_data import DisplayData
+from tests.data.fake_dbus import FakeDBusObject
 
 
 def test_real_display_size_mm():
@@ -87,7 +93,14 @@ def test_get_x_display():
     assert len(display) == 3
 
 
-def test_get_x_icc_profile_atom_id():
+@pytest.mark.parametrize(
+    "function",
+    (
+        RealDisplaySizeMM.get_x_icc_profile_atom_id,
+        RealDisplaySizeMM.get_x_icc_profile_output_atom_id,
+    ),
+)
+def test_get_x_icc_profile_atom_id(function) -> None:
     """Test DisplayCAL.RealDisplaySizeMM.get_x_icc_profile_atom_id() function."""
     RealDisplaySizeMM._displays = None
     assert RealDisplaySizeMM._displays is None
@@ -95,19 +108,14 @@ def test_get_x_icc_profile_atom_id():
         RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
     ):
         with check_call(config, "getcfg", DisplayData.CFG_DATA, call_count=2):
-            result = RealDisplaySizeMM.get_x_icc_profile_atom_id(0)
+            result = function(0)
     assert result is not None
     assert isinstance(result, int)
 
 
-def test_get_x_icc_profile_output_atom_id():
-    """Test DisplayCAL.RealDisplaySizeMM.get_x_icc_profile_atom_id() function."""
-    RealDisplaySizeMM._displays = None
-    assert RealDisplaySizeMM._displays is None
-    with check_call(
-        RealDisplaySizeMM, "_enumerate_displays", DisplayData.enumerate_displays()
-    ):
-        with check_call(config, "getcfg", DisplayData.CFG_DATA, call_count=2):
-            result = RealDisplaySizeMM.get_x_icc_profile_atom_id(0)
-    assert result is not None
-    assert isinstance(result, int)
+def test_get_wayland_display(monkeypatch: MonkeyPatch) -> None:
+    """Test if wayland display is returned."""
+    with mock.patch.object(RealDisplaySizeMM, "DBusObject", new=FakeDBusObject):
+        display = RealDisplaySizeMM.get_wayland_display(0, 0, 0, 0)
+    assert display["xrandr_name"] == "DP-2"
+    assert display["size_mm"] == (597, 336)
