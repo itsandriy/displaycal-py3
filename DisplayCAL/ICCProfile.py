@@ -7428,7 +7428,7 @@ class ICCProfile(object):
                     if self.colorSpace.endswith(b"CLR"):
                         colorant_name = ""
                     else:
-                        colorant_name = "(%s) " % self.colorSpace[i : i + 1]
+                        colorant_name = "(%s) " % (self.colorSpace[i : i + 1]).decode("utf-8")
                     info["    Channel %i %sxy" % (i + 1, colorant_name)] = " ".join(
                         "%6.4f" % v for v in channel
                     )
@@ -7593,14 +7593,13 @@ class ICCProfile(object):
                 )
             elif isinstance(tag, MakeAndModelType):
                 info[name] = ""
+                manufacturer_code = tag.manufacturer
+                manufacturer_name = edid.get_manufacturer_name(edid.parse_manufacturer_id(manufacturer_code.ljust(2, b"\0")[:2]))
                 info["    Manufacturer"] = "0x%s %s" % (
-                    binascii.hexlify(tag.manufacturer).upper(),
-                    edid.get_manufacturer_name(
-                        edid.parse_manufacturer_id(tag.manufacturer.ljust(2, b"\0")[:2])
-                    )
-                    or "",
+                    binascii.hexlify(manufacturer_code).decode("utf-8").upper(),
+                    manufacturer_name or "",
                 )
-                info["    Model"] = "0x%s" % binascii.hexlify(tag.model).upper()
+                info["    Model"] = "0x%s" % binascii.hexlify(tag.model).decode("utf-8").upper()
             elif isinstance(tag, MeasurementType):
                 info[name] = ""
                 info["    Observer"] = tag.observer.description
@@ -7959,23 +7958,23 @@ class ICCProfile(object):
         # OpenICC keys (some shared with GCM)
         self.tags.meta.update(
             (
-                (b"prefix", ",".join(prefixes)),
-                (b"EDID_mnft", edid["manufacturer_id"]),
-                (b"EDID_mnft_id", struct.unpack(">H", edid["edid"][8:10])[0]),
-                (b"EDID_model_id", edid["product_id"]),
+                ("prefix", ",".join(prefixes)),
+                ("EDID_mnft", edid["manufacturer_id"]),
+                ("EDID_mnft_id", struct.unpack(">H", edid["edid"][8:10])[0]),
+                ("EDID_model_id", edid["product_id"]),
                 (
-                    b"EDID_date",
-                    b"%0.4i-T%i"
+                    "EDID_date",
+                    "%0.4i-T%i"
                     % (edid["year_of_manufacture"], edid["week_of_manufacture"]),
                 ),
-                (b"EDID_red_x", edid["red_x"]),
-                (b"EDID_red_y", edid["red_y"]),
-                (b"EDID_green_x", edid["green_x"]),
-                (b"EDID_green_y", edid["green_y"]),
-                (b"EDID_blue_x", edid["blue_x"]),
-                (b"EDID_blue_y", edid["blue_y"]),
-                (b"EDID_white_x", edid["white_x"]),
-                (b"EDID_white_y", edid["white_y"]),
+                ("EDID_red_x", edid["red_x"]),
+                ("EDID_red_y", edid["red_y"]),
+                ("EDID_green_x", edid["green_x"]),
+                ("EDID_green_y", edid["green_y"]),
+                ("EDID_blue_x", edid["blue_x"]),
+                ("EDID_blue_y", edid["blue_y"]),
+                ("EDID_white_x", edid["white_x"]),
+                ("EDID_white_y", edid["white_y"]),
             )
         )
         manufacturer = edid.get("manufacturer")

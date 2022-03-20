@@ -726,3 +726,17 @@ def test_for_issue_31_3(data_files):
         "0x{}".format(binascii.hexlify(icc.ID).upper().decode()),
     ]
     assert result == expected_result
+
+
+def test_for_issue_50_1(data_files):
+    """Testing DictType.tagData() for issue #50."""
+    import pprint
+
+    icc_profile_path = data_files[
+        "UP2516D #1 2022-03-20 02-08 D6500 2.2 F-S XYZLUT+MTX.icc"
+    ]
+    iccp = ICCProfile.ICCProfile(icc_profile_path)
+    dict_type = iccp.tags["meta"]
+    pprint.pprint(dict_type)
+    # It seems that we can't reproduce the error with this ICC profile.
+    assert dict_type.tagData != ""
