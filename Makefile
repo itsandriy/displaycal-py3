@@ -1,9 +1,10 @@
 NUM_CPUS = $(shell nproc ||  grep -c '^processor' /proc/cpuinfo)
+SETUP_PY_FLAGS = --use-distutils
 
 all: build FORCE
 
 build: FORCE
-	python setup.py build -j${NUM_CPUS} --use-distutils
+	python setup.py build -j$(NUM_CPUS) $(SETUP_PY_FLAGS)
 
 clean: FORCE
 	-rm -rf build
@@ -20,14 +21,15 @@ html:
 	./setup.py readme
 
 install: build FORCE
-	python setup.py install --use-distutils
+	python setup.py install $(SETUP_PY_FLAGS)
 
 requirements: requirements.txt requirements-dev.txt
-	MAKEFLAGS="-j$(NUM_CORES)" pip install  -r requirements.txt
-	MAKEFLAGS="-j$(NUM_CORES)" pip install  -r requirements-dev.txt
+	pip install wheel pip --upgrade
+	MAKEFLAGS="-j$(NUM_CPUS)" pip install  -r requirements.txt
+	MAKEFLAGS="-j$(NUM_CPUS)" pip install  -r requirements-dev.txt
 
 uninstall:
-	./setup.py uninstall --use-distutils
+	./setup.py uninstall $(SETUP_PY_FLAGS)
 
 # https://www.gnu.org/software/make/manual/html_node/Force-Targets.html
 FORCE:
