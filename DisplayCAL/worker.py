@@ -44,6 +44,8 @@ from hashlib import md5, sha256
 from threading import currentThread
 from time import sleep, strftime, time
 
+from send2trash import send2trash
+
 if sys.platform == "darwin":
     from platform import mac_ver
     from _thread import start_new_thread
@@ -169,7 +171,6 @@ from DisplayCAL.patterngenerators import (
     ResolveCMPatternGeneratorServer,
     WebWinHTTPPatternGeneratorServer,
 )
-from DisplayCAL.trash import trash
 from DisplayCAL.util_decimal import stripzeros
 from DisplayCAL.util_http import encode_multipart_formdata
 from DisplayCAL.util_io import (
@@ -10085,9 +10086,9 @@ usage: spotread [-options] [logfile]
                 and profile_install_path != profile.fileName
             ):
                 try:
-                    trash([profile_install_path])
-                except Exception as exception:
-                    self.log(exception)
+                    send2trash([profile_install_path])
+                except OSError as exc:
+                    self.log(exc)
                 else:
                     # Give colord time to recognize that the profile was
                     # removed, otherwise gcm-import may complain if it's
