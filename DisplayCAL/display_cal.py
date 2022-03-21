@@ -44,6 +44,8 @@ import urllib.error
 import urllib.parse
 import zipfile
 
+from send2trash import send2trash
+
 if sys.platform == "win32":
     import winreg
 from hashlib import md5
@@ -167,7 +169,6 @@ except ImportError:
 
     CCPG = NoneType
 
-from DisplayCAL.trash import trash, TrashAborted, TrashcanUnavailableError
 from DisplayCAL.util_decimal import float2dec, stripzeros
 from DisplayCAL.util_io import LineCache, TarFileProper
 from DisplayCAL.util_list import index_fallback_ignorecase, intlist, natsort
@@ -4891,15 +4892,9 @@ class MainFrame(ReportFrame, BaseFrame):
             else:
                 trashcan = lang.getstr("trashcan.linux")
             try:
-                trash(malformed_ccxx)
-            except TrashAborted as exception:
-                if exception.args[0] == -1:
-                    # Trash operation was aborted
-                    pass
-            except TrashcanUnavailableError:
-                msg = lang.getstr("error.trashcan_unavailable", trashcan)
-            except Exception as exception:
-                msg = lang.getstr("error.deletion", trashcan) + "\n\n" + str(exception)
+                send2trash(malformed_ccxx)
+            except OSError as exc:
+                msg = lang.getstr("error.deletion", trashcan) + "\n\n" + str(exc)
             else:
                 orphans = [
                     orphan for orphan in malformed_ccxx if os.path.exists(orphan)
@@ -18639,9 +18634,9 @@ class MainFrame(ReportFrame, BaseFrame):
                         and ".DS_Store" in dircontents
                     ) or len(delete_related_files) == len(dircontents):
                         # Delete whole folder
-                        trash([os.path.dirname(cal)])
+                        send2trash([os.path.dirname(cal)])
                     else:
-                        trash(delete_related_files)
+                        send2trash(delete_related_files)
                     orphan_related_files = [
                         related_file
                         for related_file in delete_related_files
@@ -18659,23 +18654,10 @@ class MainFrame(ReportFrame, BaseFrame):
                             ok=lang.getstr("ok"),
                             bitmap=geticon(32, "dialog-error"),
                         )
-                except TrashAborted as exception:
-                    if exception.args[0] == -1:
-                        # Whole operation was aborted
-                        return
-                except TrashcanUnavailableError:
+                except OSError as exc:
                     InfoDialog(
                         self,
-                        msg=lang.getstr("error.trashcan_unavailable", trashcan),
-                        ok=lang.getstr("ok"),
-                        bitmap=geticon(32, "dialog-error"),
-                    )
-                except Exception as exception:
-                    InfoDialog(
-                        self,
-                        msg=lang.getstr("error.deletion", trashcan)
-                        + "\n\n"
-                        + str(exception),
+                        msg=f"{lang.getstr('error.deletion', trashcan)}\n\n{str(exc)}",
                         ok=lang.getstr("ok"),
                         bitmap=geticon(32, "dialog-error"),
                     )

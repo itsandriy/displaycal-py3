@@ -4,5 +4,6 @@ distro
 numpy
 Pillow
 PyChromecast
-zeroconf
+Send2Trash
 wxPython
+zeroconf
