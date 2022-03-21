@@ -2868,7 +2868,11 @@ def uInt32Number(binaryString):
 
 
 def uInt32Number_tohex(num):
-    return struct.pack(">I", int(round(num)))
+    try:
+        return struct.pack(">I", int(round(num)))
+    except struct.error as e:
+        print("num: {}".format(num))
+        raise e
 
 
 def uInt64Number(binaryString):
