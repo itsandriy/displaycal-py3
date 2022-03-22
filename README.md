@@ -1,6 +1,5 @@
 DisplayCAL Python 3 Project
 ===========================
-[![Chat on Matrix](https://matrix.to/img/matrix-badge.svg)][matrix]
 
 This project intended to modernize the DisplayCAL code including Python 3 support.
 
@@ -11,10 +10,6 @@ DisplayCAL users, to contribute back to this great tool.
 
 This project is based on the ``HEAD`` of the Sourceforge version, which has 5 extra
 commits that Florian has created after the ``3.8.9.3`` release on 14 Jan 2020.
-
-Community
-----------------------------
-Come talk with us on [Matrix][matrix]!
 
 Status Update (10 March 2022)
 -----------------------------
@@ -115,5 +110,3 @@ Because there are very little automated tests, **I need the code to be tested
 constantly**. Please help me with that.
 
 Have fun!
-
-[matrix]: https://matrix.to/#/#displaycal-py3:matrix.org
