@@ -4624,6 +4624,7 @@ class DictType(ICCProfileTag, AODict):
         storage = []
         elements = []
         offsets = []
+        print("DEBUG: for #50: self.items(): {}".format(self.items()))
         for item in self.items():
             for key in keys:
                 if key == "name":
@@ -6330,14 +6331,16 @@ class ICCProfile(object):
 
             # ICC profile
             header = data[:128]
+            print("header: {}".format(header))
             self.size = uInt32Number(header[0:4])
             self.preferredCMM = header[4:8]
             minorrev_bugfixrev = binascii.hexlify(header[8:12][1:2])
             self.version = float(
-                str(ord(header[8:12][0:1]))
-                + "."
-                + str(int(b"0x0" + minorrev_bugfixrev[0:1], 16))
-                + str(int(b"0x0" + minorrev_bugfixrev[1:2], 16))
+                "{}.{}".format(
+                    header[8:12][0],
+                    str(int(b"0x0" + minorrev_bugfixrev[0:1], 16))
+                    + str(int(b"0x0" + minorrev_bugfixrev[1:2], 16)),
+                )
             )
             self.profileClass = header[12:16]
             self.colorSpace = header[16:20].strip()
@@ -7432,7 +7435,9 @@ class ICCProfile(object):
                     if self.colorSpace.endswith(b"CLR"):
                         colorant_name = ""
                     else:
-                        colorant_name = "(%s) " % (self.colorSpace[i : i + 1]).decode("utf-8")
+                        colorant_name = "(%s) " % (self.colorSpace[i : i + 1]).decode(
+                            "utf-8"
+                        )
                     info["    Channel %i %sxy" % (i + 1, colorant_name)] = " ".join(
                         "%6.4f" % v for v in channel
                     )
@@ -7598,12 +7603,16 @@ class ICCProfile(object):
             elif isinstance(tag, MakeAndModelType):
                 info[name] = ""
                 manufacturer_code = tag.manufacturer
-                manufacturer_name = edid.get_manufacturer_name(edid.parse_manufacturer_id(manufacturer_code.ljust(2, b"\0")[:2]))
+                manufacturer_name = edid.get_manufacturer_name(
+                    edid.parse_manufacturer_id(manufacturer_code.ljust(2, b"\0")[:2])
+                )
                 info["    Manufacturer"] = "0x%s %s" % (
                     binascii.hexlify(manufacturer_code).decode("utf-8").upper(),
                     manufacturer_name or "",
                 )
-                info["    Model"] = "0x%s" % binascii.hexlify(tag.model).decode("utf-8").upper()
+                info["    Model"] = (
+                    "0x%s" % binascii.hexlify(tag.model).decode("utf-8").upper()
+                )
             elif isinstance(tag, MeasurementType):
                 info[name] = ""
                 info["    Observer"] = tag.observer.description
