@@ -4624,7 +4624,6 @@ class DictType(ICCProfileTag, AODict):
         storage = []
         elements = []
         offsets = []
-        print("DEBUG: for #50: self.items(): {}".format(self.items()))
         for item in self.items():
             for key in keys:
                 if key == "name":
@@ -6331,7 +6330,6 @@ class ICCProfile(object):
 
             # ICC profile
             header = data[:128]
-            print("header: {}".format(header))
             self.size = uInt32Number(header[0:4])
             self.preferredCMM = header[4:8]
             minorrev_bugfixrev = binascii.hexlify(header[8:12][1:2])
@@ -6424,7 +6422,8 @@ class ICCProfile(object):
     def data(self):
         """Get raw binary profile data.
 
-        This will re-assemble the various profile parts (header, tag table and data) on-the-fly.
+        This will re-assemble the various profile parts (header, tag table and data)
+        on-the-fly.
         """
         # Assemble tag table and tag data
         tagCount = len(self.tags)
@@ -6647,7 +6646,6 @@ class ICCProfile(object):
         (bytes 44 to 47), Rendering Intent field (bytes 64 to 67) and
         Profile ID field (bytes 84 to 99) in the profile header have been
         temporarily replaced with zeros.
-
         """
         data = self.data
         data = (
@@ -8001,7 +7999,10 @@ class ICCProfile(object):
         if edid.get("serial_ascii"):
             self.tags.meta["EDID_serial"] = edid["serial_ascii"]
         elif edid.get("serial_32"):
-            self.tags.meta["EDID_serial"] = bytes(edid["serial_32"])
+            # don't try to convert the following ``str`` to ``bytes``.
+            # the edid["serial_32"] is a huge number and bytes({int}) is not working
+            # like str({int}). What it tries is to create a b"\0" * {int}.
+            self.tags.meta["EDID_serial"] = str(edid["serial_32"])
         # Gnome Color Management keys
         self.tags.meta["EDID_md5"] = edid["hash"]
 
