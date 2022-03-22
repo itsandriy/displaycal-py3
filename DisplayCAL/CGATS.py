@@ -2351,9 +2351,9 @@ Transform {
         if not stream_or_filename:
             stream_or_filename = self.filename
         if isinstance(stream_or_filename, str):
-            stream = open(stream_or_filename, "wb")
+            with open(stream_or_filename, "wb") as stream:
+                stream.write(bytes(self))
         else:
             stream = stream_or_filename
-        stream.write(bytes(self))
-        if isinstance(stream_or_filename, str):
-            stream.close()
+            # This seems like a duplicate, but reduces complexity of the code
+            stream.write(bytes(self))

@@ -47,3 +47,4 @@ snowballstemmer
 tomli
 typing-extensions
 urllib3
+yappi
