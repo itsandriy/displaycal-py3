@@ -3504,7 +3504,7 @@ class FlatShadedButton(GradientButton):
                 retHeight = max(bmpHeight, retHeight)
 
             self._lastBestSize = wx.Size(
-                retWidth + 25 * self.dpiscale, retHeight + 15 * self.dpiscale
+                int(retWidth + 25 * self.dpiscale), int(retHeight + 15 * self.dpiscale)
             )
         return self._lastBestSize
 
