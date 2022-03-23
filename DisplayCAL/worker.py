@@ -15616,7 +15616,7 @@ BEGIN_DATA
             else:
                 # Always make a copy and do not alter a passed in CGATS instance!
                 cgats_filename = cgats.filename
-                cgats = CGATS.CGATS(str(cgats))
+                cgats = CGATS.CGATS(bytes(cgats))
                 cgats.filename = cgats_filename
             if 0 in cgats:
                 # only look at the first section
@@ -15680,6 +15680,7 @@ BEGIN_DATA
                     cgats, profile, fields, intent, white_patches
                 )
         except Exception as exception:
+            traceback.print_exc()
             if raise_exceptions:
                 raise exception
             if not isinstance(exception, (TypeError, ValueError)) or isinstance(
@@ -15705,7 +15706,6 @@ BEGIN_DATA
         utility and return TI3 (CGATS instance)
 
         """
-
         # ti1
         if isinstance(ti1, str):
             ti1 = CGATS.CGATS(ti1)
@@ -15722,20 +15722,20 @@ BEGIN_DATA
 
         # determine pcs for lookup
         color_rep = profile.connectionColorSpace.upper()
-        if color_rep == "RGB":
+        if color_rep == b"RGB":
             pcs = None
         elif not pcs:
-            if color_rep == "LAB":
+            if color_rep == b"LAB":
                 pcs = "l"
-            elif color_rep == "XYZ":
+            elif color_rep == b"XYZ":
                 pcs = "x"
             else:
                 raise ValueError("Unknown CIE color representation " + color_rep)
         else:
             if pcs == "l":
-                color_rep = "LAB"
+                color_rep = b"LAB"
             elif pcs == "x":
-                color_rep = "XYZ"
+                color_rep = b"XYZ"
 
         # get profile color space
         colorspace = profile.colorSpace
@@ -15783,6 +15783,7 @@ BEGIN_DATA
             else:
                 wp = colormath.get_standard_illuminant("D65", scale=100)
             for label in list(data.parent.DATA_FORMAT.values()):
+                label = label.decode("utf-8")
                 if label not in white:
                     if label.upper() == "LAB_L":
                         value = 100
@@ -15795,7 +15796,7 @@ BEGIN_DATA
                     elif label.upper() == "XYZ_Z":
                         value = wp[2]
                     else:
-                        value = "0"
+                        value = b"0"
                     white.update({label: value})
             white_added_count = 0
             if profile.profileClass != b"link":
@@ -15960,9 +15961,9 @@ BEGIN_DATA
                 ofile.write(b"\n")
                 ofile.write(b"NUMBER_OF_FIELDS ")
                 if include_sample_name:
-                    ofile.write(bytes(str(2 + len(icolor) + len(color_rep))) + b"\n")
+                    ofile.write(bytes(str(2 + len(icolor) + len(color_rep)), "utf-8") + b"\n")
                 else:
-                    ofile.write(bytes(str(1 + len(icolor) + len(color_rep))) + b"\n")
+                    ofile.write(bytes(str(1 + len(icolor) + len(color_rep)), "utf-8") + b"\n")
                 ofile.write(b"BEGIN_DATA_FORMAT\n")
                 ofile.write(b"SAMPLE_ID ")
                 if include_sample_name:
@@ -15971,7 +15972,7 @@ BEGIN_DATA
                     ofile.write(olabel + b" " + ilabel + b"\n")
                 ofile.write(b"END_DATA_FORMAT\n")
                 ofile.write(b"\n")
-                ofile.write(b"NUMBER_OF_SETS " + bytes(str(len(odata))) + b"\n")
+                ofile.write(b"NUMBER_OF_SETS " + bytes(str(len(odata)), "utf-8") + b"\n")
                 ofile.write(b"BEGIN_DATA\n")
             if pcs == "x":
                 # Need to scale XYZ coming from xicclu, Lab is already scaled
@@ -15983,11 +15984,11 @@ BEGIN_DATA
                     round(n * 100.0, 5 - len(str(int(abs(n * 100.0)))))
                     for n in colormath.RGB2XYZ(*[n / 100.0 for n in cie])
                 ]
-            device = [bytes(str(n)) for n in idata[i]]
-            cie = [bytes(str(n)) for n in cie]
+            device = [bytes(str(n), "utf-8") for n in idata[i]]
+            cie = [bytes(str(n), "utf-8") for n in cie]
             if include_sample_name:
                 ofile.write(
-                    bytes(str(i))
+                    bytes(str(i), "utf-8")
                     + b" "
                     + data[i - 1][1].strip(b'"')
                     + b" "
@@ -15998,7 +15999,7 @@ BEGIN_DATA
                 )
             else:
                 ofile.write(
-                    bytes(str(i))
+                    bytes(str(i), "utf-8")
                     + b" "
                     + b" ".join(device)
                     + b" "
@@ -16023,7 +16024,7 @@ BEGIN_DATA
             print("Added %i white patch(es)" % white_added_count)
 
         if debug:
-            print(ti3)
+            print(f"ti3: {ti3}")
         return ti1, ti3, list(map(list, gray))
 
     def ti3_lookup_to_ti1(

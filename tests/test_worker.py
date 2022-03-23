@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import io
-
 import pytest
+import time
 
+from DisplayCAL import ICCProfile
 from DisplayCAL.dev.mocks import check_call_str
 from DisplayCAL.worker import make_argyll_compatible_path, Worker
-
 
 # todo: deactivated test temporarily
 # def test_get_options_from_profile_is_working_properly(data_files):
@@ -62,9 +62,8 @@ def test_generate_b2a_from_inverse_table(data_files, argyll):
         # just skip this test so that it doesn't generate error on GitHub
         pytest.skip("Cannot find argyll")
 
+    print("------------------")
     worker = Worker()
-    from DisplayCAL import ICCProfile
-
     icc_profile1 = ICCProfile.ICCProfile(
         profile=data_files[
             "Monitor 1 #1 2022-03-09 16-13 D6500 2.2 F-S XYZLUT+MTX.icc"

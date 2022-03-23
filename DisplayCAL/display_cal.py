@@ -8662,7 +8662,6 @@ class MainFrame(ReportFrame, BaseFrame):
 
         # select measurement data (ti1 or ti3)
         chart = getcfg("measurement_report.chart")
-
         try:
             chart = CGATS.CGATS(chart, True)
         except (IOError, CGATS.CGATSError) as exception:
@@ -8670,7 +8669,6 @@ class MainFrame(ReportFrame, BaseFrame):
             return
 
         chart = self.worker.ensure_patch_sequence(chart, False)
-
         fields = getcfg("measurement_report.chart.fields")
 
         # profile(s)

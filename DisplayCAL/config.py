@@ -3,10 +3,6 @@
 """
 
 import configparser
-
-# TODO: Does this line really need to be here.
-configparser.DEFAULTSECT = "Default"
-
 from decimal import Decimal
 import locale
 import math
@@ -15,11 +11,11 @@ import pprint
 import re
 import string
 import sys
-from time import gmtime, strftime, timezone
 from DisplayCAL.log import logger
-
 if sys.platform == "win32":
     import winreg
+
+configparser.DEFAULTSECT = "Default"  # Sadly, this line needs to be here.
 
 from DisplayCAL.argyll_names import observers, viewconds, intents, video_encodings
 from DisplayCAL.defaultpaths import appdata, commonappdata
@@ -37,9 +33,9 @@ else:
         xdg_data_dirs,
     )
 from DisplayCAL.defaultpaths import (
-    autostart,
-    autostart_home,
-    home,
+    autostart,  # don't remove this, imported by other modules
+    autostart_home,  # don't remove this, imported by other modules
+    home,  # don't remove this, imported by other modules
     iccprofiles,
     iccprofiles_home,
 )

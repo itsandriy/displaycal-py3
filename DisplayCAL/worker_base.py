@@ -618,9 +618,8 @@ class Xicclu(WorkerBase):
                 if isinstance(cwd, Exception):
                     raise cwd
             fd, profile.fileName = tempfile.mkstemp("", prefix, dir=cwd)
-            stream = os.fdopen(fd, "wb")
-            profile.write(stream)
-            stream.close()
+            with os.fdopen(fd, "wb") as stream:
+                profile.write(stream)
             self.temp = True
         elif not cwd:
             cwd = os.path.dirname(profile.fileName)
