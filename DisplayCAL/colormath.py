@@ -11,6 +11,7 @@ In most cases, unless otherwise stated RGB is R'G'B' (gamma-compressed)
 import colorsys
 import logging
 import math
+import numpy
 import sys
 import warnings
 
@@ -707,7 +708,7 @@ def blend_blackpoint(
     return X, Y, Z
 
 
-def interp(x, xp, fp, left=None, right=None):
+def interp_old(x, xp, fp, left=None, right=None):
     """One-dimensional linear interpolation similar to numpy.interp
 
     Values do NOT have to be monotonically increasing
@@ -717,7 +718,7 @@ def interp(x, xp, fp, left=None, right=None):
     if not isinstance(x, (int, float, complex)):
         yi = []
         for n in x:
-            yi.append(interp(n, xp, fp, left, right))
+            yi.append(interp_old(n, xp, fp, left, right))
         return yi
     if x in xp:
         return fp[xp.index(x)]
@@ -737,6 +738,10 @@ def interp(x, xp, fp, left=None, right=None):
         step = float(x - xp[lower])
         steps = (xp[higher] - xp[lower]) / step
         return fp[lower] + (fp[higher] - fp[lower]) / steps
+
+
+# This is much faster than the old implementation
+interp = numpy.interp
 
 
 def interp_resize(iterable, new_size, use_numpy=False):
@@ -759,14 +764,14 @@ def interp_fill(xp, fp, new_size, use_numpy=False):
     return result
 
 
-def smooth_avg(values, passes=1, window=None, protect=None):
+def smooth_avg_old(values, passes=1, window=None, protect=None):
     """Smooth values (moving average).
 
-    passses   Number of passes
-    window    Tuple or list containing weighting factors. Its length
-              determines the size of the window to use.
-              Defaults to (1.0, 1.0, 1.0)
-
+    Args:
+        values (list): A list of float values.
+        passes (int): Number of passes
+        window (tuple/list): Tuple or list containing weighting factors. Its length
+            determines the size of the window to use. Defaults to (1.0, 1.0, 1.0)
     """
     if not window or len(window) < 3 or len(window) % 2 != 1:
         if window:
@@ -796,6 +801,65 @@ def smooth_avg(values, passes=1, window=None, protect=None):
             data.append(v)
         values = data
     return values
+
+
+def smooth_avg(values, passes=1, window=None, protect=None):
+    """Smooth values fast (moving average).
+
+    This is (should be) the fast implementation of the ``smooth_avg``. Inputs are the
+    same.
+
+    Args:
+        values (list): A list of float values.
+        passes (int): Number of passes
+        window (tuple/list): Tuple or list containing weighting factors. Its length
+            determines the size of the window to use. Defaults to (1.0, 1.0, 1.0)
+        protect (list): A list of indices to protect. The values related to these
+            indices will be restored after each pass.
+    """
+    if not window or len(window) < 3 or len(window) % 2 != 1:
+        if window:
+            warnings.warn(
+                "Invalid window %r, size %i - using default (1, 1, 1)"
+                % (window, len(window)),
+                Warning,
+            )
+        window = (1, 1, 1)
+    # fix the window values
+    window_length = float(len(window))
+    window_weight = sum(window)
+    window = tuple([i/window_weight for i in window])
+
+    # extend the array by ceil(window_size / 2)
+    extend_amount = math.ceil(window_length / 2)
+
+    # protect start and end values by adding the first and last values by the half of
+    # the window length
+    values = values[0:1] * extend_amount + values + values[-1:] * extend_amount
+
+    protection_extension = 1
+    protected_start = values[:extend_amount + protection_extension]
+    protected_end = values[-extend_amount - protection_extension:]
+
+    protected_values = {}
+    if protect is not None:
+        for index in protect:
+            # offset the values with ``extend_amount``
+            protected_values[index + extend_amount] = values[index + extend_amount]
+
+    for i in range(passes):
+        values = list(numpy.convolve(values, window, mode="same"))
+        # Protect start and end values
+        values[:extend_amount + protection_extension] = protected_start
+        values[-extend_amount - protection_extension:] = protected_end
+
+        # restore protected values
+        if protect is not None:
+            for k, v in protected_values.items():
+                values[k] = v
+
+    # return the non-extended portion
+    return values[extend_amount:-extend_amount]
 
 
 def compute_bpc(bp_in, bp_out):
