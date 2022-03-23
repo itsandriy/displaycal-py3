@@ -62,10 +62,14 @@ brew install pkg-config dbus glib gtk+3
 apt-get install build-essential dbus libglib2.0-dev pkg-config libgtkd-3-dev libxxf86vm-dev
 ```
 
-Then 
+Then pull the source and create a virtual environment:
+
 ```shell
 git clone https://github.com/eoyilmaz/displaycal-py3
+python -m venv ./displaycal_venv
+source ./displaycal_venv/bin/activate # Windows: .\displaycal_venv\Scripts\activate.bat
 cd ./displaycal-py3/
+pip install -r requirements.txt
 python setup.py install
 ```
 
@@ -74,9 +78,6 @@ This should install the code as an ``sdist``. To run the UI:
 ```shell
 displaycal
 ```
-
-You may need browse to the ``bin`` folder of you ``python`` interpreter. I used a
-``virtualenv`` through ``PyCharm`` to develop and test the code.
 
 ATTENTION!
 ----------

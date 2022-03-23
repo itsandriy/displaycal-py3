@@ -11,6 +11,7 @@ from decimal import Decimal
 import locale
 import math
 import os
+import pprint
 import re
 import string
 import sys
@@ -87,9 +88,14 @@ else:
     pydir = os.path.dirname(exe if isexe else os.path.abspath(__file__))
 
 data_dirs = [
+    # venv/lib/python3.x/site-packages/DisplayCAL
     pydir,
-    os.path.join(os.path.dirname(pydir), "share", "DisplayCAL"),
+    # venv/share/DisplayCAL
+    os.path.join(os.path.dirname(os.path.dirname(pypath)), "share", "DisplayCAL"),
 ]
+print("data_dirs:")
+pprint.pprint(data_dirs)
+
 extra_data_dirs = []
 # Search directories on PATH for data directories so Argyll reference files
 # can be found automatically if Argyll directory not explicitly configured
