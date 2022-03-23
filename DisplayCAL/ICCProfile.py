@@ -6890,9 +6890,6 @@ class ICCProfile(object):
             # Calculate XYZ for primaries
             XYZ[color] = mtx * rgb[color]
 
-        print("XYZ = ", XYZ)
-        print("wXYZ = ", wXYZ)
-
         profile = ICCProfile.from_XYZ(
             XYZ["r"],
             XYZ["g"],

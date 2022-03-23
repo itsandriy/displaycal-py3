@@ -115,7 +115,6 @@ def test_iccprofile_from_chromaticies():
     display_name = "Monitor 1, Output DP-2"
     cat = "Bradford"
 
-    ICCProfile.debug = True
     icc = ICCProfile.ICCProfile.from_chromaticities(
         xy[0][0],
         xy[0][1],
@@ -150,7 +149,6 @@ def test_iccprofile_get_info():
     display_name = "Monitor 1, Output DP-2"
     cat = "Bradford"
 
-    ICCProfile.debug = True
     icc = ICCProfile.ICCProfile.from_chromaticities(
         xy[0][0],
         xy[0][1],
@@ -255,7 +253,6 @@ def test_iccprofile_from_xyz():
     display_name = b"Monitor 1, Output DP-2"
     cat = "Bradford"
 
-    ICCProfile.debug = True
     mtx = ICCProfile.ICCProfile.from_XYZ(
         XYZ["r"],
         XYZ["g"],
@@ -730,13 +727,10 @@ def test_for_issue_31_3(data_files):
 
 def test_for_issue_50_1(data_files):
     """Testing DictType.tagData() for issue #50."""
-    import pprint
-
     icc_profile_path = data_files[
         "UP2516D #1 2022-03-20 02-08 D6500 2.2 F-S XYZLUT+MTX.icc"
     ]
     iccp = ICCProfile.ICCProfile(icc_profile_path)
     dict_type = iccp.tags["meta"]
-    pprint.pprint(dict_type)
     # It seems that we can't reproduce the error with this ICC profile.
     assert dict_type.tagData != ""
