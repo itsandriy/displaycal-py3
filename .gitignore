@@ -1,6 +1,7 @@
 /DisplayCAL/__version__.py
 /build/
 /dist/
+/venv/
 /INSTALLED_FILES
 /MANIFEST.in
 /VERSION
