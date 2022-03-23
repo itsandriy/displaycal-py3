@@ -88,10 +88,14 @@ else:
     pydir = os.path.dirname(exe if isexe else os.path.abspath(__file__))
 
 data_dirs = [
-    # venv/lib/python3.x/site-packages/DisplayCAL
-    pydir,
     # venv/share/DisplayCAL
     os.path.join(os.path.dirname(os.path.dirname(pypath)), "share", "DisplayCAL"),
+
+    # venv/lib/python3.x/site-packages/DisplayCAL
+    pydir,
+
+    # venv/lib/python3.x/site-packages/DisplayCAL-*.egg/share/DisplayCAL
+    os.path.join(os.path.dirname(pydir), "share", "DisplayCAL"),
 ]
 print("data_dirs:")
 pprint.pprint(data_dirs)
