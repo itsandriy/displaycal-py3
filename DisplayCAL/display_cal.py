@@ -1165,13 +1165,13 @@ def upload_colorimeter_correction(parent=None, params=None):
             "get": True,
             "hash": md5(
                 re.sub(
-                    r'\nCREATED\s+".+?"\n', "\n\n", safe_str(params["cgats"], "UTF-8")
+                    rb'\nCREATED\s+".+?"\n', rb"\n\n", bytes(params["cgats"])
                 ).strip()
             ).hexdigest(),
         },
         silent=True,
     )
-    if resp and resp.read().strip().startswith("CC"):
+    if resp and resp.read().strip().startswith(b"CC"):
         wx.CallAfter(
             InfoDialog,
             parent,
@@ -1204,7 +1204,7 @@ def upload_colorimeter_correction(parent=None, params=None):
             wx.CallAfter(
                 InfoDialog,
                 parent,
-                msg="\n\n".join([failure_msg, resp.read().strip()]),
+                msg=b"\n\n".join([failure_msg, resp.read().strip()]),
                 ok=lang.getstr("ok"),
                 bitmap=geticon(32, "dialog-error"),
             )
@@ -12369,7 +12369,7 @@ class MainFrame(ReportFrame, BaseFrame):
             wx.Bell()
             return
 
-        key = md5(str(cgats)).digest()
+        key = md5(bytes(cgats)).digest()
         plotwindow = self.ccxx_plot_windows.get(key)
         if not plotwindow:
             plotwindow = CCXXPlot(self, cgats, self.worker)
@@ -12612,11 +12612,11 @@ class MainFrame(ReportFrame, BaseFrame):
                             print("cgats_measurement_mode =", cgats_measurement_mode)
                         cgats_observer = cgats.queryv1("OBSERVER")
                         if not cgats_observer:
-                            cgats_observer = defaults["observer"]
+                            cgats_observer = defaults["observer"].encode("utf-8")
                         if event.GetId() == dlg.reference_ti3.textControl.Id:
                             setcfg(
                                 "colorimeter_correction.observer.reference",
-                                cgats_observer,
+                                cgats_observer.decode("utf-8"),
                             )
                             observer_ctrl.SetStringSelection(
                                 self.observers_ab[
@@ -12638,7 +12638,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         if (
                             cgats_instrument != instrument
                             or cgats_measurement_mode != measurement_mode
-                            or cgats_observer != observer
+                            or cgats_observer.decode("utf-8") != observer
                         ):
                             ti3 = None
                     else:
@@ -13200,7 +13200,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     if not cgats.queryv1("DATA"):
                         raise CGATS.CGATSError("Missing DATA")
                 except Exception as exception:
-                    print(exception)
+                    traceback.print_exc()
                     InfoDialog(
                         self,
                         title=lang.getstr("colorimeter_correction.create"),
@@ -13215,7 +13215,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     # Check if instrument type is spectral
                     if (
                         cgats.queryv1("SPECTRAL_BANDS")
-                        or cgats.queryv1("DATA_SOURCE") == "EDID"
+                        or cgats.queryv1("DATA_SOURCE") == b"EDID"
                     ):
                         if reference_ti3:
                             # We already have a reference ti3
@@ -13236,14 +13236,14 @@ class MainFrame(ReportFrame, BaseFrame):
                                 break
                             elif result == wx.ID_CANCEL:
                                 return
-                    elif cgats.queryv1("INSTRUMENT_TYPE_SPECTRAL") == "YES":
+                    elif cgats.queryv1("INSTRUMENT_TYPE_SPECTRAL") == b"YES":
                         if reference_ti3:
                             # We already have a reference ti3
                             reference_ti3 = None
                             break
                         reference_ti3 = cgats
                         setcfg("last_reference_ti3_path", path)
-                    elif cgats.queryv1("INSTRUMENT_TYPE_SPECTRAL") == "NO":
+                    elif cgats.queryv1("INSTRUMENT_TYPE_SPECTRAL") == b"NO":
                         if colorimeter_ti3:
                             # We already have a colorimeter ti3
                             colorimeter_ti3 = None
@@ -13280,9 +13280,9 @@ class MainFrame(ReportFrame, BaseFrame):
                 )
                 return
             # Use only the device combinations from CCXX testchart
-            reference_new = CGATS.CGATS("BEGIN_DATA\nEND_DATA")
+            reference_new = CGATS.CGATS(b"BEGIN_DATA\nEND_DATA")
             reference_new.DATA_FORMAT = reference_ti3.queryv1("DATA_FORMAT")
-            colorimeter_new = CGATS.CGATS("BEGIN_DATA\nEND_DATA")
+            colorimeter_new = CGATS.CGATS(b"BEGIN_DATA\nEND_DATA")
             colorimeter_new.DATA_FORMAT = colorimeter_ti3.queryv1("DATA_FORMAT")
             data_reference = reference_ti3.queryv1("DATA")
             data_colorimeter = colorimeter_ti3.queryv1("DATA")
@@ -13332,7 +13332,7 @@ class MainFrame(ReportFrame, BaseFrame):
             reference_ti3.queryi1("DATA").DATA = reference_new.DATA
             colorimeter_ti3.queryi1("DATA").DATA = colorimeter_new.DATA
             # If the reference comes from EDID, normalize luminance
-            if reference_ti3.queryv1("DATA_SOURCE") == "EDID":
+            if reference_ti3.queryv1("DATA_SOURCE") == b"EDID":
                 white = colorimeter_ti3.queryi1("DATA").queryi1(
                     {"RGB_R": 100, "RGB_G": 100, "RGB_B": 100}
                 )
@@ -13368,9 +13368,9 @@ class MainFrame(ReportFrame, BaseFrame):
             if not cgats.queryv1("DISPLAY_TYPE_REFRESH"):
                 cgats[0].add_keyword(
                     "DISPLAY_TYPE_REFRESH",
-                    {"c": "YES", "l": "NO"}.get(getcfg(cfgname), "NO"),
+                    {"c": b"YES", "l": b"NO"}.get(getcfg(cfgname), b"NO"),
                 )
-                print("Added DISPLAY_TYPE_REFRESH %r" % cgats[0].DISPLAY_TYPE_REFRESH)
+                print("Added DISPLAY_TYPE_REFRESH %r" % cgats[0].DISPLAY_TYPE_REFRESH.decode("utf-8"))
         options_dispcal, options_colprof = get_options_from_ti3(reference_ti3)
         display = None
         manufacturer = None
@@ -13387,13 +13387,19 @@ class MainFrame(ReportFrame, BaseFrame):
             and display
             and not quirk_manufacturer.lower() in display.lower()
         ):
-            manufacturer_display = " ".join([quirk_manufacturer, display])
+            manufacturer_display = b" ".join([quirk_manufacturer, display])
         elif display:
             manufacturer_display = display
+
+        if isinstance(manufacturer_display, bytes):
+            manufacturer_display = manufacturer_display.decode("utf-8")
+
         if len(cgats_list) == 2:
             instrument = colorimeter_ti3.queryv1("TARGET_INSTRUMENT")
             if instrument:
                 instrument = get_canonical_instrument_name(instrument)
+            if isinstance(instrument, bytes):
+                instrument = instrument.decode("utf-8")
             observer = getcfg("colorimeter_correction.observer.reference")
             if observer == "1931_2":
                 description = "%s & %s" % (
@@ -13424,12 +13430,18 @@ class MainFrame(ReportFrame, BaseFrame):
         target_instrument = reference_ti3.queryv1("TARGET_INSTRUMENT")
         if target_instrument:
             target_instrument = get_canonical_instrument_name(target_instrument)
+            if isinstance(target_instrument, bytes):
+                target_instrument = target_instrument.decode("utf-8")
             description = "%s (%s)" % (description, target_instrument)
         args = []
-        tech = {"YES": "Unknown"}.get(
-            reference_ti3.queryv1("DISPLAY_TYPE_REFRESH"), "LCD"
+        tech = {b"YES": "Unknown"}.get(
+            reference_ti3.queryv1("DISPLAY_TYPE_REFRESH"), b"LCD"
         )
         technology_strings = self.worker.get_technology_strings()
+        if debug:
+            print(f'reference_ti3.queryv1("DISPLAY_TYPE_REFRESH"): {reference_ti3.queryv1("DISPLAY_TYPE_REFRESH")}')
+            print(f"tech: {tech}")
+            print(f"technology_string: {technology_strings}")
         if event:
             # Allow user to alter description, display and instrument
             dlg = ConfirmDialog(
@@ -13585,7 +13597,7 @@ class MainFrame(ReportFrame, BaseFrame):
             # using such a CCMX, observer A needs to be used, not observer B.
             observer = colorimeter_ti3.queryv1("OBSERVER")
             reference_observer = getcfg("colorimeter_correction.observer.reference")
-            if spectral and reference_observer != reference_ti3.queryv1("OBSERVER"):
+            if spectral and reference_observer != reference_ti3.queryv1("OBSERVER").decode("utf-8"):
                 # We can override the observer if we have spectral data
                 # Need to use spec2cie to convert spectral data to
                 # CIE XYZ with given observer, because we later use the XYZ
@@ -13655,7 +13667,7 @@ class MainFrame(ReportFrame, BaseFrame):
                     args.append("-o")
                     args.append(reference_observer)
             else:
-                reference_observer = reference_ti3.queryv1("OBSERVER")
+                reference_observer = reference_ti3.queryv1("OBSERVER").decode("utf-8")
         else:
             # Create CCSS
             args.append("-S")
@@ -13721,28 +13733,27 @@ class MainFrame(ReportFrame, BaseFrame):
             # Important: Do not use parsed CGATS, order of keywords may be
             # different than raw data so MD5 will be different
             try:
-                cgatsfile = open(source, "rb")
+                with open(source, "rb") as cgatsfile:
+                    cgats = universal_newlines(cgatsfile.read())
             except Exception as exception:
+                traceback.print_exc()
                 show_result_dialog(exception, self)
                 self.worker.wrapup(False)
                 return
-            cgats = universal_newlines(cgatsfile.read())
-            cgatsfile.close()
             if reference_ti3[0].get("TARGET_INSTRUMENT") and not re.search(
-                r'\nREFERENCE\s+".+?"\n', cgats
+                rb'\nREFERENCE\s+".+?"\n', cgats
             ):
                 # By default, CCSS files don't contain reference instrument
                 cgats = re.sub(
-                    r'(\nDISPLAY\s+"[^"]*"\n)',
-                    '\nREFERENCE "%s"\\1'
-                    % reference_ti3[0].get("TARGET_INSTRUMENT").replace("\\", "\\\\"),
+                    rb'(\nDISPLAY\s+"[^"]*"\n)',
+                    b'\nREFERENCE "%s"\\1' % reference_ti3[0].get("TARGET_INSTRUMENT").replace(r"\\", r"\\\\"),
                     cgats,
                 )
-            if not re.search(r'\nTECHNOLOGY\s+".+?"\n', cgats) and tech:
+            if not re.search(rb'\nTECHNOLOGY\s+".+?"\n', cgats) and tech:
                 # By default, CCMX files don't contain technology string
                 cgats = re.sub(
-                    r'(\nDISPLAY\s+"[^"]*"\n)',
-                    '\nTECHNOLOGY "%s"\\1' % safe_str(tech, "UTF-8"),
+                    rb'(\nDISPLAY\s+"[^"]*"\n)',
+                    b'\nTECHNOLOGY "%s"\\1' % tech,
                     cgats,
                 )
             manufacturer_id = None
@@ -13752,38 +13763,41 @@ class MainFrame(ReportFrame, BaseFrame):
                     get_manufacturer_name("???")
                 manufacturers = dict([name, id_] for id_, name in pnpidcache.items())
                 manufacturer_id = manufacturers.get(manufacturer)
-            if manufacturer_id and not re.search(r'\nMANUFACTURER_ID\s+".+?"\n', cgats):
+            if debug:
+                print(f"manufacturer_id: {manufacturer_id}")
+                print(f"manufacturer   : {manufacturer}")
+            if manufacturer_id and not re.search(rb'\nMANUFACTURER_ID\s+".+?"\n', cgats):
                 # By default, CCMX/CCSS files don't contain manufacturer ID
                 cgats = re.sub(
-                    r'(\nDISPLAY\s+"[^"]*"\n)',
-                    '\nMANUFACTURER_ID "%s"\\1'
-                    % safe_str(manufacturer_id, "UTF-8").replace("\\", "\\\\"),
+                    rb'(\nDISPLAY\s+"[^"]*"\n)',
+                    b'\nMANUFACTURER_ID "%s"\\1'
+                    % manufacturer_id.replace("\\", "\\\\").encode("utf-8"),
                     cgats,
                 )
-            if manufacturer and not re.search(r'\nMANUFACTURER\s+".+?"\n', cgats):
+            if manufacturer and not re.search(rb'\nMANUFACTURER\s+".+?"\n', cgats):
                 # By default, CCMX/CCSS files don't contain manufacturer
                 cgats = re.sub(
-                    r'(\nDISPLAY\s+"[^"]*"\n)',
-                    '\nMANUFACTURER "%s"\\1'
-                    % safe_str(manufacturer, "UTF-8").replace("\\", "\\\\"),
+                    rb'(\nDISPLAY\s+"[^"]*"\n)',
+                    b'\nMANUFACTURER "%s"\\1'
+                    % manufacturer.replace("\\", "\\\\").encode("utf-8"),
                     cgats,
                 )
-            if observer and not re.search(r'\nOBSERVER\s+".+?"\n', cgats):
+            if observer and not re.search(rb'\nOBSERVER\s+".+?"\n', cgats):
                 # By default, CCMX/CCSS files don't contain observer
                 cgats = re.sub(
-                    r'(\nDISPLAY\s+"[^"]*"\n)',
-                    '\nOBSERVER "%s"\\1'
-                    % safe_str(observer, "UTF-8").replace("\\", "\\\\"),
+                    rb'(\nDISPLAY\s+"[^"]*"\n)',
+                    b'\nOBSERVER "%s"\\1'
+                    % observer.replace(b"\\", b"\\\\"),
                     cgats,
                 )
-            if reference_observer and not re.search(
-                r'\nREFERENCE_OBSERVER\s+".+?"\n', cgats
+            if reference_observer.encode("utf-8") and not re.search(
+                rb'\nREFERENCE_OBSERVER\s+".+?"\n', cgats
             ):
                 # By default, CCMX/CCSS files don't contain observer
                 cgats = re.sub(
-                    r'(\nDISPLAY\s+"[^"]*"\n)',
-                    '\nREFERENCE_OBSERVER "%s"\\1'
-                    % safe_str(reference_observer, "UTF-8").replace("\\", "\\\\"),
+                    rb'(\nDISPLAY\s+"[^"]*"\n)',
+                    b'\nREFERENCE_OBSERVER "%s"\\1'
+                    % reference_observer.encode("UTF-8").replace(b"\\", b"\\\\"),
                     cgats,
                 )
             result = check_create_dir(config.get_argyll_data_dir())
@@ -13816,14 +13830,14 @@ class MainFrame(ReportFrame, BaseFrame):
                         get_canonical_instrument_name(
                             reference_ti3.queryv1("TARGET_INSTRUMENT")
                             or lang.getstr("instrument")
-                        ),
+                        ).decode("utf-8"),
                         lang.getstr("reference"),
                     ),
                     "%s (%s)"
                     % (
                         get_canonical_instrument_name(
                             ccmx.queryv1("INSTRUMENT") or lang.getstr("instrument")
-                        ),
+                        ).decode("utf-8"),
                         lang.getstr("corrected"),
                     ),
                 )
@@ -13987,8 +14001,8 @@ class MainFrame(ReportFrame, BaseFrame):
                     ("AVG_DE00", sum(deltaE_00) / len(deltaE_00)),
                 ):
                     cgats = re.sub(
-                        r'(\nREFERENCE\s+"[^"]*"\n)',
-                        '\\1FIT_%s "%.6f"\n' % (label, fit_error),
+                        rb'(\nREFERENCE\s+"[^"]*"\n)',
+                        ('\\1FIT_%s "%.6f"\n' % (label, fit_error)).encode("utf-8"),
                         cgats,
                     )
             metadata = []
@@ -14002,7 +14016,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         label + '_FILENAME "%s"' % safe_str(meas.filename, "UTF-8")
                     )
                     metadata.append(
-                        label + '_HASH "md5:%s"' % md5(str(meas).strip()).hexdigest()
+                        label + '_HASH "md5:%s"' % md5(bytes(meas).strip()).hexdigest()
                     )
             if debug or test:
                 # Add original measurement data to CGATS as meta
@@ -14016,7 +14030,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 ):
                     XYZ_CDM2 = meas.queryv1("LUMINANCE_XYZ_CDM2")
                     if XYZ_CDM2:
-                        metadata.append(label + '_LUMINANCE_XYZ_CDM2 "%s"' % XYZ_CDM2)
+                        metadata.append(label + '_LUMINANCE_XYZ_CDM2 "%s"' % XYZ_CDM2.decode("utf-8"))
                     if not colorimeter_ti3:
                         break
                     metadata.append(
@@ -14034,6 +14048,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         # Line length limit for CGATS keywords 1024 chars, add
                         # spectral data as individual keywords
                         for column in data_format.values():
+                            column = column.decode("utf-8")
                             if column not in ccmx_data_format and column != "SAMPLE_ID":
                                 metadata.append(
                                     label
@@ -14042,17 +14057,19 @@ class MainFrame(ReportFrame, BaseFrame):
                                 )
             if colorimeter_ti3 and getcfg("ccmx.use_four_color_matrix_method"):
                 cgats = re.sub(
-                    r'(\nORIGINATOR\s+)"Argyll[^"]+"',
-                    r'\1"%s %s"' % (appname, version),
+                    rb'(\nORIGINATOR\s+)"Argyll[^"]+"',
+                    (r'\1"%s %s"' % (appname, version)).encode("utf-8"),
                     cgats,
                 )
                 metadata.append('FIT_METHOD "xy"')
             else:
-                metadata.append('FIT_METHOD "ΔE*94"'.encode("UTF-8"))
+                metadata.append('FIT_METHOD "ΔE*94"')
             if metadata:
+                if debug:
+                    print(f"medatadata: {metadata}")
                 cgats = re.sub(
-                    r'(\nREFERENCE\s+"[^"]*"\n)',
-                    "\\1%s\n" % "\n".join(metadata).replace("\\", "\\\\"),
+                    rb'(\nREFERENCE\s+"[^"]*"\n)',
+                    ("\\1%s\n" % "\n".join(metadata).replace("\\", "\\\\")).encode("utf-8"),
                     cgats,
                 )
             if event:
@@ -14112,14 +14129,14 @@ class MainFrame(ReportFrame, BaseFrame):
         if result == wx.ID_OK:
             ccxx = CGATS.CGATS(cgats)
             # Remove platform-specific/potentially sensitive information
-            cgats = re.sub(r'\n(?:REFERENCE|TARGET)_FILENAME\s+"[^"]+"\n', "\n", cgats)
+            cgats = re.sub(rb'\n(?:REFERENCE|TARGET)_FILENAME\s+"[^"]+"\n', b"\n", cgats)
             params = {"cgats": cgats}
             # Also upload reference and target CGATS (if available)
             for label in ("REFERENCE", "TARGET"):
-                filename = str(ccxx.queryv1(label + "_FILENAME") or "")
-                algo_hash = (ccxx.queryv1(label + "_HASH") or "").split(":", 1)
+                filename = str(ccxx.queryv1(f"{label}_FILENAME").decode("utf-8") or "")
+                algo_hash = (ccxx.queryv1(f"{label}_HASH").decode("utf-8") or "").split(":", 1)
                 if filename and os.path.isfile(filename) and algo_hash[0] in globals():
-                    meas = str(CGATS.CGATS(filename)).strip()
+                    meas = bytes(CGATS.CGATS(filename)).strip()
                     # Check hash
                     if globals()[algo_hash[0]](meas).hexdigest() == algo_hash[-1]:
                         params[label.lower() + "_cgats"] = meas
