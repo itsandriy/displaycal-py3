@@ -91,18 +91,18 @@ class CCXXPlot(wx.Frame):
         else:
             fn = desc
             if self.is_ccss:
-                ext = ".ccss"
+                ext = b".ccss"
             else:
-                ext = ".ccmx"
+                ext = b".ccmx"
 
-        desc = lang.getstr(ext[1:] + "." + fn, default=desc)
+        desc = lang.getstr(ext[1:] + b"." + fn, default=desc)
 
         if self.is_ccss:
             ccxx_type = "spectral"
         else:
             ccxx_type = "matrix"
 
-        title = "%s: %s" % (lang.getstr(ccxx_type), desc)
+        title = "%s: %s" % (lang.getstr(ccxx_type), desc.decode("utf-8"))
 
         if self.is_ccss:
             # Convert to TI3 so we can get XYZ from spectra for coloring
@@ -114,8 +114,8 @@ class CCXXPlot(wx.Frame):
                 basename = make_filename_safe(desc)
                 temp_path = os.path.join(temp, basename + ".ti3")
 
-                cgats[0].type = "CTI3"
-                cgats[0].DEVICE_CLASS = "DISPLAY"
+                cgats[0].type = b"CTI3"
+                cgats[0].DEVICE_CLASS = b"DISPLAY"
                 cgats.write(temp_path)
 
                 temp_out_path = os.path.join(temp, basename + ".CIE.ti3")
@@ -209,7 +209,7 @@ class CCXXPlot(wx.Frame):
             y_min = 0
 
             mtx = colormath.Matrix3x3(
-                [[sample[k] for k in data_format.values()] for sample in data.values()]
+                [[sample[k.decode("utf-8")] for k in data_format.values()] for sample in data.values()]
             )
             imtx = mtx.inverted()
 
@@ -328,7 +328,7 @@ class CCXXPlot(wx.Frame):
 
         ref = cgats.queryv1("REFERENCE")
         if ref:
-            ref = get_canonical_instrument_name(ref)
+            ref = get_canonical_instrument_name(ref).decode("utf-8")
 
         if not self.is_ccss:
             observers_ab = {}
@@ -337,12 +337,12 @@ class CCXXPlot(wx.Frame):
             x_label = [lang.getstr("matrix")]
             x_label.extend(["%9.6f %9.6f %9.6f" % tuple(row) for row in mtx])
             if ref:
-                ref_observer = cgats.queryv1("REFERENCE_OBSERVER")
+                ref_observer = cgats.queryv1("REFERENCE_OBSERVER").decode("utf-8")
                 if ref_observer:
                     ref += ", " + observers_ab.get(ref_observer, ref_observer)
                 x_label.append("")
                 x_label.append(ref)
-            fit_method = cgats.queryv1("FIT_METHOD")
+            fit_method = cgats.queryv1("FIT_METHOD").decode("utf-8")
             if fit_method == "xy":
                 fit_method = lang.getstr("ccmx.use_four_color_matrix_method")
             elif fit_method:
