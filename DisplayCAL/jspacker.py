@@ -35,13 +35,13 @@ class ParseMaster(object):
     EXPRESSION = 0
     REPLACEMENT = 1
     LENGTH = 2
-    GROUPS = re.compile(r"""\(""", re.M)  # g
-    SUB_REPLACE = re.compile(r"""\$\d""", re.M)
-    INDEXED = re.compile(r"""^\$\d+$""", re.M)
+    GROUPS = re.compile(r"\(", re.M)  # g
+    SUB_REPLACE = re.compile(r"\$\d", re.M)
+    INDEXED = re.compile(r"^\$\d+$", re.M)
     TRIM = re.compile(r"""(['"])\1\+(.*)\+\1\1$""", re.M)
-    ESCAPE = re.compile(r"""\\.""", re.M)  # g
-    # QUOTE = re.compile(r"""'""", re.M)
-    DELETED = re.compile(r"""\x01[^\x01]*\x01""", re.M)  # g
+    ESCAPE = re.compile(r"\\.", re.M)  # g
+    # QUOTE = re.compile(r"'", re.M)
+    DELETED = re.compile(r"\x01[^\x01]*\x01", re.M)  # g
 
     def __init__(self):
         # private
@@ -129,7 +129,8 @@ class ParseMaster(object):
 
         if escapeChar is None:
             return string
-        r = re.compile(r"\\" + escapeChar + "(.)", re.M)
+
+        r = re.compile(r"\\" + escapeChar + r"(.)", re.M)
         result = r.sub(repl, string)
         return result
 
@@ -175,7 +176,7 @@ class JavaScriptPacker:
     def getCompressionParseMaster(self, specialChars, script):
         IGNORE = "$1"
         parser = ParseMaster()
-        parser.escapeChar = "\\"
+        parser.escapeChar = r"\\"
         # protect strings
         parser.add(r"""'[^'\n\r]*'""", IGNORE)
         parser.add(r'"[^"\n\r]*"', IGNORE)

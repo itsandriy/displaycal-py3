@@ -9035,7 +9035,8 @@ class MainFrame(ReportFrame, BaseFrame):
 
             # write ti3 to temp dir
             try:
-                ti3_file = open(ti3_path, "w")
+                with open(ti3_path, "wb") as ti3_file:
+                    ti3_file.write(bytes(ti3))
             except EnvironmentError:
                 InfoDialog(
                     getattr(self, "reportframe", self),
@@ -9045,8 +9046,6 @@ class MainFrame(ReportFrame, BaseFrame):
                 )
                 self.worker.wrapup(False)
                 return
-            ti3_file.write(str(ti3))
-            ti3_file.close()
 
             print("-" * 80)
             print(lang.getstr("self_check_report"))
@@ -9126,10 +9125,19 @@ class MainFrame(ReportFrame, BaseFrame):
         ti1_path = os.path.join(temp, name + ".ti1")
         profile_path = os.path.join(temp, name + ".icc")
 
+        if debug:
+            print(f"save_path: {save_path}")
+            print(f"name: {name}")
+            print(f"ext: {ext}")
+            print(f"ti1_path: {ti1_path}")
+            print(f"profile_path: {profile_path}")
+
         # write ti1 to temp dir
         try:
-            ti1_file = open(ti1_path, "w")
+            with open(ti1_path, "wb") as ti1_file:
+                ti1_file.write(bytes(ti1))
         except EnvironmentError:
+            traceback.print_exc()
             InfoDialog(
                 getattr(self, "reportframe", self),
                 msg=lang.getstr("error.file.create", ti1_path),
@@ -9138,8 +9146,6 @@ class MainFrame(ReportFrame, BaseFrame):
             )
             self.worker.wrapup(False)
             return
-        ti1_file.write(str(ti1))
-        ti1_file.close()
 
         # write profile to temp dir
         profile.write(profile_path)
@@ -9162,6 +9168,7 @@ class MainFrame(ReportFrame, BaseFrame):
             # Extract calibration from profile
             cal = extract_cal_from_profile(calprof, cal_path, False)
         except Exception:
+            traceback.print_exc()
             wx.CallAfter(
                 show_result_dialog,
                 Error(lang.getstr("cal_extraction_failed")),
@@ -9397,7 +9404,7 @@ class MainFrame(ReportFrame, BaseFrame):
         # create a 'joined' ti3 from ref ti3, with XYZ values from measured ti3
         # this makes sure CMYK data in the original ref will be present in
         # the newly joined ti3
-        ti3_joined = CGATS.CGATS(str(ti3_ref))[0]
+        ti3_joined = CGATS.CGATS(bytes(ti3_ref))[0]
         ti3_joined.LUMINANCE_XYZ_CDM2 = ti3_measured.LUMINANCE_XYZ_CDM2
         # add XYZ to DATA_FORMAT if not yet present
         labels_xyz = ("XYZ_X", "XYZ_Y", "XYZ_Z")
@@ -9625,10 +9632,8 @@ class MainFrame(ReportFrame, BaseFrame):
             "${TESTCHART}": os.path.basename(chart.filename),
             "${ADAPTION}": str(profile.guess_cat(False) or cat),
             "${DATETIME}": strftime("%Y-%m-%d %H:%M:%S"),
-            "${REF}": str(ti3_ref).decode(enc, "replace").replace('"', "&quot;"),
-            "${MEASURED}": str(ti3_joined)
-            .decode(enc, "replace")
-            .replace('"', "&quot;"),
+            "${REF}": bytes(ti3_ref).decode(enc, "replace").replace('"', "&quot;"),
+            "${MEASURED}": bytes(ti3_joined).decode(enc, "replace").replace('"', "&quot;"),
             "${CAL_ENTRYCOUNT}": str(cal_entrycount),
             "${CAL_RGBLEVELS}": repr(cal_rgblevels),
             "${GRAYSCALE}": repr(gray) if gray else "null",
@@ -13189,7 +13194,7 @@ class MainFrame(ReportFrame, BaseFrame):
                         cgats.ARGYLL_COLPROF_ARGS.add_data(
                             '-M "%s" -A "%s"' % (display, manufacturer)
                         )
-                        cgats = CGATS.CGATS(str(cgats))
+                        cgats = CGATS.CGATS(bytes(cgats))
                     else:
                         cgats = CGATS.CGATS(path)
                     if not cgats.queryv1("DATA"):

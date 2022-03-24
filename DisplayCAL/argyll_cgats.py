@@ -222,6 +222,7 @@ def extract_cal_from_profile(
         try:
             cgats = get_cgats(arg)
         except (IOError, CGATS.CGATSError):
+            traceback.print_exc()
             raise Error(lang.getstr("cal_extraction_failed"))
     if (
         cal
@@ -550,12 +551,12 @@ def ti3_to_ti1(ti3_data):
         ti3[0].remove_keyword("LUMINANCE_XYZ_CDM2")
     if hasattr(ti3[0], "ARGYLL_COLPROF_ARGS"):
         del ti3[0].ARGYLL_COLPROF_ARGS
-    return str(ti3[0])
+    return bytes(ti3[0])
 
 
 def vcgt_to_cal(profile):
     """Return a CAL (CGATS instance) from vcgt"""
-    cgats = CGATS.CGATS(file_identifier="CAL")
+    cgats = CGATS.CGATS(file_identifier=b"CAL")
     context = cgats.add_data({"DESCRIPTOR": b"Argyll Device Calibration State"})
     context.add_data({"ORIGINATOR": b"vcgt"})
     context.add_data(
@@ -575,14 +576,14 @@ def vcgt_to_cal(profile):
     context[key].key = key
     context[key].parent = context
     context[key].root = cgats
-    context[key].type = key
+    context[key].type = key.encode("utf-8")
     context[key].add_data((b"RGB_I", b"RGB_R", b"RGB_G", b"RGB_B"))
     key = "DATA"
     context[key] = CGATS.CGATS()
     context[key].key = key
     context[key].parent = context
     context[key].root = cgats
-    context[key].type = key
+    context[key].type = key.encode("utf-8")
     values = profile.tags.vcgt.getNormalizedValues()
     for i, triplet in enumerate(values):
         context[key].add_data((b"%.7f" % (i / float(len(values) - 1)),) + triplet)

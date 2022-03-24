@@ -13417,6 +13417,7 @@ usage: spotread [-options] [logfile]
                     if isinstance(rslt, ICCP.ICCProfileInvalidError):
                         return Error(lang.getstr("profile.invalid") + "\n" + cal), None
                     elif isinstance(rslt, Exception):
+                        traceback.print_exc()
                         return (
                             Error(
                                 lang.getstr("cal_extraction_failed")
@@ -16037,7 +16038,7 @@ BEGIN_DATA
 
         # ti3
         copy = True
-        if isinstance(ti3, str):
+        if isinstance(ti3, (str, bytes)):
             copy = False
             ti3 = CGATS.CGATS(ti3)
         if not isinstance(ti3, CGATS.CGATS):
@@ -16045,7 +16046,7 @@ BEGIN_DATA
         ti3_filename = ti3.filename
         if copy:
             # Make a copy and do not alter a passed in CGATS instance!
-            ti3 = CGATS.CGATS(str(ti3))
+            ti3 = CGATS.CGATS(bytes(ti3))
 
         if fields == "XYZ":
             labels = ("XYZ_X", "XYZ_Y", "XYZ_Z")

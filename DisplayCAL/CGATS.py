@@ -250,7 +250,7 @@ class CGATS(dict):
         self,
         cgats=None,
         normalize_fields=False,
-        file_identifier="CTI3",
+        file_identifier=b"CTI3",
         emit_keywords=False,
         strict=False,
     ):
@@ -1108,8 +1108,8 @@ class CGATS(dict):
                     )
             else:
                 raise CGATSTypeError(
-                    "Invalid data type for %s (expected CGATS, dict, list or tuple, got %s)"
-                    % (self.type, type(data))
+                    f"Invalid data type for {self.type} (expected CGATS, dict, list or "
+                    f"tuple, got {type(data)})"
                 )
         elif self.type == b"ROOT":
             if (
