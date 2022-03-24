@@ -7263,23 +7263,23 @@ class ICCProfile(object):
 
     def getCopyright(self):
         """Return profile copyright."""
-        return str(self.tags.get("cprt", b""))
+        return str(self.tags.get("cprt", ""))
 
     def getDescription(self):
         """Return profile description."""
-        return str(self.tags.get("desc", b""))
+        return str(self.tags.get("desc", ""))
 
     def getDeviceManufacturerDescription(self):
         """Return device manufacturer description."""
-        return str(self.tags.get("dmnd", b""))
+        return str(self.tags.get("dmnd", ""))
 
     def getDeviceModelDescription(self):
         """Return device model description."""
-        return str(self.tags.get("dmdd", b""))
+        return str(self.tags.get("dmdd", ""))
 
     def getViewingConditionsDescription(self):
         """Return viewing conditions description."""
-        return str(self.tags.get("vued", b""))
+        return str(self.tags.get("vued", ""))
 
     def guess_cat(self, matrix=True):
         """Get or guess chromatic adaptation transform.
