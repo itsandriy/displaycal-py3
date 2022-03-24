@@ -490,7 +490,10 @@ def indent(text, prefix, predicate=None):
 
 def universal_newlines(txt):
     """Return txt with all new line formats converted to POSIX newlines."""
-    return txt.replace("\r\n", "\n").replace("\r", "\n")
+    if isinstance(txt, str):
+        return txt.replace("\r\n", "\n").replace("\r", "\n")
+    elif isinstance(txt, bytes):
+        return txt.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
 def replace_control_chars(txt, replacement=" ", collapse=False):
