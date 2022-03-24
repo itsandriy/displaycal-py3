@@ -28,6 +28,7 @@ Here is a list of things that is working:
 - Installing the created profile as root.
 - Profile info window.
 - Measurement report creation.
+- Creating, displaying and uploading Colorimeter Corrections.
 - and a lot of other stuff is working properly.
 
 What is not working (yet)
