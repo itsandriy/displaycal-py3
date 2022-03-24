@@ -355,7 +355,7 @@ def get_argyll_version(name, paths=None):
 
 
 def get_argyll_version_string(name, paths=None):
-    argyll_version_string = "0.0.0"
+    argyll_version_string = b"0.0.0"
     cmd = get_argyll_util(name, paths)
     if sys.platform == "win32":
         startupinfo = sp.STARTUPINFO()
@@ -375,12 +375,12 @@ def get_argyll_version_string(name, paths=None):
         print(exception)
         return argyll_version_string
     for i, line in enumerate((p.communicate()[0] or "").splitlines()):
-        if isinstance(line, str):
+        if isinstance(line, bytes):
             line = line.strip()
-            if "version" in line.lower():
-                argyll_version_string = line[line.lower().find("version") + 8:]
+            if b"version" in line.lower():
+                argyll_version_string = line[line.lower().find(b"version") + 8:]
                 break
-    return argyll_version_string
+    return argyll_version_string.decode("utf-8")
 
 
 def parse_argyll_version_string(argyll_version_string):
