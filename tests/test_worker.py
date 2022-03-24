@@ -74,6 +74,14 @@ def test_generate_b2a_from_inverse_table(data_files, argyll):
     assert result is True
 
 
+def test_get_argyll_version_1(argyll):
+    """Test worker.get_argyll_version() function."""
+    from DisplayCAL.worker import get_argyll_version
+    result = get_argyll_version("ccxxmake")
+    expected_result = [2, 3, 0]
+    assert result == expected_result
+
+
 def test_sudo_class_initialization():
     """Test worker.Sudo class initialization"""
     from DisplayCAL.worker import Sudo
