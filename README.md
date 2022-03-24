@@ -27,13 +27,12 @@ Here is a list of things that is working:
 - Installing the created profile.
 - Installing the created profile as root.
 - Profile info window.
+- Measurement report creation.
 - and a lot of other stuff is working properly.
 
 What is not working (yet)
 -------------------------
 
-- ~~Language support, all the menus are showing the bare keys of the items. This will soon
-  be fixed.~~ (Fixed)
 - There are tons of ``bytes/str`` related issues, getting fixed very quickly but more
   tests are needed.
 - Please create [issues](https://github.com/eoyilmaz/displaycal-py3/issues)
