@@ -83,6 +83,8 @@ else:
     pyname, pyext = os.path.splitext(os.path.basename(pypath))
     pydir = os.path.dirname(exe if isexe else os.path.abspath(__file__))
 
+# TODO: Modifying ``data_dirs`` here was not an elegant solution, and it is not solving
+#       the problem either.
 data_dirs = [
     # venv/share/DisplayCAL
     os.path.join(os.path.dirname(os.path.dirname(pypath)), "share", "DisplayCAL"),
@@ -93,8 +95,7 @@ data_dirs = [
     # venv/lib/python3.x/site-packages/DisplayCAL-*.egg/share/DisplayCAL
     os.path.join(os.path.dirname(pydir), "share", "DisplayCAL"),
 ]
-print("data_dirs:")
-pprint.pprint(data_dirs)
+
 
 extra_data_dirs = []
 # Search directories on PATH for data directories so Argyll reference files
