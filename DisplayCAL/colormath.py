@@ -741,6 +741,12 @@ def interp_old(x, xp, fp, left=None, right=None):
 
 
 # This is much faster than the old implementation
+# interp(x: Union[ndarray, Iterable, int, float],
+#            xp: Any,
+#            fp: Any,
+#            left: Any = None,
+#            right: Any = None,
+#            period: Optional[float] = None) -> Any
 interp = numpy.interp
 
 
@@ -748,9 +754,15 @@ def interp_resize(iterable, new_size, use_numpy=False):
     """Change size of iterable through linear interpolation"""
     result = []
     x_new = list(range(len(iterable)))
-    interp = Interp(x_new, iterable, use_numpy=use_numpy)
+    # interp = Interp(x_new, iterable, use_numpy=use_numpy)
     for i in range(new_size):
-        result.append(interp(i / (new_size - 1.0) * (len(iterable) - 1.0)))
+        result.append(
+            interp(
+                i / (new_size - 1.0) * (len(iterable) - 1.0),
+                x_new,
+                iterable,
+            )
+        )
     return result
 
 
@@ -758,9 +770,15 @@ def interp_fill(xp, fp, new_size, use_numpy=False):
     """Fill missing points by interpolation"""
     result = []
     last = xp[-1]
-    interp = Interp(xp, fp, use_numpy=use_numpy)
+    # interp = Interp(xp, fp, use_numpy=use_numpy)
     for i in range(new_size):
-        result.append(interp(i / (new_size - 1.0) * last))
+        result.append(
+            interp(
+                i / (new_size - 1.0) * last,
+                xp,
+                fp
+            )
+        )
     return result
 
 
@@ -772,6 +790,8 @@ def smooth_avg_old(values, passes=1, window=None, protect=None):
         passes (int): Number of passes
         window (tuple/list): Tuple or list containing weighting factors. Its length
             determines the size of the window to use. Defaults to (1.0, 1.0, 1.0)
+        protect (list): A list of indices to protect. The values related to these
+            indices will be protected.
     """
     if not window or len(window) < 3 or len(window) % 2 != 1:
         if window:
