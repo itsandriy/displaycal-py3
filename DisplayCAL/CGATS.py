@@ -320,7 +320,7 @@ class CGATS(dict):
                     token_start = 0
                     end = len(line) - 1
                     for i in range(len(line)):
-                        char = line[i: i + 1]
+                        char = line[i : i + 1]
                         if char == b'"':
                             if quoted is False:
                                 if not line[token_start:i]:
@@ -482,7 +482,7 @@ class CGATS(dict):
             colorants = []
             for i in range(len(color_rep[0])):
                 for j in range(len(color_rep[0])):
-                    channelname = color_rep[0][j: j + 1]
+                    channelname = color_rep[0][j : j + 1]
                     # the key should be str
                     key = b"_".join([color_rep[0], channelname]).decode("utf-8")
                     query[key] = 100 if i == j else 0
@@ -524,7 +524,11 @@ class CGATS(dict):
                         if display:
                             # Localized tech will be unicode always, need to
                             # make sure display is as well
-                            display = display.decode("utf-8") if isinstance(display, bytes) else display
+                            display = (
+                                display.decode("utf-8")
+                                if isinstance(display, bytes)
+                                else display
+                            )
                     if display:
                         tech += " (%s)" % display
                 desc = tech.encode("utf-8")  # TODO: This could be problematic
@@ -901,7 +905,7 @@ class CGATS(dict):
                 valueslist1_orig = list(valueslist1)
                 valueslist2_orig = list(valueslist2)
                 valueslist1 = valueslist2_orig[offset:]
-                valueslist2 = valueslist1_orig[offset + 1:]
+                valueslist2 = valueslist1_orig[offset + 1 :]
                 valueslist1.insert(0, valueslist1_orig[0])
                 if offset:
                     valueslist1.insert(-1, valueslist2_orig[0])
@@ -1953,13 +1957,13 @@ Transform {
 
         device_labels = []
         for i in range(len(color_rep[0])):
-            channel = color_rep[0][i: i + 1]
+            channel = color_rep[0][i : i + 1]
             device_labels.append(color_rep[0] + b"_" + channel)
 
         # Always XYZ
         cie_labels = []
         for i in range(len(color_rep[1])):
-            channel = color_rep[1][i: i + 1]
+            channel = color_rep[1][i : i + 1]
             cie_labels.append(color_rep[1] + b"_" + channel)
 
         # Add entries to DATA_FORMAT
@@ -1990,19 +1994,20 @@ Transform {
             # Check for XYZ/Lab = 0 readings
             cie_labels = []
             for i in range(len(color_rep[1])):
-                channel = color_rep[1][i: i + 1]
+                channel = color_rep[1][i : i + 1]
                 cie_labels.append(color_rep[1] + b"_" + channel)
                 if color_rep[1] == b"LAB":
                     # Only check L* for zero values
                     break
             device_labels = []
             for i in range(len(color_rep[0])):
-                channel = color_rep[0][i: i + 1]
+                channel = color_rep[0][i : i + 1]
                 device_labels.append(color_rep[0] + b"_" + channel)
             remove = []
             for _key, sample in data.items():
                 cie_values = [sample[label.decode("utf-8")] for label in cie_labels]
                 # Check if zero
+                device_label_values = sample.queryv1(device_labels)
                 if [v for v in cie_values if v]:
                     # Not all zero. Check if some component(s) equal or below zero
                     if min(cie_values) <= 0:
@@ -2016,9 +2021,11 @@ Transform {
                                                 sample.SAMPLE_ID,
                                                 color_rep[0],
                                                 " ".join(
-                                                    str(
-                                                        sample.queryv1(device_labels)
+                                                    device_label_values.decode(
+                                                        "utf-8"
                                                     ).split()
+                                                    if device_label_values
+                                                    else [""]
                                                 ),
                                                 label.decode("utf-8"),
                                             )
@@ -2034,9 +2041,11 @@ Transform {
                                                 sample.SAMPLE_ID,
                                                 color_rep[0],
                                                 " ".join(
-                                                    sample.queryv1(
-                                                        device_labels
-                                                    ).decode("utf-8").split()
+                                                    device_label_values.decode(
+                                                        "utf-8"
+                                                    ).split()
+                                                    if device_label_values
+                                                    else [""]
                                                 ),
                                                 label.decode("utf-8"),
                                             )
@@ -2056,7 +2065,11 @@ Transform {
                             % (
                                 sample.SAMPLE_ID,
                                 color_rep[0],
-                                " ".join(str(sample.queryv1(device_labels)).split()),
+                                " ".join(
+                                    device_label_values.decode("utf-8").split()
+                                    if device_label_values
+                                    else [""]
+                                ),
                                 color_rep[1],
                             )
                         )
@@ -2069,7 +2082,11 @@ Transform {
                             % (
                                 sample.SAMPLE_ID,
                                 color_rep[0],
-                                " ".join(str(sample.queryv1(device_labels)).split()),
+                                " ".join(
+                                    device_label_values.decode("utf-8").split()
+                                    if device_label_values
+                                    else [""]
+                                ),
                                 color_rep[1],
                             )
                         )

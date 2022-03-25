@@ -1201,19 +1201,19 @@ def get_options_from_cprt(cprt):
     """Extract options used for dispcal and colprof from profile copyright."""
     if not isinstance(cprt, str):
         if isinstance(cprt, (ICCP.TextDescriptionType, ICCP.MultiLocalizedUnicodeType)):
-            cprt = bytes(cprt)
+            cprt = str(cprt)
         else:
-            cprt = bytes(cprt, fs_enc, "replace")
-    dispcal_args = cprt.split(b" dispcal ")
+            cprt = str(cprt, fs_enc, "replace")
+    dispcal_args = cprt.split(" dispcal ")
     colprof_args = None
     if len(dispcal_args) > 1:
-        dispcal_args[1] = dispcal_args[1].split(b" colprof ")
+        dispcal_args[1] = dispcal_args[1].split(" colprof ")
         if len(dispcal_args[1]) > 1:
             colprof_args = dispcal_args[1][1]
         dispcal_args = dispcal_args[1][0]
     else:
         dispcal_args = None
-        colprof_args = cprt.split(b" colprof ")
+        colprof_args = cprt.split(" colprof ")
         if len(colprof_args) > 1:
             colprof_args = colprof_args[1]
         else:

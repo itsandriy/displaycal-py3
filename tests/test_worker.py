@@ -2,19 +2,45 @@
 
 import io
 import pytest
-import time
 
 from DisplayCAL import ICCProfile
 from DisplayCAL.dev.mocks import check_call_str
 from DisplayCAL.worker import make_argyll_compatible_path, Worker
 
-# todo: deactivated test temporarily
-# def test_get_options_from_profile_is_working_properly(data_files):
-#     """testing if ``DisplayCAL.worker.get_options_from_profile()`` is working properly
-#     """
-#     from DisplayCAL.worker import get_options_from_profile
-#     options = get_options_from_profile(profile=data_files["default.ti3"].absolute())
 from tests.data.display_data import DisplayData
+
+
+def test_get_options_from_profile_1(data_files):
+    """Test ``DisplayCAL.worker.get_options_from_profile()`` function"""
+    from DisplayCAL.worker import get_options_from_profile
+
+    profile_path = data_files[
+        "UP2516D #1 2022-03-23 16-06 D6500 2.2 F-S XYZLUT+MTX.icc"
+    ].absolute()
+    options = get_options_from_profile(profile=profile_path)
+    assert options == (
+        [
+            "t6500",
+            "g2.2",
+            "f1.0",
+            "A4.0",
+            "d1",
+            "c1",
+            "yl",
+            "P0.48923385077616427,0.8797619047619047,1.4894179894179895",
+            "H",
+        ],
+        ["qh", "aX", 'A "Dell, Inc."'],
+    )
+
+
+def test_get_options_from_profile_2(data_files):
+    """Test ``DisplayCAL.worker.get_options_from_profile()`` function, for #69"""
+    from DisplayCAL.worker import get_options_from_profile
+
+    profile_path = data_files["SW271 PM PenalNative_KB1_160_2022-03-17.icc"].absolute()
+    options = get_options_from_profile(profile=profile_path)
+    assert options == ([], [])  # no options on that profile
 
 
 def test_make_argyll_compatible_path_1():
@@ -77,6 +103,7 @@ def test_generate_b2a_from_inverse_table(data_files, argyll):
 def test_get_argyll_version_1(argyll):
     """Test worker.get_argyll_version() function."""
     from DisplayCAL.worker import get_argyll_version
+
     result = get_argyll_version("ccxxmake")
     expected_result = [2, 3, 0]
     assert result == expected_result
@@ -138,6 +165,7 @@ def test_get_display_name_1():
     """Testing Worker.get_display_name() method."""
     from DisplayCAL.worker import Worker
     from DisplayCAL.config import initcfg, setcfg
+
     initcfg()
     setcfg("display.number", 1)
     worker = Worker()
@@ -149,6 +177,7 @@ def test_get_pwd():
     """Testing Worker.get_display_name() method."""
     from DisplayCAL.worker import Worker
     from DisplayCAL.config import initcfg
+
     initcfg()
     worker = Worker()
     test_value = "test_value"
@@ -161,6 +190,7 @@ def test_update_profile_1(random_icc_profile):
     from DisplayCAL import worker
     from DisplayCAL.worker import Worker
     from DisplayCAL.config import initcfg
+
     worker.dbus_session = None
     worker.dbus_system = None
     initcfg()
