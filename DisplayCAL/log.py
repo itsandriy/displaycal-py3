@@ -187,6 +187,7 @@ class SafeLogger(SafePrinter):
             kwargs.update(fn=log, encoding=None)
             _safe_print(*args, **kwargs)
 
+
 safe_log = SafeLogger(print_=False)
 safe_print = SafeLogger()
 

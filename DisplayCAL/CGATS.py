@@ -2028,14 +2028,15 @@ Transform {
                                     sample[label.decode("utf-8")] = 0.000001
                                     if logfile:
                                         logfile.write(
-                                            "Fudged sample ID %i (%s %s) %s to be non-zero\n"
+                                            "Fudged sample ID %i (%s %s) %s to be "
+                                            "non-zero\n"
                                             % (
                                                 sample.SAMPLE_ID,
                                                 color_rep[0],
                                                 " ".join(
-                                                    str(
-                                                        sample.queryv1(device_labels)
-                                                    ).split()
+                                                    sample.queryv1(
+                                                        device_labels
+                                                    ).decode("utf-8").split()
                                                 ),
                                                 label.decode("utf-8"),
                                             )

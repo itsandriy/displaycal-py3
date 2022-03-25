@@ -1,10 +1,12 @@
 # -*- coding: utf-8 --*-
 
 from DisplayCAL import CGATS
+from DisplayCAL.util_io import LineBufferedStream, Files
+from DisplayCAL.worker import FilteredStream
 
 
 def test_cgats_with_sample_data_1(data_files):
-    """tests CGATS class with some sample data"""
+    """Test CGATS class with some sample data"""
     cgats = CGATS.CGATS(cgats=data_files["cgats0.txt"].absolute())
 
     assert cgats[0]["DESCRIPTOR"] == b"Output Characterisation"
@@ -152,7 +154,7 @@ def test_cgats_with_sample_data_1(data_files):
 
 
 def test_cgats_with_sample_data_1A(data_files):
-    """tests CGATS class with some sample data"""
+    """Test CGATS class with some sample data"""
     cgats = CGATS.CGATS(cgats=data_files["cgats0.txt"].absolute())
 
     assert cgats[0]["DESCRIPTOR"] == b"Output Characterisation"
@@ -240,7 +242,7 @@ def test_cgats_with_sample_data_1A(data_files):
 
 
 def test_cgats_with_sample_data_2(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` class with some sample data"""
+    """Test ``DisplayCAL.CGATS.CGATS`` class with some sample data"""
     cgats = CGATS.CGATS(cgats=data_files["ccxx.ti1"].absolute())
 
     assert (
@@ -277,7 +279,7 @@ def test_cgats_with_sample_data_2(data_files):
 
 
 def test_cgats_with_sample_targ_data(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` class with data coming from the ``Text`` class"""
+    """Test ``DisplayCAL.CGATS.CGATS`` class with data coming from the ``Text`` class"""
     from DisplayCAL.ICCProfile import Text
 
     with open(data_files["ccxx.ti1"].absolute(), "rb") as f:
@@ -322,7 +324,7 @@ def test_cgats_with_sample_targ_data(data_files):
 
 
 def test_cgats_with_sample_ti3_data(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` class with data coming from the ti3 file"""
+    """Test ``DisplayCAL.CGATS.CGATS`` class with data coming from the ti3 file"""
     cgats = CGATS.CGATS(cgats=data_files["0_16.ti3"].absolute())
 
     assert isinstance(cgats, CGATS.CGATS)
@@ -360,7 +362,7 @@ def test_cgats_with_sample_ti3_data(data_files):
 
 
 def test_cgats_from_ti3_back_to_bytes(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` class with data coming from the ti3 file and
+    """Test ``DisplayCAL.CGATS.CGATS`` class with data coming from the ti3 file and
     then converted back to bytes
     """
     path = data_files["0_16_proper.ti3"].absolute()
@@ -371,7 +373,7 @@ def test_cgats_from_ti3_back_to_bytes(data_files):
 
 
 def test_cgats_get_colorants_method(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` get_colorants() method."""
+    """Test ``DisplayCAL.CGATS.CGATS`` get_colorants() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     result = cgats.get_colorants()
@@ -384,7 +386,7 @@ def test_cgats_get_colorants_method(data_files):
 
 
 def test_cgats_get_descriptor_method(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` get_descriptor() method."""
+    """Test ``DisplayCAL.CGATS.CGATS`` get_descriptor() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     result = cgats.get_descriptor()
@@ -393,7 +395,7 @@ def test_cgats_get_descriptor_method(data_files):
 
 
 def test_cgats_get_method(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` get() method."""
+    """Test ``DisplayCAL.CGATS.CGATS`` get() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     result = cgats.get(0)['DESCRIPTOR']
@@ -402,7 +404,7 @@ def test_cgats_get_method(data_files):
 
 
 def test_cgats_getitem_method_1(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` get() method."""
+    """Test ``DisplayCAL.CGATS.CGATS`` get() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     result = cgats[0]['DESCRIPTOR']
@@ -411,7 +413,7 @@ def test_cgats_getitem_method_1(data_files):
 
 
 def test_cgats_getitem_method_2(data_files):
-    """tests ``DisplayCAL.CGATS.CGATS`` get() method."""
+    """Test ``DisplayCAL.CGATS.CGATS`` get() method."""
     path = data_files["default.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     result = cgats[-1]['DESCRIPTOR']
@@ -420,50 +422,60 @@ def test_cgats_getitem_method_2(data_files):
 
 
 def test_cgats_fix_zero_measurements_1(data_files):
-    """tets ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
     path = data_files["0_16.ti1"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.fix_zero_measurements()
 
 
 def test_cgats_fix_zero_measurements_2(data_files):
-    """tets ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
     path = data_files["0_16.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.fix_zero_measurements()
 
 
 def test_cgats_fix_zero_measurements_3(data_files):
-    """tets ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
     path = data_files["Monitor.cal"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.fix_zero_measurements()
 
 
 def test_cgats_fix_zero_measurements_4(data_files):
-    """tets ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
     path = data_files["Monitor.ti1"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.fix_zero_measurements()
 
 
 def test_cgats_fix_zero_measurements_5(data_files):
-    """tets ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
     path = data_files["Monitor.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.fix_zero_measurements()
 
 
 def test_cgats_fix_zero_measurements_6(data_files):
-    """tets ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
     path = data_files["Monitor_ZeroValues.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.fix_zero_measurements()
 
 
 def test_cgats_fix_zero_measurements_7(data_files):
-    """tets ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method."""
     path = data_files["Monitor_AllBlack.ti3"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     cgats.fix_zero_measurements()
 
+
+def test_cgats_fix_zero_measurements_8(data_files):
+    """Test ``DisplayCAL.CGATS.CGATS.`` fix_zero_measurements() method. For #68."""
+    from DisplayCAL.worker import Worker
+    worker = Worker()
+    worker.get_logfiles(False)
+
+    path = data_files["Monitor_AllBlack.ti3"].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    cgats.fix_zero_measurements(logfile=worker.get_logfiles(False))

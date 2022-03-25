@@ -169,7 +169,7 @@ class LineBufferedStream(object):
 
     def commit(self):
         if self.buf:
-            if self.data_encoding and not isinstance(self.buf, str):
+            if self.data_encoding and isinstance(self.buf, bytes):
                 self.buf = self.buf.decode(self.data_encoding, self.errors)
             if self.file_encoding:
                 self.buf = self.buf.encode(self.file_encoding, self.errors)
@@ -177,7 +177,8 @@ class LineBufferedStream(object):
             self.buf = ""
 
     def write(self, data):
-        data = data.decode()
+        if not isinstance(data, str):
+            data = data.decode()
         data = data.replace(self.linesep_in, "\n")
         for char in data:
             if char == "\r":
