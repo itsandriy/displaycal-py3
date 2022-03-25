@@ -17,7 +17,7 @@ def test_update_estimated_measurement_time_1(argyll):
     initcfg()
     app = wx.GetApp()
     if not app:
-        app = wx.PySimpleApp()
+        app = wx.App()
 
     with check_call_str(
         "DisplayCAL.worker.Worker.get_instrument_name",

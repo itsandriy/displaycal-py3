@@ -10,7 +10,7 @@ def test_update_colorimeter_correction_matrix_ctrl_items_1():
     # I have no idea how it works, let's see...
     app = wx.GetApp()
     if not app:
-        app = wx.PySimpleApp()
+        app = wx.App()
     worker = Worker()
     mf = display_cal.MainFrame(worker=worker)
     assert mf.colorimeter_correction_matrix_ctrl.Items != []
