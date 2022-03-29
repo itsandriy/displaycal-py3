@@ -332,7 +332,7 @@
 <!-- Don't set this smaller than 142 which will raise a ton of:                                             -->
 <!-- Gtk-CRITICAL **: (timestamp): gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkSpinButton -->
 <!-- Errors!!!                                                                                              -->
-                                    <size>142,-1</size>
+                                    <size>150,-1</size>
                                   </object>
                                 </object>
                                 <object class="sizeritem">
@@ -358,7 +358,7 @@
 <!-- Don't set this smaller than 142 which will raise a ton of:                                             -->
 <!-- Gtk-CRITICAL **: (timestamp): gtk_box_gadget_distribute: assertion 'size >= 0' failed in GtkSpinButton -->
 <!-- Errors!!!                                                                                              -->
-                                <size>142,-1</size>
+                                <size>150,-1</size>
                                 <digits>6</digits>
                               </object>
                               <flag>wxLEFT|wxALIGN_CENTRE_VERTICAL</flag>
@@ -1033,7 +1033,7 @@
                                 </object>
                                 <object class="sizeritem">
                                   <object class="FloatSpin" name="ambient_viewcond_adjust_textctrl">
-                                    <size>140,-1</size>
+                                    <size>150,-1</size>
                                     <min_val>0.0</min_val>
                                     <max_val>16777216</max_val>
                                     <increment>0.1</increment>
