@@ -67,13 +67,14 @@ Then pull the source and create a virtual environment:
 ```shell
 git clone https://github.com/eoyilmaz/displaycal-py3
 python -m venv ./displaycal_venv
-source ./displaycal_venv/bin/activate # Windows: .\displaycal_venv\Scripts\activate.bat
+source ./displaycal_venv/bin/activate  # Windows: .\displaycal_venv\Scripts\activate.bat
 cd ./displaycal-py3/
-pip install -r requirements.txt
-python setup.py install
+pip install -r requirements.txt .
 ```
 
-This should install the code as an ``sdist``. To run the UI:
+Warning, don't forget to include the ``.`` (dot sign) on the last command.
+
+This should install DisplayCAL. To run the UI:
 
 ```shell
 displaycal

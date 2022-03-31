@@ -493,7 +493,7 @@ try:
 except ImportError:
 
     def _set_cloexec(fd):
-        pass
+        return None
 
 else:
 

@@ -98,7 +98,7 @@ def _main(module, name, applockfilename, probe_ports=True):
         print("Not starting another instance.")
         return
     else:
-        print("Acquired lock file:", lock)
+        print(f"Acquired lock file: {lock}")
     log("=" * 80)
     if verbose >= 1:
         version = VERSION_STRING
@@ -108,7 +108,7 @@ def _main(module, name, applockfilename, probe_ports=True):
     if sys.platform == "darwin":
         # Python's platform.platform output is useless under Mac OS X
         # (e.g. 'Darwin-15.0.0-x86_64-i386-64bit' for Mac OS X 10.11 El Capitan)
-        print("Mac OS X %s %s" % (mac_ver()[0], mac_ver()[-1]))
+        print(f"Mac OS X {mac_ver()[0]} {mac_ver()[-1]}")
     elif sys.platform == "win32":
         machine = platform.machine()
         print(
@@ -123,7 +123,7 @@ def _main(module, name, applockfilename, probe_ports=True):
             " ".join([distro.id(), distro.version(), distro.codename()]),
             platform.machine(),
         )
-    print("Python " + sys.version)
+    print(f"Python {sys.version}")
     cafile = os.getenv("SSL_CERT_FILE")
     if cafile:
         print("CA file", cafile)
@@ -144,9 +144,9 @@ def _main(module, name, applockfilename, probe_ports=True):
     if "phoenix" in wx.PlatformInfo:
         # py2exe helper so wx.xml gets picked up
         from wx import xml
-    print("wxPython " + wx.version())
-    print("Encoding: " + enc)
-    print("File system encoding: " + fs_enc)
+    print(f"wxPython {wx.version()}")
+    print(f"Encoding: {enc}")
+    print(f"File system encoding: {fs_enc}")
     if sys.platform == "win32" and sys.getwindowsversion() >= (6, 2):
         # HighDPI support
         try:
