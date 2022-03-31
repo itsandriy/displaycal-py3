@@ -14,3 +14,4 @@ __pycache__/
 /DisplayCAL.egg-info/PKG-INFO
 /DisplayCAL.egg-info/dependency_links.txt
 *.blend1
+/.coverage
