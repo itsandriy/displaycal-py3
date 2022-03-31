@@ -954,9 +954,7 @@ class FileLock(object):
                 op |= fcntl.LOCK_NB
             fn = fcntl.flock
             args = (self._file.fileno(), op)
-        print("fn:", fn)
-        print("args:", args)
-        self._call(fn, args, FileLock.LockingError)
+        self._call(fn, args, LockingError)
 
     def unlock(self):
         if self._file.closed:
@@ -967,7 +965,7 @@ class FileLock(object):
         else:
             fn = fcntl.flock
             args = (self._file.fileno(), fcntl.LOCK_UN)
-        self._call(fn, args, FileLock.UnlockingError)
+        self._call(fn, args, UnlockingError)
 
     @staticmethod
     def _call(fn, args, exception_cls):
@@ -976,30 +974,30 @@ class FileLock(object):
         except FileLock._exception_cls as exception:
             raise exception_cls(*exception.args)
 
-    class Error(Exception):
-        pass
 
-    class LockingError(Error):
-        pass
+class Error(Exception):
+    pass
 
-    class UnlockingError(Error):
-        pass
+
+class LockingError(Error):
+    pass
+
+
+class UnlockingError(Error):
+    pass
 
 
 if sys.platform == "win32" and sys.getwindowsversion() >= (6,):
 
     class win64_disable_file_system_redirection:
-
-        # http://code.activestate.com/recipes/578035-disable-file-system-redirector/
-
-        r"""
-        Disable Windows File System Redirection.
+        r"""Disable Windows File System Redirection.
 
         When a 32 bit program runs on a 64 bit Windows the paths to
         C:\Windows\System32 automatically get redirected to the 32 bit version
         (C:\Windows\SysWow64), if you really do need to access the contents of
         System32, you need to disable the file system redirection first.
 
+        # http://code.activestate.com/recipes/578035-disable-file-system-redirector/
         """
 
         _disable = ctypes.windll.kernel32.Wow64DisableWow64FsRedirection

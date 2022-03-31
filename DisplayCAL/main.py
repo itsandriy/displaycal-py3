@@ -67,8 +67,7 @@ from DisplayCAL.meta import (
 )
 from DisplayCAL.multiprocess import mp
 from DisplayCAL.options import debug, verbose
-from DisplayCAL.util_os import FileLock
-
+from DisplayCAL.util_os import FileLock, LockingError, UnlockingError
 
 if sys.platform == "win32":
     from util_win import win_ver
@@ -92,7 +91,7 @@ def _main(module, name, applockfilename, probe_ports=True):
         "synthprofile",
         "testchart-editor",
     )
-    lock = AppLock(applockfilename, "a+", True, module in multi_instance)
+    lock = AppLock(applockfilename, "a+", False, module in multi_instance)
     if not lock:
         # If a race condition occurs, do not start another instance
         print("Not starting another instance.")
@@ -172,13 +171,12 @@ def _main(module, name, applockfilename, probe_ports=True):
         # Check for currently used ports
         lockfilenames = glob.glob(os.path.join(confighome, "*.lock"))
         for lockfilename in lockfilenames:
-            print("Lockfile", lockfilename)
             try:
                 if lock and lockfilename == applockfilename:
                     lockfile = lock
                     lock.seek(0)
                 else:
-                    lockfile = AppLock(lockfilename, "r", True, True)
+                    lockfile = AppLock(lockfilename, "r", False, True)
                 if lockfile:
                     if lockfilename not in lock2pids_ports:
                         lock2pids_ports[lockfilename] = []
@@ -458,9 +456,12 @@ def _main(module, name, applockfilename, probe_ports=True):
         if module not in multi_instance:
             lock.truncate(0)
         if not port:
+            print(f"writing to lock file: opid: {opid}  port: {port}")
             lock.write("%s:%s" % (opid, port))
         else:
+            print(f"writing to lock file: port: {port}")
             lock.write(port)
+        lock.flush()
         atexit.register(lambda: print("Ran application exit handlers"))
         from DisplayCAL.wxwindows import BaseApp
 
@@ -556,13 +557,12 @@ def main(module=None):
 
 
 def _exit(lockfilename, oport):
-    print("lockfilename: %s" % lockfilename)
-    print("oport: %s" % oport)
     for process in mp.active_children():
         if "Manager" not in process.name:
             print("Terminating zombie process", process.name)
             process.terminate()
             print(process.name, "terminated")
+
     for thread in threading.enumerate():
         if (
             thread.is_alive()
@@ -572,9 +572,11 @@ def _exit(lockfilename, oport):
             print("Waiting for thread %s to exit" % thread.getName())
             thread.join()
             print(thread.getName(), "exited")
+
     if lockfilename and os.path.isfile(lockfilename):
-        with AppLock(lockfilename, "r+", True, True) as lock:
+        with AppLock(lockfilename, "r+", False, True) as lock:
             _update_lockfile(lockfilename, oport, lock)
+
     print("Exiting", pyname)
 
 
@@ -710,7 +712,7 @@ class AppLock(object):
         else:
             try:
                 self._lock = FileLock(self._lockfile, self._exclusive, self._blocking)
-            except FileLock.LockingError:
+            except LockingError:
                 pass
             except EnvironmentError as exception:
                 # This shouldn't happen
@@ -735,7 +737,7 @@ class AppLock(object):
         if self._lock:
             try:
                 self._lock.unlock()
-            except FileLock.UnlockingError as exception:
+            except UnlockingError as exception:
                 # This shouldn't happen
                 print(
                     "Warning - could not unlock lockfile %s:" % self._lockfile.name,
@@ -778,11 +780,10 @@ class AppSocket(object):
         return True
 
     def read(self):
-        print("AppSocket.read() start")
         incoming = ""
         while "\4" not in incoming:
             try:
-                data = self.socket.recv(1024).decode()
+                data = self.socket.recv(1024).decode("utf-8")
             except socket.error as exception:
                 if exception.errno == errno.EWOULDBLOCK:
                     sleep(0.05)
@@ -799,14 +800,13 @@ class AppSocket(object):
         print("AppSocket.send start")
         try:
             # self.socket.send(("%s\n" % data).encode())
-            data_to_send = ("%s\n" % data).encode()
+            data_to_send = f"{data}\n".encode("utf-8")
             print("data_to_send: %s" % data_to_send)
             self.socket.sendall(data_to_send)
         except socket.error as exception:
             # Connection lost?
             print("Warning - could not send data %r:" % data, exception)
             return False
-        print("AppSocket.send end")
         return True
 
 

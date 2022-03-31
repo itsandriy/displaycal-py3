@@ -1061,6 +1061,8 @@ class BaseFrame(wx.Frame):
             # Wait for incoming message
             try:
                 incoming = conn.recv(4096)
+                if isinstance(incoming, bytes):
+                    incoming = incoming.decode("utf-8")
             except socket.timeout:
                 continue
             except socket.error as exception:
@@ -1984,7 +1986,7 @@ class BaseFrame(wx.Frame):
             if isinstance(response, list):
                 response = "\n".join(response)
         try:
-            conn.sendall("%s\4" % safe_str(response, "UTF-8"))
+            conn.sendall(("%s\4" % safe_str(response, "UTF-8")).encode("utf-8"))
         except socket.error as exception:
             print(exception)
 
