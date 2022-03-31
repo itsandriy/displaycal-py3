@@ -84,11 +84,6 @@ def test_worker_instrument_supports_css_1():
 
 def test_generate_b2a_from_inverse_table(data_files, argyll):
     """Test Worker.generate_B2A_from_inverse_table() method"""
-    if not argyll:
-        # just skip this test so that it doesn't generate error on GitHub
-        pytest.skip("Cannot find argyll")
-
-    print("------------------")
     worker = Worker()
     icc_profile1 = ICCProfile.ICCProfile(
         profile=data_files[

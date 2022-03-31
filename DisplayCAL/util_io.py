@@ -235,7 +235,6 @@ class LineCache:
 
 
 class StringIOu(StringIO):
-
     """StringIO which converts all new line formats in buf to POSIX newlines."""
 
     def __init__(self, buf=""):

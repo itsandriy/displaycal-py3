@@ -342,7 +342,7 @@ def setup():
 
     if "bdist_standalone" in sys.argv[1:]:
         i = sys.argv.index("bdist_standalone")
-        sys.argv = sys.argv[:i] + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + sys.argv[i + 1 :]
 
         if bdist_cmd not in sys.argv[1:i]:
             sys.argv.insert(i, bdist_cmd)
@@ -388,7 +388,7 @@ def setup():
                 else:
                     stability = arg[1]
 
-                sys.argv = sys.argv[:n] + sys.argv[n + 1:]
+                sys.argv = sys.argv[:n] + sys.argv[n + 1 :]
         elif arg[0] == "-h" or arg[0].startswith("--help"):
             help = True
 
@@ -715,11 +715,11 @@ def setup():
             bdist_args += ["--force-arch=" + arch]
 
         i = sys.argv.index("bdist_deb")
-        sys.argv = sys.argv[:i] + bdist_args + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + bdist_args + sys.argv[i + 1 :]
 
     if bdist_pyi:
         i = sys.argv.index("bdist_pyi")
-        sys.argv = sys.argv[:i] + sys.argv[i + 1:]
+        sys.argv = sys.argv[:i] + sys.argv[i + 1 :]
 
         if "build_ext" not in sys.argv[1:i]:
             sys.argv.insert(i, "build_ext")
@@ -995,9 +995,7 @@ def setup():
         # Create control files
         mapping = {
             "POST": open(Path(pydir, "util", "rpm_postinstall.sh"), "r").read().strip(),
-            "POSTUN": open(Path(pydir, "util", "rpm_postuninstall.sh"), "r")
-            .read()
-            .strip(),
+            "POSTUN": open(Path(pydir, "util", "rpm_postuninstall.sh"), "r").read().strip(),
             "CHANGELOG": format_changelog(changelog, "rpm"),
         }
         tgz_file_path = Path(pydir, "dist", f"{name}-{version}.tar.gz")

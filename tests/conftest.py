@@ -19,14 +19,15 @@ def data_files():
     #  test/data
     extensions = ["*.txt", "*.tsv", "*.lin", "*.cal", "*.ti1", "*.ti3", "*.icc"]
 
+    displaycal_parent_dir = pathlib.Path(DisplayCAL.__file__).parent
     search_paths = [
-        pathlib.Path(DisplayCAL.__file__).parent,
-        pathlib.Path(DisplayCAL.__file__).parent / "presets",
-        pathlib.Path(DisplayCAL.__file__).parent / "ti1",
-        pathlib.Path(DisplayCAL.__file__).parent.parent / "misc" / "ti3",
-        pathlib.Path(DisplayCAL.__file__).parent.parent / "tests" / "data",
-        pathlib.Path(DisplayCAL.__file__).parent.parent / "tests" / "data" / "sample",
-        pathlib.Path(DisplayCAL.__file__).parent.parent / "tests" / "data" / "icc",
+        displaycal_parent_dir,
+        displaycal_parent_dir / "presets",
+        displaycal_parent_dir / "ti1",
+        displaycal_parent_dir.parent / "misc" / "ti3",
+        displaycal_parent_dir.parent / "tests" / "data",
+        displaycal_parent_dir.parent / "tests" / "data" / "sample",
+        displaycal_parent_dir.parent / "tests" / "data" / "icc",
     ]
     d_files = {}
     for path in search_paths:
@@ -74,28 +75,39 @@ def argyll():
     url = argyll_download_url[sys.platform]
 
     argyll_temp_path = tempfile.mkdtemp()
-    os.chdir(argyll_temp_path)
-    tar_file_name = "Argyll.tgz"
+    # store current working directory
+    current_working_directory = os.getcwd()
 
+    # change dir to argyll temp path
+    os.chdir(argyll_temp_path)
+
+    tar_file_name = "Argyll.tgz"
     if not os.path.exists(tar_file_name):
-        print("Downloading: %s" % tar_file_name)
+        print(f"Downloading: {tar_file_name}")
         # Download the tar file if it doesn't already exist
         subprocess.call(["/usr/bin/curl", url, "-o", tar_file_name])
     else:
-        print("Tar file already exists: %s" % tar_file_name)
+        print(f"Tar file already exists: {tar_file_name}")
         print("Not downloading it again!")
 
-    print("Decompressing Tarfile: %s" % tar_file_name)
+    print(f"Decompressing Tarfile: {tar_file_name}")
     with tarfile.open(tar_file_name) as tar:
         tar.extractall()
 
+    def cleanup():
+        # cleanup the test
+        shutil.rmtree(argyll_temp_path)
+        os.chdir(current_working_directory)
+
     argyll_path = pathlib.Path(argyll_temp_path) / "Argyll_V2.3.0" / "bin"
+    print(f"argyll_path: {argyll_path}")
     if argyll_path.is_dir():
         setcfg("argyll.dir", str(argyll_path.absolute()))
         yield argyll_path
-
-    # cleanup the test
-    shutil.rmtree(argyll_temp_path)
+        cleanup()
+    else:
+        cleanup()
+        pytest.skip("ArgyllCMS can not be setup!")
 
 
 @pytest.fixture(scope="function")
