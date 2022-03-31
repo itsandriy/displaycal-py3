@@ -2442,6 +2442,8 @@ class Worker(WorkerBase):
                             "Spyder 3": "Spyder3",
                         },
                     )
+                    if isinstance(ccxx_instrument, bytes):
+                        ccxx_instrument = ccxx_instrument.decode("utf-8")
                 if (
                     ccxx_instrument
                     and instrument_name.lower().replace(" ", "")

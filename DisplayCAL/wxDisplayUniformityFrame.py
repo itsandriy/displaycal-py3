@@ -139,7 +139,7 @@ class DisplayUniformityFrame(BaseFrame):
             sizer.Add(
                 button,
                 0,
-                wx.ALIGN_BOTTOM | wx.ALIGN_CENTER | wx.BOTTOM,
+                wx.ALIGN_CENTER | wx.BOTTOM,
                 # | wx.LEFT | wx.RIGHT,
                 border=8,
             )
