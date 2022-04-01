@@ -99,7 +99,8 @@ def test_get_argyll_version_1(argyll):
     """Test worker.get_argyll_version() function."""
     from DisplayCAL.worker import get_argyll_version
 
-    result = get_argyll_version("ccxxmake")
+    with check_call_str("DisplayCAL.worker.base_get_argyll_version_string", '2.3.0'):
+        result = get_argyll_version("ccxxmake")
     expected_result = [2, 3, 0]
     assert result == expected_result
 
