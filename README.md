@@ -69,7 +69,8 @@ git clone https://github.com/eoyilmaz/displaycal-py3
 python -m venv ./displaycal_venv
 source ./displaycal_venv/bin/activate  # Windows: .\displaycal_venv\Scripts\activate.bat
 cd ./displaycal-py3/
-pip install -r requirements.txt .
+pip install -r requirements.txt
+pip install .
 ```
 
 Warning, don't forget to include the ``.`` (dot sign) on the last command.
