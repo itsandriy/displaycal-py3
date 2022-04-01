@@ -196,3 +196,26 @@ def test_update_profile_1(random_icc_profile):
         "DisplayCAL.worker.Worker.get_display_edid", DisplayData.DISPLAY_DATA_2
     ):
         worker.update_profile(icc_profile_path, tags=True)
+
+
+def test_exec_cmd_1():
+    """Test worker.exec_cmd() function for issue #73"""
+    # Command line:
+    from DisplayCAL.worker import Worker
+    cmd = "/home/eoyilmaz/.local/bin/Argyll_V2.3.0/bin/colprof"
+    args = [
+        "-v",
+        "-qh",
+        "-ax",
+        "-bn",
+        "-C",
+        b"No copyright. Created with DisplayCAL 3.8.9.3 and Argyll CMS 2.3.0",
+        "-A",
+        "Dell, Inc.",
+        "-D",
+        "UP2516D_#1_2022-04-01_00-26_2.2_F-S_XYZLUT+MTX",
+        "/tmp/DisplayCAL-i91d9z8_/UP2516D_#1_2022-04-01_00-26_2.2_F-S_XYZLUT+MTX",
+    ]
+    cwd = "/tmp/DisplayCAL-i91d9z8_"
+    worker = Worker()
+    worker.exec_cmd(cmd=cmd, args=args)

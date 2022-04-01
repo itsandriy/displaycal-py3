@@ -2191,7 +2191,7 @@ class Worker(WorkerBase):
         # E.g.:
         # Nov 26 16:28:16  dispcal[1006] <Warning>: void CGSUpdateManager::log() const: conn 0x1ec57 token 0x3ffffffffffd0a
         prestrip = re.compile(
-            r"\D+\s+\d+\s+\d+:\d+:\d+\s+\w+\[\d+\]\s+<Warning>:[\S\s]*"
+            r"\D+\s+\d+\s+\d+:\d+:\d+\s+\w+\[\d+]\s+<Warning>:[\S\s]*"
         )
         discard = [r"[\*\.]+|Current (?:RGB|XYZ)(?: +.*)?"]
         self.lastmsg_discard = re.compile(r"|".join(discard))
@@ -5462,13 +5462,13 @@ END_DATA
                         argyll_version_string = line[line.lower().find("version") + 8 :]
                         if argyll_version_string != self.argyll_version_string:
                             self.set_argyll_version_from_string(argyll_version_string)
-                        print("ArgyllCMS " + self.argyll_version_string)
-                        config.defaults[
-                            "copyright"
-                        ] = "No copyright. Created with %s %s and Argyll CMS %s" % (
-                            appname,
-                            version,
-                            argyll_version_string,
+                        print(f"ArgyllCMS {self.argyll_version_string}")
+                        defaults["copyright"] = (
+                            "No copyright. Created with %s %s and Argyll CMS %s" % (
+                                appname,
+                                version,
+                                argyll_version_string,
+                            )
                         )
 
                         if self.argyll_version > [1, 0, 4]:
@@ -5907,6 +5907,12 @@ END_DATA
         """
         if args is None:
             args = []
+
+        # convert all args to str if any are bytes
+        for i, arg in enumerate(args):
+            if isinstance(arg, bytes):
+                args[i] = arg.decode("utf-8")
+
         # If dry_run is explicitly set to False, ignore dry_run config value
         dry_run = dry_run is not False and (dry_run or getcfg("dry_run"))
         if not capture_output:

@@ -401,10 +401,15 @@ def printcmdline(cmd, args=None, fn=None, cwd=None):
         args = []
     if cwd is None:
         cwd = os.getcwd()
-    fn("  " + cmd)
+    fn(f"  {cmd}")
     i = 0
     lines = []
     for item in args:
+        # convert all args to str
+        if not isinstance(item, str):
+            if isinstance(item, bytes):
+                item = item.decode("utf-8")
+            item = str(item)
         ispath = False
         if item.find(os.path.sep) > -1:
             if os.path.dirname(item) == cwd:
