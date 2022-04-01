@@ -29,6 +29,7 @@ Here is a list of things that is working:
 - Profile info window.
 - Measurement report creation.
 - Creating, displaying and uploading Colorimeter Corrections.
+- Measuring and reporting display uniformity.
 - and a lot of other stuff is working properly.
 
 What is not working (yet)
