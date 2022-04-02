@@ -243,7 +243,7 @@ class TestchartEditor(BaseFrame):
         if self.worker.argyll_version >= [1, 6]:
             hsizer.Add(
                 wx.StaticText(panel, -1, lang.getstr("tc.black")),
-                flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT,
+                flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL,
                 border=border,
             )
             self.tc_black_patches = wx.SpinCtrl(
@@ -494,7 +494,7 @@ class TestchartEditor(BaseFrame):
         if self.worker.argyll_version >= [1, 6, 2]:
             hsizer.Add(
                 wx.StaticText(panel, -1, lang.getstr("tc.dark_emphasis")),
-                flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT,
+                flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL,
                 border=border,
             )
             self.tc_dark_emphasis_slider = wx.Slider(
@@ -1295,7 +1295,7 @@ END_DATA"""
 
     def resize_grid(self):
         num_cols = self.grid.GetNumberCols()
-        if not num_cols:
+        if not num_cols or num_cols == 1:
             return
         grid_w = (
             self.grid.GetSize()[0]
