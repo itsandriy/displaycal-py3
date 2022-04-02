@@ -195,7 +195,7 @@ class TestchartEditor(BaseFrame):
             border=border,
         )
         self.tc_white_patches = wx.SpinCtrl(
-            panel, -1, size=(65 * scale, -1), min=0, name="tc_white_patches"
+            panel, -1, size=(100 * scale, -1), min=0, name="tc_white_patches"
         )
         self.Bind(
             wx.EVT_TEXT, self.tc_white_patches_handler, id=self.tc_white_patches.GetId()
@@ -213,7 +213,7 @@ class TestchartEditor(BaseFrame):
         self.tc_single_channel_patches = wx.SpinCtrl(
             panel,
             -1,
-            size=(65 * scale, -1),
+            size=(100 * scale, -1),
             min=0,
             max=256,
             name="tc_single_channel_patches",
@@ -247,7 +247,7 @@ class TestchartEditor(BaseFrame):
                 border=border,
             )
             self.tc_black_patches = wx.SpinCtrl(
-                panel, -1, size=(65 * scale, -1), min=0, name="tc_black_patches"
+                panel, -1, size=(100 * scale, -1), min=0, name="tc_black_patches"
             )
             self.Bind(
                 wx.EVT_TEXT,
@@ -267,7 +267,7 @@ class TestchartEditor(BaseFrame):
             border=border,
         )
         self.tc_gray_patches = wx.SpinCtrl(
-            panel, -1, size=(65 * scale, -1), min=0, max=256, name="tc_gray_patches"
+            panel, -1, size=(100 * scale, -1), min=0, max=256, name="tc_gray_patches"
         )
         self.tc_gray_patches.Bind(wx.EVT_KILL_FOCUS, self.tc_gray_handler)
         self.Bind(
@@ -286,7 +286,7 @@ class TestchartEditor(BaseFrame):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(hsizer)
         self.tc_multi_steps = wx.SpinCtrl(
-            panel, -1, size=(65 * scale, -1), min=0, max=21, name="tc_multi_steps"
+            panel, -1, size=(100 * scale, -1), min=0, max=21, name="tc_multi_steps"
         )  # 16 multi dim steps = 4096 patches
         self.tc_multi_steps.Bind(wx.EVT_KILL_FOCUS, self.tc_multi_steps_handler)
         self.Bind(
@@ -317,7 +317,7 @@ class TestchartEditor(BaseFrame):
         self.tc_fullspread_patches = wx.SpinCtrl(
             panel,
             -1,
-            size=(65 * scale, -1),
+            size=(100 * scale, -1),
             min=0,
             max=9999,
             name="tc_fullspread_patches",
@@ -363,7 +363,7 @@ class TestchartEditor(BaseFrame):
         )
         hsizer.Add(self.tc_adaption_slider, flag=wx.ALIGN_CENTER_VERTICAL)
         self.tc_adaption_intctrl = wx.SpinCtrl(
-            panel, -1, size=(65 * scale, -1), min=0, max=100, name="tc_adaption_intctrl"
+            panel, -1, size=(100 * scale, -1), min=0, max=100, name="tc_adaption_intctrl"
         )
         self.tc_adaption_intctrl.Disable()
         self.Bind(
@@ -398,7 +398,7 @@ class TestchartEditor(BaseFrame):
         self.Bind(wx.EVT_SLIDER, self.tc_angle_handler, id=self.tc_angle_slider.GetId())
         hsizer.Add(self.tc_angle_slider, flag=wx.ALIGN_CENTER_VERTICAL)
         self.tc_angle_intctrl = wx.SpinCtrl(
-            panel, -1, size=(75 * scale, -1), min=0, max=5000, name="tc_angle_intctrl"
+            panel, -1, size=(110 * scale, -1), min=0, max=5000, name="tc_angle_intctrl"
         )
         self.tc_angle_intctrl.Disable()
         self.Bind(wx.EVT_TEXT, self.tc_angle_handler, id=self.tc_angle_intctrl.GetId())
@@ -420,7 +420,7 @@ class TestchartEditor(BaseFrame):
             self.tc_gamma_floatctrl = floatspin.FloatSpin(
                 panel,
                 -1,
-                size=(65 * scale, -1),
+                size=(100 * scale, -1),
                 min_val=0.0,
                 max_val=9.9,
                 increment=0.05,
@@ -468,7 +468,7 @@ class TestchartEditor(BaseFrame):
             self.tc_neutral_axis_emphasis_intctrl = wx.SpinCtrl(
                 panel,
                 -1,
-                size=(65 * scale, -1),
+                size=(100 * scale, -1),
                 min=0,
                 max=100,
                 name="tc_neutral_axis_emphasis_intctrl",
@@ -516,7 +516,7 @@ class TestchartEditor(BaseFrame):
             self.tc_dark_emphasis_intctrl = wx.SpinCtrl(
                 panel,
                 -1,
-                size=(65 * scale, -1),
+                size=(100 * scale, -1),
                 min=0,
                 max=100,
                 name="tc_dark_emphasis_intctrl",
@@ -609,7 +609,7 @@ class TestchartEditor(BaseFrame):
             panel,
             -1,
             initial=50,
-            size=(65 * scale, -1),
+            size=(100 * scale, -1),
             min=0,
             max=100,
             name="tc_filter_L",
@@ -628,7 +628,7 @@ class TestchartEditor(BaseFrame):
             panel,
             -1,
             initial=0,
-            size=(65 * scale, -1),
+            size=(100 * scale, -1),
             min=-128,
             max=127,
             name="tc_filter_a",
@@ -647,7 +647,7 @@ class TestchartEditor(BaseFrame):
             panel,
             -1,
             initial=0,
-            size=(65 * scale, -1),
+            size=(100 * scale, -1),
             min=-128,
             max=127,
             name="tc_filter_b",
@@ -666,7 +666,7 @@ class TestchartEditor(BaseFrame):
             panel,
             -1,
             initial=255,
-            size=(65 * scale, -1),
+            size=(100 * scale, -1),
             min=1,
             max=255,
             name="tc_filter_rad",
@@ -770,7 +770,7 @@ class TestchartEditor(BaseFrame):
         self.tc_vrml_black_offset_intctrl = wx.SpinCtrl(
             panel,
             -1,
-            size=(55 * scale, -1),
+            size=(90 * scale, -1),
             min=0,
             max=40,
             name="tc_vrml_black_offset_intctrl",
@@ -864,7 +864,7 @@ class TestchartEditor(BaseFrame):
         self.saturation_sweeps_intctrl = wx.SpinCtrl(
             panel,
             -1,
-            size=(50 * scale, -1),
+            size=(95 * scale, -1),
             initial=getcfg("tc.saturation_sweeps"),
             min=2,
             max=255,
@@ -918,7 +918,7 @@ class TestchartEditor(BaseFrame):
                 floatspin.FloatSpin(
                     panel,
                     -1,
-                    size=(65 * scale, -1),
+                    size=(100 * scale, -1),
                     value=getcfg("tc.saturation_sweeps.custom.%s" % component),
                     min_val=0,
                     max_val=100,
@@ -2807,7 +2807,7 @@ END_DATA"""
             intctrl = wx.SpinCtrl(
                 dlg,
                 -1,
-                size=(60 * scale, -1),
+                size=(95 * scale, -1),
                 min=config.valid_ranges["tc_export_repeat_patch_max"][0],
                 max=config.valid_ranges["tc_export_repeat_patch_max"][1],
                 value=str(getcfg("tc_export_repeat_patch_max")),
@@ -2822,7 +2822,7 @@ END_DATA"""
             intctrl2 = wx.SpinCtrl(
                 dlg,
                 -1,
-                size=(60 * scale, -1),
+                size=(95 * scale, -1),
                 min=config.valid_ranges["tc_export_repeat_patch_min"][0],
                 max=config.valid_ranges["tc_export_repeat_patch_min"][1],
                 value=str(getcfg("tc_export_repeat_patch_min")),
