@@ -6,6 +6,8 @@ import re
 import shutil
 import sys
 
+from DisplayCAL.wxaddons import CustomEvent
+
 if sys.platform == "win32":
     import win32api
 
@@ -58,127 +60,8 @@ from DisplayCAL import floatspin, xh_filebrowsebutton, xh_floatspin, xh_bitmapct
 from wx import xrc
 
 
-class LUT3DFrame(BaseFrame):
-
-    """3D LUT creation window"""
-
-    def __init__(self, parent=None, setup=True):
-        self.input_profile = None
-        self.res = TempXmlResource(get_data_path(os.path.join("xrc", "3dlut.xrc")))
-        self.res.InsertHandler(
-            xh_filebrowsebutton.FileBrowseButtonWithHistoryXmlHandler()
-        )
-        self.res.InsertHandler(xh_floatspin.FloatSpinCtrlXmlHandler())
-        self.res.InsertHandler(xh_bitmapctrls.BitmapButton())
-        self.res.InsertHandler(xh_bitmapctrls.StaticBitmap())
-        if hasattr(wx, "PreFrame"):
-            # Classic
-            pre = wx.PreFrame()
-            self.res.LoadOnFrame(pre, parent, "lut3dframe")
-            self.PostCreate(pre)
-        else:
-            # Phoenix
-            wx.Frame.__init__(self)
-            self.res.LoadFrame(self, parent, "lut3dframe")
-        self.init()
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
-        if sys.platform == "win32":
-            self.Bind(wx.EVT_SIZE, self.OnSize)
-
-        self.SetIcons(
-            config.get_icon_bundle([256, 48, 32, 16], appname + "-3DLUT-maker")
-        )
-
-        self.set_child_ctrls_as_attrs(self)
-
-        self.panel = xrc.XRCCTRL(self, "panel")
-
-        if setup:
-            self.setup()
-
-    def OnSize(self, event):
-        event.Skip()
-        self.Refresh()  # Prevents distorted drawing under Windows
-
-    def setup(self):
-        self.worker = worker.Worker(self)
-        self.worker.set_argyll_version("collink")
-
-        for which in ("input", "abstract", "output"):
-            ctrl = xrc.XRCCTRL(self, "%s_profile_ctrl" % which)
-            setattr(self, "%s_profile_ctrl" % which, ctrl)
-            ctrl.changeCallback = getattr(self, "%s_profile_ctrl_handler" % which)
-            if which not in ("abstract", "output"):
-                ctrl.SetHistory(get_data_path("ref", r"\.(icc|icm)$"))
-            ctrl.SetMaxFontSize(11)
-            # Drop targets
-            droptarget = FileDrop(
-                self,
-                {
-                    ".icc": getattr(self, "%s_drop_handler" % which),
-                    ".icm": getattr(self, "%s_drop_handler" % which),
-                },
-            )
-            ctrl.SetDropTarget(droptarget)
-
-        # Bind event handlers
-        self.abstract_profile_cb.Bind(
-            wx.EVT_CHECKBOX, self.use_abstract_profile_ctrl_handler
-        )
-        self.output_profile_current_btn.Bind(
-            wx.EVT_BUTTON, self.output_profile_current_ctrl_handler
-        )
-        self.lut3d_trc_apply_none_ctrl.Bind(
-            wx.EVT_RADIOBUTTON, self.lut3d_trc_apply_ctrl_handler
-        )
-        self.lut3d_trc_apply_black_offset_ctrl.Bind(
-            wx.EVT_RADIOBUTTON, self.lut3d_trc_apply_ctrl_handler
-        )
-        self.lut3d_trc_apply_ctrl.Bind(
-            wx.EVT_RADIOBUTTON, self.lut3d_trc_apply_ctrl_handler
-        )
-        self.lut3d_bind_event_handlers()
-
-        self.lut3d_create_btn.SetDefault()
-
-        self.setup_language()
-        self.XYZbpin = [0, 0, 0]
-        # XYZbpout will be set to the blackpoint of the selected profile. This
-        # is used to determine if lack output offset controls should be shown.
-        # Set a initial value slightly above zero so output offset controls are
-        # shown if the selected profile doesn't exist.
-        self.XYZbpout = [0.001, 0.001, 0.001]
-        self.update_controls()
-        self.update_layout()
-        if self.panel.VirtualSize[0] > self.panel.Size[0]:
-            scrollrate_x = 2
-        else:
-            scrollrate_x = 0
-        self.panel.SetScrollRate(scrollrate_x, 2)
-
-        config.defaults.update(
-            {
-                "position.lut3dframe.x": self.GetDisplay().ClientArea[0] + 40,
-                "position.lut3dframe.y": self.GetDisplay().ClientArea[1] + 60,
-                "size.lut3dframe.w": self.ClientSize[0],
-                "size.lut3dframe.h": self.ClientSize[1],
-            }
-        )
-
-        if (
-            self.hascfg("position.lut3dframe.x")
-            and self.hascfg("position.lut3dframe.y")
-            and self.hascfg("size.lut3dframe.w")
-            and self.hascfg("size.lut3dframe.h")
-        ):
-            self.SetSaneGeometry(
-                int(self.getcfg("position.lut3dframe.x")),
-                int(self.getcfg("position.lut3dframe.y")),
-                int(self.getcfg("size.lut3dframe.w")),
-                int(self.getcfg("size.lut3dframe.h")),
-            )
-        else:
-            self.Center()
+class LUT3DMixin(object):
+    """Mixin class that adds some ``lut3d_`` functions to the mixed-in class."""
 
     def lut3d_bind_event_handlers(self):
         # Shared with main window
@@ -263,43 +146,6 @@ class LUT3DFrame(BaseFrame):
         self.lut3d_bitdepth_output_ctrl.Bind(
             wx.EVT_CHOICE, self.lut3d_bitdepth_output_ctrl_handler
         )
-
-    def OnClose(self, event=None):
-        if getattr(self.worker, "thread", None) and self.worker.thread.is_alive():
-            self.worker.abort_subprocess(True)
-            return
-        if sys.platform == "darwin" or debug:
-            self.focus_handler(event)
-        if self.IsShownOnScreen() and not self.IsMaximized() and not self.IsIconized():
-            x, y = self.GetScreenPosition()
-            self.setcfg("position.lut3dframe.x", x)
-            self.setcfg("position.lut3dframe.y", y)
-            self.setcfg("size.lut3dframe.w", self.ClientSize[0])
-            self.setcfg("size.lut3dframe.h", self.ClientSize[1])
-        if self.Parent:
-            config.writecfg()
-        else:
-            config.writecfg(
-                module="3DLUT-maker",
-                options=(
-                    "3dlut.",
-                    "last_3dlut_path",
-                    "position.lut3dframe",
-                    "size.lut3dframe",
-                ),
-            )
-        if event:
-            # Hide first (looks nicer)
-            self.Hide()
-            # Need to use CallAfter to prevent hang under Windows if minimized
-            wx.CallAfter(self.Destroy)
-
-    def use_abstract_profile_ctrl_handler(self, event):
-        self.setcfg(
-            "3dlut.use_abstract_profile", int(self.abstract_profile_cb.GetValue())
-        )
-        enable = bool(self.getcfg("3dlut.use_abstract_profile"))
-        self.abstract_profile_ctrl.Enable(enable)
 
     def lut3d_trc_apply_ctrl_handler(self, event=None):
         v = self.lut3d_trc_apply_ctrl.GetValue()
@@ -506,11 +352,6 @@ class LUT3DFrame(BaseFrame):
             self.lut3d_update_trc_control()
             self.lut3d_show_trc_controls()
 
-    def abstract_drop_handler(self, path):
-        if not self.worker.is_working():
-            self.abstract_profile_ctrl.SetPath(path)
-            self.set_profile("abstract")
-
     def lut3d_encoding_input_ctrl_handler(self, event):
         encoding = self.encoding_input_ab[self.encoding_input_ctrl.GetSelection()]
         self.lut3d_set_option("3dlut.encoding.input", encoding)
@@ -554,25 +395,6 @@ class LUT3DFrame(BaseFrame):
             self.lut3dframe.lut3d_update_encoding_controls()
         elif self.Parent:
             self.Parent.lut3d_update_encoding_controls()
-
-    def input_drop_handler(self, path):
-        if not self.worker.is_working():
-            self.input_profile_ctrl.SetPath(path)
-            self.set_profile("input")
-
-    def output_drop_handler(self, path):
-        if not self.worker.is_working():
-            self.output_profile_ctrl.SetPath(path)
-            self.set_profile("output")
-
-    def abstract_profile_ctrl_handler(self, event):
-        self.set_profile("abstract", silent=not event)
-
-    def input_profile_ctrl_handler(self, event):
-        self.set_profile("input", silent=not event)
-        if self.Parent:
-            self.Parent.lut3d_init_input_profiles()
-            self.Parent.lut3d_update_controls()
 
     def lut3d_bitdepth_input_ctrl_handler(self, event):
         self.lut3d_set_option(
@@ -1234,15 +1056,6 @@ class LUT3DFrame(BaseFrame):
                 size = 64
         return size
 
-    def output_profile_ctrl_handler(self, event):
-        self.set_profile("output", silent=not event)
-
-    def output_profile_current_ctrl_handler(self, event):
-        profile_path = get_current_profile_path(True, True)
-        if profile_path and os.path.isfile(profile_path):
-            self.output_profile_ctrl.SetPath(profile_path)
-            self.set_profile("output", profile_path or False, silent=not event)
-
     def lut3d_gamut_mapping_mode_handler(self, event):
         self.lut3d_set_option(
             "3dlut.gamap.use_b2a", int(self.gamut_mapping_b2a.GetValue())
@@ -1251,6 +1064,620 @@ class LUT3DFrame(BaseFrame):
             self.lut3dframe.update_controls()
         elif self.Parent:
             self.Parent.lut3d_update_b2a_controls()
+
+    def lut3d_rendering_intent_ctrl_handler(self, event):
+        self.lut3d_set_option(
+            "3dlut.rendering_intent",
+            self.rendering_intents_ab[self.lut3d_rendering_intent_ctrl.GetSelection()],
+        )
+        if getattr(self, "lut3dframe", None):
+            self.lut3dframe.lut3d_update_shared_controls()
+        else:
+            if isinstance(self, LUT3DFrame):
+                self.lut3d_show_input_value_clipping_warning(True)
+            if self.Parent:
+                self.Parent.lut3d_update_shared_controls()
+
+    def lut3d_setup_language(self):
+        # Shared with main window
+        items = []
+        for item in (
+            "Gamma 2.2",
+            "trc.rec1886",
+            "trc.smpte2084.hardclip",
+            "trc.smpte2084.rolloffclip",
+            "trc.hlg",
+            "custom",
+        ):
+            items.append(lang.getstr(item))
+        self.lut3d_trc_ctrl.SetItems(items)
+
+        self.trc_gamma_types_ab = {0: "b", 1: "B"}
+        self.trc_gamma_types_ba = {"b": 0, "B": 1}
+        self.lut3d_trc_gamma_type_ctrl.SetItems(
+            [lang.getstr("trc.type.relative"), lang.getstr("trc.type.absolute")]
+        )
+
+        self.lut3d_content_colorspace_names = ["Rec. 2020", "DCI P3 D65", "Rec. 709"]
+        self.lut3d_content_colorspace_ctrl.SetItems(
+            self.lut3d_content_colorspace_names + [lang.getstr("custom")]
+        )
+
+        self.rendering_intents_ab = {}
+        self.rendering_intents_ba = {}
+        self.lut3d_rendering_intent_ctrl.Clear()
+        intents = list(config.valid_values["3dlut.rendering_intent"])
+        if self.worker.argyll_version < [1, 8, 3]:
+            intents.remove("lp")
+        for i, ri in enumerate(intents):
+            self.lut3d_rendering_intent_ctrl.Append(lang.getstr("gamap.intents." + ri))
+            self.rendering_intents_ab[i] = ri
+            self.rendering_intents_ba[ri] = i
+
+        self.lut3d_formats_ab = {}
+        self.lut3d_formats_ba = {}
+        self.lut3d_format_ctrl.Clear()
+        i = 0
+        for format in config.valid_values["3dlut.format"]:
+            if format != "madVR" or self.worker.argyll_version >= [1, 6]:
+                self.lut3d_format_ctrl.Append(lang.getstr("3dlut.format.%s" % format))
+                self.lut3d_formats_ab[i] = format
+                self.lut3d_formats_ba[format] = i
+                i += 1
+
+        self.lut3d_hdr_display_ctrl.SetItems(
+            [
+                lang.getstr(item)
+                for item in ("3dlut.format.madVR.hdr_to_sdr", "3dlut.format.madVR.hdr")
+            ]
+        )
+
+        self.lut3d_size_ab = {}
+        self.lut3d_size_ba = {}
+        self.lut3d_size_ctrl.Clear()
+        for i, size in enumerate(config.valid_values["3dlut.size"]):
+            self.lut3d_size_ctrl.Append("%sx%sx%s" % ((size,) * 3))
+            self.lut3d_size_ab[i] = size
+            self.lut3d_size_ba[size] = i
+
+        self.lut3d_bitdepth_ab = {}
+        self.lut3d_bitdepth_ba = {}
+        self.lut3d_bitdepth_input_ctrl.Clear()
+        self.lut3d_bitdepth_output_ctrl.Clear()
+        for i, bitdepth in enumerate(config.valid_values["3dlut.bitdepth.input"]):
+            self.lut3d_bitdepth_input_ctrl.Append(str(bitdepth))
+            self.lut3d_bitdepth_output_ctrl.Append(str(bitdepth))
+            self.lut3d_bitdepth_ab[i] = bitdepth
+            self.lut3d_bitdepth_ba[bitdepth] = i
+
+    def lut3d_setup_encoding_ctrl(self):
+        format = self.getcfg("3dlut.format")
+        # Shared with amin window
+        if format == "madVR":
+            encodings = ["t"]
+            config.defaults["3dlut.encoding.input"] = "t"
+            config.defaults["3dlut.encoding.output"] = "t"
+        else:
+            if format == "dcl":
+                encodings = ["n"]
+            else:
+                encodings = list(video_encodings)
+            config.defaults["3dlut.encoding.input"] = "n"
+            config.defaults["3dlut.encoding.output"] = "n"
+        if (
+            self.worker.argyll_version >= [1, 7]
+            and self.worker.argyll_version != [1, 7, 0, "_beta"]
+            and format != "dcl"
+        ):
+            # Argyll 1.7 beta 3 (2015-04-02) added clip WTW on input TV encoding
+            encodings.insert(2, "T")
+        config.valid_values["3dlut.encoding.input"] = encodings
+        # collink: xvYCC output encoding is not supported
+        config.valid_values["3dlut.encoding.output"] = [
+            v for v in encodings if v not in ("T", "x", "X")
+        ]
+        self.encoding_input_ab = {}
+        self.encoding_input_ba = {}
+        self.encoding_output_ab = {}
+        self.encoding_output_ba = {}
+        self.encoding_input_ctrl.Freeze()
+        self.encoding_input_ctrl.Clear()
+        self.encoding_output_ctrl.Freeze()
+        self.encoding_output_ctrl.Clear()
+        for i, encoding in enumerate(config.valid_values["3dlut.encoding.input"]):
+            lstr = lang.getstr("3dlut.encoding.type_%s" % encoding)
+            self.encoding_input_ctrl.Append(lstr)
+            self.encoding_input_ab[i] = encoding
+            self.encoding_input_ba[encoding] = i
+        for o, encoding in enumerate(config.valid_values["3dlut.encoding.output"]):
+            lstr = lang.getstr("3dlut.encoding.type_%s" % encoding)
+            self.encoding_output_ctrl.Append(lstr)
+            self.encoding_output_ab[o] = encoding
+            self.encoding_output_ba[encoding] = o
+        self.encoding_input_ctrl.Thaw()
+        self.encoding_output_ctrl.Thaw()
+
+    def lut3d_set_option(self, option, v, set_changed=True):
+        """Set option to value and update settings state"""
+        if (
+            hasattr(self, "profile_settings_changed")
+            and set_changed
+            and self.getcfg("3dlut.create")
+            and v != self.getcfg(option)
+        ):
+            self.profile_settings_changed()
+        self.setcfg(option, v)
+        if option in (
+            "3dlut.hdr_peak_luminance",
+            "3dlut.hdr_minmll",
+            "3dlut.hdr_maxmll",
+        ):
+            self.lut3d_show_hdr_maxmll_alt_clip_ctrl()
+            self.lut3d_hdr_update_diffuse_white()
+        elif option == "3dlut.hdr_ambient_luminance":
+            self.lut3d_hdr_update_system_gamma()
+
+    def lut3d_hdr_update_diffuse_white(self):
+        # Update knee start info for BT.2390-3 roll-off
+        bt2390 = colormath.BT2390(
+            0,
+            self.getcfg("3dlut.hdr_peak_luminance"),
+            self.getcfg("3dlut.hdr_minmll"),
+            self.getcfg("3dlut.hdr_maxmll"),
+            self.getcfg("3dlut.hdr_maxmll_alt_clip"),
+        )
+        diffuse_ref_cdm2 = 94.37844
+        diffuse_PQ = colormath.specialpow(diffuse_ref_cdm2 / 10000, 1.0 / -2084)
+        # Determine white cd/m2 after roll-off
+        diffuse_tgt_cdm2 = colormath.specialpow(bt2390.apply(diffuse_PQ), -2084) * 10000
+        if diffuse_tgt_cdm2 < diffuse_ref_cdm2:
+            signalcolor = "#CC0000"
+        else:
+            signalcolor = "#008000"
+        self.lut3d_hdr_diffuse_white_txt.ForegroundColour = signalcolor
+        self.lut3d_hdr_diffuse_white_txt.Label = "%.2f" % diffuse_tgt_cdm2
+        self.lut3d_hdr_diffuse_white_txt_label.ForegroundColour = signalcolor
+        self.lut3d_hdr_diffuse_white_txt.ContainingSizer.Layout()
+
+    def lut3d_hdr_update_sat_val(self):
+        v = self.getcfg("3dlut.hdr_sat") * 100
+        self.lut3d_hdr_sat_ctrl_lum_val.Label = "%i%%" % (100 - v)
+        self.lut3d_hdr_sat_ctrl_sat_val.Label = "%i%%" % v
+
+    def lut3d_hdr_update_system_gamma(self):
+        # Update system gamma for HLG based on ambient luminance (BT.2390-3)
+        hlg = colormath.HLG(ambient_cdm2=self.getcfg("3dlut.hdr_ambient_luminance"))
+        self.lut3d_hdr_system_gamma_txt.Label = str(stripzeros("%.4f" % hlg.gamma))
+
+    def lut3d_update_shared_controls(self):
+        # Shared with main window
+        self.lut3d_update_trc_controls()
+        self.lut3d_rendering_intent_ctrl.SetSelection(
+            self.rendering_intents_ba[self.getcfg("3dlut.rendering_intent")]
+        )
+        # MadVR only available with Argyll 1.6+, fall back to default
+        self.lut3d_format_ctrl.SetSelection(
+            self.lut3d_formats_ba.get(
+                self.getcfg("3dlut.format"),
+                self.lut3d_formats_ba[defaults["3dlut.format"]],
+            )
+        )
+        self.lut3d_hdr_display_ctrl.SetSelection(self.getcfg("3dlut.hdr_display"))
+        self.lut3d_size_ctrl.SetSelection(self.lut3d_size_ba[self.getcfg("3dlut.size")])
+        self.lut3d_enable_size_controls()
+        self.lut3d_bitdepth_input_ctrl.SetSelection(
+            self.lut3d_bitdepth_ba[self.getcfg("3dlut.bitdepth.input")]
+        )
+        self.lut3d_bitdepth_output_ctrl.SetSelection(
+            self.lut3d_bitdepth_ba[self.getcfg("3dlut.bitdepth.output")]
+        )
+        self.lut3d_show_bitdepth_controls()
+        if self.Parent:
+            self.Parent.lut3d_update_shared_controls()
+
+    def lut3d_update_trc_control(self):
+        if self.getcfg("3dlut.trc").startswith("smpte2084"):  # SMPTE 2084
+            if self.getcfg("3dlut.trc") == "smpte2084.hardclip":
+                sel = 2
+            else:
+                sel = 3
+            self.lut3d_trc_ctrl.SetSelection(sel)
+        elif self.getcfg("3dlut.trc") == "hlg":  # Hybrid Log-Gamma (HLG)
+            self.lut3d_trc_ctrl.SetSelection(4)
+        elif (
+            self.getcfg("3dlut.trc_gamma_type") == "B"
+            and self.getcfg("3dlut.trc_output_offset") == 0
+            and self.getcfg("3dlut.trc_gamma") == 2.4
+        ):
+            self.lut3d_trc_ctrl.SetSelection(1)  # BT.1886
+            self.setcfg("3dlut.trc", "bt1886")
+        elif (
+            self.getcfg("3dlut.trc_gamma_type") == "b"
+            and self.getcfg("3dlut.trc_output_offset") == 1
+            and self.getcfg("3dlut.trc_gamma") == 2.2
+        ):
+            self.lut3d_trc_ctrl.SetSelection(0)  # Pure power gamma 2.2
+            self.setcfg("3dlut.trc", "gamma2.2")
+        else:
+            self.lut3d_trc_ctrl.SetSelection(5)  # Custom
+            self.setcfg("3dlut.trc", "customgamma")
+
+    def lut3d_update_trc_controls(self):
+        self.lut3d_update_trc_control()
+        self.lut3d_trc_gamma_ctrl.SetValue(str(self.getcfg("3dlut.trc_gamma")))
+        self.lut3d_trc_gamma_type_ctrl.SetSelection(
+            self.trc_gamma_types_ba[self.getcfg("3dlut.trc_gamma_type")]
+        )
+        outoffset = int(self.getcfg("3dlut.trc_output_offset") * 100)
+        self.lut3d_trc_black_output_offset_ctrl.SetValue(outoffset)
+        self.lut3d_trc_black_output_offset_intctrl.SetValue(outoffset)
+        target_peak = self.getcfg("3dlut.hdr_peak_luminance")
+        maxmll = self.getcfg("3dlut.hdr_maxmll")
+        # Don't allow maxmll < target peak. Technically this restriction does
+        # not exist, but practically maxmll < target peak doesn't make sense.
+        if maxmll < target_peak:
+            maxmll = target_peak
+            self.setcfg("3dlut.hdr_maxmll", maxmll)
+        self.lut3d_hdr_maxmll_ctrl.SetRange(target_peak, 10000)
+        self.lut3d_hdr_peak_luminance_ctrl.SetValue(target_peak)
+        self.lut3d_hdr_minmll_ctrl.SetValue(self.getcfg("3dlut.hdr_minmll"))
+        self.lut3d_hdr_maxmll_ctrl.SetValue(maxmll)
+        self.lut3d_hdr_maxmll_alt_clip_cb.SetValue(
+            not bool(self.getcfg("3dlut.hdr_maxmll_alt_clip"))
+        )
+        self.lut3d_hdr_update_diffuse_white()
+        self.lut3d_hdr_ambient_luminance_ctrl.SetValue(
+            self.getcfg("3dlut.hdr_ambient_luminance")
+        )
+        self.lut3d_hdr_update_system_gamma()
+        # Content colorspace (currently only used for SMPTE 2084)
+        content_colors = []
+        for color in ("red", "green", "blue", "white"):
+            for coord in "xy":
+                v = self.getcfg("3dlut.content.colorspace.%s.%s" % (color, coord))
+                getattr(
+                    self, "lut3d_content_colorspace_%s_%s" % (color, coord)
+                ).SetValue(v)
+                content_colors.append(round(v, 4))
+        rgb_space_name = colormath.find_primaries_wp_xy_rgb_space_name(
+            content_colors, self.lut3d_content_colorspace_names
+        )
+        if rgb_space_name:
+            i = self.lut3d_content_colorspace_names.index(rgb_space_name)
+        else:
+            i = self.lut3d_content_colorspace_ctrl.Count - 1
+        self.lut3d_content_colorspace_ctrl.SetSelection(i)
+        self.lut3d_hdr_sat_ctrl.SetValue(int(round(self.getcfg("3dlut.hdr_sat") * 100)))
+        self.lut3d_hdr_update_sat_val()
+        hue = int(round(self.getcfg("3dlut.hdr_hue") * 100))
+        self.lut3d_hdr_hue_ctrl.SetValue(hue)
+        self.lut3d_hdr_hue_intctrl.SetValue(hue)
+
+    def lut3d_show_bitdepth_controls(self):
+        frozen = self.IsFrozen()
+        if not frozen:
+            self.Freeze()
+        show = True
+        input_show = show and self.getcfg("3dlut.format") == "3dl"
+        self.lut3d_bitdepth_input_label.Show(input_show)
+        self.lut3d_bitdepth_input_ctrl.Show(input_show)
+        output_show = show and self.getcfg("3dlut.format") in ("3dl", "png")
+        self.lut3d_bitdepth_output_label.Show(output_show)
+        self.lut3d_bitdepth_output_ctrl.Show(output_show)
+        if isinstance(self, LUT3DFrame):
+            self.panel.GetSizer().Layout()
+            self.update_layout()
+        else:
+            self.update_scrollbars()
+        if not frozen:
+            self.Thaw()
+
+    def lut3d_show_hdr_display_control(self):
+        self.lut3d_hdr_display_ctrl.Show(
+            (
+                self.getcfg("3dlut.apply_trc")
+                or not hasattr(self, "lut3d_trc_apply_none_ctrl")
+            )
+            and self.getcfg("3dlut.trc").startswith("smpte2084")
+            and self.getcfg("3dlut.format") == "madVR"
+        )
+
+    def lut3d_show_hdr_maxmll_alt_clip_ctrl(self):
+        self.panel.Freeze()
+        show = self.lut3d_hdr_maxmll_ctrl.IsShown()  # BT.2390 (roll-off)
+        self.lut3d_hdr_maxmll_alt_clip_cb.Show(
+            show and self.getcfg("3dlut.hdr_maxmll") < 10000
+        )
+        self.panel.Layout()
+        self.panel.Thaw()
+
+    def lut3d_show_trc_controls(self, show=True):
+        self.panel.Freeze()
+        show = show and self.worker.argyll_version >= [1, 6]
+        if hasattr(self, "lut3d_trc_apply_ctrl"):
+            self.lut3d_trc_apply_ctrl.Show(show)
+        self.lut3d_trc_ctrl.Show(show)
+        smpte2084 = self.getcfg("3dlut.trc").startswith("smpte2084")
+        hlg = self.getcfg("3dlut.trc") == "hlg"
+        hdr = smpte2084 or hlg
+        show = show and (
+            self.getcfg("3dlut.trc") == "customgamma"
+            or (isinstance(self, LUT3DFrame) or self.getcfg("show_advanced_options"))
+        )
+        self.lut3d_trc_gamma_label.Show(show and not hdr)
+        self.lut3d_trc_gamma_ctrl.Show(show and not hdr)
+        smpte2084r = self.getcfg("3dlut.trc") == "smpte2084.rolloffclip"
+        # Show items in this order so we end up with the correct controls shown
+        showcc = (smpte2084r or hlg) and (
+            isinstance(self, LUT3DFrame) or self.getcfg("show_advanced_options")
+        )
+        self.lut3d_content_colorspace_label.ContainingSizer.ShowItems(showcc)
+        sel = self.lut3d_content_colorspace_ctrl.Selection
+        lastsel = self.lut3d_content_colorspace_ctrl.Count - 1
+        sizer = self.lut3d_content_colorspace_red_x.ContainingSizer
+        sizer.ShowItems(showcc and sel == lastsel)
+        self.lut3d_hdr_minmll_label.Show(show and smpte2084)
+        self.lut3d_hdr_minmll_ctrl.Show(show and smpte2084)
+        self.lut3d_hdr_minmll_ctrl_label.Show(show and smpte2084)
+        self.lut3d_hdr_maxmll_label.Show(show and smpte2084r)
+        self.lut3d_hdr_maxmll_ctrl.Show(show and smpte2084r)
+        self.lut3d_hdr_maxmll_ctrl_label.Show(show and smpte2084r)
+        self.lut3d_show_hdr_maxmll_alt_clip_ctrl()
+        self.lut3d_hdr_diffuse_white_label.Show(show and smpte2084r)
+        self.lut3d_hdr_diffuse_white_txt.Show(show and smpte2084r)
+        self.lut3d_hdr_diffuse_white_txt_label.Show(show and smpte2084r)
+        self.lut3d_hdr_ambient_luminance_label.Show(show and hlg)
+        self.lut3d_hdr_ambient_luminance_ctrl.Show(show and hlg)
+        self.lut3d_hdr_ambient_luminance_ctrl_label.Show(show and hlg)
+        self.lut3d_hdr_system_gamma_label.Show(show and hlg)
+        self.lut3d_hdr_system_gamma_txt.Show(show and hlg)
+        sizer = self.lut3d_hdr_sat_ctrl.ContainingSizer
+        sizer.ShowItems(show and smpte2084r)
+        sizer = self.lut3d_hdr_hue_ctrl.ContainingSizer
+        sizer.ShowItems(show and smpte2084r)
+        show = (show or smpte2084) and not hlg
+        show = show and (
+            (hasattr(self, "lut3d_create_cb") and self.getcfg("3dlut.create"))
+            or self.XYZbpout > [0, 0, 0]
+        )
+        self.lut3d_trc_gamma_type_ctrl.Show(show and not hdr)
+        self.lut3d_trc_black_output_offset_label.Show(show)
+        self.lut3d_trc_black_output_offset_ctrl.Show(show)
+        self.lut3d_trc_black_output_offset_intctrl.Show(show)
+        self.lut3d_trc_black_output_offset_intctrl_label.Show(show)
+        self.lut3d_hdr_peak_luminance_label.Show(smpte2084)
+        self.lut3d_hdr_peak_luminance_ctrl.Show(smpte2084)
+        self.lut3d_hdr_peak_luminance_ctrl_label.Show(smpte2084)
+        self.lut3d_show_hdr_display_control()
+        self.panel.Layout()
+        self.panel.Thaw()
+        if isinstance(self, LUT3DFrame):
+            self.update_layout()
+
+    def lut3d_show_encoding_controls(self, show=True):
+        show = show and (
+            (
+                self.worker.argyll_version >= [1, 7]
+                and self.worker.argyll_version != [1, 7, 0, "_beta"]
+            )
+            or self.worker.argyll_version >= [1, 6]
+        )
+        # Argyll 1.7 beta 3 (2015-04-02) added clip WTW on input TV encoding
+        self.encoding_input_label.Show(show)
+        self.encoding_input_ctrl.Show(show)
+        show = show and self.worker.argyll_version >= [1, 6]
+        self.encoding_output_label.Show(show)
+        self.encoding_output_ctrl.Show(show)
+
+    def lut3d_update_encoding_controls(self):
+        self.lut3d_setup_encoding_ctrl()
+        self.encoding_input_ctrl.SetSelection(
+            self.encoding_input_ba[self.getcfg("3dlut.encoding.input")]
+        )
+        self.encoding_input_ctrl.Enable(self.encoding_input_ctrl.Count > 1)
+        self.encoding_output_ctrl.SetSelection(
+            self.encoding_output_ba[self.getcfg("3dlut.encoding.output")]
+        )
+        self.encoding_output_ctrl.Enable(
+            self.getcfg("3dlut.format") not in ("dcl", "madVR")
+        )
+
+    def lut3d_enable_size_controls(self):
+        self.lut3d_size_ctrl.Enable(
+            self.getcfg("3dlut.format") not in ("eeColor", "madVR")
+        )
+
+
+class LUT3DFrame(BaseFrame, LUT3DMixin):
+    """3D LUT creation window"""
+
+    def __init__(self, parent=None, setup=True):
+        self.input_profile = None
+        self.res = TempXmlResource(get_data_path(os.path.join("xrc", "3dlut.xrc")))
+        self.res.InsertHandler(
+            xh_filebrowsebutton.FileBrowseButtonWithHistoryXmlHandler()
+        )
+        self.res.InsertHandler(xh_floatspin.FloatSpinCtrlXmlHandler())
+        self.res.InsertHandler(xh_bitmapctrls.BitmapButton())
+        self.res.InsertHandler(xh_bitmapctrls.StaticBitmap())
+        if hasattr(wx, "PreFrame"):
+            # Classic
+            pre = wx.PreFrame()
+            self.res.LoadOnFrame(pre, parent, "lut3dframe")
+            self.PostCreate(pre)
+        else:
+            # Phoenix
+            wx.Frame.__init__(self)
+            self.res.LoadFrame(self, parent, "lut3dframe")
+        self.init()
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        if sys.platform == "win32":
+            self.Bind(wx.EVT_SIZE, self.OnSize)
+
+        self.SetIcons(
+            config.get_icon_bundle([256, 48, 32, 16], appname + "-3DLUT-maker")
+        )
+
+        self.set_child_ctrls_as_attrs(self)
+
+        self.panel = xrc.XRCCTRL(self, "panel")
+
+        if setup:
+            self.setup()
+
+    def OnSize(self, event):
+        event.Skip()
+        self.Refresh()  # Prevents distorted drawing under Windows
+
+    def setup(self):
+        self.worker = worker.Worker(self)
+        self.worker.set_argyll_version("collink")
+
+        for which in ("input", "abstract", "output"):
+            ctrl = xrc.XRCCTRL(self, "%s_profile_ctrl" % which)
+            setattr(self, "%s_profile_ctrl" % which, ctrl)
+            ctrl.changeCallback = getattr(self, "%s_profile_ctrl_handler" % which)
+            if which not in ("abstract", "output"):
+                ctrl.SetHistory(get_data_path("ref", r"\.(icc|icm)$"))
+            ctrl.SetMaxFontSize(11)
+            # Drop targets
+            droptarget = FileDrop(
+                self,
+                {
+                    ".icc": getattr(self, "%s_drop_handler" % which),
+                    ".icm": getattr(self, "%s_drop_handler" % which),
+                },
+            )
+            ctrl.SetDropTarget(droptarget)
+
+        # Bind event handlers
+        self.abstract_profile_cb.Bind(
+            wx.EVT_CHECKBOX, self.use_abstract_profile_ctrl_handler
+        )
+        self.output_profile_current_btn.Bind(
+            wx.EVT_BUTTON, self.output_profile_current_ctrl_handler
+        )
+        self.lut3d_trc_apply_none_ctrl.Bind(
+            wx.EVT_RADIOBUTTON, self.lut3d_trc_apply_ctrl_handler
+        )
+        self.lut3d_trc_apply_black_offset_ctrl.Bind(
+            wx.EVT_RADIOBUTTON, self.lut3d_trc_apply_ctrl_handler
+        )
+        self.lut3d_trc_apply_ctrl.Bind(
+            wx.EVT_RADIOBUTTON, self.lut3d_trc_apply_ctrl_handler
+        )
+        self.lut3d_bind_event_handlers()
+
+        self.lut3d_create_btn.SetDefault()
+
+        self.setup_language()
+        self.XYZbpin = [0, 0, 0]
+        # XYZbpout will be set to the blackpoint of the selected profile. This
+        # is used to determine if lack output offset controls should be shown.
+        # Set a initial value slightly above zero so output offset controls are
+        # shown if the selected profile doesn't exist.
+        self.XYZbpout = [0.001, 0.001, 0.001]
+        self.update_controls()
+        self.update_layout()
+        if self.panel.VirtualSize[0] > self.panel.Size[0]:
+            scrollrate_x = 2
+        else:
+            scrollrate_x = 0
+        self.panel.SetScrollRate(scrollrate_x, 2)
+
+        config.defaults.update(
+            {
+                "position.lut3dframe.x": self.GetDisplay().ClientArea[0] + 40,
+                "position.lut3dframe.y": self.GetDisplay().ClientArea[1] + 60,
+                "size.lut3dframe.w": self.ClientSize[0],
+                "size.lut3dframe.h": self.ClientSize[1],
+            }
+        )
+
+        if (
+            self.hascfg("position.lut3dframe.x")
+            and self.hascfg("position.lut3dframe.y")
+            and self.hascfg("size.lut3dframe.w")
+            and self.hascfg("size.lut3dframe.h")
+        ):
+            self.SetSaneGeometry(
+                int(self.getcfg("position.lut3dframe.x")),
+                int(self.getcfg("position.lut3dframe.y")),
+                int(self.getcfg("size.lut3dframe.w")),
+                int(self.getcfg("size.lut3dframe.h")),
+            )
+        else:
+            self.Center()
+
+    def OnClose(self, event=None):
+        if getattr(self.worker, "thread", None) and self.worker.thread.is_alive():
+            self.worker.abort_subprocess(True)
+            return
+        if sys.platform == "darwin" or debug:
+            self.focus_handler(event)
+        if self.IsShownOnScreen() and not self.IsMaximized() and not self.IsIconized():
+            x, y = self.GetScreenPosition()
+            self.setcfg("position.lut3dframe.x", x)
+            self.setcfg("position.lut3dframe.y", y)
+            self.setcfg("size.lut3dframe.w", self.ClientSize[0])
+            self.setcfg("size.lut3dframe.h", self.ClientSize[1])
+        if self.Parent:
+            config.writecfg()
+        else:
+            config.writecfg(
+                module="3DLUT-maker",
+                options=(
+                    "3dlut.",
+                    "last_3dlut_path",
+                    "position.lut3dframe",
+                    "size.lut3dframe",
+                ),
+            )
+        if event:
+            # Hide first (looks nicer)
+            self.Hide()
+            # Need to use CallAfter to prevent hang under Windows if minimized
+            wx.CallAfter(self.Destroy)
+
+    def use_abstract_profile_ctrl_handler(self, event):
+        self.setcfg(
+            "3dlut.use_abstract_profile", int(self.abstract_profile_cb.GetValue())
+        )
+        enable = bool(self.getcfg("3dlut.use_abstract_profile"))
+        self.abstract_profile_ctrl.Enable(enable)
+
+    def abstract_drop_handler(self, path):
+        if not self.worker.is_working():
+            self.abstract_profile_ctrl.SetPath(path)
+            self.set_profile("abstract")
+
+    def input_drop_handler(self, path):
+        if not self.worker.is_working():
+            self.input_profile_ctrl.SetPath(path)
+            self.set_profile("input")
+
+    def output_drop_handler(self, path):
+        if not self.worker.is_working():
+            self.output_profile_ctrl.SetPath(path)
+            self.set_profile("output")
+
+    def abstract_profile_ctrl_handler(self, event):
+        self.set_profile("abstract", silent=not event)
+
+    def input_profile_ctrl_handler(self, event):
+        self.set_profile("input", silent=not event)
+        if self.Parent:
+            self.Parent.lut3d_init_input_profiles()
+            self.Parent.lut3d_update_controls()
+
+    def output_profile_ctrl_handler(self, event):
+        self.set_profile("output", silent=not event)
+
+    def output_profile_current_ctrl_handler(self, event):
+        profile_path = get_current_profile_path(True, True)
+        if profile_path and os.path.isfile(profile_path):
+            self.output_profile_ctrl.SetPath(profile_path)
+            self.set_profile("output", profile_path or False, silent=not event)
 
     def get_commands(self):
         return self.get_common_commands() + ["3DLUT-maker [create <filename>]"]
@@ -1270,19 +1697,6 @@ class LUT3DFrame(BaseFrame):
                 )
             return "ok"
         return "invalid"
-
-    def lut3d_rendering_intent_ctrl_handler(self, event):
-        self.lut3d_set_option(
-            "3dlut.rendering_intent",
-            self.rendering_intents_ab[self.lut3d_rendering_intent_ctrl.GetSelection()],
-        )
-        if getattr(self, "lut3dframe", None):
-            self.lut3dframe.lut3d_update_shared_controls()
-        else:
-            if isinstance(self, LUT3DFrame):
-                self.lut3d_show_input_value_clipping_warning(True)
-            if self.Parent:
-                self.Parent.lut3d_update_shared_controls()
 
     def set_profile(self, which, profile_path=None, silent=False):
         path = getattr(self, "%s_profile_ctrl" % which).GetPath()
@@ -1539,177 +1953,6 @@ class LUT3DFrame(BaseFrame):
 
         self.lut3d_setup_language()
 
-    def lut3d_setup_language(self):
-        # Shared with main window
-        items = []
-        for item in (
-            "Gamma 2.2",
-            "trc.rec1886",
-            "trc.smpte2084.hardclip",
-            "trc.smpte2084.rolloffclip",
-            "trc.hlg",
-            "custom",
-        ):
-            items.append(lang.getstr(item))
-        self.lut3d_trc_ctrl.SetItems(items)
-
-        self.trc_gamma_types_ab = {0: "b", 1: "B"}
-        self.trc_gamma_types_ba = {"b": 0, "B": 1}
-        self.lut3d_trc_gamma_type_ctrl.SetItems(
-            [lang.getstr("trc.type.relative"), lang.getstr("trc.type.absolute")]
-        )
-
-        self.lut3d_content_colorspace_names = ["Rec. 2020", "DCI P3 D65", "Rec. 709"]
-        self.lut3d_content_colorspace_ctrl.SetItems(
-            self.lut3d_content_colorspace_names + [lang.getstr("custom")]
-        )
-
-        self.rendering_intents_ab = {}
-        self.rendering_intents_ba = {}
-        self.lut3d_rendering_intent_ctrl.Clear()
-        intents = list(config.valid_values["3dlut.rendering_intent"])
-        if self.worker.argyll_version < [1, 8, 3]:
-            intents.remove("lp")
-        for i, ri in enumerate(intents):
-            self.lut3d_rendering_intent_ctrl.Append(lang.getstr("gamap.intents." + ri))
-            self.rendering_intents_ab[i] = ri
-            self.rendering_intents_ba[ri] = i
-
-        self.lut3d_formats_ab = {}
-        self.lut3d_formats_ba = {}
-        self.lut3d_format_ctrl.Clear()
-        i = 0
-        for format in config.valid_values["3dlut.format"]:
-            if format != "madVR" or self.worker.argyll_version >= [1, 6]:
-                self.lut3d_format_ctrl.Append(lang.getstr("3dlut.format.%s" % format))
-                self.lut3d_formats_ab[i] = format
-                self.lut3d_formats_ba[format] = i
-                i += 1
-
-        self.lut3d_hdr_display_ctrl.SetItems(
-            [
-                lang.getstr(item)
-                for item in ("3dlut.format.madVR.hdr_to_sdr", "3dlut.format.madVR.hdr")
-            ]
-        )
-
-        self.lut3d_size_ab = {}
-        self.lut3d_size_ba = {}
-        self.lut3d_size_ctrl.Clear()
-        for i, size in enumerate(config.valid_values["3dlut.size"]):
-            self.lut3d_size_ctrl.Append("%sx%sx%s" % ((size,) * 3))
-            self.lut3d_size_ab[i] = size
-            self.lut3d_size_ba[size] = i
-
-        self.lut3d_bitdepth_ab = {}
-        self.lut3d_bitdepth_ba = {}
-        self.lut3d_bitdepth_input_ctrl.Clear()
-        self.lut3d_bitdepth_output_ctrl.Clear()
-        for i, bitdepth in enumerate(config.valid_values["3dlut.bitdepth.input"]):
-            self.lut3d_bitdepth_input_ctrl.Append(str(bitdepth))
-            self.lut3d_bitdepth_output_ctrl.Append(str(bitdepth))
-            self.lut3d_bitdepth_ab[i] = bitdepth
-            self.lut3d_bitdepth_ba[bitdepth] = i
-
-    def lut3d_setup_encoding_ctrl(self):
-        format = self.getcfg("3dlut.format")
-        # Shared with amin window
-        if format == "madVR":
-            encodings = ["t"]
-            config.defaults["3dlut.encoding.input"] = "t"
-            config.defaults["3dlut.encoding.output"] = "t"
-        else:
-            if format == "dcl":
-                encodings = ["n"]
-            else:
-                encodings = list(video_encodings)
-            config.defaults["3dlut.encoding.input"] = "n"
-            config.defaults["3dlut.encoding.output"] = "n"
-        if (
-            self.worker.argyll_version >= [1, 7]
-            and self.worker.argyll_version != [1, 7, 0, "_beta"]
-            and format != "dcl"
-        ):
-            # Argyll 1.7 beta 3 (2015-04-02) added clip WTW on input TV encoding
-            encodings.insert(2, "T")
-        config.valid_values["3dlut.encoding.input"] = encodings
-        # collink: xvYCC output encoding is not supported
-        config.valid_values["3dlut.encoding.output"] = [
-            v for v in encodings if v not in ("T", "x", "X")
-        ]
-        self.encoding_input_ab = {}
-        self.encoding_input_ba = {}
-        self.encoding_output_ab = {}
-        self.encoding_output_ba = {}
-        self.encoding_input_ctrl.Freeze()
-        self.encoding_input_ctrl.Clear()
-        self.encoding_output_ctrl.Freeze()
-        self.encoding_output_ctrl.Clear()
-        for i, encoding in enumerate(config.valid_values["3dlut.encoding.input"]):
-            lstr = lang.getstr("3dlut.encoding.type_%s" % encoding)
-            self.encoding_input_ctrl.Append(lstr)
-            self.encoding_input_ab[i] = encoding
-            self.encoding_input_ba[encoding] = i
-        for o, encoding in enumerate(config.valid_values["3dlut.encoding.output"]):
-            lstr = lang.getstr("3dlut.encoding.type_%s" % encoding)
-            self.encoding_output_ctrl.Append(lstr)
-            self.encoding_output_ab[o] = encoding
-            self.encoding_output_ba[encoding] = o
-        self.encoding_input_ctrl.Thaw()
-        self.encoding_output_ctrl.Thaw()
-
-    def lut3d_set_option(self, option, v, set_changed=True):
-        """Set option to value and update settings state"""
-        if (
-            hasattr(self, "profile_settings_changed")
-            and set_changed
-            and self.getcfg("3dlut.create")
-            and v != self.getcfg(option)
-        ):
-            self.profile_settings_changed()
-        self.setcfg(option, v)
-        if option in (
-            "3dlut.hdr_peak_luminance",
-            "3dlut.hdr_minmll",
-            "3dlut.hdr_maxmll",
-        ):
-            self.lut3d_show_hdr_maxmll_alt_clip_ctrl()
-            self.lut3d_hdr_update_diffuse_white()
-        elif option == "3dlut.hdr_ambient_luminance":
-            self.lut3d_hdr_update_system_gamma()
-
-    def lut3d_hdr_update_diffuse_white(self):
-        # Update knee start info for BT.2390-3 roll-off
-        bt2390 = colormath.BT2390(
-            0,
-            self.getcfg("3dlut.hdr_peak_luminance"),
-            self.getcfg("3dlut.hdr_minmll"),
-            self.getcfg("3dlut.hdr_maxmll"),
-            self.getcfg("3dlut.hdr_maxmll_alt_clip"),
-        )
-        diffuse_ref_cdm2 = 94.37844
-        diffuse_PQ = colormath.specialpow(diffuse_ref_cdm2 / 10000, 1.0 / -2084)
-        # Determine white cd/m2 after roll-off
-        diffuse_tgt_cdm2 = colormath.specialpow(bt2390.apply(diffuse_PQ), -2084) * 10000
-        if diffuse_tgt_cdm2 < diffuse_ref_cdm2:
-            signalcolor = "#CC0000"
-        else:
-            signalcolor = "#008000"
-        self.lut3d_hdr_diffuse_white_txt.ForegroundColour = signalcolor
-        self.lut3d_hdr_diffuse_white_txt.Label = "%.2f" % diffuse_tgt_cdm2
-        self.lut3d_hdr_diffuse_white_txt_label.ForegroundColour = signalcolor
-        self.lut3d_hdr_diffuse_white_txt.ContainingSizer.Layout()
-
-    def lut3d_hdr_update_sat_val(self):
-        v = self.getcfg("3dlut.hdr_sat") * 100
-        self.lut3d_hdr_sat_ctrl_lum_val.Label = "%i%%" % (100 - v)
-        self.lut3d_hdr_sat_ctrl_sat_val.Label = "%i%%" % v
-
-    def lut3d_hdr_update_system_gamma(self):
-        # Update system gamma for HLG based on ambient luminance (BT.2390-3)
-        hlg = colormath.HLG(ambient_cdm2=self.getcfg("3dlut.hdr_ambient_luminance"))
-        self.lut3d_hdr_system_gamma_txt.Label = str(stripzeros("%.4f" % hlg.gamma))
-
     def update_controls(self):
         """Update controls with values from the configuration"""
         self.panel.Freeze()
@@ -1724,110 +1967,6 @@ class LUT3DFrame(BaseFrame):
         self.output_profile_ctrl_handler(None)
         self.lut3d_update_shared_controls()
         self.panel.Thaw()
-
-    def lut3d_update_shared_controls(self):
-        # Shared with main window
-        self.lut3d_update_trc_controls()
-        self.lut3d_rendering_intent_ctrl.SetSelection(
-            self.rendering_intents_ba[self.getcfg("3dlut.rendering_intent")]
-        )
-        # MadVR only available with Argyll 1.6+, fall back to default
-        self.lut3d_format_ctrl.SetSelection(
-            self.lut3d_formats_ba.get(
-                self.getcfg("3dlut.format"),
-                self.lut3d_formats_ba[defaults["3dlut.format"]],
-            )
-        )
-        self.lut3d_hdr_display_ctrl.SetSelection(self.getcfg("3dlut.hdr_display"))
-        self.lut3d_size_ctrl.SetSelection(self.lut3d_size_ba[self.getcfg("3dlut.size")])
-        self.lut3d_enable_size_controls()
-        self.lut3d_bitdepth_input_ctrl.SetSelection(
-            self.lut3d_bitdepth_ba[self.getcfg("3dlut.bitdepth.input")]
-        )
-        self.lut3d_bitdepth_output_ctrl.SetSelection(
-            self.lut3d_bitdepth_ba[self.getcfg("3dlut.bitdepth.output")]
-        )
-        self.lut3d_show_bitdepth_controls()
-        if self.Parent:
-            self.Parent.lut3d_update_shared_controls()
-
-    def lut3d_update_trc_control(self):
-        if self.getcfg("3dlut.trc").startswith("smpte2084"):  # SMPTE 2084
-            if self.getcfg("3dlut.trc") == "smpte2084.hardclip":
-                sel = 2
-            else:
-                sel = 3
-            self.lut3d_trc_ctrl.SetSelection(sel)
-        elif self.getcfg("3dlut.trc") == "hlg":  # Hybrid Log-Gamma (HLG)
-            self.lut3d_trc_ctrl.SetSelection(4)
-        elif (
-            self.getcfg("3dlut.trc_gamma_type") == "B"
-            and self.getcfg("3dlut.trc_output_offset") == 0
-            and self.getcfg("3dlut.trc_gamma") == 2.4
-        ):
-            self.lut3d_trc_ctrl.SetSelection(1)  # BT.1886
-            self.setcfg("3dlut.trc", "bt1886")
-        elif (
-            self.getcfg("3dlut.trc_gamma_type") == "b"
-            and self.getcfg("3dlut.trc_output_offset") == 1
-            and self.getcfg("3dlut.trc_gamma") == 2.2
-        ):
-            self.lut3d_trc_ctrl.SetSelection(0)  # Pure power gamma 2.2
-            self.setcfg("3dlut.trc", "gamma2.2")
-        else:
-            self.lut3d_trc_ctrl.SetSelection(5)  # Custom
-            self.setcfg("3dlut.trc", "customgamma")
-
-    def lut3d_update_trc_controls(self):
-        self.lut3d_update_trc_control()
-        self.lut3d_trc_gamma_ctrl.SetValue(str(self.getcfg("3dlut.trc_gamma")))
-        self.lut3d_trc_gamma_type_ctrl.SetSelection(
-            self.trc_gamma_types_ba[self.getcfg("3dlut.trc_gamma_type")]
-        )
-        outoffset = int(self.getcfg("3dlut.trc_output_offset") * 100)
-        self.lut3d_trc_black_output_offset_ctrl.SetValue(outoffset)
-        self.lut3d_trc_black_output_offset_intctrl.SetValue(outoffset)
-        target_peak = self.getcfg("3dlut.hdr_peak_luminance")
-        maxmll = self.getcfg("3dlut.hdr_maxmll")
-        # Don't allow maxmll < target peak. Technically this restriction does
-        # not exist, but practically maxmll < target peak doesn't make sense.
-        if maxmll < target_peak:
-            maxmll = target_peak
-            self.setcfg("3dlut.hdr_maxmll", maxmll)
-        self.lut3d_hdr_maxmll_ctrl.SetRange(target_peak, 10000)
-        self.lut3d_hdr_peak_luminance_ctrl.SetValue(target_peak)
-        self.lut3d_hdr_minmll_ctrl.SetValue(self.getcfg("3dlut.hdr_minmll"))
-        self.lut3d_hdr_maxmll_ctrl.SetValue(maxmll)
-        self.lut3d_hdr_maxmll_alt_clip_cb.SetValue(
-            not bool(self.getcfg("3dlut.hdr_maxmll_alt_clip"))
-        )
-        self.lut3d_hdr_update_diffuse_white()
-        self.lut3d_hdr_ambient_luminance_ctrl.SetValue(
-            self.getcfg("3dlut.hdr_ambient_luminance")
-        )
-        self.lut3d_hdr_update_system_gamma()
-        # Content colorspace (currently only used for SMPTE 2084)
-        content_colors = []
-        for color in ("red", "green", "blue", "white"):
-            for coord in "xy":
-                v = self.getcfg("3dlut.content.colorspace.%s.%s" % (color, coord))
-                getattr(
-                    self, "lut3d_content_colorspace_%s_%s" % (color, coord)
-                ).SetValue(v)
-                content_colors.append(round(v, 4))
-        rgb_space_name = colormath.find_primaries_wp_xy_rgb_space_name(
-            content_colors, self.lut3d_content_colorspace_names
-        )
-        if rgb_space_name:
-            i = self.lut3d_content_colorspace_names.index(rgb_space_name)
-        else:
-            i = self.lut3d_content_colorspace_ctrl.Count - 1
-        self.lut3d_content_colorspace_ctrl.SetSelection(i)
-        self.lut3d_hdr_sat_ctrl.SetValue(int(round(self.getcfg("3dlut.hdr_sat") * 100)))
-        self.lut3d_hdr_update_sat_val()
-        hue = int(round(self.getcfg("3dlut.hdr_hue") * 100))
-        self.lut3d_hdr_hue_ctrl.SetValue(hue)
-        self.lut3d_hdr_hue_intctrl.SetValue(hue)
 
     def update_linking_controls(self):
         self.gamut_mapping_inverse_a2b.SetValue(not self.getcfg("3dlut.gamap.use_b2a"))
@@ -1905,140 +2044,6 @@ class LUT3DFrame(BaseFrame):
         else:
             self.lut3d_trc_apply_none_ctrl.SetValue(True)
         self.lut3d_show_trc_controls()
-
-    def lut3d_show_bitdepth_controls(self):
-        frozen = self.IsFrozen()
-        if not frozen:
-            self.Freeze()
-        show = True
-        input_show = show and self.getcfg("3dlut.format") == "3dl"
-        self.lut3d_bitdepth_input_label.Show(input_show)
-        self.lut3d_bitdepth_input_ctrl.Show(input_show)
-        output_show = show and self.getcfg("3dlut.format") in ("3dl", "png")
-        self.lut3d_bitdepth_output_label.Show(output_show)
-        self.lut3d_bitdepth_output_ctrl.Show(output_show)
-        if isinstance(self, LUT3DFrame):
-            self.panel.GetSizer().Layout()
-            self.update_layout()
-        else:
-            self.update_scrollbars()
-        if not frozen:
-            self.Thaw()
-
-    def lut3d_show_hdr_display_control(self):
-        self.lut3d_hdr_display_ctrl.Show(
-            (
-                self.getcfg("3dlut.apply_trc")
-                or not hasattr(self, "lut3d_trc_apply_none_ctrl")
-            )
-            and self.getcfg("3dlut.trc").startswith("smpte2084")
-            and self.getcfg("3dlut.format") == "madVR"
-        )
-
-    def lut3d_show_hdr_maxmll_alt_clip_ctrl(self):
-        self.panel.Freeze()
-        show = self.lut3d_hdr_maxmll_ctrl.IsShown()  # BT.2390 (roll-off)
-        self.lut3d_hdr_maxmll_alt_clip_cb.Show(
-            show and self.getcfg("3dlut.hdr_maxmll") < 10000
-        )
-        self.panel.Layout()
-        self.panel.Thaw()
-
-    def lut3d_show_trc_controls(self, show=True):
-        self.panel.Freeze()
-        show = show and self.worker.argyll_version >= [1, 6]
-        if hasattr(self, "lut3d_trc_apply_ctrl"):
-            self.lut3d_trc_apply_ctrl.Show(show)
-        self.lut3d_trc_ctrl.Show(show)
-        smpte2084 = self.getcfg("3dlut.trc").startswith("smpte2084")
-        hlg = self.getcfg("3dlut.trc") == "hlg"
-        hdr = smpte2084 or hlg
-        show = show and (
-            self.getcfg("3dlut.trc") == "customgamma"
-            or (isinstance(self, LUT3DFrame) or self.getcfg("show_advanced_options"))
-        )
-        self.lut3d_trc_gamma_label.Show(show and not hdr)
-        self.lut3d_trc_gamma_ctrl.Show(show and not hdr)
-        smpte2084r = self.getcfg("3dlut.trc") == "smpte2084.rolloffclip"
-        # Show items in this order so we end up with the correct controls shown
-        showcc = (smpte2084r or hlg) and (
-            isinstance(self, LUT3DFrame) or self.getcfg("show_advanced_options")
-        )
-        self.lut3d_content_colorspace_label.ContainingSizer.ShowItems(showcc)
-        sel = self.lut3d_content_colorspace_ctrl.Selection
-        lastsel = self.lut3d_content_colorspace_ctrl.Count - 1
-        sizer = self.lut3d_content_colorspace_red_x.ContainingSizer
-        sizer.ShowItems(showcc and sel == lastsel)
-        self.lut3d_hdr_minmll_label.Show(show and smpte2084)
-        self.lut3d_hdr_minmll_ctrl.Show(show and smpte2084)
-        self.lut3d_hdr_minmll_ctrl_label.Show(show and smpte2084)
-        self.lut3d_hdr_maxmll_label.Show(show and smpte2084r)
-        self.lut3d_hdr_maxmll_ctrl.Show(show and smpte2084r)
-        self.lut3d_hdr_maxmll_ctrl_label.Show(show and smpte2084r)
-        self.lut3d_show_hdr_maxmll_alt_clip_ctrl()
-        self.lut3d_hdr_diffuse_white_label.Show(show and smpte2084r)
-        self.lut3d_hdr_diffuse_white_txt.Show(show and smpte2084r)
-        self.lut3d_hdr_diffuse_white_txt_label.Show(show and smpte2084r)
-        self.lut3d_hdr_ambient_luminance_label.Show(show and hlg)
-        self.lut3d_hdr_ambient_luminance_ctrl.Show(show and hlg)
-        self.lut3d_hdr_ambient_luminance_ctrl_label.Show(show and hlg)
-        self.lut3d_hdr_system_gamma_label.Show(show and hlg)
-        self.lut3d_hdr_system_gamma_txt.Show(show and hlg)
-        sizer = self.lut3d_hdr_sat_ctrl.ContainingSizer
-        sizer.ShowItems(show and smpte2084r)
-        sizer = self.lut3d_hdr_hue_ctrl.ContainingSizer
-        sizer.ShowItems(show and smpte2084r)
-        show = (show or smpte2084) and not hlg
-        show = show and (
-            (hasattr(self, "lut3d_create_cb") and self.getcfg("3dlut.create"))
-            or self.XYZbpout > [0, 0, 0]
-        )
-        self.lut3d_trc_gamma_type_ctrl.Show(show and not hdr)
-        self.lut3d_trc_black_output_offset_label.Show(show)
-        self.lut3d_trc_black_output_offset_ctrl.Show(show)
-        self.lut3d_trc_black_output_offset_intctrl.Show(show)
-        self.lut3d_trc_black_output_offset_intctrl_label.Show(show)
-        self.lut3d_hdr_peak_luminance_label.Show(smpte2084)
-        self.lut3d_hdr_peak_luminance_ctrl.Show(smpte2084)
-        self.lut3d_hdr_peak_luminance_ctrl_label.Show(smpte2084)
-        self.lut3d_show_hdr_display_control()
-        self.panel.Layout()
-        self.panel.Thaw()
-        if isinstance(self, LUT3DFrame):
-            self.update_layout()
-
-    def lut3d_show_encoding_controls(self, show=True):
-        show = show and (
-            (
-                self.worker.argyll_version >= [1, 7]
-                and self.worker.argyll_version != [1, 7, 0, "_beta"]
-            )
-            or self.worker.argyll_version >= [1, 6]
-        )
-        # Argyll 1.7 beta 3 (2015-04-02) added clip WTW on input TV encoding
-        self.encoding_input_label.Show(show)
-        self.encoding_input_ctrl.Show(show)
-        show = show and self.worker.argyll_version >= [1, 6]
-        self.encoding_output_label.Show(show)
-        self.encoding_output_ctrl.Show(show)
-
-    def lut3d_update_encoding_controls(self):
-        self.lut3d_setup_encoding_ctrl()
-        self.encoding_input_ctrl.SetSelection(
-            self.encoding_input_ba[self.getcfg("3dlut.encoding.input")]
-        )
-        self.encoding_input_ctrl.Enable(self.encoding_input_ctrl.Count > 1)
-        self.encoding_output_ctrl.SetSelection(
-            self.encoding_output_ba[self.getcfg("3dlut.encoding.output")]
-        )
-        self.encoding_output_ctrl.Enable(
-            self.getcfg("3dlut.format") not in ("dcl", "madVR")
-        )
-
-    def lut3d_enable_size_controls(self):
-        self.lut3d_size_ctrl.Enable(
-            self.getcfg("3dlut.format") not in ("eeColor", "madVR")
-        )
 
 
 def main():

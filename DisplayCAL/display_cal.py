@@ -224,7 +224,7 @@ from DisplayCAL.worker import (
     FilteredStream,
     _applycal_bug_workaround,
 )
-from DisplayCAL.wxLUT3DFrame import LUT3DFrame
+from DisplayCAL.wxLUT3DFrame import LUT3DFrame, LUT3DMixin
 
 try:
     from DisplayCAL.wxLUTViewer import LUTFrame
@@ -1096,10 +1096,7 @@ def get_cgats_path(cgats):
         make_argyll_compatible_path(description)
     )[:255]
     extension = cgats[:7].strip().lower().decode("utf-8")
-    return os.path.join(
-        config.get_argyll_data_dir(),
-        "%s.%s" % (name, extension)
-    )
+    return os.path.join(config.get_argyll_data_dir(), "%s.%s" % (name, extension))
 
 
 def get_header(
@@ -1813,17 +1810,12 @@ class GamapFrame(BaseFrame):
         self.gamap_profile_handler()
 
 
-class MainFrame(ReportFrame, BaseFrame):
+class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
     """Display calibrator main application window."""
-
-    # Shared methods from 3D LUT UI
-    for lut3d_ivar_name, lut3d_ivar in LUT3DFrame.__dict__.items():
-        if lut3d_ivar_name.startswith("lut3d_"):
-            locals()[lut3d_ivar_name] = lut3d_ivar
 
     # XYZbpout will be set to the blackpoint of the selected profile. This is
     # used to determine if 3D LUT or measurement report black output offset
-    # controls should be shown. Set a initial value slightly above zero so
+    # controls should be shown. Set an initial value slightly above zero so
     # output offset controls are shown if the selected profile doesn't exist
     # and "Create 3D LUT after profiling" is disabled.
     XYZbpout = [0.001, 0.001, 0.001]
@@ -2483,51 +2475,74 @@ class MainFrame(ReportFrame, BaseFrame):
         self.lut3d_setup_language()
         self.mr_setup_language()
 
+    def get_min_height(self):
+        """Calculate minimum panel height.
+
+        Returns:
+            int: The minimum required height.
+        """
+        if sys.platform not in ("darwin", "win32"):
+            # Linux
+            if os.getenv("XDG_SESSION_TYPE") == "wayland":
+                # Client-side decorations
+                safety_margin = 0
+            else:
+                # Assume server-side decorations
+                safety_margin = 40
+        else:
+            safety_margin = 20
+
+        # Use display size
+        display_area_free_height = (
+            self.GetDisplay().ClientArea[3] + self.ClientSize[1] - self.Size[1] - safety_margin
+        )
+
+        # Use element heights
+        header_border_top_height = self.headerbordertop.Size[1]
+        header_height = self.header.Size[1]
+        header_panel_height = self.headerpanel.Sizer.MinSize[1]
+        tab_panel_header_height = 0
+        tab_panel_height = self.tabpanel.Sizer.MinSize[1]
+        tab_panel_footer_height = 0
+        display_instrument_panel = self.display_instrument_panel.Sizer.MinSize[1]
+        button_panel_header_height = 0
+        button_panel_height = self.buttonpanel.Sizer.MinSize[1]
+        if getattr(self, "tabpanelheader", None):
+            tab_panel_header_height = self.tabpanelheader.Size[1] + 1
+
+        if getattr(self, "tabpanelfooter", None):
+            tab_panel_footer_height = self.tabpanelfooter.Size[1] + 1
+
+        if getattr(self, "buttonpanelheader", None):
+            button_panel_header_height = self.buttonpanelheader.Size[1] + 1
+
+        per_element_heights = (
+            header_border_top_height
+            + header_height
+            + header_panel_height
+            + 1
+            + tab_panel_header_height
+            + tab_panel_height
+            + tab_panel_footer_height
+            + display_instrument_panel
+            + button_panel_header_height
+            + button_panel_height
+        )
+
+        print(f"display_area_free_height: {display_area_free_height}")
+        print(f"per_element_heights: {per_element_heights}")
+
+        height = min(
+            display_area_free_height,
+            per_element_heights,
+        )
+        return height
+
     def set_size(self, set_height=False, fit_width=False):
         self.SetMinSize((0, 0))
         borders_tb = self.Size[1] - self.ClientSize[1]
         if set_height:
-            if sys.platform not in ("darwin", "win32"):
-                # Linux
-                if os.getenv("XDG_SESSION_TYPE") == "wayland":
-                    # Client-side decorations
-                    safety_margin = 0
-                else:
-                    # Assume server-side decorations
-                    safety_margin = 40
-            else:
-                safety_margin = 20
-            height = min(
-                self.GetDisplay().ClientArea[3] - borders_tb - safety_margin,
-                self.headerbordertop.Size[1]
-                + self.header.Size[1]
-                + self.headerpanel.Sizer.MinSize[1]
-                + 1
-                + (
-                    (
-                        getattr(self, "tabpanelheader", None)
-                        and self.tabpanelheader.Size[1] + 1
-                    )
-                    or 0
-                )
-                + self.tabpanel.Sizer.MinSize[1]
-                + (
-                    (
-                        getattr(self, "tabpanelfooter", None)
-                        and self.tabpanelfooter.Size[1] + 1
-                    )
-                    or 0
-                )
-                + self.display_instrument_panel.Sizer.MinSize[1]
-                + (
-                    (
-                        getattr(self, "buttonpanelheader", None)
-                        and self.buttonpanelheader.Size[1] + 1
-                    )
-                    or 0
-                )
-                + self.buttonpanel.Sizer.MinSize[1],
-            )
+            height = self.get_min_height()
         else:
             height = self.ClientSize[1]
         borders_lr = self.Size[0] - self.ClientSize[0]
@@ -2558,6 +2573,7 @@ class MainFrame(ReportFrame, BaseFrame):
             ),
             height,
         )
+        print(f"size: {size}")
         self.simulation_profile_cb.Show(sim_show)
         self.devlink_profile_cb.Show(devlink_show)
         self.mr_settings_panel.Thaw()
@@ -3906,7 +3922,7 @@ class MainFrame(ReportFrame, BaseFrame):
 
     def update_layout(self):
         """Update main window layout."""
-        self.set_size(False, True)
+        self.set_size(True, True)
 
     def restore_defaults_handler(
         self, event=None, include=(), exclude=(), override=None
@@ -9633,7 +9649,9 @@ class MainFrame(ReportFrame, BaseFrame):
             "${ADAPTION}": str(profile.guess_cat(False) or cat),
             "${DATETIME}": strftime("%Y-%m-%d %H:%M:%S"),
             "${REF}": bytes(ti3_ref).decode(enc, "replace").replace('"', "&quot;"),
-            "${MEASURED}": bytes(ti3_joined).decode(enc, "replace").replace('"', "&quot;"),
+            "${MEASURED}": bytes(ti3_joined)
+            .decode(enc, "replace")
+            .replace('"', "&quot;"),
             "${CAL_ENTRYCOUNT}": str(cal_entrycount),
             "${CAL_RGBLEVELS}": repr(cal_rgblevels),
             "${GRAYSCALE}": repr(gray) if gray else "null",
@@ -13370,7 +13388,10 @@ class MainFrame(ReportFrame, BaseFrame):
                     "DISPLAY_TYPE_REFRESH",
                     {"c": b"YES", "l": b"NO"}.get(getcfg(cfgname), b"NO"),
                 )
-                print("Added DISPLAY_TYPE_REFRESH %r" % cgats[0].DISPLAY_TYPE_REFRESH.decode("utf-8"))
+                print(
+                    "Added DISPLAY_TYPE_REFRESH %r"
+                    % cgats[0].DISPLAY_TYPE_REFRESH.decode("utf-8")
+                )
         options_dispcal, options_colprof = get_options_from_ti3(reference_ti3)
         display = None
         manufacturer = None
@@ -13439,7 +13460,9 @@ class MainFrame(ReportFrame, BaseFrame):
         )
         technology_strings = self.worker.get_technology_strings()
         if debug:
-            print(f'reference_ti3.queryv1("DISPLAY_TYPE_REFRESH"): {reference_ti3.queryv1("DISPLAY_TYPE_REFRESH")}')
+            print(
+                f'reference_ti3.queryv1("DISPLAY_TYPE_REFRESH"): {reference_ti3.queryv1("DISPLAY_TYPE_REFRESH")}'
+            )
             print(f"tech: {tech}")
             print(f"technology_string: {technology_strings}")
         if event:
@@ -13597,7 +13620,9 @@ class MainFrame(ReportFrame, BaseFrame):
             # using such a CCMX, observer A needs to be used, not observer B.
             observer = colorimeter_ti3.queryv1("OBSERVER")
             reference_observer = getcfg("colorimeter_correction.observer.reference")
-            if spectral and reference_observer != reference_ti3.queryv1("OBSERVER").decode("utf-8"):
+            if spectral and reference_observer != reference_ti3.queryv1(
+                "OBSERVER"
+            ).decode("utf-8"):
                 # We can override the observer if we have spectral data
                 # Need to use spec2cie to convert spectral data to
                 # CIE XYZ with given observer, because we later use the XYZ
@@ -13746,7 +13771,8 @@ class MainFrame(ReportFrame, BaseFrame):
                 # By default, CCSS files don't contain reference instrument
                 cgats = re.sub(
                     rb'(\nDISPLAY\s+"[^"]*"\n)',
-                    b'\nREFERENCE "%s"\\1' % reference_ti3[0].get("TARGET_INSTRUMENT").replace(r"\\", r"\\\\"),
+                    b'\nREFERENCE "%s"\\1'
+                    % reference_ti3[0].get("TARGET_INSTRUMENT").replace(r"\\", r"\\\\"),
                     cgats,
                 )
             if not re.search(rb'\nTECHNOLOGY\s+".+?"\n', cgats) and tech:
@@ -13766,7 +13792,9 @@ class MainFrame(ReportFrame, BaseFrame):
             if debug:
                 print(f"manufacturer_id: {manufacturer_id}")
                 print(f"manufacturer   : {manufacturer}")
-            if manufacturer_id and not re.search(rb'\nMANUFACTURER_ID\s+".+?"\n', cgats):
+            if manufacturer_id and not re.search(
+                rb'\nMANUFACTURER_ID\s+".+?"\n', cgats
+            ):
                 # By default, CCMX/CCSS files don't contain manufacturer ID
                 cgats = re.sub(
                     rb'(\nDISPLAY\s+"[^"]*"\n)',
@@ -13786,8 +13814,7 @@ class MainFrame(ReportFrame, BaseFrame):
                 # By default, CCMX/CCSS files don't contain observer
                 cgats = re.sub(
                     rb'(\nDISPLAY\s+"[^"]*"\n)',
-                    b'\nOBSERVER "%s"\\1'
-                    % observer.replace(b"\\", b"\\\\"),
+                    b'\nOBSERVER "%s"\\1' % observer.replace(b"\\", b"\\\\"),
                     cgats,
                 )
             if reference_observer.encode("utf-8") and not re.search(
@@ -14030,7 +14057,10 @@ class MainFrame(ReportFrame, BaseFrame):
                 ):
                     XYZ_CDM2 = meas.queryv1("LUMINANCE_XYZ_CDM2")
                     if XYZ_CDM2:
-                        metadata.append(label + '_LUMINANCE_XYZ_CDM2 "%s"' % XYZ_CDM2.decode("utf-8"))
+                        metadata.append(
+                            label
+                            + '_LUMINANCE_XYZ_CDM2 "%s"' % XYZ_CDM2.decode("utf-8")
+                        )
                     if not colorimeter_ti3:
                         break
                     metadata.append(
@@ -14069,7 +14099,9 @@ class MainFrame(ReportFrame, BaseFrame):
                     print(f"medatadata: {metadata}")
                 cgats = re.sub(
                     rb'(\nREFERENCE\s+"[^"]*"\n)',
-                    ("\\1%s\n" % "\n".join(metadata).replace("\\", "\\\\")).encode("utf-8"),
+                    ("\\1%s\n" % "\n".join(metadata).replace("\\", "\\\\")).encode(
+                        "utf-8"
+                    ),
                     cgats,
                 )
             if event:
@@ -14129,12 +14161,16 @@ class MainFrame(ReportFrame, BaseFrame):
         if result == wx.ID_OK:
             ccxx = CGATS.CGATS(cgats)
             # Remove platform-specific/potentially sensitive information
-            cgats = re.sub(rb'\n(?:REFERENCE|TARGET)_FILENAME\s+"[^"]+"\n', b"\n", cgats)
+            cgats = re.sub(
+                rb'\n(?:REFERENCE|TARGET)_FILENAME\s+"[^"]+"\n', b"\n", cgats
+            )
             params = {"cgats": cgats}
             # Also upload reference and target CGATS (if available)
             for label in ("REFERENCE", "TARGET"):
                 filename = str(ccxx.queryv1(f"{label}_FILENAME").decode("utf-8") or "")
-                algo_hash = (ccxx.queryv1(f"{label}_HASH").decode("utf-8") or "").split(":", 1)
+                algo_hash = (ccxx.queryv1(f"{label}_HASH").decode("utf-8") or "").split(
+                    ":", 1
+                )
                 if filename and os.path.isfile(filename) and algo_hash[0] in globals():
                     meas = bytes(CGATS.CGATS(filename)).strip()
                     # Check hash
