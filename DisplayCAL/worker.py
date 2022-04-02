@@ -1936,7 +1936,10 @@ class Sudo(object):
             if not self.subprocess.terminate(force=True):
                 print("Warning: Couldn't terminate timed-out sudo subprocess")
         else:
-            print(self.subprocess.before.strip().decode(enc, "replace"))
+            subprocess_before = self.subprocess.before.strip()
+            if isinstance(subprocess_before, bytes):
+                subprocess_before = subprocess_before.decode(enc, "replace")
+            print(subprocess_before)
 
     def authenticate(self, args, title, parent=None):
         """Athenticate for a given command
