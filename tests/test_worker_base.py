@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+from subprocess import Popen
+
 from DisplayCAL import worker_base
 from DisplayCAL import config
+from DisplayCAL.dev.mocks import check_call
 
+from tests.data.argyll_sp_data import SUBPROCESS_COM
 
 # todo: deactivated test temporarily
 # def test_xicclu_is_working_properly(data_files):
@@ -26,7 +30,8 @@ def test_get_argyll_util(argyll):
 def test_get_argyll_version_string_1(argyll):
     """Test worker_base.get_argyll_version_string() function."""
     config.initcfg()
-    result = worker_base.get_argyll_version_string("ccxxmake")
+    with check_call(Popen, "communicate", SUBPROCESS_COM):
+        result = worker_base.get_argyll_version_string("ccxxmake")
     expected_result = "2.3.0"
     assert result == expected_result
 

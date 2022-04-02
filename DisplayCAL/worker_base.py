@@ -374,7 +374,7 @@ def get_argyll_version_string(name, paths=None):
     except Exception as exception:
         print(exception)
         return argyll_version_string
-    for i, line in enumerate((p.communicate()[0] or "").splitlines()):
+    for line in (p.communicate(timeout=30)[0] or "").splitlines():
         if isinstance(line, bytes):
             line = line.strip()
             if b"version" in line.lower():
