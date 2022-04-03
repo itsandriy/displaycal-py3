@@ -11,22 +11,23 @@ DisplayCAL users, to contribute back to this great tool.
 This project is based on the ``HEAD`` of the Sourceforge version, which has 5 extra
 commits that Florian has created after the ``3.8.9.3`` release on 14 Jan 2020.
 
-Status Update (10 March 2022)
------------------------------
+Status Update (3 April 2022)
+----------------------------
 
-Here is one of the early screenshots showing the tool working with Python 3.9: 
+Here is a screenshots showing the tool working with Python 3.9:
 
-![image](https://user-images.githubusercontent.com/1786804/152724907-fdea50c1-8b69-454e-8634-93880c16aeff.png)
+![image](https://user-images.githubusercontent.com/1786804/161440351-9d25ce84-d51b-4efc-90b8-7d8b2d031ad6.png)
 
 Currently, DisplayCAL is working with Python 3.9.7 + wxPython 4.1.1.
 
 Here is a list of things that is working:
 
 - The UI and general functionality.
-- Calibration + Profiling.
-- Installing the created profile.
-- Installing the created profile as root.
-- Profile info window.
+- Calibration + Characterization (Profiling).
+- Installing the created ICC profile.
+- Installing the created ICC profiles as root.
+- Profile info window is now fully working (on some systems we still have an issue
+  related to default values #67).
 - Measurement report creation.
 - Creating, displaying and uploading Colorimeter Corrections.
 - Measuring and reporting display uniformity.

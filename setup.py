@@ -460,7 +460,7 @@ def setup():
         else:
             git_version = p.communicate()[0].strip().decode()
             version_base_file_path = Path(pydir, "VERSION_BASE")
-            version_base = "0.0.0.0".split(".")
+            version_base = "0.0.0".split(".")
 
             if version_base_file_path.is_file():
                 with open(version_base_file_path) as version_base_file:
@@ -562,7 +562,7 @@ def setup():
         (
             str(version_tuple[0]),
             str(version_tuple[1]),
-            str(version_tuple[2]) + str(version_tuple[3]),
+            str(version_tuple[2]),
         )
     )
 

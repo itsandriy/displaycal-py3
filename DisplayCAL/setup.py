@@ -206,7 +206,7 @@ msiversion = ".".join(
     (
         str(version_tuple[0]),
         str(version_tuple[1]),
-        str(version_tuple[2]) + str(version_tuple[3]),
+        str(version_tuple[2]),
     )
 )
 
