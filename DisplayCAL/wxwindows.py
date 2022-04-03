@@ -211,6 +211,7 @@ class AboutDialog(wx.Dialog):
         self.Hide()
 
     def Layout(self):
+        self.Sizer.SetMinSize(440, 560)
         self.Sizer.SetSizeHints(self)
         self.panel.SetScrollRate(2, 2)
         self.Sizer.Layout()
@@ -257,7 +258,7 @@ class AboutDialog(wx.Dialog):
             if item.GetLabel() and font.GetPointSize() > pointsize:
                 font.SetPointSize(pointsize)
                 item.SetFont(font)
-        flag = wx.ALIGN_CENTER_HORIZONTAL
+        flag = wx.ALIGN_NOT
         if isinstance(item, (wx.Panel, wx.PyPanel)):
             flag |= wx.EXPAND
         elif sizer is self.panel.Sizer:
@@ -266,7 +267,6 @@ class AboutDialog(wx.Dialog):
 
 
 class AnimatedBitmap(wx.PyControl):
-
     """Animated bitmap"""
 
     def __init__(
