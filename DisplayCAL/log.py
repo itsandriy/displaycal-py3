@@ -106,6 +106,9 @@ class Log(object):
 
         """
         global logger
+        if isinstance(msg, bytes):
+            msg = msg.decode("utf-8", "replace")
+
         msg = msg.replace("\r\n", "\n").replace("\r", "")
         if fn is None and logger and logger.handlers:
             fn = logger.info

@@ -1782,7 +1782,7 @@ Transform {
             writer = open
         print("Writing", filename)
         with writer(filename, "wb") as outfile:
-            outfile.write(out)
+            outfile.write(out.encode("utf-8"))
 
     @property
     def NUMBER_OF_FIELDS(self):

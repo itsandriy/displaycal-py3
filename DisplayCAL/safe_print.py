@@ -39,18 +39,16 @@ def _get_console_width():
 class SafePrinter(object):
 
     def __init__(self, pad=False, padchar=" ", sep=" ", end="\n", file_=sys.stdout, fn=None, encoding=None):
-        """
-        Write safely, avoiding any UnicodeDe-/EncodingErrors on strings
-        and converting all other objects to safe string representations.
+        """Write safely, avoiding any UnicodeDe-/EncodingErrors on strings and
+        converting all other objects to safe string representations.
 
         sprint = SafePrinter(pad=False, padchar=' ', sep=' ', end='\\n',
                              file=sys.stdout, fn=None)
         sprint(value, ..., pad=False, padchar=' ', sep=' ', end='\\n',
                file=sys.stdout, fn=None)
 
-        Writes the values to a stream (default sys.stdout), honoring its
-        encoding and replacing characters not present in the encoding with
-        question marks silently.
+        Writes the values to a stream (default sys.stdout), honoring its encoding and
+        replacing characters not present in the encoding with question marks silently.
 
         Optional keyword arguments:
         pad:     pad the lines to n chars, or os.getenv('COLUMNS') if True.
@@ -66,9 +64,10 @@ class SafePrinter(object):
         self.end = end
         self.file = file_
         self.fn = fn
-        self.encoding = encoding or (get_encoding(file_) if file_ else None)
+        self.encoding = "utf-8"
 
     def __call__(self, *args, **kwargs):
+        # TODO: Why calling the instance writes it, this is not a good practice.
         self.write(*args, **kwargs)
 
     def flush(self):
@@ -81,17 +80,20 @@ class SafePrinter(object):
         end = kwargs.get("end", self.end)
         file_ = kwargs.get("file_", self.file)
         fn = kwargs.get("fn", self.fn)
-        encoding = kwargs.get("encoding", self.encoding)
+        encoding = self.encoding
+
+        # convert everything to bytes
+        if isinstance(padchar, str):
+            padchar = padchar.encode(self.encoding)
+        if isinstance(sep, str):
+            sep = sep.encode(self.encoding)
+        if isinstance(end, str):
+            end = end.encode(self.encoding)
+
         strargs = []
-        if encoding:
-            cls = str
-        else:
-            cls = str
         for arg in args:
-            if not isinstance(arg, cls):
-                arg = str(arg)
-            if isinstance(arg, str) and encoding:
-                arg = arg.encode(encoding, "asciize")
+            if not isinstance(arg, bytes):
+                arg = bytes(arg, encoding, "asciize")
             strargs.append(arg)
         line = sep.join(strargs).rstrip(end)
         if pad is not False:
@@ -104,6 +106,10 @@ class SafePrinter(object):
             fn(line)
         else:
             try:
+                if "b" not in file_.mode:
+                    line = line.decode(self.encoding)
+                    if end:
+                        end = end.decode(self.encoding)
                 file_.write(line)
                 if end:
                     file_.write(end)

@@ -878,7 +878,7 @@ class TestchartEditor(BaseFrame):
 
         for color in ("R", "G", "B", "C", "M", "Y"):
             name = "saturation_sweeps_%s_btn" % color
-            setattr(self, name, wx.Button(panel, -1, color, size=(30 * scale, -1)))
+            setattr(self, name, wx.Button(panel, -1, color, size=(45 * scale, -1)))
             getattr(self, "saturation_sweeps_%s_btn" % color).Disable()
             self.Bind(
                 wx.EVT_BUTTON,
@@ -892,7 +892,7 @@ class TestchartEditor(BaseFrame):
             )
 
         self.saturation_sweeps_custom_btn = wx.Button(
-            panel, -1, "=", size=(30 * scale, -1)
+            panel, -1, "=", size=(45 * scale, -1)
         )
         self.saturation_sweeps_custom_btn.Disable()
         self.Bind(
@@ -4113,13 +4113,14 @@ END_DATA"""
         for i in range(len(newdata)):
             dataset = CGATS.CGATS()
             for label in data_format.values():
+                label = label.decode("utf-8")
                 if label not in newdata[i]:
                     newdata[i][label] = 0.0
                 dataset[label] = newdata[i][label]
             dataset.key = row + 1 + i
             dataset.parent = data
             dataset.root = data.root
-            dataset.type = "SAMPLE"
+            dataset.type = b"SAMPLE"
             data[dataset.key] = dataset
             for label in ("RGB_R", "RGB_G", "RGB_B"):
                 for col in range(self.grid.GetNumberCols()):
