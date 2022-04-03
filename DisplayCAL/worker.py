@@ -2071,7 +2071,7 @@ class Sudo(object):
                 # Password was not accepted
                 self._terminate()
                 return StringWithLengthOverride(
-                    p.before.strip().decode(enc, "replace"), 0
+                    p.before.strip(), 0
                 )
         if p.after is wexpect.TIMEOUT:
             print("Error: sudo timed out")
@@ -2080,7 +2080,7 @@ class Sudo(object):
             return StringWithLengthOverride("sudo timed out", 0)
         if p.exitstatus != 0:
             return StringWithLengthOverride(
-                p.before.strip().decode(enc, "replace")
+                p.before.strip()
                 or ("sudo exited prematurely with " "status %s" % p.exitstatus),
                 0,
             )

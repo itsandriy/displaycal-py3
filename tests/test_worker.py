@@ -220,3 +220,11 @@ def test_exec_cmd_1():
     cwd = "/tmp/DisplayCAL-i91d9z8_"
     worker = Worker()
     worker.exec_cmd(cmd=cmd, args=args)
+
+
+def test_is_allowed_1():
+    """Test Sudo.is_allowed() function for issue #76"""
+    from DisplayCAL.worker import Sudo
+    sudo = Sudo()
+    result = sudo.is_allowed()
+    assert result == "sudo: 1 incorrect password attempt"
