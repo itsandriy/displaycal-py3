@@ -120,6 +120,7 @@ from wx.lib.agw import hyperlink
 from wx.lib import fancytext
 from wx.lib.statbmp import GenStaticBitmap
 import wx.html
+from wx._core import wxAssertionError
 
 taskbar = None
 if sys.platform == "win32" and sys.getwindowsversion() >= (6, 1):
@@ -4352,10 +4353,11 @@ class CustomGrid(wx.grid.Grid):
         window = evt.GetEventObject()
         dc = wx.PaintDC(window)
 
-        # TODO: This is a temporary fix, please fix this properly
-        return
+        try:
+           cols = self.CalcColLabelsExposed(window.GetUpdateRegion())
+        except wxAssertionError:
+            return
 
-        cols = self.CalcColLabelsExposed(window.GetUpdateRegion())
         if -1 in cols:
             return
 

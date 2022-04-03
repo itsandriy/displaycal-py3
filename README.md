@@ -30,6 +30,7 @@ Here is a list of things that is working:
 - Measurement report creation.
 - Creating, displaying and uploading Colorimeter Corrections.
 - Measuring and reporting display uniformity.
+- Creating charts with Test Chart Editor and creating diagnostic 3d data.
 - and a lot of other stuff is working properly.
 
 What is not working (yet)

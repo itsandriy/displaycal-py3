@@ -363,7 +363,12 @@ class TestchartEditor(BaseFrame):
         )
         hsizer.Add(self.tc_adaption_slider, flag=wx.ALIGN_CENTER_VERTICAL)
         self.tc_adaption_intctrl = wx.SpinCtrl(
-            panel, -1, size=(100 * scale, -1), min=0, max=100, name="tc_adaption_intctrl"
+            panel,
+            -1,
+            size=(100 * scale, -1),
+            min=0,
+            max=100,
+            name="tc_adaption_intctrl",
         )
         self.tc_adaption_intctrl.Disable()
         self.Bind(
@@ -1582,12 +1587,12 @@ END_DATA"""
                 sample["XYZ_X"], sample["XYZ_Y"], sample["XYZ_Z"] = [
                     component * 100.0 for component in XYZ
                 ]
-            # FIXME: Should this be removed? There are no XYZ fields in the editor
-            # for label in ("XYZ_X", "XYZ_Y", "XYZ_Z"):
-            # for col in range(self.grid.GetNumberCols()):
-            # if self.label_b2a.get(self.grid.GetColLabelValue(col)) == label:
-            # self.grid.SetCellValue(event.GetRow(), col, str(round(sample[label], 4)))
-            # value_set = True
+                # FIXME: Should this be removed? There are no XYZ fields in the editor
+                # for label in ("XYZ_X", "XYZ_Y", "XYZ_Z"):
+                # for col in range(self.grid.GetNumberCols()):
+                # if self.label_b2a.get(self.grid.GetColLabelValue(col)) == label:
+                # self.grid.SetCellValue(event.GetRow(), col, str(round(sample[label], 4)))
+                # value_set = True
             elif label in ("XYZ_X", "XYZ_Y", "XYZ_Z"):
                 # FIXME: Should this be removed? There are no XYZ fields in the editor
                 if value < 0:
@@ -3067,8 +3072,8 @@ END_DATA"""
                     return
             setcfg("last_ti1_path", path)
             try:
-                file_ = open(path, "w")
-                file_.write(str(self.ti1))
+                file_ = open(path, "wb")
+                file_.write(bytes(self.ti1))
                 file_.close()
                 self.ti1.filename = path
                 self.ti1.root.setmodified(False)
@@ -4053,10 +4058,12 @@ END_DATA"""
             grid.BeginBatch()
             data_format = self.ti1.queryv1("DATA_FORMAT")
             for i in data_format:
-                if data_format[i] in ("RGB_R", "RGB_G", "RGB_B"):
+                data_format_str_value = data_format[i].decode("utf-8")
+                if data_format_str_value in ("RGB_R", "RGB_G", "RGB_B"):
                     grid.AppendCols(1)
                     grid.SetColLabelValue(
-                        grid.GetNumberCols() - 1, data_format[i].split("_")[-1] + " %"
+                        grid.GetNumberCols() - 1,
+                        data_format_str_value.split("_")[-1] + " %",
                     )
             grid.AppendCols(1)
             grid.SetColLabelValue(grid.GetNumberCols() - 1, "")

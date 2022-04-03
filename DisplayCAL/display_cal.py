@@ -2529,9 +2529,6 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             + button_panel_height
         )
 
-        print(f"display_area_free_height: {display_area_free_height}")
-        print(f"per_element_heights: {per_element_heights}")
-
         height = min(
             display_area_free_height,
             per_element_heights,
@@ -2573,7 +2570,6 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             ),
             height,
         )
-        print(f"size: {size}")
         self.simulation_profile_cb.Show(sim_show)
         self.devlink_profile_cb.Show(devlink_show)
         self.mr_settings_panel.Thaw()
