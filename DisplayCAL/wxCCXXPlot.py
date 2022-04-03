@@ -91,11 +91,11 @@ class CCXXPlot(wx.Frame):
         else:
             fn = desc
             if self.is_ccss:
-                ext = b".ccss"
+                ext = ".ccss"
             else:
-                ext = b".ccmx"
+                ext = ".ccmx"
 
-        desc = lang.getstr(ext[1:] + b"." + fn, default=desc)
+        desc = lang.getstr(ext[1:] + "." + fn, default=desc)
 
         if self.is_ccss:
             ccxx_type = "spectral"
