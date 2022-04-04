@@ -106,7 +106,10 @@ Some ideas on where to focus on future development:
 - Create unit tests with ``Pytest`` and reach to 100% code coverage. The ``3.8.9.3``
   version of DisplayCAL is around 120k lines of Python code (other languages are not
   included) and there are no tests (or the repository I adapted doesn't contain any
-  tests). This is a nightmare and super hard to maintain.
+  tests). This is a nightmare and super hard to maintain. This is an ongoing work, with
+  the latest commits we have over 150 tests (which is super low for, should be 
+  thousands) and the code coverage is around 25% (again this is super low, should be
+  over 99%).
 - Maybe I'm not experienced enough, and I'm wrong on saying this, but I don't see the
   motivation behind having a C-Extension for ``EDID``, ``XRandr`` etc. stuff. It should
   be possible to cover all the functionality of this extension and stay purely in
@@ -115,17 +118,15 @@ Some ideas on where to focus on future development:
 - Replace the ``wexpect.py`` with the latest release of ``Pexpect``. I'm not very
   familiar with this module, and there is no comment in the code on why we have
   a ``wexpect.py`` instead of using the PyPI version of ``Pexpect``.
-- Replace the ``DisplayCAL.ordereddict.OrderedDict`` with the pure Python ``dict`` which
-  is ordered after Python 3.6.
 - Replace ``os.path`` related stuff with ``pathlib``.
 - Organize the module structure, move UI related stuff in to ``ui`` module etc., move
   non-source files into their own folders.
-- Remove all the hackery that includes ``exec()``. I know, there should be a reason for
-  them to exist, but this generally is considered as ``hacking``.
 - Update the ``Remaining time`` calculation during profiling to estimate the time by
   also considering the luminance of the remaining patches to have a better estimation.
   Because, patches with higher luminance values are measured quickly than patches with
   lower luminance values.
+- ~~Replace the ``DisplayCAL.ordereddict.OrderedDict`` with the pure Python ``dict``
+  which is ordered after Python 3.6.~~ (Done!)
 
 Issues related to these ideas have been created. If you have a feature request, you can
 create more issues or share your comment on the already created issues or create merge
