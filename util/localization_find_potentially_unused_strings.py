@@ -11,7 +11,6 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, root)
 
 from DisplayCAL import jsondict
-from DisplayCAL import ordereddict
 from DisplayCAL.config import confighome
 from DisplayCAL.util_os import listdir_re
 

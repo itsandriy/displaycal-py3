@@ -14,7 +14,6 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, root)
 
 from DisplayCAL import lazydict
-from DisplayCAL import ordereddict
 from DisplayCAL.util_list import natsort
 from DisplayCAL.util_os import listdir_re
 
