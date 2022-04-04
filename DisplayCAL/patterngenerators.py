@@ -397,7 +397,8 @@ class PrismaPatternGeneratorClient(GenHTTPPatternGeneratorClient):
                 method = query[b"m"][0]
                 if data.get(method) == "Error" and "msg" in data:
                     raise http.client.HTTPException("%s: %s" % (self.host, data["msg"]))
-            for key, value in validate.items():
+            for key in validate:
+                value = validate[key]
                 if key not in data:
                     raise http.client.HTTPException(
                         lang.getstr(

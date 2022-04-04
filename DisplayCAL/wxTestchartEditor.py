@@ -41,10 +41,6 @@ from DisplayCAL.config import (
 from DisplayCAL.debughelpers import handle_error
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug, tc_use_alternate_preview, test, verbose
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
-from DisplayCAL.util_io import StringIOu as StringIO
 from DisplayCAL.util_os import expanduseru, is_superuser, launch_file, waccess
 from DisplayCAL.worker import (
     Error,
@@ -2071,7 +2067,8 @@ END_DATA"""
                         'APPROX_WHITE_POINT "%.4f %.4f %.4f"'
                         % tuple(v * 100 for v in list(nclprof.tags.wtpt.ir.values())),
                     )
-                for k, v in nclprof.tags.ncl2.items():
+                for k in nclprof.tags.ncl2:
+                    v = nclprof.tags.ncl2[k]
                     chart.insert(-1, "%.4f %.4f %.4f" % tuple(v.pcs.values()))
                 chart = "\n".join(chart)
 
@@ -2351,7 +2348,7 @@ END_DATA"""
                     return Error(
                         lang.getstr("error.generic", (-1, lang.getstr("unknown")))
                     )
-            colorsets = OrderedDict()
+            colorsets = dict()
             weights = {}
             demph = getcfg("tc_dark_emphasis")
             # Select Lab color
@@ -2390,7 +2387,8 @@ END_DATA"""
                     if weights[color] >= threshold
                 ]
             )
-            for color, colors in colorsets.items():
+            for color in colorsets:
+                colors = colorsets[color]
                 if weight and weights[color] < threshold:
                     continue
                 L, a, b = 0, 0, 0
@@ -3971,7 +3969,8 @@ END_DATA"""
                     # Collect all fixed point datasets not in data
                     fixed_data.vmaxlen = data.vmaxlen
                     fixed_datasets = []
-                    for i, dataset in fixed_data.items():
+                    for i in fixed_data:
+                        dataset = fixed_data[i]
                         if not str(dataset) in rgbdata:
                             fixed_datasets.append(dataset)
                     if fixed_datasets:

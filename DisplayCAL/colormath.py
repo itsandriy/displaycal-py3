@@ -875,7 +875,8 @@ def smooth_avg(values, passes=1, window=None, protect=None):
 
         # restore protected values
         if protect is not None:
-            for k, v in protected_values.items():
+            for k in protected_values:
+                v = protected_values[k]
                 values[k] = v
 
     # return the non-extended portion
@@ -4111,15 +4112,18 @@ def debug_caches():
         c = getattr(globals()[cn], ck)
         count = 0
         seen = {}
-        for k, v in c.items():
-            for kk, vv in c.items():
+        for k in c:
+            v = c[k]
+            for kk in c:
+                vv = c[kk]
                 # Check for equality, not identity
                 if k != kk and v == vv and kk not in seen:
                     count += 1
                     seen[kk] = True
         print(cache, len(c), "entries", max(count - 1, 0), "duplicates")
         if count > 1:
-            for k, v in c.items():
+            for k in c:
+                v = c[k]
                 print(k, v)
 
 

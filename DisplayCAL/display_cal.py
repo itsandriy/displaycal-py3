@@ -46,6 +46,8 @@ import zipfile
 
 from send2trash import send2trash
 
+from DisplayCAL.util_dict import dict_sort
+
 if sys.platform == "win32":
     import winreg
 from hashlib import md5
@@ -155,9 +157,6 @@ from DisplayCAL.options import (
     test_update,
     verbose,
 )
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
 from DisplayCAL.patterngenerators import WebWinHTTPPatternGeneratorServer
 
 try:
@@ -1448,12 +1447,12 @@ class GamapFrame(BaseFrame):
             id=self.b2a_smooth_cb.GetId(),
         )
 
-        self.viewconds_ab = OrderedDict()
+        self.viewconds_ab = dict()
         self.viewconds_ba = {}
-        self.viewconds_out_ab = OrderedDict()
+        self.viewconds_out_ab = dict()
 
-        self.intents_ab = OrderedDict()
-        self.intents_ba = OrderedDict()
+        self.intents_ab = dict()
+        self.intents_ba = dict()
 
         self.default_intent_ab = {}
         self.default_intent_ba = {}
@@ -4520,7 +4519,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             del self.ccmx_instruments[path]
         delete = False
         key = None
-        for _key, value in self.ccmx_mapping.items():
+        for _key in self.ccmx_mapping:
+            value = self.ccmx_mapping[_key]
             if value == path:
                 delete = True
                 key = _key
@@ -6100,7 +6100,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         self.update_main_controls()
 
     def lut3d_init_input_profiles(self):
-        self.input_profiles = OrderedDict()
+        self.input_profiles = dict()
         for profile_filename in [
             "ACES.icm",
             "ACEScg.icm",
@@ -6130,7 +6130,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                             desc,
                         )
                         self.input_profiles[desc] = profile_filename
-        self.input_profiles.sort()
+        self.input_profiles = dict_sort(self.input_profiles)
         self.lut3d_input_profile_ctrl.SetItems(list(self.input_profiles.keys()))
 
     def lut3d_input_colorspace_handler(self, event):
@@ -9986,7 +9986,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
     def setup_observer_ctrl(self):
         """Setup observer control. Choice of available observers varies with
         ArgyllCMS version."""
-        self.observers_ab = OrderedDict()
+        self.observers_ab = dict()
         for observer in config.valid_values["observer"]:
             self.observers_ab[observer] = lang.getstr("observer." + observer)
         self.observers_ba = swap_dict_keys_values(self.observers_ab)
@@ -11187,12 +11187,14 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                 profile.tags.meta.getvalue("GAMUT_coverage(%s)" % key)
                             )
                         except (TypeError, ValueError):
+                            traceback.print_exc()
                             gamut_coverage = None
                         if gamut_coverage:
                             cinfo.append("%.1f%% %s" % (gamut_coverage * 100, name))
                     try:
                         gamut_volume = float(profile.tags.meta.getvalue("GAMUT_volume"))
                     except (TypeError, ValueError):
+                        traceback.print_exc()
                         gamut_volume = None
                     if gamut_volume:
                         for _key, name, volume in gamuts:
@@ -12280,7 +12282,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             self.lut3d_settings_btn: self.lut3d_settings_panel,
             self.mr_settings_btn: self.mr_settings_panel,
         }
-        for btn, tab in btn2tab.items():
+        for btn in btn2tab:
+            tab = btn2tab[btn]
             if event.GetId() == btn.Id:
                 if tab is self.mr_settings_panel and not tab.IsShown():
                     self.mr_update_controls()
@@ -13307,8 +13310,9 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 "RGB_R=0 RGB_G=100 RGB_B=0": "green",
                 "RGB_R=0 RGB_G=0 RGB_B=100": "blue",
             }
-            for _i, values in required.items():
-                patch = OrderedDict(
+            for _i in required:
+                values = required[_i]
+                patch = dict(
                     [("RGB_R", values[0]), ("RGB_G", values[1]), ("RGB_B", values[2])]
                 )
                 devicecombination = " ".join(
@@ -13539,7 +13543,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             dlg.sizer3.Add(boxsizer, 1, flag=wx.TOP | wx.EXPAND, border=12)
             if sys.platform not in ("darwin", "win32"):
                 boxsizer.Add((1, 8))
-            loctech = OrderedDict()
+            loctech = dict()
             techloc = {}
             for technology_string in list(technology_strings.values()):
                 loc = lang.getstr(
@@ -13678,7 +13682,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                             del data_format[i]
                     # Normalize to Y=100
                     data = reference_ti3.queryv1("DATA")
-                    for _i, sample in data.items():
+                    for _i in data:
+                        sample = data[_i]
                         for column in data_format.values():
                             if column.startswith("XYZ_") or column.startswith("SPEC_"):
                                 sample[column] /= scale
@@ -13931,7 +13936,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     "   DE94   |   DE00   "
                 )
                 print("-" * 80)
-                for i, ref in ref_data.items():
+                for i in ref_data:
+                    ref = ref_data[i]
                     tgt = tgt_data[i]
                     grid.AppendRows(1)
                     row = grid.GetNumberRows() - 1
@@ -14064,7 +14070,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     )
                     data_format = meas.queryv1("DATA_FORMAT")
                     data = meas.queryv1("DATA")
-                    for i, sample in data.items():
+                    for i in data:
+                        sample = data[i]
                         RGB_XYZ = []
                         for column in ccmx_data_format:
                             RGB_XYZ.append(str(sample[column]))
@@ -14277,7 +14284,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         spyd4en = None
         icd = None
         oeminst = get_argyll_util("oeminst")
-        importers = OrderedDict()
+        importers = dict()
         if not oeminst:
             i1d3ccss = get_argyll_util("i1d3ccss")
             spyd4en = get_argyll_util("spyd4en")
@@ -14744,7 +14751,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 result, i1d3, i1d3ccss, spyd4, spyd4en, icd, oeminst, path, asroot
             )
         paths = []
-        for name, _importer in importers.items():
+        for name in importers:
+            _importer = importers[name]
             imported = locals().get(name, False)
             if (not imported or name == "i1d3") and auto:
                 # Automatic download
@@ -14792,7 +14800,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             "Spyder4/5": spyd4,
             "iColor Display": icd,
         }
-        for name, subresult in mapping.items():
+        for name in mapping:
+            subresult = mapping[name]
             if subresult and not isinstance(subresult, Exception):
                 imported.append(name)
             elif subresult is not None:
@@ -15504,7 +15513,6 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             if not os.path.exists(path):
                 show_result_dialog(Error(lang.getstr("file.missing", path)), self)
                 return
-            OrderedDict()
             # Get filename and extension of file
             filename, ext = os.path.splitext(path)
             if ext.lower() != ".ti3":
@@ -15636,10 +15644,12 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 removed.insert(0, data.pop(dlg.suspicious_items[index]))
             for item in removed:
                 print("Removed patch #%i from TI3: %s" % (item.key, item))
-            for index, fields in dlg.mods.items():
+            for index in dlg.mods:
+                fields = dlg.mods[index]
                 if index not in indexes:
                     item = dlg.suspicious_items[index]
-                    for field, value in fields.items():
+                    for field in fields:
+                        value = fields[field]
                         old = item[field]
                         if old != value:
                             item[field] = value
@@ -16091,7 +16101,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     bitmap=geticon(32, "dialog-error"),
                 )
                 return
-            tags = OrderedDict()
+            tags = dict()
             # Get filename and extension of source file
             source_filename, source_ext = os.path.splitext(path)
             if source_ext.lower() != ".ti3":
@@ -16777,7 +16787,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             data_files += safe_glob(os.path.join(config.appdata, "ArgyllCMS", wildcard))
         filenames = list(data_files)
         data_files = []
-        mapping = OrderedDict()
+        mapping = dict()
         for filename in filenames:
             basename = os.path.basename(filename)
             if (
@@ -18179,7 +18189,8 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         "3DLUT_APPLY_CAL": "3dlut.output.profile.apply_cal",
                         "SIMULATION_PROFILE": "measurement_report.simulation_profile",
                     }
-                    for keyword, cfgname in config_lut.items():
+                    for keyword in config_lut:
+                        cfgname = config_lut[keyword]
                         cfgvalue = cfgpart.queryv1(keyword)
                         if keyword in (
                             "MIN_DISPLAY_UPDATE_DELAY_MS",
@@ -18606,7 +18617,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     bitmap=geticon(32, "dialog-error"),
                 )
                 return
-            self.related_files = OrderedDict()
+            self.related_files = dict()
             for entry in dircontents:
                 fn, ext = os.path.splitext(entry)
                 if ext.lower() in (".app", script_ext):

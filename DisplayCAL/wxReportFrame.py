@@ -640,7 +640,8 @@ class ReportFrame(BaseFrame):
                 fileMask=wildcard,
             )
             ctrl = getattr(self, "%s_ctrl" % which)
-            for name, value in kwargs.items():
+            for name in kwargs:
+                value = kwargs[name]
                 setattr(ctrl, name, value)
 
         items = []

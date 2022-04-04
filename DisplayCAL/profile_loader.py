@@ -58,9 +58,7 @@ if sys.platform == "win32":
     from DisplayCAL.debughelpers import Error, UnloggedError, handle_error
     from DisplayCAL.edid import get_edid
     from DisplayCAL.meta import DOMAIN
-    from DisplayCAL.ordereddict import OrderedDict
 
-    # from collections import OrderedDict
     from DisplayCAL.systrayicon import Menu, MenuItem, SysTrayIcon
     from DisplayCAL.util_list import natsort_key_factory
     from DisplayCAL.util_os import (
@@ -1764,7 +1762,8 @@ class ProfileLoader(object):
                     result = dlg.ShowModal()
                     if result == wx.ID_OK:
                         exceptions = []
-                        for key, (enabled, reset, path) in dlg._exceptions.items():
+                        for key in dlg._exceptions:
+                            enabled, reset, path = dlg._exceptions[key]
                             exceptions.append("%i:%i:%s" % (enabled, reset, path))
                             print(
                                 "Enabled=%s" % bool(enabled),
@@ -3157,7 +3156,7 @@ class ProfileLoader(object):
             [(device.DeviceName, device) for device in get_display_devices(None)]
         )
         self.monitors = []
-        self.display_devices = OrderedDict()
+        self.display_devices = dict()
         self.child_devices_count = {}
         # Enumerate per-adapter devices
         for adapter in self.adapters:
@@ -3526,7 +3525,8 @@ class ProfileLoader(object):
     def _reset_display_profile_associations(self):
         if not self._can_fix_profile_associations():
             return
-        for devicekey, (display_edid, profile, desc) in self.devices2profiles.items():
+        for devicekey in self.devices2profiles:
+            display_edid, profile, desc = self.devices2profiles[devicekey]
             if devicekey in self._fixed_profile_associations and profile:
                 try:
                     current_profile = ICCP.get_display_profile(

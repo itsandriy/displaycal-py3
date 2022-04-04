@@ -734,3 +734,75 @@ def test_for_issue_50_1(data_files):
     dict_type = iccp.tags["meta"]
     # It seems that we can't reproduce the error with this ICC profile.
     assert dict_type.tagData != ""
+
+
+def test_gamut_coverage_1(data_files):
+    """Test getting GAMUT_coverage metadata"""
+    icc_profile_path = data_files[
+        "UP2516D #1 2022-03-20 02-08 D6500 2.2 F-S XYZLUT+MTX.icc"
+    ]
+    iccp = ICCProfile.ICCProfile(icc_profile_path)
+
+    gamuts = (
+        ("srgb", "sRGB", ICCProfile.GAMUT_VOLUME_SRGB),
+        ("adobe-rgb", "Adobe RGB", ICCProfile.GAMUT_VOLUME_ADOBERGB),
+        ("dci-p3", "DCI P3", ICCProfile.GAMUT_VOLUME_SMPTE431_P3),
+    )
+    cinfo = []
+    for key, name, _volume in gamuts:
+        gamut_coverage = float(
+            iccp.tags.meta.getvalue("GAMUT_coverage(%s)" % key)
+        )
+        if gamut_coverage:
+            cinfo.append("%.1f%% %s" % (gamut_coverage * 100, name))
+    assert cinfo == ['99.7% sRGB', '99.1% Adobe RGB', '93.0% DCI P3']
+
+
+def test_gamut_volume_1(data_files):
+    """Test getting GAMUT_volume metadata"""
+    icc_profile_path = data_files[
+        "UP2516D #1 2022-03-20 02-08 D6500 2.2 F-S XYZLUT+MTX.icc"
+    ]
+    iccp = ICCProfile.ICCProfile(icc_profile_path)
+
+    gamuts = (
+        ("srgb", "sRGB", ICCProfile.GAMUT_VOLUME_SRGB),
+        ("adobe-rgb", "Adobe RGB", ICCProfile.GAMUT_VOLUME_ADOBERGB),
+        ("dci-p3", "DCI P3", ICCProfile.GAMUT_VOLUME_SMPTE431_P3),
+    )
+    vinfo = []
+    gamut_volume = float(iccp.tags.meta.getvalue("GAMUT_volume"))
+    for _key, name, volume in gamuts:
+        vinfo.append(
+            "%.1f%% %s"
+            % (
+                gamut_volume
+                * ICCProfile.GAMUT_VOLUME_SRGB
+                / volume
+                * 100,
+                name,
+            )
+        )
+    assert vinfo == ['169.3% sRGB', '116.7% Adobe RGB', '120.0% DCI P3']
+
+
+def test_set_gamut_metadata_1(data_files):
+    """Test ICCProfile.set_gamut_metadata() method."""
+    icc_profile_path = data_files[
+        "UP2516D #1 2022-03-20 02-08 D6500 2.2 F-S XYZLUT+MTX.icc"
+    ]
+    iccp = ICCProfile.ICCProfile(icc_profile_path)
+
+    assert iccp.tags.meta["GAMUT_volume"] == '1.6934613892142165'
+    assert iccp.tags.meta["GAMUT_coverage(srgb)"] == '0.9967'
+    assert iccp.tags.meta["GAMUT_coverage(dci-p3)"] == '0.9296'
+    assert iccp.tags.meta["GAMUT_coverage(adobe-rgb)"] == '0.9906'
+
+    gamut_volume = 1.695547156240974
+    gamut_coverage = {'srgb': 0.9973000000000001, 'dci-p3': 0.9269, 'adobe-rgb': 0.9897}
+    iccp.set_gamut_metadata(gamut_volume=gamut_volume, gamut_coverage=gamut_coverage)
+
+    assert iccp.tags.meta["GAMUT_volume"] == gamut_volume
+    assert iccp.tags.meta["GAMUT_coverage(srgb)"] == gamut_coverage['srgb']
+    assert iccp.tags.meta["GAMUT_coverage(dci-p3)"] == gamut_coverage['dci-p3']
+    assert iccp.tags.meta["GAMUT_coverage(adobe-rgb)"] == gamut_coverage['adobe-rgb']

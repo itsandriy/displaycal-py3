@@ -41,7 +41,8 @@ class Tag(object):
     def markup(self, allow_empty_element_tag=False, x3dom=False):
         markup = ["<%s" % self.tagname]
         attrs = []
-        for key, value in self.attributes.items():
+        for key in self.attributes:
+            value = self.attributes[key]
             value = (
                 value.strip()
                 .replace("<", "&lt;")

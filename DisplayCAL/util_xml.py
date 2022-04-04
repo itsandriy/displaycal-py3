@@ -5,10 +5,6 @@ try:
 except ImportError:
     pass
 
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
-
 
 def dict2xml(d, elementname="element", pretty=True, allow_attributes=True, level=0):
     indent = pretty and "\t" * level or ""
@@ -21,7 +17,8 @@ def dict2xml(d, elementname="element", pretty=True, allow_attributes=True, level
         start_tag.append(indent + "<" + elementname)
 
         if isinstance(d, dict):
-            for key, value in d.items():
+            for key in d:
+                value = d[key]
                 if isinstance(value, (dict, list)) or not allow_attributes:
                     children.append(
                         dict2xml(value, key, pretty, allow_attributes, level + 1)
@@ -60,25 +57,16 @@ def escape(xml):
     )
 
 
-class OrderedDictSimpleRepr(OrderedDict):
-    def __repr__(self):
-        """od.__repr__() <==> repr(od)"""
-        l = []
-        for k, v in self.items():
-            l.append("%r: %r" % (k, v))
-        return "{%s}" % ", ".join(l)
-
-
-class ETreeDict(OrderedDictSimpleRepr):
+class ETreeDict(dict):
 
     # Roughly follow "Converting Between XML and JSON"
     # https://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html
 
     def __init__(self, etree):
-        OrderedDictSimpleRepr.__init__(self)
+        super(ETreeDict, self).__init__()
         children = len(etree)
         if etree.attrib or etree.text or children:
-            self[etree.tag] = OrderedDictSimpleRepr(
+            self[etree.tag] = dict(
                 ("@" + k, v) for k, v in etree.attrib.items()
             )
             if etree.text:
@@ -100,6 +88,14 @@ class ETreeDict(OrderedDictSimpleRepr):
                             d[k] = v
         else:
             self[etree.tag] = None
+
+    def __repr__(self):
+        """od.__repr__() <==> repr(od)"""
+        l = []
+        for k in self:
+            v = self[k]
+            l.append("%r: %r" % (k, v))
+        return "{%s}" % ", ".join(l)
 
     @property
     def json(self):

@@ -22,9 +22,7 @@ from DisplayCAL.config import (
 )
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
+from DisplayCAL.util_dict import dict_slice, dict_sort
 from DisplayCAL.util_io import GzipFileProper
 from DisplayCAL.util_list import intlist
 from DisplayCAL.util_os import launch_file, make_win32_compatible_long_path, waccess
@@ -462,7 +460,8 @@ class GamutCanvas(LUTCanvas):
                 and isinstance(profile.tags.ncl2, ICCP.NamedColor2Type)
                 and profile.connectionColorSpace in (b"Lab", b"XYZ")
             ):
-                for k, v in profile.tags.ncl2.items():
+                for k in profile.tags.ncl2:
+                    v = profile.tags.ncl2[k]
                     color = list(v.pcs.values())
                     if profile.connectionColorSpace == b"Lab":
                         # Need to convert to XYZ
@@ -803,7 +802,7 @@ class GamutViewOptions(wx_Panel):
         self.options_sizer.Add(
             self.comparison_profile_label, flag=wx.ALIGN_CENTER_VERTICAL
         )
-        self.comparison_profiles = OrderedDict(
+        self.comparison_profiles = dict(
             [(lang.getstr("calibration.file.none"), None)]
         )
         srgb = None
@@ -958,9 +957,9 @@ class GamutViewOptions(wx_Panel):
         self.DrawCanvas(0, reset=False)
 
     def comparison_profiles_sort(self):
-        comparison_profiles = self.comparison_profiles[2:]
-        comparison_profiles.sort(key=lambda s: s.lower())
-        self.comparison_profiles = self.comparison_profiles[:2]
+        comparison_profiles = dict_slice(self.comparison_profiles, 2)
+        comparison_profiles = dict_sort(comparison_profiles, key=lambda s: s.lower())
+        self.comparison_profiles = dict_slice(self.comparison_profiles, None, 2)
         self.comparison_profiles.update(comparison_profiles)
         self.comparison_profile_select.SetItems(list(self.comparison_profiles.keys()))
 

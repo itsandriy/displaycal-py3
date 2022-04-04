@@ -32,9 +32,6 @@ from DisplayCAL import worker_base
 from DisplayCAL.imfile import tiff_get_header
 from DisplayCAL.meta import name as appname, version
 from DisplayCAL.network import get_network_addr, get_valid_host
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
 
 
 CALLBACK = ctypes.CFUNCTYPE(
@@ -141,7 +138,7 @@ def icc_device_link_to_madvr(
 
     filename, ext = os.path.splitext(icc_device_link_filename)
 
-    h3d_params = OrderedDict()
+    h3d_params = dict()
 
     if filename.endswith(".HDR") or hdr == 2:
         name = os.path.splitext(filename)[0]
@@ -351,7 +348,7 @@ class H3DLUT(object):
             )
         self.lutCompressedSize = struct.unpack("<l", data[88:92])[0]
         self.lutUncompressedSize = struct.unpack("<l", data[92:96])[0]
-        self.parametersData = OrderedDict()
+        self.parametersData = dict()
         for line in (
             data[self.parametersFileOffset: self.parametersFileOffset + parametersSize]
             .rstrip(b"\0")
@@ -391,7 +388,8 @@ class H3DLUT(object):
     @property
     def data(self):
         parametersData = []
-        for key, values in self.parametersData.items():
+        for key in self.parametersData:
+            values = self.parametersData[key]
             if isinstance(values, str):
                 value = values
             else:
@@ -795,7 +793,7 @@ class MadTPG_Net(MadTPGBase):
         MadTPGBase.__init__(self)
         self._cast_sockets = {}
         self._casts = []
-        self._client_sockets = OrderedDict()
+        self._client_sockets = dict()
         self._commandno = 0
         self._commands = {}
         self._host = get_network_addr()
@@ -807,7 +805,7 @@ class MadTPG_Net(MadTPGBase):
         self._threads = []
         # self.broadcast_ports = (39568, 41513, 45817, 48591, 48912)
         self.broadcast_ports = (37018, 10658, 63922, 53181, 4287)
-        self.clients = OrderedDict()
+        self.clients = dict()
         self.debug = 0
         self.listening = False
         # self.multicast_ports = (34761, )
@@ -1323,7 +1321,7 @@ class MadTPG_Net(MadTPGBase):
         commandno = record["commandNo"]
         component = record["component"]
         params = record["params"]
-        client = OrderedDict()
+        client = dict()
         client["processId"] = record["processId"]
         client["module"] = record["module"]
         client["component"] = component
@@ -1345,7 +1343,8 @@ class MadTPG_Net(MadTPGBase):
                 self.clients[addr] = client
                 if self._is_master(conn):
                     # Prevent duplicate connections
-                    for c_addr, c_client in self.clients.items():
+                    for c_addr in self.clients:
+                        c_client = self.clients[c_addr]
                         if (
                             c_client.get("confirmed")
                             and c_client["processId"] == client["processId"]
@@ -1375,7 +1374,8 @@ class MadTPG_Net(MadTPGBase):
                 self.clients[addr]["confirmed"] = True
                 self._dispatch_event("on_client_confirmed", (addr, self.clients[addr]))
                 # Close duplicate connections
-                for c_addr, c_client in self.clients.items():
+                for c_addr in self.clients:
+                    c_client = self.clients[c_addr]
                     if (
                         c_addr != addr
                         and c_client["processId"] == client["processId"]
@@ -1515,7 +1515,7 @@ class MadTPG_Net(MadTPGBase):
         datalen = struct.unpack("<i", blob[4:8])[0]
         if len(blob) < datalen + 12:
             return None, blob
-        record = OrderedDict(
+        record = dict(
             [
                 ("magic", blob[0:4]),
                 ("len", struct.unpack("<i", blob[4:8])[0]),
@@ -1580,7 +1580,7 @@ class MadTPG_Net(MadTPGBase):
             cfg.optionxform = str
             # cfg.readfp(io)
             cfg.read_file(io)
-            params = OrderedDict(cfg.items("Default"))
+            params = dict(cfg.items("Default"))
             # Convert version strings to tuples with integers
             for param in ("mvr", "exe"):
                 param += "Version"
@@ -1645,11 +1645,13 @@ class MadTPG_Net(MadTPGBase):
                     record["instance"],
                     record["command"],
                 )
-                for key, value in record.items():
+                for key in record:
+                    value = record[key]
                     if key == "params" or self.debug > 2:
                         if isinstance(value, dict):
                             safe_print("  %s:" % key)
-                            for subkey, subvalue in value.items():
+                            for subkey in value:
+                                subvalue = value[subkey]
                                 if self.debug < 2 and subkey != "exeFile":
                                     continue
                                 safe_print(

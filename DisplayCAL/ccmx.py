@@ -77,7 +77,8 @@ def convert_devicecorrections_to_ccmx(path, target_dir):
     # Convert to ccmx
     imported = 0
     skipped = 0
-    for name, devcorrection in devcorrections.items():
+    for name in devcorrections:
+        devcorrection = devcorrections[name]
         values = {
             "DateTime": time.strftime("%a %b %d %H:%M:%S %Y"),
             "Originator": "Quato iColorDisplay",

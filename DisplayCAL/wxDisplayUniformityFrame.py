@@ -160,7 +160,8 @@ class DisplayUniformityFrame(BaseFrame):
             for keycode in keycodes:
                 self.id_to_keycode[wx.Window.NewControlId()] = keycode
             accels = []
-            for id, keycode in self.id_to_keycode.items():
+            for id in self.id_to_keycode:
+                keycode = self.id_to_keycode[id]
                 self.Bind(wx.EVT_MENU, self.key_handler, id=id)
                 accels.append((wx.ACCEL_NORMAL, keycode, id))
                 if keycode == wx.WXK_TAB:

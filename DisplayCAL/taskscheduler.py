@@ -46,9 +46,6 @@ import pywintypes
 import winerror
 
 from DisplayCAL.meta import name as appname
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
 from DisplayCAL.safe_print import enc
 from DisplayCAL.util_os import getenvu
 from DisplayCAL.util_str import indent, universal_newlines
@@ -62,12 +59,11 @@ MULTIPLEINSTANCES_IGNORENEW = "IgnoreNew"
 MULTIPLEINSTANCES_STOPEXISTING = "StopExisting"
 
 
-class _Dict2XML(OrderedDict):
-
+class _Dict2XML(dict):
     # Subclass this
 
     def __init__(self, *args, **kwargs):
-        OrderedDict.__init__(self, *args, **kwargs)
+        dict.__init__(self, *args, **kwargs)
         if "cls_name" not in self:
             self["cls_name"] = self.__class__.__name__
         if "cls_attr" not in self:
@@ -75,7 +71,8 @@ class _Dict2XML(OrderedDict):
 
     def __unicode__(self):
         items = []
-        for name, value in self.items():
+        for name in self:
+            value = self[name]
             if isinstance(value, bool):
                 value = str(value).lower()
             elif name in ("cls_name", "cls_attr") or not value:
@@ -210,7 +207,7 @@ class Task(_Dict2XML):
     ):
         kwargs = locals()
         idle_keys = ("duration", "wait_timeout", "stop_on_idle_end", "restart_on_idle")
-        idle_settings = OrderedDict()
+        idle_settings = dict()
         for key in idle_keys:
             idle_settings[key] = kwargs[key]
         for key in (
@@ -226,7 +223,7 @@ class Task(_Dict2XML):
             del kwargs[key]
         settings = _Dict2XML(kwargs, cls_name="Settings")
         settings["idle_settings"] = _Dict2XML(idle_settings, cls_name="IdleSettings")
-        kwargs = OrderedDict()
+        kwargs = dict()
         kwargs["registration_info"] = _Dict2XML(
             author=author,
             description=description,
@@ -507,7 +504,8 @@ if __name__ == "__main__":
 
     ts = TaskScheduler()
 
-    for taskname, task in ts.items():
+    for taskname in ts:
+        task = ts[taskname]
         print("=" * 79)
         print("%18s:" % "Task", taskname)
         for name in dir(task):

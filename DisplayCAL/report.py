@@ -30,7 +30,8 @@ def create(report_path, placeholders2data, pack=True, templatename="report"):
     report_html_template.close()
 
     # create report
-    for placeholder, data in placeholders2data.items():
+    for placeholder in placeholders2data:
+        data = placeholders2data[placeholder]
         report_html = report_html.replace(placeholder, data)
 
     for include in (

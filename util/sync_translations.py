@@ -40,7 +40,8 @@ def langmerge(infilename1, infilename2, outfilename):
 
     added = []
     same = []
-    for key, value in dictin2.items():
+    for key in dictin2:
+        value = dictin2[key]
         if key not in dictin1:
             dictin1[key] = value
             added.append(key.encode("UTF-8"))
@@ -116,7 +117,7 @@ def langmerge(infilename1, infilename2, outfilename):
                 if original != cleaned:
                     dictin1[key] = cleaned
 
-    merged = ordereddict.OrderedDict()
+    merged = dict()
     merged["*"] = dictin1["*"] = dictin2["*"]
 
     for key in natsort(dictin2.keys(), False):
@@ -132,7 +133,8 @@ def langmerge(infilename1, infilename2, outfilename):
             print("Orphan: '%s' '%s'" % (key, dictin1[key]))
 
     outstream = BytesIO()
-    for key, value in merged.items():
+    for key in merged:
+        value = merged[key]
         if not USE_INLINE or b"\n" in value:
             outstream.write(b'"%s": |-\n' % key.encode("UTF-8"))
             for line in value.split("\n"):

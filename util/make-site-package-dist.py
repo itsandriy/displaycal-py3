@@ -138,7 +138,8 @@ def copy(src, dst):
 
 # Collect packages
 python_lib = get_python_lib(True)
-for pkg_name, data in pkgs.items():
+for pkg_name in pkgs:
+    data = pkgs[pkg_name]
     print("Checking for package: %s" % pkg_name)
     dylibs = filter(lambda entry: entry.endswith(".dylib"), data)
     fromlist = pkg_name.split(".")

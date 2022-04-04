@@ -20,6 +20,8 @@ from time import localtime, mktime, strftime
 from collections import UserString
 from weakref import WeakValueDictionary
 
+from DisplayCAL.util_dict import dict_sort
+
 if sys.platform == "win32":
     import winreg
 else:
@@ -56,9 +58,6 @@ from DisplayCAL.colormath import NumberTuple
 from DisplayCAL.defaultpaths import iccprofiles, iccprofiles_home
 from DisplayCAL.encoding import get_encodings
 from DisplayCAL.options import test_input_curve_clipping
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
 from DisplayCAL.util_decimal import float2dec
 from DisplayCAL.util_list import intlist
 from DisplayCAL.util_str import hexunescape
@@ -1990,7 +1989,7 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
                     }
                     device_ids = [device_ids[display_no]]
     if edid:
-        for device_id in OrderedDict.fromkeys(device_ids).keys():
+        for device_id in dict.fromkeys(device_ids).keys():
             if device_id:
                 try:
                     profile = colord.get_default_profile(device_id)
@@ -2943,7 +2942,7 @@ class ADict(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        dict.__init__(self, *args, **kwargs)
+        super(ADict, self).__init__(*args, **kwargs)
 
     def __getattr__(self, name):
         if name in self:
@@ -2955,9 +2954,9 @@ class ADict(dict):
         self[name] = value
 
 
-class AODict(ADict, OrderedDict):
+class AODict(ADict):
     def __init__(self, *args, **kwargs):
-        OrderedDict.__init__(self, *args, **kwargs)
+        super(AODict, self).__init__(*args, **kwargs)
 
     def __setattr__(self, name, value):
         if name == "_keys":
@@ -3028,9 +3027,7 @@ class ICCProfileTag(object):
 
     def __repr__(self):
         """t.__repr__() <==> repr(t)"""
-        if isinstance(self, OrderedDict):
-            return OrderedDict.__repr__(self)
-        elif isinstance(self, dict):
+        if isinstance(self, dict):
             return dict.__repr__(self)
         elif isinstance(self, UserString):
             return UserString.__repr__(self)
@@ -3427,7 +3424,7 @@ BEGIN_DATA
         # Invert input/output 1d LUTs
         for channel in (self.input, self.output):
             for e, entries in enumerate(channel):
-                lut = OrderedDict()
+                lut = dict()
                 maxv = len(entries) - 1.0
                 for i, entry in enumerate(entries):
                     lut[entry / 65535.0 * maxv] = i / maxv * 65535
@@ -3436,7 +3433,7 @@ BEGIN_DATA
                 for i in range(len(entries)):
                     if i not in lut:
                         lut[i] = colormath.interp(i, xp, fp)
-                lut.sort()
+                lut = dict_sort(lut)
                 channel[e] = list(lut.values())
 
     def clut_row_apply_per_channel(
@@ -3492,7 +3489,8 @@ BEGIN_DATA
                     fnkwargs["protect"].append(j)
                 for k in indexes:
                     channels[k].append(column[k])
-            for k, values in channels.items():
+            for k in channels:
+                values = channels[k]
                 channels[k] = fn(values, *fnargs, **fnkwargs)
             for j, column in enumerate(row):
                 for k in indexes:
@@ -4605,11 +4603,12 @@ class DictType(ICCProfileTag, AODict):
         recordlen = 16
         keys = ("name", "value")
         for value in self.values():
-            if "display_value" in value:
-                recordlen = 32
-                break
-            elif "display_name" in value:
-                recordlen = 24
+            if isinstance(value, dict):
+                if "display_value" in value:
+                    recordlen = 32
+                    break
+                elif "display_name" in value:
+                    recordlen = 24
         if recordlen > 16:
             keys += ("display_name",)
         if recordlen > 24:
@@ -4629,7 +4628,10 @@ class DictType(ICCProfileTag, AODict):
                 if key == "name":
                     element = item[0]
                 else:
-                    element = item[1].get(key)
+                    if isinstance(item[1], dict):
+                        element = item[1].get(key)
+                    else:
+                        element = item[1]
                 if element is None:
                     offset = 0
                     size = 0
@@ -4680,7 +4682,10 @@ class DictType(ICCProfileTag, AODict):
         if locale and "display_value" in item:
             return item.display_value.get_localized_string(*locale.split("_"))
         else:
-            return item.value
+            if isinstance(item, dict):
+                return item.value
+            else:
+                return item
 
     def setitem(self, name, value, display_name=None, display_value=None):
         """Convenience function to set items
@@ -4849,7 +4854,7 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict):  # ICC v4
                     storage.append(data)
                 tagData.append(uInt32Number_tohex(recordLength))
                 tagData.append(uInt32Number_tohex(storage_offset + offset))
-        tagData.append("".join(storage))
+        tagData.append(b"".join(storage))  # TODO: Are you sure that this needs to be bytes
         return b"".join(tagData)
 
     @tagData.setter
@@ -5568,9 +5573,9 @@ class TagData(object):
         self.size = size
 
     def __contains__(self, item):
-        return item in str(self)
+        return item in bytes(self)
 
-    def __str__(self):
+    def __bytes__(self):
         return self.tagData[self.offset : self.offset + self.size]
 
 
@@ -5662,7 +5667,8 @@ class XYZNumber(AODict):
 
     def __repr__(self):
         XYZ = []
-        for key, value in self.items():
+        for key in self:
+            value = self[key]
             XYZ.append("(%s, %s)" % (repr(key), str(value)))
         return "%s.%s([%s])" % (
             self.__class__.__module__,
@@ -5845,7 +5851,8 @@ class chromaticAdaptionTag(colormath.Matrix3x3, s15Fixed16ArrayType):
         def q(v):
             return s15Fixed16Number(s15Fixed16Number_tohex(v))
 
-        for cat_name, cat_matrix in colormath.cat_matrices.items():
+        for cat_name in colormath.cat_matrices:
+            cat_matrix = colormath.cat_matrices[cat_name]
             if colormath.is_similar_matrix(self.applied(q), cat_matrix.applied(q), 4):
                 return cat_name
 
@@ -5907,7 +5914,8 @@ class NamedColor2Value(object):
     def __repr__(self):
         pcs = []
         dev = []
-        for key, value in self.pcs.items():
+        for key in self.pcs:
+            value = self.pcs[key]
             pcs.append("%s=%s" % (str(key), str(value)))
         for value in self.device:
             dev.append("%s" % value)
@@ -5986,18 +5994,18 @@ class NamedColor2Type(ICCProfileTag, AODict):
                 )
                 keys.append(nc2.name)
                 values.append(nc2)
-        self.update(OrderedDict(list(zip(keys, values))))
+        self.update(dict(list(zip(keys, values))))
 
     def __setattr__(self, name, value):
         object.__setattr__(self, name, value)
 
     @property
     def prefix(self):
-        return str(self._prefix.strip("\0"), "latin-1")
+        return str(self._prefix.strip(b"\0"), "latin-1")
 
     @property
     def suffix(self):
-        return str(self._suffix.strip("\0"), "latin-1")
+        return str(self._suffix.strip(b"\0"), "latin-1")
 
     @property
     def colorValues(self):
@@ -6067,7 +6075,7 @@ class NamedColor2Type(ICCProfileTag, AODict):
         data = list(self.items())[: self.REPR_OUTPUT_SIZE + 1]
         if len(data) > self.REPR_OUTPUT_SIZE:
             data[-1] = ("...", "(remaining elements truncated)")
-        return repr(OrderedDict(data))
+        return repr(dict(data))
 
     @property
     def tagData(self):
@@ -6427,7 +6435,7 @@ class ICCProfile(object):
         """
         # Assemble tag table and tag data
         tagCount = len(self.tags)
-        tagTable = OrderedDict()
+        tagTable = dict()
         tagTableSize = tagCount * 12
         tagsData = []
         tagsDataOffset = []
@@ -6716,13 +6724,15 @@ class ICCProfile(object):
                 del self.tags["chad"]
         # Get all multiLocalizedUnicodeType tags
         mluc = {}
-        for tagname, tag in self.tags.items():
+        for tagname in self.tags:
+            tag = self.tags[tagname]
             if isinstance(tag, MultiLocalizedUnicodeType):
                 mluc[tagname] = str(tag)
         # Set profile version
         self.version = version
         # Convert to textDescriptionType/textType (after setting version to 2.x)
-        for tagname, unistr in mluc.items():
+        for tagname in mluc:
+            unistr = mluc[tagname]
             if tagname == "cprt":
                 self.setCopyright(unistr)
             else:
@@ -6759,13 +6769,15 @@ class ICCProfile(object):
             self.tags["chad"].update(wpam)
         # Get all textDescriptionType tags
         text = {}
-        for tagname, tag in self.tags.items():
+        for tagname in self.tags:
+            tag = self.tags[tagname]
             if tagname == "cprt" or isinstance(tag, TextDescriptionType):
                 text[tagname] = str(tag)
         # Set profile version to 4.3
         self.version = 4.3
         # Convert to multiLocalizedUnicodeType (after setting version to 4.x)
-        for tagname, unistr in text.items():
+        for tagname in text:
+            unistr = text[tagname]
             self.set_localizable_text(tagname, unistr)
         return True
 
@@ -7105,7 +7117,7 @@ class ICCProfile(object):
             ]
         )
         bt1886 = colormath.BT1886(mtx, XYZbp, outoffset, gamma)
-        values = OrderedDict()
+        values = dict()
         for _i, channel in enumerate(("r", "g", "b")):
             self.tags[channel + "TRC"] = CurveType(profile=self)
             self.tags[channel + "TRC"].set_trc(-709, size)
@@ -7113,10 +7125,12 @@ class ICCProfile(object):
                 if not values.get(j):
                     values[j] = []
                 values[j].append(v / 65535.0)
-        for i, (r, g, b) in values.items():
+        for i in values:
+            r, g, b = values[i]
             X, Y, Z = mtx * (r, g, b)
             values[i] = bt1886.apply(X, Y, Z)
-        for i, XYZ in values.items():
+        for i in values:
+            XYZ = values[i]
             rgb = mtx.inverted() * XYZ
             for j, channel in enumerate(("r", "g", "b")):
                 self.tags[channel + "TRC"][i] = max(min(rgb[j] * 65535, 65535), 0)
@@ -7415,7 +7429,8 @@ class ICCProfile(object):
             info["    Calculated checksum"] = (
                 "0x%s" % binascii.hexlify(calculated_id).upper().decode()
             )
-        for sig, tag in self.tags.items():
+        for sig in self.tags:
+            tag = self.tags[sig]
             name = tags.get(sig, "'%s'" % sig)
             if isinstance(tag, chromaticAdaptionTag):
                 info[name] = self.guess_cat(False) or "Unknown"
@@ -7438,7 +7453,8 @@ class ICCProfile(object):
                     )
             elif isinstance(tag, ColorantTableType):
                 info["Colorants (PCS-relative)"] = ""
-                for colorant_name, colorant in tag.items():
+                for colorant_name in tag:
+                    colorant = tag[colorant_name]
                     values = list(colorant.values())
                     if "".join(list(colorant.keys())) == "Lab":
                         values = colormath.Lab2XYZ(*values)
@@ -7458,7 +7474,8 @@ class ICCProfile(object):
             elif isinstance(tag, ParametricCurveType):
                 params = "".join(sorted(tag.params.keys()))
                 tag_params = dict(list(tag.params.items()))
-                for key, value in tag_params.items():
+                for key in tag_params:
+                    value = tag_params[key]
                     if key == "g":
                         fmt = "%3.2f"
                     else:
@@ -7553,19 +7570,22 @@ class ICCProfile(object):
                     if value and key == "prefix":
                         value = "\n".join(value.split(","))
                     info["    %s" % key] = value
-                    elements = OrderedDict()
+                    elements = dict()
                     for subkey in ("display_name", "display_value"):
                         entry = record.get(subkey)
                         if isinstance(entry, MultiLocalizedUnicodeType):
-                            for language, countries in entry.items():
-                                for country, value in countries.items():
+                            for language in entry:
+                                countries = entry[language]
+                                for country in countries:
+                                    value = countries[country]
                                     if country.strip("\0 "):
                                         country = "/" + country
                                     loc = "%s%s" % (language, country)
                                     if loc not in elements:
-                                        elements[loc] = OrderedDict()
+                                        elements[loc] = dict()
                                     elements[loc][subkey] = value
-                    for loc, items in elements.items():
+                    for loc in elements:
+                        items = elements[loc]
                         if len(items) > 1:
                             value = "%s = %s" % tuple(items.values())
                         elif "display_name" in items:
@@ -7619,8 +7639,10 @@ class ICCProfile(object):
                 info["    Illuminant"] = tag.illuminantType.description
             elif isinstance(tag, MultiLocalizedUnicodeType):
                 info[name] = ""
-                for language, countries in tag.items():
-                    for country, value in countries.items():
+                for language in tag:
+                    countries = tag[language]
+                    for country in countries:
+                        value = countries[country]
                         if isinstance(country, bytes):
                             country = country.decode("utf-8")
                         if country.strip("\0 "):
@@ -7634,10 +7656,12 @@ class ICCProfile(object):
                     len(tag.tagData),
                 )
                 i = 1
-                for k, v in tag.items():
+                for k in tag:
+                    v = tag[k]
                     pcsout = []
                     devout = []
-                    for _kk, vv in v.pcs.items():
+                    for _kk in v.pcs:
+                        vv = v.pcs[_kk]
                         pcsout.append("%03.2f" % vv)
                     for vv in v.device:
                         devout.append("%03.2f" % vv)
@@ -8020,7 +8044,8 @@ class ICCProfile(object):
                 self.tags.meta["GAMUT_volume"] = gamut_volume
             if gamut_coverage:
                 # Set gamut coverage
-                for key, factor in gamut_coverage.items():
+                for key in gamut_coverage:
+                    factor = gamut_coverage[key]
                     self.tags.meta["GAMUT_coverage(%s)" % key] = factor
 
     def write(self, stream_or_filename=None):

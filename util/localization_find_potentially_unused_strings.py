@@ -28,7 +28,7 @@ def quote(obj):
 def find_potentially_unused_strings(filepath, keys):
     ldict = jsondict.JSONDict(filepath)
 
-    merged = ordereddict.OrderedDict()
+    merged = dict()
     merged["*"] = ""
 
     count = 0

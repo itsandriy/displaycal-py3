@@ -23,8 +23,6 @@ from DisplayCAL.config import (
 )
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
-from DisplayCAL.ordereddict import OrderedDict
-
 from DisplayCAL.util_decimal import float2dec
 from DisplayCAL.util_os import waccess
 from DisplayCAL.worker import (
@@ -259,7 +257,8 @@ class LUTCanvas(plot.PlotCanvas):
         points = {}
         if not channels:
             channels = {}
-        for channel, channel_name in channels.items():
+        for channel in channels:
+            channel_name = channels[channel]
             if channel_name:
                 self.point_grid[channel] = {}
                 points[channel] = []
@@ -296,7 +295,8 @@ class LUTCanvas(plot.PlotCanvas):
                     j = i * (axis_y / (vcgt["entryCount"] - 1))
                     if not detect_increments:
                         linear_points.append([j, j])
-                    for channel, values in points.items():
+                    for channel in points:
+                        values = points[channel]
                         n = float(data[channel][i]) / maxv * axis_x
                         if (
                             not detect_increments
@@ -369,7 +369,8 @@ class LUTCanvas(plot.PlotCanvas):
         # Note: We need to make sure each point is a float because it
         # might be a decimal.Decimal, which can't be divided by floats!
         self.unique = {}
-        for channel, values in points.items():
+        for channel in points:
+            values = points[channel]
             self.unique[channel] = len(
                 set(round(float(y) / axis_y * irange[-1]) for x, y in values)
             )
@@ -400,7 +401,8 @@ class LUTCanvas(plot.PlotCanvas):
         linear_points = [(i, int(round(v / axis_y * maxv))) for i, v in linear_points]
         seen_values = []
         seen_labels = []
-        for channel, values in points.items():
+        for channel in points:
+            values = points[channel]
             channel_label = channels[channel]
             if not identical:
                 color = self.colors.get(colorspace.decode("utf-8") + "_" + channel_label, "white")
@@ -2138,7 +2140,7 @@ class LUTFrame(BaseFrame):
         if self.client.last_PointLabel is not None:
             self.client._drawPointLabel(self.client.last_PointLabel)  # erase old
             self.client.last_PointLabel = None
-        channels = OrderedDict()
+        channels = dict()
         for channel, toggle in enumerate(self.toggles):
             channels[channel] = (
                 toggle.IsShown() and toggle.GetValue() and toggle.Label or ""

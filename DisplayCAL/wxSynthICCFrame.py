@@ -19,9 +19,7 @@ from DisplayCAL.debughelpers import Error
 from DisplayCAL.log import log
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
+from DisplayCAL.util_dict import dict_sort
 from DisplayCAL.util_io import Files
 from DisplayCAL.util_os import waccess
 from DisplayCAL.util_str import safe_str
@@ -46,7 +44,7 @@ from DisplayCAL.wxwindows import (
     wx,
 )
 from DisplayCAL.wxfixes import TempXmlResource
-from DisplayCAL.wxLUT3DFrame import LUT3DFrame
+from DisplayCAL.wxLUT3DFrame import LUT3DFrame, LUT3DMixin
 from DisplayCAL import floatspin
 from DisplayCAL import xh_floatspin
 from DisplayCAL import xh_bitmapctrls
@@ -54,16 +52,10 @@ from DisplayCAL import xh_bitmapctrls
 from wx import xrc
 
 
-class SynthICCFrame(BaseFrame):
-
+class SynthICCFrame(BaseFrame, LUT3DMixin):
     """Synthetic ICC creation window"""
 
     cfg = config.cfg
-
-    # Shared methods from 3D LUT UI
-    for lut3d_ivar_name, lut3d_ivar in LUT3DFrame.__dict__.items():
-        if lut3d_ivar_name.startswith("lut3d_"):
-            locals()[lut3d_ivar_name] = lut3d_ivar
 
     def __init__(self, parent=None):
         self.res = TempXmlResource(get_data_path(os.path.join("xrc", "synthicc.xrc")))
@@ -383,10 +375,10 @@ class SynthICCFrame(BaseFrame):
             cat_choices = ["Bradford", "CAT02BS"]
         else:
             cat_choices = ["Bradford"]
-        cat_choices_ab = OrderedDict(
+        cat_choices_ab = dict(
             get_mapping(((k, k) for k in colormath.cat_matrices), cat_choices)
         )
-        cat_choices_ba = OrderedDict((v, k) for k, v in cat_choices_ab.items())
+        cat_choices_ba = dict((v, k) for k, v in cat_choices_ab.items())
         cat_ctrl = wx.Choice(dlg, -1, choices=list(cat_choices_ab.values()))
         cat_ctrl.SetStringSelection(cat_choices_ab[self.cat])
         dlg.sizer3.Add(cat_ctrl, 0, flag=wx.TOP | wx.ALIGN_LEFT, border=8)
@@ -549,7 +541,7 @@ class SynthICCFrame(BaseFrame):
             except Error as exception:
                 show_result_dialog(exception, self)
             else:
-                RGB_XYZ_extracted.sort()
+                RGB_XYZ_extracted = dict_sort(RGB_XYZ_extracted)
                 colors.extend(list(RGB_XYZ_extracted.values()))
                 luminance = ti3.queryv1("LUMINANCE_XYZ_CDM2")
                 if luminance:
@@ -1140,13 +1132,13 @@ class SynthICCFrame(BaseFrame):
             [lang.getstr("trc.type.relative"), lang.getstr("trc.type.absolute")]
         )
 
-        self.profile_classes = OrderedDict(
+        self.profile_classes = dict(
             get_mapping(list(ICCP.profileclass.items()), ["mntr", "scnr"])
         )
         self.profile_class_ctrl.SetItems(list(self.profile_classes.values()))
         self.profile_class_ctrl.SetSelection(0)
 
-        self.tech = OrderedDict(
+        self.tech = dict(
             get_mapping(
                 [("", "unspecified")] + list(ICCP.tech.items()),
                 [
@@ -1169,7 +1161,7 @@ class SynthICCFrame(BaseFrame):
         self.tech_ctrl.SetItems(list(self.tech.values()))
         self.tech_ctrl.SetSelection(0)
 
-        self.ciis = OrderedDict(
+        self.ciis = dict(
             get_mapping(
                 [("", "unspecified")] + list(ICCP.ciis.items()),
                 ["", "scoe", "sape", "fpce"],

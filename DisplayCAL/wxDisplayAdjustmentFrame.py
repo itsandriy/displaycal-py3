@@ -30,9 +30,6 @@ from DisplayCAL.config import enc
 from DisplayCAL.log import get_file_logger
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
 from DisplayCAL.util_list import intlist
 from DisplayCAL.util_str import wrap
 from DisplayCAL.wxwindows import (
@@ -549,8 +546,8 @@ class DisplayAdjustmentPanel(wx_Panel):
         self.GetSizer().Add(self.title_txt)
         self.sizer = wx.FlexGridSizer(0, 2, 0, 0)
         self.GetSizer().Add(self.sizer, flag=wx.TOP, border=8)
-        self.gauges = OrderedDict()
-        self.txt = OrderedDict()
+        self.gauges = dict()
+        self.txt = dict()
         if ctrltype == "check_all":
             txt = wx.StaticText(
                 self,
@@ -898,7 +895,8 @@ class DisplayAdjustmentFrame(windowcls):
             for keycode in keycodes:
                 self.id_to_keycode[wx.Window.NewControlId()] = keycode
             accels = []
-            for id, keycode in self.id_to_keycode.items():
+            for id in self.id_to_keycode:
+                keycode = self.id_to_keycode[id]
                 self.Bind(wx.EVT_MENU, self.key_handler, id=id)
                 accels.append((wx.ACCEL_NORMAL, keycode, id))
                 if keycode == wx.WXK_TAB:

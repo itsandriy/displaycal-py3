@@ -28,7 +28,8 @@ def create_testcharts(overwrite=False):
         total = config.get_total_patches(
             4, 4, single_channel, gray_channel, bcc_steps, bcc_steps, 0
         )
-        for name, (filename, demphasis) in precond.items():
+        for name in precond:
+            filename, demphasis = precond[name]
             cwd = os.path.join(root, meta.name, "ti1")
             outname = "d3-e4-s%i-g%i-m0-f%i-c%s" % (
                 single_channel,

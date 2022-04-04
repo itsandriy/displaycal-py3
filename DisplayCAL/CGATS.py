@@ -270,7 +270,6 @@ class CGATS(dict):
         self.file_identifier = file_identifier.strip()
         self.emit_keywords = emit_keywords
         self.root = self
-        self._keys = []
 
         if cgats:
             if isinstance(cgats, list):
@@ -436,11 +435,6 @@ class CGATS(dict):
         self.setmodified()
 
     def __delitem__(self, name):
-        if (
-            self.type not in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION")
-            and name in self._keys
-        ):
-            self._keys.remove(name)
         dict.__delitem__(self, name)
         self.setmodified()
 
@@ -564,11 +558,6 @@ class CGATS(dict):
             self[name] = value
 
     def __setitem__(self, name, value):
-        if (
-            self.type not in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION")
-            and name not in self
-        ):
-            self._keys.append(name)
         dict.__setitem__(self, name, value)
         self.setmodified()
 
@@ -606,7 +595,7 @@ class CGATS(dict):
             if self.type in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION"):
                 iterable = self
             else:
-                iterable = self._keys
+                iterable = self.keys()
             for key in iterable:
                 value = self[key]
                 if isinstance(value, str):
@@ -752,7 +741,8 @@ class CGATS(dict):
         if not data:
             return False, False
         valueslist = []
-        for _key, item in data.items():
+        for _key in data:
+            item = data[_key]
             values = []
             for field_name in field_names:
                 values.append(item[field_name])
@@ -1917,11 +1907,6 @@ Transform {
         if type(key) == int and key != maxindex:
             self.moveby1(key + 1, -1)
         name = len(self) - 1
-        if (
-            self.type not in (b"DATA", b"DATA_FORMAT", b"KEYWORDS", b"SECTION")
-            and name in self._keys
-        ):
-            self._keys.remove(name)
         dict.pop(self, name)
         self.setmodified()
         return result
@@ -1973,7 +1958,8 @@ Transform {
                 data.parent.DATA_FORMAT.add_data((label,))
 
         # Add L*a*b* to each sample
-        for _key, sample in data.items():
+        for _key in data:
+            sample = data[_key]
             cie_values = [sample[label] for label in cie_labels]
             Lab = colormath.XYZ2Lab(*cie_values)
             for i, label in enumerate(Lab_data_format):
@@ -2004,7 +1990,8 @@ Transform {
                 channel = color_rep[0][i : i + 1]
                 device_labels.append(color_rep[0] + b"_" + channel)
             remove = []
-            for _key, sample in data.items():
+            for _key in data:
+                sample = data[_key]
                 cie_values = [sample[label.decode("utf-8")] for label in cie_labels]
                 # Check if zero
                 device_label_values = sample.queryv1(device_labels)

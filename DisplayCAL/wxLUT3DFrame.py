@@ -1948,7 +1948,8 @@ class LUT3DFrame(BaseFrame, LUT3DMixin):
                 fileMask=lang.getstr("filetype.icc") + "|*.icc;*.icm",
             )
             ctrl = getattr(self, "%s_profile_ctrl" % which)
-            for name, value in kwargs.items():
+            for name in kwargs:
+                value = kwargs[name]
                 setattr(ctrl, name, value)
 
         self.lut3d_setup_language()

@@ -307,7 +307,8 @@ def replace_placeholders(
     }
     mapping.update(iterable or {})
 
-    for key, val in mapping.items():
+    for key in mapping:
+        val = mapping[key]
         tmpl_data = tmpl_data.replace(f"${{{key}}}", val)
 
     tmpl_data = tmpl_data.replace(
@@ -1268,7 +1269,7 @@ def setup():
                             0
                         ]
 
-                        for attrname, value in digest.attributes.items():
+                        for attrname in digest.attributes:
                             # Remove existing hashes
                             digest.removeAttribute(attrname)
 

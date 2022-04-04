@@ -193,11 +193,12 @@ class UntetheredFrame(BaseFrame):
             for keycode in keycodes:
                 self.id_to_keycode[wx.Window.NewControlId()] = keycode
             accels = []
-            for id, keycode in self.id_to_keycode.items():
-                self.Bind(wx.EVT_MENU, self.key_handler, id=id)
-                accels.append((wx.ACCEL_NORMAL, keycode, id))
+            for id_ in self.id_to_keycode:
+                keycode = self.id_to_keycode[id_]
+                self.Bind(wx.EVT_MENU, self.key_handler, id=id_)
+                accels.append((wx.ACCEL_NORMAL, keycode, id_))
                 if keycode == wx.WXK_TAB:
-                    accels.append((wx.ACCEL_SHIFT, keycode, id))
+                    accels.append((wx.ACCEL_SHIFT, keycode, id_))
             self.SetAcceleratorTable(wx.AcceleratorTable(accels))
         else:
             self.Bind(wx.EVT_CHAR_HOOK, self.key_handler)

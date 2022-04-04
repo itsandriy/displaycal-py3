@@ -503,7 +503,8 @@ class Object(DBusObject):
     def properties(self):
         try:
             properties = {}
-            for key, value in self._properties.items():
+            for key in self._properties:
+                value = self._properties[key]
                 if key == "Profiles":
                     value = [Profile(object_path) for object_path in value]
                 properties[key] = value

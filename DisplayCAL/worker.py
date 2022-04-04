@@ -161,9 +161,7 @@ from DisplayCAL.options import (
     test_require_sensor_cal,
     verbose,
 )
-from DisplayCAL.ordereddict import OrderedDict
 
-# from collections import OrderedDict
 from DisplayCAL.network import LoggingHTTPRedirectHandler, NoHTTPRedirectHandler
 from DisplayCAL.patterngenerators import (
     PrismaPatternGeneratorClient,
@@ -172,6 +170,7 @@ from DisplayCAL.patterngenerators import (
     WebWinHTTPPatternGeneratorServer,
 )
 from DisplayCAL.util_decimal import stripzeros
+from DisplayCAL.util_dict import dict_sort
 from DisplayCAL.util_http import encode_multipart_formdata
 from DisplayCAL.util_io import (
     EncodedWriter,
@@ -324,7 +323,8 @@ def add_keywords_to_cgats(cgats, keywords):
     """Add keywords to CGATS"""
     if not isinstance(cgats, CGATS.CGATS):
         cgats = CGATS.CGATS(cgats)
-    for keyword, value in keywords.items():
+    for keyword in keywords:
+        value = keywords[keyword]
         cgats[0].add_keyword(keyword, value)
     return cgats
 
@@ -569,7 +569,8 @@ def check_ti3(ti3, print_debuginfo=True):
     suspicious = []
     prev = {}
     delta = {}
-    for index, item in data.items():
+    for index in data:
+        item = data[index]
         (sRGBLab, Lab, delta_to_sRGB, criteria1, debuginfo) = check_ti3_criteria1(
             (item["RGB_R"], item["RGB_G"], item["RGB_B"]),
             (item["XYZ_X"], item["XYZ_Y"], item["XYZ_Z"]),
@@ -653,7 +654,7 @@ def create_shaper_curves(
     cat="Bradford",
 ):
     """Create input (device to PCS) shaper curves"""
-    RGB_XYZ.sort()
+    RGB_XYZ = dict_sort(RGB_XYZ)
     R_R = []
     G_G = []
     B_B = []
@@ -662,7 +663,8 @@ def create_shaper_curves(
     B_Z = []
     XYZbp = None
     XYZwp = None
-    for (R, G, B), (X, Y, Z) in RGB_XYZ.items():
+    for (R, G, B) in RGB_XYZ:
+        X, Y, Z = RGB_XYZ[(R, G, B)]
         X, Y, Z = colormath.adapt(X, Y, Z, RGB_XYZ[(100, 100, 100)], cat=cat)
         if 100 > R > 0 and min(X, Y, Z) < 100.0 / 65535:
             # Skip non-black/non-white gray values not encodable in 16-bit
@@ -1486,7 +1488,8 @@ def insert_ti_patches_omitting_RGB_duplicates(cgats1, cgats2_path, logfn=print):
     # Collect all preconditioning point datasets not in data
     cgats1_data.vmaxlen = data.vmaxlen
     cgats1_datasets = []
-    for i, dataset in cgats1_data.items():
+    for i in cgats1_data:
+        dataset = cgats1_data[i]
         if str(dataset) not in rgbdata:
             # Not a duplicate
             cgats1_datasets.append(dataset)
@@ -1817,7 +1820,8 @@ class FilteredStream:
             if write:
                 if self.data_encoding and not isinstance(line, str):
                     line = line.decode(self.data_encoding, self.errors)
-                for search, sub in self.substitutions.items():
+                for search in self.substitutions:
+                    sub = self.substitutions[search]
                     line = re.sub(search, sub, line)
                 if self.file_encoding:
                     line = line.encode(self.file_encoding, self.errors)
@@ -5986,7 +5990,7 @@ END_DATA
                 gnome_sm_flags = 1 | 2 | 4 | 8
                 ifaces = getattr(self, "dbus_ifaces", None)
                 if not ifaces:
-                    ifaces = OrderedDict(
+                    ifaces = dict(
                         [
                             (
                                 gnome_sm,
@@ -6007,7 +6011,8 @@ END_DATA
                         ]
                     )
                     self.dbus_ifaces = ifaces
-                for bus_name, iface_dict in ifaces.items():
+                for bus_name in ifaces:
+                    iface_dict = ifaces[bus_name]
                     if bus_name.startswith("org.freedesktop."):
                         skip = False
                         for precedence in iface_dict.get("precedence", []):
@@ -6265,7 +6270,8 @@ BEGIN_DATA
                                             RGB[i] = []
                                         RGB[i].append(ramp[j][i] / 65535.0)
                                 # Get RGB from dictionary
-                                for i, (R, G, B) in RGB.items():
+                                for i in RGB:
+                                    R, G, B = RGB[i]
                                     cal += "%f %f %f %f\n" % (i / 255.0, R, G, B)
                                 cal += "END_DATA"
                                 # Write out .cal file
@@ -8995,7 +9001,7 @@ while 1:
             features = self.get_instrument_features()
             instrument_id = features.get("id", self.get_instrument_name())
         if instrument_id:
-            measurement_modes = self.measurement_modes.get(instrument_id, OrderedDict())
+            measurement_modes = self.measurement_modes.get(instrument_id, dict())
             if not measurement_modes:
                 result = self.exec_cmd(
                     get_argyll_util("spotread"),
@@ -9134,7 +9140,7 @@ usage: spotread [-options] [logfile]
             # V1.7) with some duplicates
             # Use Argyll V1.7.1 mapping (which has no duplicate keys) for
             # Argyll before V1.7
-            return OrderedDict(
+            return dict(
                 [
                     ("c", "CRT"),
                     ("m", "Plasma"),
@@ -9177,9 +9183,10 @@ usage: spotread [-options] [logfile]
             log_output=False,
         )
         if isinstance(result, Exception):
+            traceback.print_exc()
             print(result)
-            return OrderedDict()
-        technology_strings = OrderedDict()
+            return dict()
+        technology_strings = dict()
         in_tech = False
         for line in self.output:
             parts = line.strip().split(None, 1)
@@ -9739,7 +9746,8 @@ usage: spotread [-options] [logfile]
 
             # Get supported instruments USB device IDs
             usb_ids = {}
-            for instrument_name, instrument in all_instruments.items():
+            for instrument_name in all_instruments:
+                instrument = all_instruments[instrument_name]
                 if instrument.get("usb_ids"):
                     for entry in instrument.get("usb_ids"):
                         usb_id = (entry["vid"], entry["pid"])
@@ -9766,7 +9774,8 @@ usage: spotread [-options] [logfile]
                     except wmi.x_wmi as exception:
                         self.log(exception)
                         continue
-                    for usb_id, instrument_names in usb_ids.items():
+                    for usb_id in usb_ids:
+                        instrument_names = usb_ids[usb_id]
                         hardware_id = r"USB\VID_%04X&PID_%04X" % usb_id
                         if device_id.startswith(hardware_id):
                             # Found supported instrument
@@ -10060,7 +10069,7 @@ usage: spotread [-options] [logfile]
                     omit_manufacturer=True,
                 ),
             ]
-            for device_id in OrderedDict.fromkeys(device_ids).keys():
+            for device_id in dict.fromkeys(device_ids).keys():
                 if device_id:
                     # NOTE: This can block
                     result = self._install_profile_colord(profile, device_id)
@@ -11635,7 +11644,7 @@ usage: spotread [-options] [logfile]
                 is_hq_cal = "qh" in options_dispcal
 
         dEs = []
-        RGB_XYZ.sort()
+        RGB_XYZ = dict_sort(RGB_XYZ)
         for X, Y, Z in RGB_XYZ.values():
             if Y >= 1:
                 X, Y, Z = colormath.adapt(X, Y, Z, RGB_XYZ[(100, 100, 100)], cat=cat)
@@ -11721,7 +11730,7 @@ usage: spotread [-options] [logfile]
         # Quantize RGB to make lookup easier
         # XXX Note that round(50 * 2.55) = 127, but
         # round(50 / 100 * 255) = 128 (the latter is what we want)!
-        remaining = OrderedDict(
+        remaining = dict(
             [
                 (tuple(round(k / 100.0 * 255) for k in RGB), XYZ)
                 for RGB, XYZ in remaining.items()
@@ -11729,7 +11738,7 @@ usage: spotread [-options] [logfile]
         )
 
         # Need to sort so columns increase (fastest to slowest) B G R
-        remaining.sort()
+        remaining = dict_sort(remaining)
 
         # Build initial cLUT
         # Try to fill a 5x5x5 or 3x3x3 cLUT
@@ -12037,7 +12046,8 @@ usage: spotread [-options] [logfile]
 
                     if not bpc:
                         XYZbp = None
-                        for (R, G, B), (X, Y, Z) in RGB_XYZ.items():
+                        for (R, G, B) in RGB_XYZ:
+                            X, Y, Z = RGB_XYZ[(R, G, B)]
                             if R == G == B == 0:
                                 XYZbp = [v / 100 for v in (X, Y, Z)]
                                 XYZbp = colormath.adapt(
@@ -12181,7 +12191,8 @@ usage: spotread [-options] [logfile]
             )
         if tags and tags is not True:
             # Add custom tags
-            for tagname, tag in tags.items():
+            for tagname in tags:
+                tag = tags[tagname]
                 if tagname == "mmod":
                     profile.device["manufacturer"] = (
                         b"\0\0" + tag["manufacturer"][1] + tag["manufacturer"][0]
@@ -14873,7 +14884,8 @@ usage: spotread [-options] [logfile]
 
         # Uninhibit session if needed
         if hasattr(self, "dbus_ifaces"):
-            for bus_name, iface_dict in self.dbus_ifaces.items():
+            for bus_name in self.dbus_ifaces:
+                iface_dict = self.dbus_ifaces[bus_name]
                 cookie = iface_dict.get("cookie")
                 if cookie:
                     # Uninhibit. Note that if (e.g.) screensaver timeout has
@@ -15161,6 +15173,7 @@ usage: spotread [-options] [logfile]
                         gamut_coverage[key] = float(match.groups()[0]) / 100.0
                         break
         except Exception:
+            traceback.print_exc()
             worker.log(traceback.format_exc())
 
     def calibrate(self, remove=False):
@@ -16133,9 +16146,9 @@ BEGIN_DATA
             wp = [n * 100.0 for n in list(profile.tags.wtpt.values())]
             if color_rep == "LAB":
                 wp = colormath.XYZ2Lab(*wp)
-                wp = OrderedDict((("L", wp[0]), ("a", wp[1]), ("b", wp[2])))
+                wp = dict((("L", wp[0]), ("a", wp[1]), ("b", wp[2])))
             else:
-                wp = OrderedDict((("X", wp[0]), ("Y", wp[1]), ("Z", wp[2])))
+                wp = dict((("X", wp[0]), ("Y", wp[1]), ("Z", wp[2])))
             wp = [wp] * int(add_white_patches)
             print("Added %i white patches" % add_white_patches)
         else:

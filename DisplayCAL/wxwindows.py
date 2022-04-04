@@ -59,9 +59,6 @@ from DisplayCAL.debughelpers import (
 from DisplayCAL.log import log as log_
 from DisplayCAL.meta import name as appname
 from DisplayCAL.options import debug
-from DisplayCAL.ordereddict import OrderedDict
-
-# from collections import OrderedDict
 from DisplayCAL.network import ScriptingClientSocket, get_network_addr
 from DisplayCAL.util_io import StringIOu as StringIO
 from DisplayCAL.util_os import get_program_file, launch_file, waccess
@@ -1108,7 +1105,7 @@ class BaseFrame(wx.Frame):
                                 if responseformats[conn] != "plain":
                                     response = []
                                 else:
-                                    response = OrderedDict()
+                                    response = dict()
                                 for name in sorted(defaults):
                                     value = getcfg(name, False)
                                     if value is not None:
@@ -1135,7 +1132,7 @@ class BaseFrame(wx.Frame):
                             if responseformats[conn] != "plain":
                                 response = []
                             else:
-                                response = OrderedDict()
+                                response = dict()
                             for name in sorted(defaults):
                                 if responseformats[conn] != "plain":
                                     response.append(
@@ -1151,7 +1148,8 @@ class BaseFrame(wx.Frame):
                                     ("values", config.valid_values),
                                 ):
                                     valid = response[section] = []
-                                    for name, values in options.items():
+                                    for name in options:
+                                        values = options[name]
                                         valid.append({"name": name, "values": values})
                             else:
                                 response = {
@@ -1160,9 +1158,11 @@ class BaseFrame(wx.Frame):
                                 }
                             if responseformats[conn] == "plain":
                                 valid = []
-                                for section, options in response.items():
+                                for section in response:
+                                    options = response[section]
                                     valid.append("[%s]" % section)
-                                    for name, values in options.items():
+                                    for name in options:
+                                        values = options[name]
                                         valid.append(
                                             "%s = %s"
                                             % (
@@ -6271,9 +6271,10 @@ class ProgressDialog(wx.Dialog):
         for keycode in keycodes:
             self.id_to_keycode[wx.Window.NewControlId()] = keycode
         accels = []
-        for id, keycode in self.id_to_keycode.items():
-            self.Bind(wx.EVT_MENU, keyhandler or self.key_handler, id=id)
-            accels.append((wx.ACCEL_NORMAL, keycode, id))
+        for id_ in self.id_to_keycode:
+            keycode = self.id_to_keycode[id_]
+            self.Bind(wx.EVT_MENU, keyhandler or self.key_handler, id=id_)
+            accels.append((wx.ACCEL_NORMAL, keycode, id_))
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
         self.msg.SetMaxFontSize(11)
@@ -7906,7 +7907,8 @@ def format_ui_element(child, format="plain"):
     if child.TopLevelParent:
         if not hasattr(child.TopLevelParent, "_win2name"):
             child.TopLevelParent._win2name = {}
-            for name, attr in child.TopLevelParent.__dict__.items():
+            for name in child.TopLevelParent.__dict__:
+                attr = child.TopLevelParent.__dict__[name]
                 if isinstance(attr, wx.Window):
                     child.TopLevelParent._win2name[attr] = name
         name = child.TopLevelParent._win2name.get(child, child.Name)

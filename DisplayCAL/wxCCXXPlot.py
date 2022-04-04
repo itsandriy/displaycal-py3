@@ -161,7 +161,8 @@ class CCXXPlot(wx.Frame):
             y_max = 1
 
             Y_max = 0
-            for i, sample in data.items():
+            for i in data:
+                sample = data[i]
                 # Get nm and spectral power
                 values = []
                 x = x_min

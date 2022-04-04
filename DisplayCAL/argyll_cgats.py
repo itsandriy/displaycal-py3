@@ -11,8 +11,6 @@ from time import strftime
 
 from DisplayCAL.debughelpers import Error
 from DisplayCAL.options import debug
-from DisplayCAL.ordereddict import OrderedDict
-from DisplayCAL.util_io import StringIOu as StringIO
 from DisplayCAL import CGATS
 from DisplayCAL import ICCProfile as ICCP
 from DisplayCAL import colormath
@@ -460,14 +458,15 @@ END_DATA"""
     else:
         if logfn:
             logfn("Extracting neutrals from %s" % ti3.filename)
-    RGB_XYZ_extracted = OrderedDict()
-    RGB_XYZ_remaining = OrderedDict()
+    RGB_XYZ_extracted = dict()
+    RGB_XYZ_remaining = dict()
     dupes = {}
     if include_neutrals:
         white = ti3.get_white_cie("XYZ")
         str_thresh = str(neutrals_ab_threshold)
         round_digits = len(str_thresh[str_thresh.find(".") + 1:])
-    for i, item in ti3.DATA.items():
+    for i in ti3.DATA:
+        item = ti3.DATA[i]
         if not i:
             # Check if fields are missing
             for prefix in ("RGB", "XYZ"):
@@ -520,7 +519,8 @@ END_DATA"""
             RGB_XYZ_extracted[RGB] = XYZ
         elif RGB not in [(100.0, 100.0, 100.0), (0.0, 0.0, 0.0)]:
             RGB_XYZ_remaining[RGB] = XYZ
-    for RGB, count in dupes.items():
+    for RGB in dupes:
+        count = dupes[RGB]
         for RGB_XYZ in (RGB_XYZ_extracted, RGB_XYZ_remaining):
             if RGB in RGB_XYZ:
                 # Average values

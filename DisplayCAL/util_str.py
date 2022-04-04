@@ -644,7 +644,8 @@ def wrap(text, width=70):
 
 
 def test():
-    for k, v in subst.items():
+    for k in subst:
+        v = subst[k]
         print(k, v)
 
 
