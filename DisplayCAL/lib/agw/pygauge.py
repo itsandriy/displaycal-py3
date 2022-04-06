@@ -261,7 +261,7 @@ class PyGauge(wx.PyWindow):
                 c1, c2 = gradient
                 w = rect.width * (float(self._valueSorted[i]) / self._range)
                 r = copy.copy(rect)
-                r.width = w
+                r.width = int(w)
                 dc.GradientFillLinear(r, c1, c2, wx.EAST)
         else:
             for i, colour in enumerate(self._barColourSorted):
@@ -269,7 +269,7 @@ class PyGauge(wx.PyWindow):
                 dc.SetPen(wx.Pen(colour))
                 w = rect.width * (float(self._valueSorted[i]) / self._range)
                 r = copy.copy(rect)
-                r.width = w
+                r.width = int(w)
                 dc.DrawRectangleRect(r)
 
     def OnTimer(self, event):
