@@ -98,6 +98,7 @@ Road Map
 
 Some ideas on where to focus on future development:
 
+- Add DisplayCAL to PyPI (#83).
 - Try to move the UI to Qt. This is a big ticket. The motivation behind that is that I'm
   much more experienced with Qt. In fact, I have zero experience with ``wxPython``.
 - Make the code fully compliant with PEP8 with the modification of hard wrapping the
