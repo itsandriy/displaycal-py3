@@ -538,14 +538,14 @@ class LUTCanvas(plot.PlotCanvas):
             )  # upper right corner user scale (xmax,ymax)
         ptx, pty, rectWidth, rectHeight = self._point2ClientCoord(p1, p2)
         # allow graph to overlap axis lines by adding units to width and height
-        dc.SetClippingRegion(ptx, pty, rectWidth + 2, rectHeight + 2)
+        dc.SetClippingRegion(int(ptx), int(pty), int(rectWidth + 2), int(rectHeight + 2))
 
         dc.SetPen(wx.Pen(wx.WHITE, 1, wx.DOT))
         dc.SetBrush(wx.Brush(wx.WHITE, wx.SOLID))
 
         sx, sy = mDataDict["scaledXY"]  # Scaled x, y of closest point
-        dc.DrawLine(0, sy, ptx + rectWidth + 2, sy)
-        dc.DrawLine(sx, 0, sx, pty + rectHeight + 2)
+        dc.DrawLine(0, int(sy), int(ptx + rectWidth + 2), int(sy))
+        dc.DrawLine(int(sx), 0, int(sx), int(pty + rectHeight + 2))
 
     def GetClosestPoints(self, pntXY, pointScaled=True):
         """Returns list with
