@@ -331,7 +331,7 @@ class AnimatedBitmap(wx.PyControl):
             self.Refresh()
 
     def Play(self, fps=24):
-        self._timer.Start(1000.0 / fps)
+        self._timer.Start(int(1000.0 / fps))
 
     def Stop(self):
         self._timer.Stop()
