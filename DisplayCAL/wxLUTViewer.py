@@ -249,7 +249,7 @@ class LUTCanvas(plot.PlotCanvas):
 
         lines = [PolyBox(0, 0, axis_x, axis_y, colour=GRIDCOLOUR, width=1)]
 
-        # Use a point grid so we can get the whole set of output values for
+        # Use a point grid, so we can get the whole set of output values for
         # each channel for any single given input value.
         # The point grid keys are quantized to 12 bits to avoid floating point
         # inaccuracy
@@ -745,8 +745,9 @@ class LUTCanvas(plot.PlotCanvas):
 
 
 class LUTFrame(BaseFrame):
-    def __init__(self, *args, **kwargs):
+    """LUTFrame."""
 
+    def __init__(self, *args, **kwargs):
         if len(args) < 3 and "title" not in kwargs:
             kwargs["title"] = lang.getstr("calibration.lut_viewer.title")
         if "name" not in kwargs:

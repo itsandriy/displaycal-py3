@@ -4354,7 +4354,7 @@ class CustomGrid(wx.grid.Grid):
         dc = wx.PaintDC(window)
 
         try:
-           cols = self.CalcColLabelsExposed(window.GetUpdateRegion())
+            cols = self.CalcColLabelsExposed(window.GetUpdateRegion())
         except wxAssertionError:
             return
 
@@ -4886,8 +4886,8 @@ class CustomCellRenderer(wx.grid.PyGridCellRenderer):
                 if not rowselect:
                     w = 60 + rect[3] * 2
                     if rect.Width > w:
-                        rect.Left += (rect.Width - w) / 2.0
-                        rect.Width = w
+                        rect.Left += int((rect.Width - w) / 2.0)
+                        rect.Width = int(w)
                 offset = 1  # Selection offset from cell boundary
                 cb = 2  # Cursor border
                 left = not rowselect or col == 0 or not grid.GetColLabelValue(col - 1)
@@ -4916,47 +4916,55 @@ class CustomCellRenderer(wx.grid.PyGridCellRenderer):
                     offset *= scale
                     cb *= scale
                     x, y, w, h = 0, 0, rect[2] * scale, rect[3] * scale
-                    self._selectionbitmaps[key] = wx.EmptyBitmap(w, h)
+                    self._selectionbitmaps[key] = wx.EmptyBitmap(int(w), int(h))
                     paintdc = dc
                     dc = mdc = wx.MemoryDC(self._selectionbitmaps[key])
                     dc.SetBrush(wx.Brush(bgcolor))
                     dc.SetPen(wx.TRANSPARENT_PEN)
-                    dc.DrawRectangle(x, y, w, h)
+                    dc.DrawRectangle(int(x), int(y), int(w), int(h))
                     dc.SetBrush(wx.Brush(color))
                     dc.SetPen(wx.TRANSPARENT_PEN)
                     draw = dc.DrawRoundedRectangle
                     draw(
-                        x + offset,
-                        y + offset,
-                        w - offset * 2,
-                        h - offset * 2,
-                        h / 2.0 - offset,
+                        int(x + offset),
+                        int(y + offset),
+                        int(w - offset * 2),
+                        int(h - offset * 2),
+                        int(h / 2.0 - offset),
                     )
                     if not left:
-                        dc.DrawRectangle(x, y + offset, h / 2.0, h - offset * 2)
+                        dc.DrawRectangle(
+                            int(x), int(y + offset), int(h / 2.0), int(h - offset * 2)
+                        )
                     if not right:
                         dc.DrawRectangle(
-                            x + w - h / 2.0, y + offset, h / 2.0, h - offset * 2
+                            int(x + w - h / 2.0),
+                            int(y + offset),
+                            int(h / 2.0),
+                            int(h - offset * 2),
                         )
                     if not isSelected and isCursor:
                         dc.SetBrush(wx.Brush(bgcolor))
                         draw(
-                            x + offset + cb,
-                            y + offset + cb,
-                            w - (offset + cb) * 2,
-                            h - (offset + cb) * 2,
-                            h / 2.0 - (offset + cb),
+                            int(x + offset + cb),
+                            int(y + offset + cb),
+                            int(w - (offset + cb) * 2),
+                            int(h - (offset + cb) * 2),
+                            int(h / 2.0 - (offset + cb)),
                         )
                         if not left:
                             dc.DrawRectangle(
-                                x, y + offset + cb, h / 2.0, h - (offset + cb) * 2
+                                int(x),
+                                int(y + offset + cb),
+                                int(h / 2.0),
+                                int(h - (offset + cb) * 2),
                             )
                         if not right:
                             dc.DrawRectangle(
-                                x + w - h / 2.0,
-                                y + offset + cb,
-                                h / 2.0,
-                                h - (offset + cb) * 2,
+                                int(x + w - h / 2.0),
+                                int(y + offset + cb),
+                                int(h / 2.0),
+                                int(h - (offset + cb) * 2),
                             )
                     mdc.SelectObject(wx.NullBitmap)
                     dc = paintdc
@@ -7564,7 +7572,9 @@ class TwoWaySplitter(FourWaySplitter):
         sashwidth, sashheight = self._sashbitmap.GetSize()
 
         dc.DrawRectangle(splitx, 0, sashwidth, height)
-        dc.DrawBitmap(self._sashbitmap, int(splitx), int(height / 2 - sashheight / 2), True)
+        dc.DrawBitmap(
+            self._sashbitmap, int(splitx), int(height / 2 - sashheight / 2), True
+        )
 
     def GetExpandedSize(self):
         return self._expandedsize
