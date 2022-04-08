@@ -2514,9 +2514,9 @@ END_DATA"""
             self.tc_multi_bcc_cb.SetValue(bool(getcfg("tc_multi_bcc")))
         self.tc_multi_steps_handler2()
         self.tc_fullspread_patches.SetValue(getcfg("tc_fullspread_patches"))
-        self.tc_angle_slider.SetValue(getcfg("tc_angle") * 10000)
+        self.tc_angle_slider.SetValue(int(getcfg("tc_angle") * 10000))
         self.tc_angle_handler(self.tc_angle_slider)
-        self.tc_adaption_slider.SetValue(getcfg("tc_adaption") * 100)
+        self.tc_adaption_slider.SetValue(int(getcfg("tc_adaption") * 100))
         self.tc_adaption_handler(self.tc_adaption_slider)
         if self.worker.argyll_version == [
             1,
@@ -2526,11 +2526,11 @@ END_DATA"""
             self.tc_gamma_floatctrl.SetValue(getcfg("tc_gamma"))
         if self.worker.argyll_version >= [1, 3, 3]:
             self.tc_neutral_axis_emphasis_slider.SetValue(
-                getcfg("tc_neutral_axis_emphasis") * 100
+                int(getcfg("tc_neutral_axis_emphasis") * 100)
             )
             self.tc_neutral_axis_emphasis_handler(self.tc_neutral_axis_emphasis_slider)
         if self.worker.argyll_version >= [1, 6, 2]:
-            self.tc_dark_emphasis_slider.SetValue(getcfg("tc_dark_emphasis") * 100)
+            self.tc_dark_emphasis_slider.SetValue(int(getcfg("tc_dark_emphasis") * 100))
             self.tc_dark_emphasis_handler(self.tc_dark_emphasis_slider)
         self.tc_precond_profile.SetPath(getcfg("tc_precond_profile"))
         self.tc_filter.SetValue(bool(int(getcfg("tc_filter"))))
