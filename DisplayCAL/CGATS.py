@@ -924,28 +924,32 @@ class CGATS(dict):
     def sort_RGB_gray_to_top(self):
         return self.sort_data_RGB_XYZ(sort_RGB_gray_to_top)
 
-    def sort_RGB_to_top(self, r=0, g=0, b=0):
+    def sort_RGB_to_top(
+        self, red: bool = False, green: bool = False, blue: bool = False
+    ) -> bool:
         """Sort quantities of R, G or B (or combinations) to top.
 
-        Example: sort_RGB_to_top(True, 0, 0) - sort red values to top
-        Example: sort_RGB_to_top(0, True, True) - sort cyan values to top
+        Example: sort_RGB_to_top(True, False, False) - sort red values to top
+        Example: sort_RGB_to_top(False, True, True) - sort cyan values to top
 
         """
-        if r and g and b:
-            fn = sort_RGB_gray_to_top
-        elif r and g:
-            fn = sort_RGB_to_top_factory(0, 1, 2, 0)
-        elif r and b:
-            fn = sort_RGB_to_top_factory(0, 2, 1, 0)
-        elif g and b:
-            fn = sort_RGB_to_top_factory(1, 2, 0, 1)
-        elif r:
-            fn = sort_RGB_to_top_factory(1, 2, 1, 0)
-        elif g:
-            fn = sort_RGB_to_top_factory(0, 2, 0, 1)
-        elif b:
-            fn = sort_RGB_to_top_factory(0, 1, 0, 2)
-        return self.sort_data_RGB_XYZ(fn)
+        if red and green and blue:
+            function = sort_RGB_gray_to_top
+        elif red and green:
+            function = sort_RGB_to_top_factory(0, 1, 2, 0)
+        elif red and blue:
+            function = sort_RGB_to_top_factory(0, 2, 1, 0)
+        elif green and blue:
+            function = sort_RGB_to_top_factory(1, 2, 0, 1)
+        elif red:
+            function = sort_RGB_to_top_factory(1, 2, 1, 0)
+        elif green:
+            function = sort_RGB_to_top_factory(0, 2, 0, 1)
+        elif blue:
+            function = sort_RGB_to_top_factory(0, 1, 0, 2)
+        else:
+            return False
+        return self.sort_data_RGB_XYZ(function)
 
     def sort_RGB_white_to_top(self):
         return self.sort_data_RGB_XYZ(sort_RGB_white_to_top)
