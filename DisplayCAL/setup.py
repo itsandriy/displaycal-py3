@@ -37,24 +37,24 @@ import sys
 from time import strftime
 
 
-# Borrowed from setuptools
-def findall(dir=os.curdir):
-    """Find all files under 'dir' and return the list of full filenames
-    (relative to 'dir').
-    """
-    all_files = []
-    for base, _dirs, files in os.walk(dir, followlinks=True):
-        if base == os.curdir or base.startswith(os.curdir + os.sep):
-            base = base[2:]
-        if base:
-            files = [os.path.join(base, f) for f in files]
-        all_files.extend(list(filter(os.path.isfile, files)))
-    return all_files
+# # Borrowed from setuptools
+# def findall(dir=os.curdir):
+#     """Find all files under 'dir' and return the list of full filenames
+#     (relative to 'dir').
+#     """
+#     all_files = []
+#     for base, _dirs, files in os.walk(dir, followlinks=True):
+#         if base == os.curdir or base.startswith(os.curdir + os.sep):
+#             base = base[2:]
+#         if base:
+#             files = [os.path.join(base, f) for f in files]
+#         all_files.extend(list(filter(os.path.isfile, files)))
+#     return all_files
 
 
 import distutils.filelist
 
-distutils.filelist.findall = findall  # Fix findall bug in distutils
+# distutils.filelist.findall = findall  # Fix findall bug in distutils
 
 
 from DisplayCAL.defaultpaths import autostart, autostart_home
@@ -184,9 +184,10 @@ config = {
 
 def add_lib_excludes(key, excludebits):
     for exclude in excludebits:
-        config["excludes"][key].extend([name + ".lib" + exclude, "lib" + exclude])
+        config["excludes"][key].extend([f"{name}.lib{exclude}", f"lib{exclude}"])
+
     for exclude in ("32", "64"):
-        for pycompat in ("26", "27"):
+        for pycompat in ("38", "39", "310"):
             if key == "win32" and (
                 pycompat == sys.version[0] + sys.version[2] or exclude == excludebits[0]
             ):
@@ -233,7 +234,7 @@ class Target:
 
 
 def create_app_symlinks(dist_dir, scripts):
-    maincontents_rel = os.path.join(name + ".app", "Contents")
+    maincontents_rel = os.path.join(f"{name}.app", "Contents")
     # Create ref, tests, ReadMe and license symlinks in directory
     # containing the app bundle
     for src, tgt in [
@@ -256,17 +257,17 @@ def create_app_symlinks(dist_dir, scripts):
     for script, desc in scripts:
         if script in (
             name,
-            name + "-apply-profiles",
-            name + "-eeColor-to-madVR-converter",
+            f"{name}-apply-profiles",
+            f"{name}-eeColor-to-madVR-converter",
         ) or script.endswith("-console"):
             continue
         toolname = desc.replace(name, "").strip()
-        toolapp = os.path.join(dist_dir, toolname + ".app")
+        toolapp = os.path.join(dist_dir, f"{toolname}.app")
         if os.path.isdir(toolapp):
             if (
                 input(
-                    'WARNING: The output directory "%s" and ALL ITS '
-                    "CONTENTS will be REMOVED! Continue? (y/n)" % toolapp
+                    f'WARNING: The output directory "{toolapp}" and ALL ITS '
+                    "CONTENTS will be REMOVED! Continue? (y/n)"
                 ).lower()
                 == "y"
             ):
@@ -430,14 +431,12 @@ def setup():
     dry_run = "-n" in sys.argv[1:] or "--dry-run" in sys.argv[1:]
     help = False
     install_data = None  # data files install path (only if given)
-    # install_data = os.path.expanduser('~/.local/share')  # This way at least we guarantee that
-    #                                                      # the data files are reachable
     is_rpm_build = "bdist_rpm" in sys.argv[1:] or os.path.abspath(sys.argv[0]).endswith(
         os.path.join(
             os.path.sep,
             "rpm",
             "BUILD",
-            name + "-" + version,
+            f"{name}-{version}",
             os.path.basename(os.path.abspath(sys.argv[0])),
         )
     )
@@ -506,54 +505,7 @@ def setup():
         print("using distutils")
 
     if do_py2exe:
-        import py2exe
-
-        # ModuleFinder can't handle runtime changes to __path__, but win32com
-        # uses them
-        try:
-            # if this doesn't work, try import modulefinder
-            import py2exe.mf as modulefinder
-            import win32com
-
-            for p in win32com.__path__[1:]:
-                modulefinder.AddPackagePath("win32com", p)
-            for extra in ["win32com.shell"]:
-                __import__(extra)
-                m = sys.modules[extra]
-                for p in m.__path__[1:]:
-                    modulefinder.AddPackagePath(extra, p)
-        except ImportError:
-            # no build path setup, no worries.
-            pass
-
-    if do_py2exe:
-        origIsSystemDLL = py2exe.build_exe.isSystemDLL
-        systemroot = os.getenv("SystemRoot").lower()
-
-        def isSystemDLL(pathname):
-            if (
-                os.path.basename(pathname).lower() in ("gdiplus.dll", "mfc90.dll")
-                or os.path.basename(pathname).lower().startswith("python")
-                or os.path.basename(pathname).lower().startswith("pywintypes")
-            ):
-                return 0
-            return pathname.lower().startswith(systemroot + "\\")
-
-        py2exe.build_exe.isSystemDLL = isSystemDLL
-
-        # Numpy DLL paths fix
-        def numpy_dll_paths_fix():
-            import numpy
-
-            paths = set()
-            numpy_path = numpy.__path__[0]
-            for dirpath, dirnames, filenames in os.walk(numpy_path):
-                for item in filenames:
-                    if item.lower().endswith(".dll"):
-                        paths.add(dirpath)
-            sys.path.extend(paths)
-
-        numpy_dll_paths_fix()
+        setup_do_py2exe()
 
     if do_uninstall:
         i = sys.argv.index("uninstall")
@@ -626,7 +578,7 @@ def setup():
         elif "suse" in doc_layout:
             doc = os.path.join("doc", "packages", name)
         else:
-            doc = os.path.join("doc", name + "-" + version)
+            doc = os.path.join("doc", f"{name}-{version}")
 
         if not install_data:
             data = os.path.join("share", data)
@@ -736,9 +688,9 @@ def setup():
             data_files.append(
                 (
                     os.path.join(os.path.dirname(data), "applications"),
-                    [os.path.join(pydir, "..", "misc", name.lower() + ".desktop")]
+                    [os.path.join(pydir, "..", "misc", f"{name.lower()}.desktop")]
                     + safe_glob(
-                        os.path.join(pydir, "..", "misc", name.lower() + "-*.desktop")
+                        os.path.join(pydir, "..", "misc", f"{name.lower()}-*.desktop")
                     ),
                 )
             )
@@ -752,7 +704,7 @@ def setup():
                             pydir,
                             "..",
                             "misc",
-                            "z-%s-apply-profiles.desktop" % name.lower(),
+                            f"z-{name.lower()}-apply-profiles.desktop",
                         )
                     ],
                 )
@@ -905,7 +857,7 @@ def setup():
                         pydir,
                         "..",
                         "scripts",
-                        name.lower() + "-eecolor-to-madvr-converter",
+                        f"{name.lower()}-eecolor-to-madvr-converter",
                     )
                 ],
             )
@@ -942,13 +894,11 @@ def setup():
                     [
                         sys.executable,
                         "-c",
-                        """import os
+                        f"""import os
 from distutils.core import setup, Extension
 
-setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_macros=%r, extra_link_args=%r)])"""
-                        % (name, bits, sources, macros, link_args),
-                    ]
-                    + sys.argv[1:],
+setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sources}, define_macros={macros}, extra_link_args={link_args})])""",
+                    ] + sys.argv[1:],
                     stdout=sp.PIPE,
                     stderr=sp.STDOUT,
                 )
@@ -968,14 +918,9 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
         libraries = ["X11", "Xinerama", "Xrandr", "Xxf86vm"]
         link_args = None
     if sys.platform == "darwin":
-        extname = "%s.lib%s.RealDisplaySizeMM" % (name, bits)
+        extname = f"{name}.lib{bits}.RealDisplaySizeMM"
     else:
-        extname = "%s.lib%s.python%s%s.RealDisplaySizeMM" % (
-            name,
-            bits,
-            sys.version_info[0],
-            sys.version_info[1],
-        )
+        extname = f"{name}.lib{bits}.python{sys.version_info[0]}{sys.version_info[1]}.RealDisplaySizeMM"
     RealDisplaySizeMM = Extension(
         extname,
         sources=sources,
@@ -993,33 +938,32 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
     if sys.platform == "win32":
         requires.append("pywin32 (>= 213.0)")
 
-    packages = [name, "%s.lib" % name, "%s.lib.agw" % name]
+    packages = [name, f"{name}.lib", f"{name}.lib.agw"]
     if sdist:
         # For source distributions we want all libraries
         for tmpbits in ("32", "64"):
-            for pycompat in ("26", "27"):
+            for pycompat in ("38", "39", "310"):
                 packages.extend(
                     [
-                        "%s.lib%s" % (name, tmpbits),
-                        "%s.lib%s.python%s" % (name, tmpbits, pycompat),
+                        f"{name}.lib{tmpbits}",
+                        f"{name}.lib{tmpbits}.python{pycompat}"
                     ]
                 )
     elif sys.platform == "darwin":
         # On Mac OS X we only want the universal binaries
-        packages.append("%s.lib%s" % (name, bits))
+        packages.append(f"{name}.lib{bits}")
     else:
         # On Linux/Windows we want separate libraries
         packages.extend(
             [
-                "%s.lib%s" % (name, bits),
-                "%s.lib%s.python%s%s"
-                % (name, bits, sys.version_info[0], sys.version_info[1]),
+                f"{name}.lib{bits}",
+                f"{name}.lib{bits}.python{sys.version_info[0]}{sys.version_info[1]}",
             ]
         )
 
     attrs = {
         "author": author_ascii,
-        "author_email": author_email.replace("@", "_at_"),
+        "author_email": author_email,
         "classifiers": [
             "Development Status :: 5 - Production/Stable",
             "Environment :: MacOS X",
@@ -1028,18 +972,18 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
             "Intended Audience :: End Users/Desktop",
             "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
             "Operating System :: OS Independent",
-            "Programming Language :: Python :: 2.6",
-            "Programming Language :: Python :: 2.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
             "Topic :: Multimedia :: Graphics",
         ],
         "data_files": data_files,
         "description": description,
-        "download_url": "https://%(DOMAIN)s/download/"
-        "%(name)s-%(version)s.tar.gz"
-        % {"DOMAIN": DOMAIN, "name": name, "version": version},
+        "download_url": f"https://{DOMAIN}/download/{name}-{version}.tar.gz",
         "ext_modules": ext_modules,
         "license": "GPL v3",
         "long_description": longdesc,
+        "long_description_content_type": "text/x-rst",
         "name": name,
         "packages": packages,
         "package_data": package_data,
@@ -1088,7 +1032,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
             for script, desc in [
                 script_desc
                 for script_desc in scripts
-                if script_desc[0] != name.lower() + "-apply-profiles"
+                if script_desc[0] != f"{name.lower()}-apply-profiles"
                 or sys.platform != "darwin"
             ]
         )
@@ -1097,7 +1041,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
         attrs["setup_requires"] = ["bbfreeze"]
 
     if "bdist_wininst" in sys.argv[1:]:
-        attrs["scripts"].append(os.path.join("util", name + "_postinstall.py"))
+        attrs["scripts"].append(os.path.join("util", f"{name}_postinstall.py"))
 
     if do_py2app:
         mainpy = os.path.join(source_dir, "main.py")
@@ -1108,8 +1052,8 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
             pydir,
             "..",
             "dist",
-            "py2app.%s-py%s" % (get_platform(), sys.version[:3]),
-            name + "-" + version,
+            f"py2app.{get_platform()}-py{sys.version[:3]}",
+            f"{name}-{version}",
         )
         from py2app.build_app import py2app as py2app_cls
 
@@ -1126,7 +1070,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                 "argv_emulation": True,
                 "dist_dir": dist_dir,
                 "excludes": config["excludes"]["all"] + config["excludes"]["darwin"],
-                "iconfile": os.path.join(pydir, "theme", "icons", name + ".icns"),
+                "iconfile": os.path.join(pydir, "theme", "icons", f"{name}.icns"),
                 "optimize": 0,
                 "plist": plist_dict,
             }
@@ -1151,7 +1095,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                 name
                 + (
                     ".exe.%s.VC90.manifest" % arch
-                    if hasattr(sys, "version_info") and sys.version_info[:2] >= (2, 6)
+                    if hasattr(sys, "version_info") and sys.version_info[:2] >= (3, 8)
                     else ".exe.manifest"
                 ),
             )
@@ -1222,7 +1166,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
         )
 
         # Programs that can run with and without GUI
-        console_scripts = [name + "-VRML-to-X3D-converter"]  # No "-console" suffix!
+        console_scripts = [f"{name}-VRML-to-X3D-converter"]  # No "-console" suffix!
         for console_script in console_scripts:
             console_script_path = os.path.join(
                 tmp_scripts_dir, console_script + "-console"
@@ -1290,8 +1234,8 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
             pydir,
             "..",
             "dist",
-            "py2exe.%s-py%s" % (get_platform(), sys.version[:3]),
-            name + "-" + version,
+            f"py2exe.{get_platform()}-py{sys.version[:3]}",
+            f"{name}-{version}",
         )
         attrs["options"] = {
             "py2exe": {
@@ -1388,9 +1332,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                     attrs["data_files"][i] = (change_root(data_basedir, f[0]), f[1])
 
     if do_uninstall and not help:
-
         # Quick and dirty uninstall
-
         if dry_run:
             print("dry run - nothing will be removed")
         else:
@@ -1423,36 +1365,24 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
             paths = safe_glob(os.path.join(cmd.install_scripts, name))
             if sys.platform == "win32":
                 if setuptools:
-                    paths += safe_glob(os.path.join(cmd.install_scripts, name + ".exe"))
+                    paths += safe_glob(os.path.join(cmd.install_scripts, f"{name}.exe"))
                     paths += safe_glob(
-                        os.path.join(cmd.install_scripts, name + "-script.py")
+                        os.path.join(cmd.install_scripts, f"{name}-script.py")
                     )
                 else:
-                    paths += safe_glob(os.path.join(cmd.install_scripts, name + ".cmd"))
+                    paths += safe_glob(os.path.join(cmd.install_scripts, f"{name}.cmd"))
             paths += safe_glob(
-                os.path.join(cmd.install_scripts, name + "_postinstall.py")
+                os.path.join(cmd.install_scripts, f"{name}_postinstall.py")
             )
             for attrname in ["data", "headers", "lib", "libbase", "platlib", "purelib"]:
-                path = os.path.join(getattr(cmd, "install_" + attrname), name)
+                path = os.path.join(getattr(cmd, f"install_{attrname}"), name)
                 if path not in paths:
                     # Using sys.version in this way is consistent with
                     # setuptools
                     paths += (
                         safe_glob(path)
-                        + safe_glob(
-                            path
-                            + (
-                                "-%(version)s-py%(pyversion)s*.egg"
-                                % {"version": version, "pyversion": sys.version[:3]}
-                            )
-                        )
-                        + safe_glob(
-                            path
-                            + (
-                                "-%(version)s-py%(pyversion)s*.egg-info"
-                                % {"version": version, "pyversion": sys.version[:3]}
-                            )
-                        )
+                        + safe_glob(f"{path}-{version}-py{sys.version[:3]}*.egg")
+                        + safe_glob(f"{path}-{version}-py{sys.version[:3]}*.egg-info")
                     )
 
             if os.path.isabs(data) and data not in paths:
@@ -1474,13 +1404,13 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                     "cacert.pem",
                     "camera_shutter.wav",
                     "ColorLookupTable.fx",
-                    name.lower() + ".desktop",
-                    name.lower() + "-3dlut-maker.desktop",
-                    name.lower() + "-curve-viewer.desktop",
-                    name.lower() + "-profile-info.desktop",
-                    name.lower() + "-scripting-client.desktop",
-                    name.lower() + "-synthprofile.desktop",
-                    name.lower() + "-testchart-editor.desktop",
+                    f"{name.lower()}.desktop",
+                    f"{name.lower()}-3dlut-maker.desktop",
+                    f"{name.lower()}-curve-viewer.desktop",
+                    f"{name.lower()}-profile-info.desktop",
+                    f"{name.lower()}-scripting-client.desktop",
+                    f"{name.lower()}-synthprofile.desktop",
+                    f"{name.lower()}-testchart-editor.desktop",
                     "pnp.ids",
                     "quirk.json",
                     "linear.cal",
@@ -1518,7 +1448,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                             "Uninstall",
                         ):
                             paths += safe_glob(
-                                os.path.join(path, name, filename + ".lnk")
+                                os.path.join(path, name, f"{filename}.lnk")
                             )
 
         for path in paths:
@@ -1584,9 +1514,9 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                 "include README.html",
                 "include README-fr.html",
                 "include CHANGES.html",
-                "include %s*.pyw" % name,
-                "include %s-*.pyw" % name,
-                "include %s-*.py" % name,
+                f"include {name}*.pyw",
+                f"include {name}-*.pyw",
+                f"include {name}-*.py",
                 "include use-distutils",
             ]
         )
@@ -1627,7 +1557,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
             % (os.path.join(name, "theme", "icons"), "*.icns", "*.ico")
         )
         manifest_in.append("include " + os.path.join("man", "*.1"))
-        manifest_in.append("recursive-include %s %s" % ("misc", "*"))
+        manifest_in.append("recursive-include misc *")
         if skip_instrument_conf_files:
             manifest_in.extend(
                 [
@@ -1639,8 +1569,8 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
         manifest_in.append("include " + os.path.join("screenshots", "*.png"))
         manifest_in.append("include " + os.path.join("scripts", "*"))
         manifest_in.append("include " + os.path.join("tests", "*"))
-        manifest_in.append("recursive-include %s %s" % ("theme", "*"))
-        manifest_in.append("recursive-include %s %s" % ("util", "*.cmd *.py *.sh"))
+        manifest_in.append("recursive-include theme *")
+        manifest_in.append("recursive-include util *.cmd *.py *.sh")
         if sys.platform == "win32" and not setuptools:
             # Only needed under Windows
             manifest_in.append("global-exclude .svn/*")
@@ -1663,7 +1593,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                     "dist",
                     "bbfreeze.%s-py%s" % (get_platform(), sys.version[:3]),
                 )
-                sys.argv.insert(i + 1, "--dist-dir=" + dist_dir)
+                sys.argv.insert(i + 1, f"--dist-dir={dist_dir}")
             if "egg_info" not in sys.argv[1:i]:
                 sys.argv.insert(i, "egg_info")
 
@@ -1753,11 +1683,7 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                 # Using sys.version in this way is consistent with setuptools
                 for path in safe_glob(path) + safe_glob(
                     os.path.join(
-                        path
-                        + (
-                            "-%(version)s-py%(pyversion)s*.egg"
-                            % {"version": version, "pyversion": sys.version[:3]}
-                        ),
+                        f"{path}-{version}-py{sys.version[:3]}*.egg",
                         name,
                     )
                 ):
@@ -1770,6 +1696,54 @@ setup(ext_modules=[Extension("%s.lib%s.RealDisplaySizeMM", sources=%r, define_ma
                 postinstall(prefix=change_root(cmd.root, cmd.prefix))
             else:
                 postinstall(prefix=cmd.prefix)
+
+
+def setup_do_py2exe():
+    import py2exe
+    # ModuleFinder can't handle runtime changes to __path__, but win32com
+    # uses them
+    try:
+        # if this doesn't work, try import modulefinder
+        import py2exe.mf as modulefinder
+        import win32com
+
+        for p in win32com.__path__[1:]:
+            modulefinder.AddPackagePath("win32com", p)
+        for extra in ["win32com.shell"]:
+            __import__(extra)
+            m = sys.modules[extra]
+            for p in m.__path__[1:]:
+                modulefinder.AddPackagePath(extra, p)
+    except ImportError:
+        # no build path setup, no worries.
+        pass
+    origIsSystemDLL = py2exe.build_exe.isSystemDLL
+    systemroot = os.getenv("SystemRoot").lower()
+
+    def isSystemDLL(pathname):
+        if (
+            os.path.basename(pathname).lower() in ("gdiplus.dll", "mfc90.dll")
+            or os.path.basename(pathname).lower().startswith("python")
+            or os.path.basename(pathname).lower().startswith("pywintypes")
+        ):
+            return 0
+        return pathname.lower().startswith(systemroot + "\\")
+
+    py2exe.build_exe.isSystemDLL = isSystemDLL
+
+    # Numpy DLL paths fix
+    def numpy_dll_paths_fix():
+        import numpy
+
+        paths = set()
+        numpy_path = numpy.__path__[0]
+        for dirpath, dirnames, filenames in os.walk(numpy_path):
+            for item in filenames:
+                if item.lower().endswith(".dll"):
+                    paths.add(dirpath)
+        sys.path.extend(paths)
+
+    numpy_dll_paths_fix()
 
 
 if __name__ == "__main__":
