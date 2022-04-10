@@ -5212,7 +5212,7 @@ class HyperLinkCtrl(hyperlink.HyperLinkCtrl):
 
         def SetFont(self, font):
             scale = (getcfg("app.dpi") / get_default_dpi()) or 1
-            font.PointSize *= scale
+            font.PointSize = int(font.PointSize * scale)
             hyperlink.HyperLinkCtrl.SetFont(self, font)
 
 
