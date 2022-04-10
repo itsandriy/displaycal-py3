@@ -44,6 +44,7 @@ def getevttype(event):
 
 def handle_error(error, parent=None, silent=False, tb=True):
     """Log an error string and show an error dialog."""
+    traceback.print_exc()
     if isinstance(error, tuple):
         # We got a tuple. Assume (etype, value, tb)
         tbstr = "".join(traceback.format_exception(*error))
