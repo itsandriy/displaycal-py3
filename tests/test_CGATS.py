@@ -1,11 +1,9 @@
 # -*- coding: utf-8 --*-
 from typing import List, TypedDict
-from unittest import mock
 
 import pytest
 from _pytest.fixtures import SubRequest
 
-import DisplayCAL
 from DisplayCAL import CGATS
 from DisplayCAL.dev.mocks import check_call
 from DisplayCAL.util_io import LineBufferedStream, Files
