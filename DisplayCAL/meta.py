@@ -50,8 +50,8 @@ longdesc = (
 DOMAIN = "displaycal.net"
 author_email = ", ".join(
     [
-        "{}{}{}".format("florian", chr(0o100), DOMAIN),
-        "{}{}{}".format("eoyilmaz", chr(0o100), "gmail.com"),
+        f"florian{chr(0o100)}{DOMAIN}",
+        f"eoyilmaz{chr(0o100)}gmail.com",
     ]
 )
 name = "DisplayCAL"
