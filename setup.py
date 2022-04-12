@@ -19,10 +19,12 @@ from time import gmtime, strftime
 if sys.platform == "win32":
     import msilib
 
-sys.path.insert(0, "DisplayCAL")
 
 pypath = Path(__file__).resolve()
 pydir = pypath.parent
+
+sys.path.insert(0, "DisplayCAL")
+sys.path.insert(1, str(pydir))
 
 
 def create_appdmg(zeroinstall=False):
@@ -283,6 +285,7 @@ def replace_placeholders(
         ),
         "TIMESTAMP": str(int(lastmod_time)),
         "SUMMARY": description,
+        "LONG_DESCRIPTION": description,
         "DESC": longdesc,
         "APPDATADESC": f'<p>{appdatadesc}</p>\n\t\t<p xml:lang="en">{appdatadesc}</p>',
         "APPNAME": name,
@@ -290,9 +293,9 @@ def replace_placeholders(
         "APPNAME_LOWER": name.lower(),
         "APPSTREAM_ID": appstream_id,
         "AUTHOR": author,
-        "AUTHOR_EMAIL": author_email.replace("@", "_at_"),
+        "AUTHOR_EMAIL": author_email,
         "MAINTAINER": author,
-        "MAINTAINER_EMAIL": author_email.replace("@", "_at_"),
+        "MAINTAINER_EMAIL": author_email,
         "MAINTAINER_EMAIL_SHA1": sha1(author_email.encode("utf-8")).hexdigest(),
         "PACKAGE": name,
         "PY_MAXVERSION": ".".join(str(n) for n in py_maxversion),

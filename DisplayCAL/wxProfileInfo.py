@@ -944,17 +944,21 @@ class GamutViewOptions(wx_Panel):
             self.comparison_profile_select_handler(None)
 
     def comparison_profile_select_handler(self, event):
-        index = self.comparison_profile_select.GetSelection()
-        if index > 0:
-            self.comparison_profile_select.SetToolTipString(
-                self.comparison_profile.fileName
-            )
-        else:
-            self.comparison_profile_select.SetToolTip(None)
-        self.comparison_whitepoint_bmp.Show(index > 0)
-        self.comparison_whitepoint_legend.Show(index > 0)
-        self.comparison_profile_bmp.Show(index > 0)
-        self.DrawCanvas(0, reset=False)
+        try:
+            index = self.comparison_profile_select.GetSelection()
+            if index > 0:
+                self.comparison_profile_select.SetToolTipString(
+                    self.comparison_profile.fileName
+                )
+            else:
+                self.comparison_profile_select.SetToolTip(None)
+            self.comparison_whitepoint_bmp.Show(index > 0)
+            self.comparison_whitepoint_legend.Show(index > 0)
+            self.comparison_profile_bmp.Show(index > 0)
+            self.DrawCanvas(0, reset=False)
+        except Exception:
+            import traceback
+            traceback.print_exc()
 
     def comparison_profiles_sort(self):
         comparison_profiles = dict_slice(self.comparison_profiles, 2)
@@ -1165,7 +1169,7 @@ class ProfileInfoFrame(LUTFrame):
         self.save_plot_btn.SetBackgroundColour(BGCOLOUR)
         self.save_plot_btn.Bind(wx.EVT_BUTTON, self.SaveFile)
         self.save_plot_btn.SetToolTipString(
-            lang.getstr("save_as") + " " + "(*.bmp, *.xbm, *.xpm, *.jpg, *.png)"
+            f"{lang.getstr('save_as')} (*.bmp, *.xbm, *.xpm, *.jpg, *.png)"
         )
         self.save_plot_btn.Disable()
         self.plot_mode_sizer.Add(
@@ -1543,7 +1547,7 @@ class ProfileInfoFrame(LUTFrame):
         alpha = 102
         namedcolor = False
         for i, (label, value) in enumerate(rows):
-            self.grid.SetCellValue(i, 0, " " + label)
+            self.grid.SetCellValue(i, 0, f" {label}")
             bgcolor = self.grid.GetCellBackgroundColour(i, 0)
             bgblend = (255 - alpha) / 255.0
             blend = alpha / 255.0
@@ -1910,7 +1914,7 @@ class ProfileInfoFrame(LUTFrame):
                 lang.getstr("profile.choose"),
                 defaultDir=defaultDir,
                 defaultFile=defaultFile,
-                wildcard=lang.getstr("filetype.icc") + "|*.icc;*.icm",
+                wildcard=f'{lang.getstr("filetype.icc")}|*.icc;*.icm',
                 style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
             )
             dlg.Center(wx.BOTH)
@@ -1923,7 +1927,7 @@ class ProfileInfoFrame(LUTFrame):
                 profile = ICCP.ICCProfile(path)
             except (IOError, ICCP.ICCProfileInvalidError):
                 show_result_dialog(
-                    Error(lang.getstr("profile.invalid") + "\n" + path), self
+                    Error(f'{lang.getstr("profile.invalid")}\n{path}'), self
                 )
             else:
                 setcfg("last_icc_path", path)
@@ -1949,7 +1953,7 @@ class ProfileInfoFrame(LUTFrame):
                     return
                 desc = profile.getDescription()
                 profile_path = os.path.join(
-                    self.worker.tempdir, make_argyll_compatible_path(desc) + profile_ext
+                    self.worker.tempdir, f"{make_argyll_compatible_path(desc) }{profile_ext}"
                 )
                 profile.write(profile_path)
             profile_mtime = os.stat(profile_path).st_mtime

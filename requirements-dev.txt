@@ -1,4 +1,5 @@
 black
+build
 coverage
 darglint
 flake8
@@ -17,4 +18,5 @@ pytest-cov
 pytest-github-actions-annotate-failures
 pytest-xdist
 snowballstemmer
+twine
 yappi
