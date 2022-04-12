@@ -1,9 +1,11 @@
 # -*- coding: utf-8 --*-
 from typing import List, TypedDict
+from unittest import mock
 
 import pytest
 from _pytest.fixtures import SubRequest
 
+import DisplayCAL
 from DisplayCAL import CGATS
 from DisplayCAL.dev.mocks import check_call
 from DisplayCAL.util_io import LineBufferedStream, Files
@@ -850,3 +852,89 @@ def test_cgats_sorting_2(data_files, color_combination: ColorCombination) -> Non
                 color_combination["blue"],
             )
             assert calls[0][0][1] == color_combination["result"]
+
+
+@pytest.mark.parametrize(
+    "split_grays,shift,result",
+    [
+        (
+            True,
+            True,
+            [
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [25.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [50.0, 50.0, 50.0, 100.0, 100.0, 100.0],
+                [50.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [50.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [50.0, 50.0, 100.0, 0.0, 0.0, 0.0],
+                [80.0, 80.0, 80.0, 100.0, 100.0, 100.0],
+            ],
+        ),
+        (
+            False,
+            False,
+            [
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [50.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 50.0, 100.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 50.0, 50.0, 100.0, 100.0, 100.0],
+                [50.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [25.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [80.0, 80.0, 80.0, 100.0, 100.0, 100.0],
+            ],
+        ),
+        (
+            True,
+            False,
+            [
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 50.0, 50.0, 100.0, 100.0, 100.0],
+                [25.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [50.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [50.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [80.0, 80.0, 80.0, 100.0, 100.0, 100.0],
+                [50.0, 50.0, 100.0, 0.0, 0.0, 0.0],
+            ],
+        ),
+        (
+            False,
+            True,
+            [
+                [100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 50.0, 100.0, 0.0, 0.0, 0.0],
+                [50.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 50.0, 50.0, 100.0, 100.0, 100.0],
+                [25.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [50.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [50.0, 50.0, 25.0, 0.0, 0.0, 0.0],
+                [80.0, 80.0, 80.0, 100.0, 100.0, 100.0],
+            ],
+        ),
+    ],
+    ids=(
+        "split grays - with shift",
+        "dont split grays - without shift",
+        "split grays - without shift",
+        "dont split grays - with shift",
+    ),
+)
+def test_cgats_checkerboard(
+    data_files, split_grays: bool, shift: bool, result: List[List[float]]
+) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` checkerboard method."""
+    path = data_files["0_16_for_sorting.ti1"].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    with check_call(CGATS.CGATS, "set_RGB_XYZ_values") as calls:
+        cgats.checkerboard(split_grays=split_grays, shift=shift)
+        assert calls[0][0][1] == result
