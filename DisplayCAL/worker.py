@@ -5113,7 +5113,7 @@ END_DATA
                     # leading/trailing spaces are allowed according to the spec).
                     # Also, Argyll does not write (optional) DOMAIN_MIN/MAX
                     # keywords. Add them after the fact.
-                    cube_filename = os.path.join(cwd, name + ".cube")
+                    cube_filename = os.path.join(cwd, f"{name}.cube")
                     if os.path.isfile(cube_filename):
                         add_domain = True
                         cube_data = []
@@ -5136,12 +5136,12 @@ END_DATA
                                         * 3
                                     )
                                     cube_data.append(domain_max % ((maxval,) * 3))
-                                    cube_data.append("\n")
+                                    cube_data.append(b"\n")
                                     add_domain = False
                                 cube_data.append(line)
                         # Write updated cube
                         with open(cube_filename, "wb") as cube_file:
-                            cube_file.write(b"".join(cube_data).encode())
+                            cube_file.write(b"".join(cube_data))
                 result2 = self.wrapup(
                     not isinstance(result, UnloggedInfo) and result,
                     dst_path=path,
