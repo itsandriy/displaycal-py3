@@ -23,7 +23,7 @@ except ImportError:
 from DisplayCAL.options import test_update
 
 if not VERSION or test_update:
-    VERSION = VERSION_BASE = (0, 0, 0, 0)
+    VERSION = VERSION_BASE = (0, 0, 0)
     VERSION_STRING = ".".join(str(n) for n in VERSION)
 
 author = ", ".join([
