@@ -140,7 +140,7 @@ np = _Numeric
 def convert_to_list_of_tuples(iterable):
     points = []
     for p in iterable:
-        points.append(tuple(p))
+        points.append(tuple(map(int, p)))
     return points
 
 

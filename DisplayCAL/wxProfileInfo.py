@@ -1111,7 +1111,7 @@ class ProfileInfoFrame(LUTFrame):
         BaseFrame.__init__(self, *args, **kwargs)
 
         self.SetIcons(
-            config.get_icon_bundle([256, 48, 32, 16], appname + "-profile-info")
+            config.get_icon_bundle([256, 48, 32, 16], f"{appname}-profile-info")
         )
 
         self.profile = None
