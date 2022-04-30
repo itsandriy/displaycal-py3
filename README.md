@@ -1,3 +1,8 @@
+![license](https://img.shields.io/badge/License-GPL%20v3-blue.svg)
+![pyversion](https://img.shields.io/pypi/pyversions/DisplayCAL.svg)
+![pypiversion](https://img.shields.io/pypi/v/DisplayCAL.svg)
+![wheel](https://img.shields.io/pypi/wheel/DisplayCAL.svg)
+
 DisplayCAL Python 3 Project
 ===========================
 
