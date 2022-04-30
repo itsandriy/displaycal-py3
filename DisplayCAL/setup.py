@@ -921,6 +921,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
         extname = f"{name}.lib{bits}.RealDisplaySizeMM"
     else:
         extname = f"{name}.lib{bits}.python{sys.version_info[0]}{sys.version_info[1]}.RealDisplaySizeMM"
+
     RealDisplaySizeMM = Extension(
         extname,
         sources=sources,
@@ -941,14 +942,13 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
     packages = [name, f"{name}.lib", f"{name}.lib.agw"]
     if sdist:
         # For source distributions we want all libraries
-        for tmpbits in ("32", "64"):
-            for pycompat in ("38", "39", "310"):
-                packages.extend(
-                    [
-                        f"{name}.lib{tmpbits}",
-                        f"{name}.lib{tmpbits}.python{pycompat}"
-                    ]
-                )
+        for pycompat in ("38", "39", "310"):
+            packages.extend(
+                [
+                    f"{name}.lib{bits}",
+                    f"{name}.lib{bits}.python{pycompat}"
+                ]
+            )
     elif sys.platform == "darwin":
         # On Mac OS X we only want the universal binaries
         packages.append(f"{name}.lib{bits}")

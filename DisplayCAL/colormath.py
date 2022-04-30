@@ -11,7 +11,6 @@ In most cases, unless otherwise stated RGB is R'G'B' (gamma-compressed)
 import colorsys
 import logging
 import math
-import numpy
 import sys
 import warnings
 
@@ -741,13 +740,18 @@ def interp_old(x, xp, fp, left=None, right=None):
 
 
 # This is much faster than the old implementation
-# interp(x: Union[ndarray, Iterable, int, float],
-#            xp: Any,
-#            fp: Any,
-#            left: Any = None,
-#            right: Any = None,
-#            period: Optional[float] = None) -> Any
-interp = numpy.interp
+def interp(x, xp, fp, left=None, right=None, period=None):
+    """One-dimensional linear interpolation similar to numpy.interp
+
+    Values do NOT have to be monotonically increasing
+    interp(0, [0, 0], [0, 1]) will return 0
+
+    """
+    # TODO: This function overrides the class implementation (Interp) and forces to use
+    #       numpy.interp all the time, and it is kind of rude in that manner.
+    #       Please respect the previous implementation, but use nump.interp again.
+    import numpy
+    return numpy.interp(x, xp, fp, left, right, period)
 
 
 def interp_resize(iterable, new_size, use_numpy=False):
@@ -867,6 +871,7 @@ def smooth_avg(values, passes=1, window=None, protect=None):
             # offset the values with ``extend_amount``
             protected_values[index + extend_amount] = values[index + extend_amount]
 
+    import numpy
     for i in range(passes):
         values = list(numpy.convolve(values, window, mode="same"))
         # Protect start and end values
@@ -3279,6 +3284,7 @@ class Interp(object):
 
     def _interp(self, x):
         if self.use_numpy:
+            import numpy
             return self.numpy.interp(x, self.xp, self.fp, self.left, self.right)
         else:
             return interp(x, self.xp, self.fp, self.left, self.right)

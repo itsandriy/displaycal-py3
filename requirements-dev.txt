@@ -1,5 +1,4 @@
 black
-build
 coverage
 darglint
 flake8

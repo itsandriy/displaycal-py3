@@ -643,7 +643,11 @@ def setup():
         if len(sys.argv) == 1 or (len(sys.argv) == 2 and dry_run):
             return
 
-    create_appdata = (appdata or "install" in sys.argv[1:]) and not help and not dry_run
+    create_appdata = (
+        (appdata or "install" in sys.argv[1:] or "sdist" in sys.argv[1:])
+        and not help
+        and not dry_run
+    )
 
     if (
         "sdist" in sys.argv[1:]
@@ -999,7 +1003,9 @@ def setup():
         # Create control files
         mapping = {
             "POST": open(Path(pydir, "util", "rpm_postinstall.sh"), "r").read().strip(),
-            "POSTUN": open(Path(pydir, "util", "rpm_postuninstall.sh"), "r").read().strip(),
+            "POSTUN": open(Path(pydir, "util", "rpm_postuninstall.sh"), "r")
+            .read()
+            .strip(),
             "CHANGELOG": format_changelog(changelog, "rpm"),
         }
         tgz_file_path = Path(pydir, "dist", f"{name}-{version}.tar.gz")

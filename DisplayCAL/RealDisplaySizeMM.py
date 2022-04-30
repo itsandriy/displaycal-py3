@@ -16,25 +16,15 @@ if sys.platform == "darwin":
     if platform.architecture()[0].startswith("64"):
         # TODO: Intel vs ARM (Apple Silicon) distinction
         from DisplayCAL.lib64.RealDisplaySizeMM import *
-    else:
-        from DisplayCAL.lib32.RealDisplaySizeMM import *
 else:
     # elif sys.platform == "win32":
     # Windows have separate files
-    if platform.architecture()[0].startswith("64"):
-        if sys.version_info[:2] == (3, 8):
-            from DisplayCAL.lib64.python38.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 9):
-            from DisplayCAL.lib64.python39.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 10):
-            from DisplayCAL.lib64.python310.RealDisplaySizeMM import *
-    else:
-        if sys.version_info[:2] == (3, 8):
-            from DisplayCAL.lib32.python38.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 9):
-            from DisplayCAL.lib32.python39.RealDisplaySizeMM import *
-        elif sys.version_info[:2] == (3, 10):
-            from DisplayCAL.lib32.python310.RealDisplaySizeMM import *
+    if sys.version_info[:2] == (3, 8):
+        from DisplayCAL.lib64.python38.RealDisplaySizeMM import *
+    elif sys.version_info[:2] == (3, 9):
+        from DisplayCAL.lib64.python39.RealDisplaySizeMM import *
+    elif sys.version_info[:2] == (3, 10):
+        from DisplayCAL.lib64.python310.RealDisplaySizeMM import *
 # else:
 #     pass
 
