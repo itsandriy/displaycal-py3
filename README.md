@@ -16,8 +16,10 @@ DisplayCAL users, to contribute back to this great tool.
 This project is based on the ``HEAD`` of the Sourceforge version, which has 5 extra
 commits that Florian has created after the ``3.8.9.3`` release on 14 Jan 2020.
 
-Status Update (3 April 2022)
-----------------------------
+Status Update (30 April 2022)
+-----------------------------
+
+DisplayCAL is in PyPI now (yay!).
 
 Here is a screenshots showing the tool working with Python 3.9:
 
@@ -103,7 +105,8 @@ Road Map
 
 Some ideas on where to focus on future development:
 
-- Add DisplayCAL to PyPI ([#83](https://github.com/eoyilmaz/displaycal-py3/issues/83)).
+- ~~Add DisplayCAL to PyPI 
+  ([#83](https://github.com/eoyilmaz/displaycal-py3/issues/83)).~~
 - Try to move the UI to Qt. This is a big ticket. The motivation behind that is that I'm
   much more experienced with Qt. In fact, I have zero experience with ``wxPython``.
 - Make the code fully compliant with PEP8 with the modification of hard wrapping the
