@@ -98,7 +98,7 @@
                   <object class="wxGridSizer">
                     <object class="sizeritem">
                       <object class="FloatSpin" name="white_X">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -109,7 +109,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="white_Y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>0.0</min_val>
                         <max_val>100.0</max_val>
                         <increment>0.0001</increment>
@@ -120,7 +120,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="white_Z">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -131,7 +131,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="white_x">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -142,7 +142,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="white_y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -163,7 +163,7 @@
                   <object class="wxGridSizer">
                     <object class="sizeritem">
                       <object class="FloatSpin" name="red_X">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -174,7 +174,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="red_Y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -185,7 +185,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="red_Z">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -196,7 +196,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="red_x">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -207,7 +207,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="red_y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -228,7 +228,7 @@
                   <object class="wxGridSizer">
                     <object class="sizeritem">
                       <object class="FloatSpin" name="green_X">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -239,7 +239,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="green_Y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -250,7 +250,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="green_Z">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -261,7 +261,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="green_x">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -272,7 +272,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="green_y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -293,7 +293,7 @@
                   <object class="wxGridSizer">
                     <object class="sizeritem">
                       <object class="FloatSpin" name="blue_X">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -304,7 +304,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="blue_Y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -315,7 +315,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="blue_Z">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -326,7 +326,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="blue_x">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -337,7 +337,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="blue_y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -358,7 +358,7 @@
                   <object class="wxGridSizer">
                     <object class="sizeritem">
                       <object class="FloatSpin" name="black_X">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -369,7 +369,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="black_Y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>0</min_val>
                         <max_val>100.0</max_val>
                         <increment>0.0015259021896696422</increment>
@@ -380,7 +380,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="black_Z">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-99</min_val>
                         <max_val>999.0</max_val>
                         <increment>0.0001</increment>
@@ -391,7 +391,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="black_x">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -402,7 +402,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="black_y">
-                        <size>85, -1</size>
+                        <size>115, -1</size>
                         <min_val>-1.0</min_val>
                         <max_val>1.0</max_val>
                         <increment>0.00001</increment>
@@ -444,7 +444,7 @@
                   <object class="wxBoxSizer">
                     <object class="sizeritem">
                       <object class="FloatSpin" name="luminance_ctrl">
-                        <size>75, -1</size>
+                        <size>135, -1</size>
                         <min_val>10.0</min_val>
                         <max_val>10000.0</max_val>
                         <increment>0.1</increment>
@@ -469,7 +469,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="FloatSpin" name="black_luminance_ctrl">
-                        <size>105, -1</size>
+                        <size>145, -1</size>
                         <min_val>0.0</min_val>
                         <max_val>10000.0</max_val>
                         <increment>0.000001</increment>
@@ -627,7 +627,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxSpinCtrl" name="lut3d_hdr_hue_intctrl">
-                        <size>65,-1</size>
+                        <size>105,-1</size>
                         <min>0</min>
                         <max>100</max>
                         <XRCED>
@@ -805,7 +805,7 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxSpinCtrl" name="black_output_offset_intctrl">
-                        <size>65,-1</size>
+                        <size>105,-1</size>
                         <min>0</min>
                         <max>100</max>
                         <XRCED>

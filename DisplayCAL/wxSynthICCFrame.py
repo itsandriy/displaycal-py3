@@ -1133,7 +1133,7 @@ class SynthICCFrame(BaseFrame, LUT3DMixin):
         )
 
         self.profile_classes = dict(
-            get_mapping(list(ICCP.profileclass.items()), ["mntr", "scnr"])
+            get_mapping(list(ICCP.profileclass.items()), [b"mntr", b"scnr"])
         )
         self.profile_class_ctrl.SetItems(list(self.profile_classes.values()))
         self.profile_class_ctrl.SetSelection(0)
@@ -1293,14 +1293,14 @@ class SynthICCFrame(BaseFrame, LUT3DMixin):
         if i in (4, 6):
             # Rec 709 or SMPTE 240M
             # Match Adobe 'video' profiles
-            self.profile_class_ctrl.SetStringSelection(self.profile_classes["scnr"])
+            self.profile_class_ctrl.SetStringSelection(self.profile_classes[b"scnr"])
             self.tech_ctrl.SetStringSelection(self.tech["vidc"])
             self.ciis_ctrl.SetStringSelection(self.ciis["fpce"])
         elif (
-            self.profile_class_ctrl.GetStringSelection() == self.profile_classes["scnr"]
+            self.profile_class_ctrl.GetStringSelection() == self.profile_classes[b"scnr"]
         ):
             # If 'input' profile, reset class/tech/colorimetric intent image state
-            self.profile_class_ctrl.SetStringSelection(self.profile_classes["mntr"])
+            self.profile_class_ctrl.SetStringSelection(self.profile_classes[b"mntr"])
             self.tech_ctrl.SetStringSelection(self.tech[""])
             self.ciis_ctrl.SetStringSelection(self.ciis[""])
         self.panel.GetSizer().Layout()
