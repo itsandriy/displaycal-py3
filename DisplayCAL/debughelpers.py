@@ -122,6 +122,7 @@ def handle_error(error, parent=None, silent=False, tb=True):
                 dlg.ShowModal()
                 dlg.Destroy()
         except Exception as exception:
+            traceback.print_exc()
             print("Warning: handle_error():", str(exception))
 
 
