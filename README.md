@@ -45,9 +45,8 @@ Here is a list of things that is working:
 What is not working (yet)
 -------------------------
 
-- There are tons of ``bytes/str`` related issues, getting fixed very quickly but more
-  tests are needed.
-- Please create [issues](https://github.com/eoyilmaz/displaycal-py3/issues)
+- Everything should be working now. But, incase you encounter any bugs please create
+  [issues](https://github.com/eoyilmaz/displaycal-py3/issues).
 
 How to install
 --------------
@@ -59,7 +58,7 @@ Prequisties:
 * Assorted C/C++ builder tools
 * dbus-1
 * glib 2.0
-* gtkd 3
+* gtk 3
 * libxxf86vm
 * pkg-config
 
@@ -70,7 +69,7 @@ Please install these from your package manager.
 brew install pkg-config dbus glib gtk+3
 
 # Debian installs
-apt-get install build-essential dbus libglib2.0-dev pkg-config libgtkd-3-dev libxxf86vm-dev
+apt-get install build-essential dbus libglib2.0-dev pkg-config libgtk-3-dev libxxf86vm-dev
 ```
 
 Then pull the source and create a virtual environment:
