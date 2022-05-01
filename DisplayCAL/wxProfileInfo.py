@@ -169,8 +169,8 @@ class GamutCanvas(LUTCanvas):
             min_y = -50.0
             step = 25
         elif self.colorspace in ("DIN99b", "DIN99c", "DIN99d"):
-            label_x = "a" + self.colorspace[3:]
-            label_y = "b" + self.colorspace[3:]
+            label_x = f"a{self.colorspace[3:]}"
+            label_y = f"b{self.colorspace[3:]}"
             max_x = 65.0
             max_y = 65.0
             min_x = -65.0
@@ -1422,7 +1422,7 @@ class ProfileInfoFrame(LUTFrame):
                 profile = ICCP.ICCProfile(profile)
             except (IOError, ICCP.ICCProfileInvalidError):
                 show_result_dialog(
-                    Error(lang.getstr("profile.invalid") + "\n" + profile), self
+                    Error(f"{lang.getstr('profile.invalid')}\n{profile}"), self
                 )
                 self.DrawCanvas(reset=reset)
                 return
@@ -1434,11 +1434,11 @@ class ProfileInfoFrame(LUTFrame):
             reset = True
         self.profile = profile
         for channel in "rgb":
-            trc = profile.tags.get(channel + "TRC", profile.tags.get("kTRC"))
+            trc = profile.tags.get(f"{channel}TRC", profile.tags.get("kTRC"))
             if isinstance(trc, ICCP.ParametricCurveType):
                 trc = trc.get_trc()
-            setattr(self, channel + "TRC", trc)
-            setattr(self, "tf_" + channel + "TRC", trc)
+            setattr(self, f"{channel}TRC", trc)
+            setattr(self, f"tf_{channel}TRC", trc)
         self.trc = None
 
         self.gamut_view_options.direction_select.Enable(
@@ -1989,14 +1989,22 @@ class ProfileInfoFrame(LUTFrame):
             if order != "n":
                 mods.append(order)
             if mods:
-                filename += " " + "".join(["[%s]" % mod.upper() for mod in mods])
+                filename = "{} {}".format(
+                    filename,
+                    "".join(
+                        ["[{}]".format(mod.upper() for mod in mods)]
+                    )
+                )
             if comparison_profile_path:
                 filename += (
                     " vs "
                     + os.path.splitext(os.path.basename(comparison_profile_path))[0]
                 )
                 if mods:
-                    filename += " " + "".join(["[%s]" % mod.upper() for mod in mods])
+                    filename = "{} {}".format(
+                        filename,
+                        "".join(["[%s]" % mod.upper() for mod in mods])
+                    )
             for vrmlext in (".vrml", ".vrml.gz", ".wrl", ".wrl.gz", ".wrz"):
                 vrmlpath = filename + vrmlext
                 if sys.platform == "win32":
@@ -2006,11 +2014,11 @@ class ProfileInfoFrame(LUTFrame):
             outfilename = filename
             colorspace = self.gamut_view_options.get_colorspace(3)
             if colorspace != "Lab":
-                outfilename += " " + colorspace
-            vrmloutpath = outfilename + vrmlext
-            x3dpath = outfilename + ".x3d"
+                outfilename = f"{outfilename} {colorspace}"
+            vrmloutpath = f"{outfilename}{vrmlext}"
+            x3dpath = f"{outfilename}.x3d"
             if html:
-                finalpath = x3dpath + ".html"
+                finalpath = f"{x3dpath}.html"
             elif x3d:
                 finalpath = x3dpath
             else:
@@ -2057,9 +2065,9 @@ class ProfileInfoFrame(LUTFrame):
     ):
         if filename:
             if getcfg("vrml.compress"):
-                vrmlpath = filename + ".wrz"
+                vrmlpath = f"{filename}.wrz"
             else:
-                vrmlpath = filename + ".wrl"
+                vrmlpath = f"{filename}.wrl"
         if os.path.isfile(vrmlpath) and colorspace not in ("Lab", None):
             filename, ext = os.path.splitext(vrmlpath)
             if ext.lower() in (".gz", ".wrz"):
@@ -2069,7 +2077,7 @@ class ProfileInfoFrame(LUTFrame):
             with cls(vrmlpath, "rb") as vrmlfile:
                 vrml = vrmlfile.read()
             vrml = x3dom.update_vrml(vrml, colorspace)
-            vrmlpath = filename + " " + colorspace + ext
+            vrmlpath = f"{filename} {colorspace}{ext}"
             with cls(vrmlpath, "wb") as vrmlfile:
                 vrmlfile.write(vrml)
         if not os.path.isfile(vrmlpath):

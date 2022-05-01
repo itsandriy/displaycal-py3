@@ -12,6 +12,7 @@ import re
 import string
 import sys
 from DisplayCAL.log import logger
+
 if sys.platform == "win32":
     import winreg
 
@@ -88,10 +89,8 @@ else:
 data_dirs = [
     # venv/share/DisplayCAL
     os.path.join(os.path.dirname(os.path.dirname(pypath)), "share", "DisplayCAL"),
-
     # venv/lib/python3.x/site-packages/DisplayCAL
     pydir,
-
     # venv/lib/python3.x/site-packages/DisplayCAL-*.egg/share/DisplayCAL
     os.path.join(os.path.dirname(pydir), "share", "DisplayCAL"),
 ]
@@ -316,8 +315,8 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
             inverted = oname.endswith("-inverted")
             if inverted:
                 oname = parts[-1] = oname.split("-inverted")[0]
-            name2x = oname + "@2x"
-            name4x = oname + "@4x"
+            name2x = f"{oname}@2x"
+            name4x = f"{oname}@4x"
             path = None
             for i in range(5):
                 if scale > 1:
@@ -363,10 +362,10 @@ def getbitmap(name, display_missing_icon=True, scale=True, use_mask=False):
                 ):
                     # Search /usr/share/icons on Linux first
                     path = get_data_path(
-                        os.path.join(parts[-2], "apps", parts[-1]) + ".png"
+                        "{}.png".format(os.path.join(parts[-2], "apps", parts[-1]))
                     )
                 if not path:
-                    path = get_data_path(os.path.sep.join(parts) + ".png")
+                    path = get_data_path("{}.png".format(os.path.sep.join(parts)))
                 if path or scale == 1:
                     break
             if path:
@@ -552,7 +551,7 @@ def get_argyll_display_number(geometry):
     """Translate from wx display geometry to Argyll display index"""
     geometry = "%i, %i, %ix%i" % tuple(geometry)
     for i, display in enumerate(getcfg("displays")):
-        if display.find("@ " + geometry) > -1:
+        if display.find(f"@ {geometry}") > -1:
             if debug:
                 print("[D] Found display %s at index %i" % (geometry, i))
             return i
@@ -655,7 +654,7 @@ def get_data_path(relpath, rex=None):
         return None
     dirs = list(data_dirs)
     argyll_dir = getcfg("argyll.dir") or os.path.dirname(
-        os.path.realpath(which("dispcal" + exe_ext) or "")
+        os.path.realpath(which(f"dispcal{exe_ext}") or "")
     )
     if argyll_dir and os.path.isdir(os.path.join(argyll_dir, "..", "ref")):
         dirs.append(os.path.dirname(argyll_dir))
@@ -666,7 +665,7 @@ def get_data_path(relpath, rex=None):
         curpath = os.path.join(dir_, relpath)
         if (
             dir_.endswith("/argyll")
-            and (relpath + "/").startswith("ref/")
+            and f"{relpath}/".startswith("ref/")
             and not os.path.exists(curpath)
         ):
             # Work-around distribution-specific differences for location
@@ -756,7 +755,7 @@ def runtimeconfig(pyfile):
     if sys.platform not in ("darwin", "win32"):
         data_dirs.extend(
             [
-                os.path.join(dir_, "doc", appname + "-" + version)
+                os.path.join(dir_, "doc", f"{appname}-{version}")
                 for dir_ in xdg_data_dirs + [xdg_data_home]
             ]
         )
@@ -1530,7 +1529,11 @@ def getcfg(name, fallback=True, raw=False, cfg=cfg):
             return []
         value = [
             strtr(
-                v, [("%" + hex(ord(os.pathsep))[2:].upper(), os.pathsep), ("%25", "%")]
+                v,
+                [
+                    ("%{}".format(hex(ord(os.pathsep))[2:].upper()), os.pathsep),
+                    ("%25", "%"),
+                ],
             )
             for v in value.split(os.pathsep)
         ]
@@ -1831,7 +1834,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
         cfgbasename = appbasename
     makecfgdir()
     if os.path.exists(confighome) and not os.path.exists(
-        os.path.join(confighome, cfgbasename + ".ini")
+        os.path.join(confighome, f"{cfgbasename}.ini")
     ):
         # Set default preset
         setcfg("calibration.file", defaults["calibration.file"], cfg=cfg)
@@ -1852,7 +1855,7 @@ def initcfg(module=None, cfg=cfg, force_load=False):
     cfgfiles = []
     for cfgname in cfgnames:
         for cfgroot in cfgroots:
-            cfgfile = os.path.join(cfgroot, cfgname + ".ini")
+            cfgfile = os.path.join(cfgroot, f"{cfgname}.ini")
             if os.path.isfile(cfgfile):
                 try:
                     mtime = os.stat(cfgfile).st_mtime
@@ -2082,7 +2085,7 @@ def setcfg(name, value, cfg=cfg):
                     v,
                     [
                         ("%", "%25"),
-                        (os.pathsep, "%" + hex(ord(os.pathsep))[2:].upper()),
+                        (os.pathsep, "%{}".format(hex(ord(os.pathsep))[2:].upper())),
                     ],
                 )
                 for v in value
@@ -2102,16 +2105,16 @@ def setcfg_cond(condition, name, value, set_if_backup_exists=False, restore=True
 
     """
     changed = False
-    backup = getcfg(name + ".backup", False)
+    backup = getcfg(f"{name}.backup", False)
     if condition:
         if backup is None:
-            setcfg(name + ".backup", getcfg(name))
+            setcfg(f"{name}.backup", getcfg(name))
         if backup is None or set_if_backup_exists:
             setcfg(name, value)
             changed = True
     elif backup is not None and restore:
-        setcfg(name, getcfg(name + ".backup"))
-        setcfg(name + ".backup", None)
+        setcfg(name, getcfg(f"{name}.backup"))
+        setcfg(f"{name}.backup", None)
         changed = True
     return changed
 
@@ -2133,7 +2136,7 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             setcfg(name, None)
     if which == "user":
         # user config - stores everything and overrides system-wide config
-        cfgfilename = os.path.join(confighome, cfgbasename + ".ini")
+        cfgfilename = os.path.join(confighome, f"{cfgbasename}.ini")
         try:
             io = StringIO()
             cfg.write(io)
@@ -2160,8 +2163,8 @@ def writecfg(which="user", worker=None, module=None, options=(), cfg=cfg):
             return False
     else:
         # system-wide config - only stores essentials ie. Argyll directory
-        cfgfilename1 = os.path.join(confighome, cfgbasename + ".local.ini")
-        cfgfilename2 = os.path.join(config_sys, cfgbasename + ".ini")
+        cfgfilename1 = os.path.join(confighome, f"{cfgbasename}.local.ini")
+        cfgfilename2 = os.path.join(config_sys, f"{cfgbasename}.ini")
         if sys.platform == "win32":
             cfgfilename = cfgfilename2
         else:

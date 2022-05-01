@@ -335,9 +335,9 @@ class LUTCanvas(plot.PlotCanvas):
                 for channel, color in enumerate(("red", "green", "blue")):
                     if channel not in points:
                         continue
-                    vmin = float2dec(vcgt[color + "Min"] * axis_x)
-                    v = float2dec(math.pow(step * i / 100.0, vcgt[color + "Gamma"]))
-                    vmax = float2dec(vcgt[color + "Max"] * axis_x)
+                    vmin = float2dec(vcgt[f"{color}Min"] * axis_x)
+                    v = float2dec(math.pow(step * i / 100.0, vcgt[f"{color}Gamma"]))
+                    vmax = float2dec(vcgt[f"{color}Max"] * axis_x)
                     n = vmin + v * (vmax - vmin)
                     if connection_colorspace == b"Lab":
                         n = colormath.XYZ2Lab(0, float(n) / axis_x * 100, 0)[0] * (
@@ -405,7 +405,10 @@ class LUTCanvas(plot.PlotCanvas):
             values = points[channel]
             channel_label = channels[channel]
             if not identical:
-                color = self.colors.get(colorspace.decode("utf-8") + "_" + channel_label, "white")
+                color = self.colors.get(
+                    f"{colorspace.decode('utf-8')}_{channel_label}",
+                    "white"
+                )
             # Note: We need to make sure each point is a float because it
             # might be a decimal.Decimal, which can't be divided by floats!
             points_quantized = [
@@ -415,7 +418,7 @@ class LUTCanvas(plot.PlotCanvas):
             if identical:
                 label = "=".join(legend)
                 suffix = (
-                    (", " + lang.getstr("linear").capitalize())
+                    (", {}".format(lang.getstr("linear").capitalize()))
                     if points_quantized
                     == (linear if detect_increments else linear_points)
                     else ""
@@ -756,7 +759,7 @@ class LUTFrame(BaseFrame):
         BaseFrame.__init__(self, *args, **kwargs)
 
         self.SetIcons(
-            config.get_icon_bundle([256, 48, 32, 16], appname + "-curve-viewer")
+            config.get_icon_bundle([256, 48, 32, 16], f"{appname}-curve-viewer")
         )
 
         self.profile = None
@@ -804,7 +807,7 @@ class LUTFrame(BaseFrame):
         panel.Sizer.Add(self.save_plot_btn, flag=wx.ALIGN_CENTER_VERTICAL)
         self.save_plot_btn.Bind(wx.EVT_BUTTON, self.SaveFile)
         self.save_plot_btn.SetToolTipString(
-            lang.getstr("save_as") + " " + "(*.bmp, *.xbm, *.xpm, *.jpg, *.png)"
+            f"{lang.getstr('save_as')} (*.bmp, *.xbm, *.xpm, *.jpg, *.png)"
         )
         self.save_plot_btn.Disable()
 
@@ -969,7 +972,7 @@ class LUTFrame(BaseFrame):
             border=20,
         )
         self.save_vcgt_btn.Bind(wx.EVT_BUTTON, self.SaveFile)
-        self.save_vcgt_btn.SetToolTipString(lang.getstr("save_as") + " " + "(*.cal)")
+        self.save_vcgt_btn.SetToolTipString(f"{lang.getstr('save_as')} (*.cal)")
         self.save_vcgt_btn.Disable()
 
         self.show_as_L = CustomCheckBox(self.box_panel, -1, "L* \u2192")
@@ -1068,7 +1071,7 @@ class LUTFrame(BaseFrame):
             except (IOError, ICCP.ICCProfileInvalidError):
                 InfoDialog(
                     self,
-                    msg=lang.getstr("profile.invalid") + "\n" + path,
+                    msg=f"{lang.getstr('profile.invalid')}\n{path}",
                     ok=lang.getstr("ok"),
                     bitmap=geticon(32, "dialog-error"),
                 )
@@ -1533,10 +1536,10 @@ class LUTFrame(BaseFrame):
                 # if not i or Y >= trc[sig][i - 1]:
                 xp.append(v)
                 yp.append(Y)
-            setattr(self, "tf_" + sig, CoordinateType(self.profile))
+            setattr(self, f"tf_{sig}", CoordinateType(self.profile))
             if not xp or not yp:
                 if prev:
-                    getattr(self, "tf_" + sig)[:] = prev
+                    getattr(self, f"tf_{sig}")[:] = prev
                 continue
             # Second, interpolate to given size and use the same y axis
             # for all channels
@@ -1545,7 +1548,7 @@ class LUTFrame(BaseFrame):
                 y.append(colormath.Lab2XYZ(i / (size - 1.0) * 100, 0, 0)[1] * 100)
             xi = numpy.interp(y, yp, xp)
             yi = numpy.interp(x, xi, y)
-            prev = getattr(self, "tf_" + sig)
+            prev = getattr(self, f"tf_{sig}")
             for Y, v in zip(yi, x):
                 if Y <= yp[0]:
                     Y = yp[0]
@@ -1615,7 +1618,7 @@ class LUTFrame(BaseFrame):
                 profile = ICCP.ICCProfile(profile)
             except (IOError, ICCP.ICCProfileInvalidError) as exception:
                 show_result_dialog(
-                    Error(lang.getstr("profile.invalid") + "\n" + profile), self
+                    Error(f"{lang.getstr('profile.invalid')}\n{profile}"), self
                 )
                 profile = None
         if not profile:
@@ -1639,11 +1642,11 @@ class LUTFrame(BaseFrame):
         self.SetTitle(title)
         self.profile = profile
         for channel in "rgb":
-            trc = profile.tags.get(channel + "TRC", profile.tags.get("kTRC"))
+            trc = profile.tags.get(f"{channel}TRC", profile.tags.get("kTRC"))
             if isinstance(trc, ICCP.ParametricCurveType):
                 trc = trc.get_trc()
-            setattr(self, channel + "TRC", trc)
-            setattr(self, "tf_" + channel + "TRC", trc)
+            setattr(self, f"{channel}TRC", trc)
+            setattr(self, f"tf_{channel}TRC", trc)
         self.trc = None
         curves = []
         if (
@@ -2242,7 +2245,7 @@ class LUTFrame(BaseFrame):
             }
             defType = "png"
 
-        fileName += "." + defType
+        fileName = f"{fileName}.{defType}"
 
         fType = None
         dlg1 = None
@@ -2331,21 +2334,21 @@ class LUTFrame(BaseFrame):
                         and self.profile.connectionColorSpace != b"RGB"
                     ):
                         if self.show_as_L.GetValue():
-                            format = "L* %.2f", "%s %.2f"
+                            format_ = "L* %.2f", "%s %.2f"
                         else:
-                            format = "Y %.4f", "%s %.2f"
+                            format_ = "Y %.4f", "%s %.2f"
                         axis_y = 100.0
                     elif "L*" in label and ("a*" in label or "b*" in label):
                         a = b = -128 + pointXY[0] / 100.0 * (255 + 255 / 256.0)
                         if label == ["L*", "a*", "b*"]:
-                            format = "L* %%.2f a* %.2f b* %.2f" % (a, b), "%s %.2f"
+                            format_ = "L* %%.2f a* %.2f b* %.2f" % (a, b), "%s %.2f"
                         elif label == ["L*", "a*"]:
-                            format = "L* %%.2f a* %.2f" % a, "%s %.2f"
+                            format_ = "L* %%.2f a* %.2f" % a, "%s %.2f"
                         elif label == ["L*", "b*"]:
-                            format = "L* %%.2f b* %.2f" % b, "%s %.2f"
+                            format_ = "L* %%.2f b* %.2f" % b, "%s %.2f"
                         axis_y = self.client.axis_y[1]
                     else:
-                        format = "%s %%.2f" % "=".join(label), "%s %.2f"
+                        format_ = "%s %%.2f" % "=".join(label), "%s %.2f"
                         axis_y = self.client.axis_y[1]
                     if identical:
                         # if value[0][1] is None:
@@ -2358,14 +2361,14 @@ class LUTFrame(BaseFrame):
                     else:
                         RGB = " ".join(
                             [
-                                format[1] % (v, s)
+                                format_[1] % (v, s)
                                 for v, s in [v for v in value if v[1] is not None]
                             ]
                         )
                     vin = pointXY[0]
                     if "L*" not in label and ("a*" in label or "b*" in label):
                         vin = -128 + pointXY[0] / 100.0 * (255 + 255 / 256.0)
-                    legend[0] = joiner.join([format[0] % vin, RGB])
+                    legend[0] = joiner.join([format_[0] % vin, RGB])
                     if (
                         self.plot_mode_select.GetStringSelection()
                         == lang.getstr("[rgb]TRC")
@@ -2374,10 +2377,13 @@ class LUTFrame(BaseFrame):
                         pointXY = pointXY[1], pointXY[0]
                 else:
                     joiner = " \u2192 "
-                    format = "%.2f", "%.2f"
+                    format_ = "%.2f", "%.2f"
                     axis_y = self.client.axis_y[1]
-                    legend[0] += " " + joiner.join(
-                        [format[i] % point for i, point in enumerate(pointXY)]
+                    legend[0] = "{} {}".format(
+                        legend[0],
+                        joiner.join(
+                            [format_[i] % point for i, point in enumerate(pointXY)]
+                        )
                     )
                 if len(legend) == 1:
                     # Calculate gamma
@@ -2412,16 +2418,18 @@ class LUTFrame(BaseFrame):
                         # Note: We need to make sure each point is a float because it
                         # might be a decimal.Decimal, which can't be divided by floats!
                         gamma.append(
-                            label
-                            + " %.2f"
-                            % round(
-                                math.log(float(y) / axis_y) / math.log(x / axis_x), 2
+                            "{} {:.2f}".format(
+                                label,
+                                round(
+                                    math.log(float(y) / axis_y) / math.log(x / axis_x),
+                                    2
+                                )
                             )
                         )
                         if "=" in label:
                             break
                     if gamma:
-                        legend.append("Gamma " + " ".join(gamma))
+                        legend.append("Gamma {}".format(" ".join(gamma)))
                 if self.profile.connectionColorSpace != b"RGB":
                     self.add_tone_values(legend)
                 legend = [", ".join(legend[:-1])] + [legend[-1]]
