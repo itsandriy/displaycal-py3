@@ -1027,4 +1027,11 @@ def test_cgats_adapt(data_files, profile: str, result: int) -> None:
     path = data_files[profile].absolute()
     cgats = CGATS.CGATS(cgats=path)
     assert cgats.adapt() == result
-    print(cgats.adapt())
+
+
+def test_cgats_convert_XYZ_to_Lab(data_files) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` convert_XYZ_to_Lab method."""
+    path = data_files["0_16_proper.ti3"].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    cgats.convert_XYZ_to_Lab()
+    assert all(key in cgats[0]["DATA"][0] for key in [b'LAB_L', b'LAB_A', b'LAB_B'])

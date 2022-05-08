@@ -1961,7 +1961,7 @@ Transform {
         # Add L*a*b* to each sample
         for _key in data:
             sample = data[_key]
-            cie_values = [sample[label] for label in cie_labels]
+            cie_values = [sample[label.decode("utf-8")] for label in cie_labels]
             Lab = colormath.XYZ2Lab(*cie_values)
             for i, label in enumerate(Lab_data_format):
                 sample[label] = Lab[i]
