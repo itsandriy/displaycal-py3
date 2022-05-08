@@ -85,10 +85,7 @@ def sort_RGB_to_top_factory(i1, i2, i3, i4):
 
 def sort_RGB_white_to_top(a, b):
     sum1, sum2 = sum(a[:3]), sum(b[:3])
-    if sum1 == 300:
-        return -1
-    else:
-        return 0
+    return -1 if sum1 == 300 else 0
 
 
 def sort_by_HSI(a, b):
@@ -2159,14 +2156,14 @@ Transform {
         Return number of affected DATA sections.
 
         """
-        n = 0
+        sections = 0
         for dataset in self.query("DATA").values():
             if not dataset.get_cie_data_format():
                 continue
             if not whitepoint_source:
                 whitepoint_source = dataset.get_white_cie("XYZ")
             if whitepoint_source:
-                n += 1
+                sections += 1
                 for item in dataset.queryv1("DATA").values():
                     if "XYZ_X" in item:
                         X, Y, Z = item["XYZ_X"], item["XYZ_Y"], item["XYZ_Z"]
@@ -2185,7 +2182,7 @@ Transform {
                         ) = colormath.XYZ2Lab(X, Y, Z)
                     if "XYZ_X" in item:
                         item["XYZ_X"], item["XYZ_Y"], item["XYZ_Z"] = X, Y, Z
-        return n
+        return sections
 
     def apply_bpc(self, bp_out=(0, 0, 0), weight=False):
         """Apply black point compensation.
@@ -2342,15 +2339,14 @@ Transform {
         Return the DATA_FORMAT on success or None on failure.
 
         """
-        data_format = self.queryv1("DATA_FORMAT")
-        if data_format:
+        if data_format := self.queryv1("DATA_FORMAT"):
             cie = {}
-            for ch in ("L", "A", "B"):
-                cie[ch] = "LAB_%s" % ch in list(data_format.values())
-            if len(list(cie.values())) in (0, 3):
-                for ch in ("X", "Y", "Z"):
-                    cie[ch] = "XYZ_%s" % ch in list(data_format.values())
-                if len([v for v in iter(cie.values()) if v is not False]) in (3, 6):
+            for channel in (b"LAB_L", b"LAB_A", b"LAB_B"):
+                cie[channel] = channel in list(data_format.values())
+            if len(list(cie.values())) in {0, 3}:
+                for channel in (b"XYZ_X", b"XYZ_Y", b"XYZ_Z"):
+                    cie[channel] = channel in list(data_format.values())
+                if len([v for v in iter(cie.values()) if v is not False]) in {3, 6}:
                     return data_format
 
     pop = remove
