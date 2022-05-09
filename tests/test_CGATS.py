@@ -1,10 +1,12 @@
 # -*- coding: utf-8 --*-
-from typing import List, TypedDict
+from __future__ import annotations
+from typing import List, TypedDict, Dict, Tuple
 
 import pytest
 from _pytest.fixtures import SubRequest
 
 from DisplayCAL import CGATS
+from DisplayCAL.config import get_current_profile
 from DisplayCAL.dev.mocks import check_call
 from DisplayCAL.util_io import LineBufferedStream, Files
 from DisplayCAL.worker import FilteredStream
@@ -936,3 +938,100 @@ def test_cgats_checkerboard(
     with check_call(CGATS.CGATS, "set_RGB_XYZ_values") as calls:
         cgats.checkerboard(split_grays=split_grays, shift=shift)
         assert calls[0][0][1] == result
+
+
+@pytest.mark.parametrize(
+    "weight",
+    (True, False),
+    ids=(
+        "with weight",
+        "without weight",
+    ),
+)
+@pytest.mark.parametrize(
+    "file",
+    ("Monitor.cal", "0_16_proper.ti3"),
+)
+def test_cgats_apply_bpc(
+    data_files,
+    weight: bool,
+    file: str,
+) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` black point compensation method."""
+    path = data_files[file].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    assert cgats[0].apply_bpc(weight=weight) == 1
+
+
+@pytest.mark.parametrize(
+    "profile,result",
+    (
+        (
+            "0_16_proper.ti3",
+            {
+                0: b"SAMPLE_ID",
+                1: b"RGB_R",
+                2: b"RGB_G",
+                3: b"RGB_B",
+                4: b"XYZ_X",
+                5: b"XYZ_Y",
+                6: b"XYZ_Z",
+            },
+        ),
+        ("Monitor.cal", None),
+    ),
+)
+def test_cgats_get_cie_data_format(
+    data_files, profile: str, result: Dict[int, bytes] | None
+) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` get_cie_data_format."""
+    path = data_files[profile].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    assert cgats.get_cie_data_format() == result
+
+
+@pytest.mark.parametrize(
+    "profile,result",
+    (
+        (
+            "0_16_proper.ti3",
+            {"XYZ_X": 92.51826162624847, "XYZ_Y": 100.0, "XYZ_Z": 110.07025946041877},
+        ),
+        (
+            "Monitor.ti3",
+            {"XYZ_X": 95.28091210097986, "XYZ_Y": 100.0, "XYZ_Z": 108.01177927429806},
+        ),
+        ("Monitor.cal", None),
+    ),
+)
+def test_cgats_get_white_cie(
+    data_files, profile: str, result: Dict[float] | None
+) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` get_white_cie."""
+    path = data_files[profile].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    assert cgats.get_white_cie() == result
+
+
+@pytest.mark.parametrize(
+    "profile,result",
+    (
+        ("0_16_proper.ti3", 1),
+        ("Monitor.ti3", 1),
+        ("mutliple_sections.ti1", 3),
+        ("Monitor.cal", 0),
+    ),
+)
+def test_cgats_adapt(data_files, profile: str, result: int) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` adapt method."""
+    path = data_files[profile].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    assert cgats.adapt() == result
+
+
+def test_cgats_convert_XYZ_to_Lab(data_files) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` convert_XYZ_to_Lab method."""
+    path = data_files["0_16_proper.ti3"].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    cgats.convert_XYZ_to_Lab()
+    assert all(key in cgats[0]["DATA"][0] for key in [b'LAB_L', b'LAB_A', b'LAB_B'])
