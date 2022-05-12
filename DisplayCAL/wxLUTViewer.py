@@ -406,8 +406,7 @@ class LUTCanvas(plot.PlotCanvas):
             channel_label = channels[channel]
             if not identical:
                 color = self.colors.get(
-                    f"{colorspace.decode('utf-8')}_{channel_label}",
-                    "white"
+                    f"{colorspace.decode('utf-8')}_{channel_label}", "white"
                 )
             # Note: We need to make sure each point is a float because it
             # might be a decimal.Decimal, which can't be divided by floats!
@@ -541,7 +540,9 @@ class LUTCanvas(plot.PlotCanvas):
             )  # upper right corner user scale (xmax,ymax)
         ptx, pty, rectWidth, rectHeight = self._point2ClientCoord(p1, p2)
         # allow graph to overlap axis lines by adding units to width and height
-        dc.SetClippingRegion(int(ptx), int(pty), int(rectWidth + 2), int(rectHeight + 2))
+        dc.SetClippingRegion(
+            int(ptx), int(pty), int(rectWidth + 2), int(rectHeight + 2)
+        )
 
         dc.SetPen(wx.Pen(wx.WHITE, 1, wx.DOT))
         dc.SetBrush(wx.Brush(wx.WHITE, wx.SOLID))
@@ -1085,7 +1086,16 @@ class LUTFrame(BaseFrame):
     def handle_errors(self):
         if self.client.errors:
             show_result_dialog(
-                Error("\n\n".join([str(e) for e in set(self.client.errors)])), self
+                Error(
+                    "\n\n".join(
+                        [
+                            "{}".format(e)
+                            for e in set(self.client.errors)
+                            if e is not None
+                        ]
+                    )
+                ),
+                self,
             )
             self.client.errors = []
 
@@ -2046,7 +2056,9 @@ class LUTFrame(BaseFrame):
                 elif curves_colorspace == b"Lab":
                     toggle.Label = ("L*", "a*", "b*")[channel]
                 else:
-                    toggle.Label = curves_colorspace[channel : channel + 1].decode("utf-8")
+                    toggle.Label = curves_colorspace[channel : channel + 1].decode(
+                        "utf-8"
+                    )
                 if toggle.GetValue():
                     yLabel.append(toggle.Label)
             toggle.Enable(bool(curves))
@@ -2383,7 +2395,7 @@ class LUTFrame(BaseFrame):
                         legend[0],
                         joiner.join(
                             [format_[i] % point for i, point in enumerate(pointXY)]
-                        )
+                        ),
                     )
                 if len(legend) == 1:
                     # Calculate gamma
@@ -2422,8 +2434,8 @@ class LUTFrame(BaseFrame):
                                 label,
                                 round(
                                     math.log(float(y) / axis_y) / math.log(x / axis_x),
-                                    2
-                                )
+                                    2,
+                                ),
                             )
                         )
                         if "=" in label:
