@@ -29,10 +29,12 @@ if not VERSION or test_update:
 author = ", ".join([
     "Florian Höch",
     "Erkan Özgür Yılmaz"
+    "Patrick Zwerschke"
 ])
 author_ascii = ", ".join([
     "Florian Hoech",
     "Erkan Ozgur Yilmaz"
+    "Patrick Zwerschke"
 ])
 description = (
     "Display calibration and profiling with a focus on accuracy and versatility"
@@ -52,6 +54,7 @@ author_email = ", ".join(
     [
         f"florian{chr(0o100)}{DOMAIN}",
         f"eoyilmaz{chr(0o100)}gmail.com",
+        f"patrick{chr(0o100)}p5k.org",
     ]
 )
 name = "DisplayCAL"
