@@ -26,8 +26,6 @@ import sys
 from io import StringIO, BytesIO
 import datetime
 
-# import decimal
-# Decimal = decimal.Decimal
 from decimal import Decimal
 import json as json_module
 import math
@@ -1089,11 +1087,9 @@ def get_cgats_path(cgats):
         descriptor = descriptor.groups()[0]
     descriptor = descriptor.decode("utf-8")
     description = descriptor or lang.getstr("unnamed")
-    name = re.sub(
-        r"[\\/:;*?\"<>|]+",
-        "_",
-        make_argyll_compatible_path(description)
-    )[:255]
+    name = re.sub(r"[\\/:;*?\"<>|]+", "_", make_argyll_compatible_path(description))[
+        :255
+    ]
     extension = cgats[:7].strip().lower().decode("utf-8")
     return os.path.join(config.get_argyll_data_dir(), "%s.%s" % (name, extension))
 
@@ -2392,7 +2388,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         """Create & initialize the 3D LUT creation window and its controls."""
         # Avoid messing with main configuration (e.g. when not running standalone)
         # because we share HDR settings with 3D LUT HDR settings
-        SynthICCFrame.cfg = config.ConfigParser.RawConfigParser()
+        SynthICCFrame.cfg = config.configparser.RawConfigParser()
         config.initcfg("synthprofile", SynthICCFrame.cfg)
         self.synthiccframe = SynthICCFrame()
 
@@ -2493,7 +2489,10 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
 
         # Use display size
         display_area_free_height = (
-            self.GetDisplay().ClientArea[3] + self.ClientSize[1] - self.Size[1] - safety_margin
+            self.GetDisplay().ClientArea[3]
+            + self.ClientSize[1]
+            - self.Size[1]
+            - safety_margin
         )
 
         # Use element heights
@@ -8412,7 +8411,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 # Profile loader not running? Fall back to config files
 
                 # 1. Remember current config
-                items = config.cfg.items(config.ConfigParser.DEFAULTSECT)
+                items = config.cfg.items(config.configparser.DEFAULTSECT)
 
                 # 2. Read in profile loader config. Result is unison of current
                 #    config and profile loader config.
@@ -8422,7 +8421,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 #    options)
                 for name, value in items:
                     if not name.startswith("profile_loader"):
-                        config.cfg.set(config.ConfigParser.DEFAULTSECT, name, value)
+                        config.cfg.set(config.configparser.DEFAULTSECT, name, value)
 
                 # 4. Write profile loader config with values updated from
                 #    current config
@@ -11343,7 +11342,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         # Profile loader not running? Fall back to config files
 
                         # 1. Remember current config
-                        items = config.cfg.items(config.ConfigParser.DEFAULTSECT)
+                        items = config.cfg.items(config.configparser.DEFAULTSECT)
 
                         # 2. Read in profile loader config. Result is unison of
                         #    current config and profile loader config.
@@ -11356,7 +11355,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                 "profile_loader"
                             ):
                                 config.cfg.set(
-                                    config.ConfigParser.DEFAULTSECT, name, value
+                                    config.configparser.DEFAULTSECT, name, value
                                 )
 
                         # 4. Remove profile loader options from current config

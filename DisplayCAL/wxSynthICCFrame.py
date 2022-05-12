@@ -915,7 +915,7 @@ class SynthICCFrame(BaseFrame, LUT3DMixin):
                 )
             ):
                 profile.version = 2.2  # Match ArgyllCMS
-            profile.colorSpace = "GRAY"
+            profile.colorSpace = b"GRAY"
             profile.setCopyright(self.getcfg("copyright"))
             profile.set_wtpt((XYZ["wX"], XYZ["wY"], XYZ["wZ"]), self.cat)
             black = [
@@ -1106,10 +1106,14 @@ class SynthICCFrame(BaseFrame, LUT3DMixin):
             ) = (X, Y, Z)
         # Technology type
         if tech:
-            profile.tags.tech = ICCP.SignatureType("sig \0\0\0\0" + tech, "tech")
+            if not isinstance(tech, bytes):
+                tech = tech.encode("utf-8")
+            profile.tags.tech = ICCP.SignatureType(b"sig \0\0\0\0" + tech, "tech")
         # Colorimetric intent image state
         if ciis:
-            profile.tags.ciis = ICCP.SignatureType("sig \0\0\0\0" + ciis, "ciis")
+            if not isinstance(ciis, bytes):
+                ciis = ciis.encode("utf-8")
+            profile.tags.ciis = ICCP.SignatureType(b"sig \0\0\0\0" + ciis, "ciis")
         profile.setDescription(os.path.splitext(os.path.basename(path))[0])
         profile.calculateID()
         try:
