@@ -28,12 +28,12 @@ if not VERSION or test_update:
 
 author = ", ".join([
     "Florian Höch",
-    "Erkan Özgür Yılmaz"
+    "Erkan Özgür Yılmaz",
     "Patrick Zwerschke"
 ])
 author_ascii = ", ".join([
     "Florian Hoech",
-    "Erkan Ozgur Yilmaz"
+    "Erkan Ozgur Yilmaz",
     "Patrick Zwerschke"
 ])
 description = (
