@@ -1018,7 +1018,7 @@ def test_cgats_get_white_cie(
     (
         ("0_16_proper.ti3", 1),
         ("Monitor.ti3", 1),
-        ("mutliple_sections.ti1", 3),
+        ("multiple_sections.ti1", 3),
         ("Monitor.cal", 0),
     ),
 )
@@ -1035,3 +1035,68 @@ def test_cgats_convert_XYZ_to_Lab(data_files) -> None:
     cgats = CGATS.CGATS(cgats=path)
     cgats.convert_XYZ_to_Lab()
     assert all(key in cgats[0]["DATA"][0] for key in [b'LAB_L', b'LAB_A', b'LAB_B'])
+
+
+@pytest.mark.parametrize("warn", (True, False), ids=("warn only", "take action"))
+@pytest.mark.parametrize(
+    "profile,filtered_sets,unfiltered_sets,result",
+    (
+        (
+            "Monitor.ti3",
+            175,
+            175,
+            {
+                "SAMPLE_ID": 1,
+                "RGB_R": 100.0,
+                "RGB_G": 100.0,
+                "RGB_B": 100.0,
+                "XYZ_X": 95.28091,
+                "XYZ_Y": 100.0,
+                "XYZ_Z": 108.0118,
+            },
+        ),
+        (
+            "Monitor_FixableSet.ti3",
+            175,
+            175,
+            {
+                "SAMPLE_ID": 1,
+                "RGB_R": 100.0,
+                "RGB_G": 100.0,
+                "RGB_B": 100.0,
+                "XYZ_X": 1e-06,
+                "XYZ_Y": 100.0,
+                "XYZ_Z": 108.0118,
+            },
+        ),
+        (
+            "Monitor_UnfixableSet.ti3",
+            174,
+            175,
+            {
+                "SAMPLE_ID": 2,
+                "RGB_R": 100.0,
+                "RGB_G": 100.0,
+                "RGB_B": 75.0,
+                "XYZ_X": 86.58697,
+                "XYZ_Y": 97.50149,
+                "XYZ_Z": 61.68331,
+            },
+        ),
+    ),
+)
+def test_fix_zero_measurements(
+    data_files,
+    profile: str,
+    filtered_sets: int,
+    unfiltered_sets: int,
+    result: Dict[str, int | float],
+    warn: bool,
+) -> None:
+    """Test ``DisplayCAL.CGATS.CGATS`` fix_zero_measurements method."""
+    path = data_files[profile].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    cgats.fix_zero_measurements(warn_only=warn)
+    assert len(cgats[0]["DATA"]) == unfiltered_sets if warn else filtered_sets
+    if not warn:
+        assert cgats[0]["DATA"][0] == result
