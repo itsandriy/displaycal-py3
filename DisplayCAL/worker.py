@@ -1946,7 +1946,7 @@ class Sudo(object):
             print(subprocess_before)
 
     def authenticate(self, args, title, parent=None):
-        """Athenticate for a given command
+        """Authenticate for a given command
 
         The return value will be a tuple (auth_successful, password).
 
