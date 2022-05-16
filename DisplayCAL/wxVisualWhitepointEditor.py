@@ -909,7 +909,7 @@ class HSVWheel(BasePyControl):
         ):
             dc.SetPen(wx.Pen(pencolour, 1))
 
-            dc.DrawRectangleRect(rect)
+            dc.DrawRectangle(rect)
 
     def OnLeftDown(self, event):
         """Handles the ``wx.EVT_LEFT_DOWN`` for :class:`HSVWheel`.
@@ -1183,7 +1183,7 @@ class BrightCtrl(BaseLineCtrl):
 
         dc.SetPen(wx.TRANSPARENT_PEN)
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.DrawRectangleRect(brightRect)
+        dc.DrawRectangle(brightRect)
 
     def TrackPoint(self, pt):
         """Tracks a mouse action inside the palette control.
@@ -1239,7 +1239,7 @@ class BrightCtrl(BaseLineCtrl):
         ):
             dc.SetPen(wx.Pen(pencolour, 1))
 
-            dc.DrawRectangleRect(rect)
+            dc.DrawRectangle(rect)
 
     def mousewheel_handler(self, event):
         self._spin(event.GetWheelRotation())
@@ -1320,7 +1320,7 @@ class HSlider(BaseLineCtrl):
 
         dc.SetPen(wx.TRANSPARENT_PEN)
         dc.SetBrush(wx.Brush(wx.Colour(76, 76, 76)))
-        dc.DrawRectangleRect(brightRect)
+        dc.DrawRectangle(brightRect)
 
     def TrackPoint(self, pt):
         """Tracks a mouse action inside the palette control.
@@ -1368,7 +1368,7 @@ class HSlider(BaseLineCtrl):
         brightMark = wx.Rect(x, brightRect.y, w, brightRect.height)
 
         dc.SetBrush(wx.Brush(wx.Colour(153, 153, 153)))
-        dc.DrawRectangleRect(brightMark)
+        dc.DrawRectangle(brightMark)
 
     def GetValue(self):
         return self.value

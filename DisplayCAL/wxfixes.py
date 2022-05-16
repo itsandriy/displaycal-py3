@@ -182,18 +182,6 @@ if "phoenix" in wx.PlatformInfo:
     wx.EVT_TASKBAR_RIGHT_DCLICK = wx.adv.EVT_TASKBAR_RIGHT_DCLICK
 
     # Removed items
-
-    wx.DC.BeginDrawing = lambda self: None
-    wx.DC.DrawRectangleRect = lambda dc, rect: dc.DrawRectangle(rect)
-    wx.DC.DrawRoundedRectangleRect = lambda dc, rect, radius: dc.DrawRoundedRectangle(
-        rect, radius
-    )
-    wx.DC.EndDrawing = lambda self: None
-    if not hasattr(wx.DC, "SetClippingRect"):
-        wx.DC.SetClippingRect = lambda dc, rect: dc.SetClippingRegion(
-            rect.x, rect.y, rect.width, rect.height
-        )
-
     wx.IconBundle.AddIconFromFile = (
         lambda file, type=wx.BITMAP_TYPE_ANY: wx.IconBundle.AddIcon(file, type)
     )
@@ -293,13 +281,13 @@ if "gtk3" in wx.PlatformInfo:
         def OnEraseBackground(self, event):
             dc = event.GetDC()
             rect = self.GetClientRect()
-            dc.SetClippingRect(rect)
+            dc.SetClippingRegion(
+                rect.x, rect.y, rect.width, rect.height
+            )
             bgcolor = self.BackgroundColour
-            dc.BeginDrawing()
             dc.SetBrush(wx.Brush(bgcolor, wx.SOLID))
             dc.SetPen(wx.Pen(bgcolor, wx.SOLID))
             dc.DrawRectangle(*rect)
-            dc.EndDrawing()
 
     from wx import dataview
 

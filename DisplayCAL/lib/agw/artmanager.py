@@ -84,7 +84,7 @@ class RendererBase(object):
         dcsaver = DCSaver(dc)
         dc.SetPen(wx.Pen(penColour))
         dc.SetBrush(wx.Brush(brushColour))
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
 
     def DrawBitmapArea(self, dc, xpm_name, rect, baseColour, flipSide):
         """Draws the area below a bitmap and the bitmap itself using a gradient shading.
@@ -270,7 +270,7 @@ class RendererXP(RendererBase):
 
             dc.SetPen(wx.Pen(startColour))
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            dc.DrawRectangleRect(rect)
+            dc.DrawRectangle(rect)
 
     def DrawToolBarBg(self, dc, rect):
         """Draws the toolbar background according to the active theme.
@@ -429,12 +429,12 @@ class RendererMSOffice2007(RendererBase):
 
         frameColour = artMgr.LightColour(baseColour, 60)
         dc.SetPen(wx.Pen(frameColour))
-        dc.DrawRectangleRect(rr)
+        dc.DrawRectangle(rr)
 
         wc = artMgr.LightColour(baseColour, 80)
         dc.SetPen(wx.Pen(wc))
         rr.Deflate(1, 1)
-        dc.DrawRectangleRect(rr)
+        dc.DrawRectangle(rr)
 
     def DrawMenuBarBg(self, dc, rect):
         """Draws the menu bar background according to the active theme.
@@ -449,7 +449,7 @@ class RendererMSOffice2007(RendererBase):
 
         dc.SetBrush(wx.Brush(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE)))
         dc.SetPen(wx.Pen(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE)))
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
 
         # Define the rounded rectangle base on the given rect
         # we need an array of 9 points for it
@@ -524,7 +524,7 @@ class RendererMSOffice2007(RendererBase):
 
         dc.SetBrush(wx.Brush(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE)))
         dc.SetPen(wx.Pen(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE)))
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
 
         radius = 2
 

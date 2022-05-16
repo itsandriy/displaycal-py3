@@ -498,28 +498,28 @@ class FourWaySplitter(wx.PyPanel):
         win3 = self.GetBottomRight()
 
         width, height = self.GetSize()
-        barSize = self._GetSashSize()
+        bar_size = self._GetSashSize()
         border = self._GetBorderSize()
 
         if self._expanded < 0:
-            totw = width - barSize - 2 * border
-            toth = height - barSize - 2 * border
-            self._splitx = (self._fhor * totw) / 10000
-            self._splity = (self._fver * toth) / 10000
-            rightw = totw - self._splitx
-            bottomh = toth - self._splity
+            total_width = int(width - bar_size - 2 * border)
+            total_height = int(height - bar_size - 2 * border)
+            self._splitx = int((self._fhor * total_width) / 10000)
+            self._splity = int((self._fver * total_height) / 10000)
+            rightw = int(total_width - self._splitx)
+            bottomh = int(total_height - self._splity)
             if win0:
                 win0.SetDimensions(0, 0, self._splitx, self._splity)
                 win0.Show()
             if win1:
-                win1.SetDimensions(self._splitx + barSize, 0, rightw, self._splity)
+                win1.SetDimensions(self._splitx + bar_size, 0, rightw, self._splity)
                 win1.Show()
             if win2:
-                win2.SetDimensions(0, self._splity + barSize, self._splitx, bottomh)
+                win2.SetDimensions(0, self._splity + bar_size, self._splitx, bottomh)
                 win2.Show()
             if win3:
                 win3.SetDimensions(
-                    self._splitx + barSize, self._splity + barSize, rightw, bottomh
+                    self._splitx + bar_size, self._splity + bar_size, rightw, bottomh
                 )
                 win3.Show()
 
@@ -528,7 +528,9 @@ class FourWaySplitter(wx.PyPanel):
             if self._expanded < len(self._windows):
                 for ii, win in enumerate(self._windows):
                     if ii == self._expanded:
-                        win.SetDimensions(0, 0, width - 2 * border, height - 2 * border)
+                        win.SetDimensions(
+                            0, 0, int(width - 2 * border), int(height - 2 * border)
+                        )
                         win.Show()
                     else:
                         win.Hide()
@@ -599,20 +601,29 @@ class FourWaySplitter(wx.PyPanel):
         """
 
         width, height = self.GetSize()
-        barSize = self._GetSashSize()
+        bar_size = self._GetSashSize()
         # border = self._GetBorderSize()
 
-        self._fhor = (
-            width > barSize
-            and [(10000 * self._splitx + (width - barSize - 1)) / (width - barSize)]
-            or [0]
-        )[0]
+        self._fhor = int(
+            (
+                width > bar_size
+                and [
+                    (10000 * self._splitx + (width - bar_size - 1)) / (width - bar_size)
+                ]
+                or [0]
+            )[0]
+        )
 
-        self._fver = (
-            height > barSize
-            and [(10000 * self._splity + (height - barSize - 1)) / (height - barSize)]
-            or [0]
-        )[0]
+        self._fver = int(
+            (
+                height > bar_size
+                and [
+                    (10000 * self._splity + (height - bar_size - 1))
+                    / (height - bar_size)
+                ]
+                or [0]
+            )[0]
+        )
 
         self._SizeWindows()
 

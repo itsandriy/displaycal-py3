@@ -1205,7 +1205,7 @@ class ImageContainer(ImageContainerBase):
                             buttonRect.height - 1,
                         )
 
-                dc.DrawRectangleRect(buttonRect)
+                dc.DrawRectangle(buttonRect)
 
             if self._nHoeveredImgIdx == i:
 
@@ -1236,7 +1236,7 @@ class ImageContainer(ImageContainerBase):
                             buttonRect.height - 1,
                         )
 
-                dc.DrawRectangleRect(buttonRect)
+                dc.DrawRectangle(buttonRect)
 
             if bUseYcoord:
                 rect = wx.Rect(0, pos, rectWidth, rectWidth)
@@ -1517,14 +1517,14 @@ class LabelContainer(ImageContainerBase):
                 dc.SetBrush(wx.TRANSPARENT_BRUSH)
                 self.DrawBackgroundBitmap(dc)
 
-            dc.DrawRectangleRect(wx.Rect(0, 0, size.x, size.y))
+            dc.DrawRectangle(wx.Rect(0, 0, size.x, size.y))
 
         # Draw border
         if self.HasAGWFlag(INB_BORDER) and self.HasAGWFlag(INB_GRADIENT_BACKGROUND):
 
             # Just draw the border with transparent brush
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
-            dc.DrawRectangleRect(wx.Rect(0, 0, size.x, size.y))
+            dc.DrawRectangle(wx.Rect(0, 0, size.x, size.y))
 
         bUsePin = (self.HasAGWFlag(INB_USE_PIN_BUTTON) and [True] or [False])[0]
 
@@ -2028,7 +2028,7 @@ class LabelContainer(ImageContainerBase):
                 labelRect.width += 3
                 labelRect.x -= 3
 
-            dc.DrawRoundedRectangleRect(labelRect, 3)
+            dc.DrawRoundedRectangle(labelRect, 3)
 
             if not orientationLeft and self.HasAGWFlag(INB_DRAW_SHADOW):
                 dc.SetPen(wx.BLACK_PEN)

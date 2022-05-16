@@ -4881,7 +4881,7 @@ class CustomCellRenderer(wx.grid.PyGridCellRenderer):
             if (isSelected or isCursor) and col_label:
                 dc.SetBrush(wx.Brush(bgcolor))
                 dc.SetPen(wx.TRANSPARENT_PEN)
-                dc.DrawRectangleRect(rect)
+                dc.DrawRectangle(rect)
                 rect = orect
                 if not rowselect:
                     w = 60 + rect[3] * 2
@@ -4978,7 +4978,7 @@ class CustomCellRenderer(wx.grid.PyGridCellRenderer):
             else:
                 dc.SetBrush(wx.Brush(color))
                 dc.SetPen(wx.TRANSPARENT_PEN)
-                dc.DrawRectangleRect(rect)
+                dc.DrawRectangle(rect)
         dc.SetFont(grid.GetCellFont(row, col))
         dc.SetTextForeground(textcolor)
         self.DrawLabel(grid, dc, orect, row, col)
@@ -5059,7 +5059,7 @@ class CustomColLabelRenderer(object):
                     color = wx.Colour(color.Red(), color.Green(), color.Blue())
             dc.SetBrush(wx.Brush(color))
             dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.DrawRectangleRect(rect)
+            dc.DrawRectangle(rect)
             pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
             dc.SetPen(pen)
             if getattr(grid, "draw_horizontal_grid_lines", True) or (
@@ -5119,7 +5119,7 @@ class CustomRowLabelRenderer(object):
                 color.Set(*newcolor)
         dc.SetBrush(wx.Brush(color))
         dc.SetPen(wx.TRANSPARENT_PEN)
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
         pen = wx.Pen(grid.GetGridLineColour())
         dc.SetPen(pen)
         if getattr(grid, "draw_horizontal_grid_lines", True):
@@ -7512,25 +7512,24 @@ class TwoWaySplitter(FourWaySplitter):
 
         :see: L{SetHSplit} and L{SetVSplit} for more information about split fractions.
         """
-
         win0 = self.GetTopLeft()
         win1 = self.GetTopRight()
 
         width, height = self.GetSize()
-        barSize = self._GetSashSize()
+        bar_size = self._GetSashSize()
         border = self._GetBorderSize()
 
         if self._expanded < 0:
-            totw = width - barSize - 2 * border
-            self._splitx = max((self._fhor * totw) / 10000, self._minimum_pane_size)
-            self._splity = height
+            totw = int(width - bar_size - 2 * border)
+            self._splitx = int(max((self._fhor * totw) / 10000, self._minimum_pane_size))
+            self._splity = int(height)
             rightw = max(totw - self._splitx, 0)
             if win0:
                 win0.SetPosition((0, 0))
                 win0.SetSize((self._splitx, self._splity))
                 win0.Show()
             if win1:
-                win1.SetPosition((self._splitx + barSize, 0))
+                win1.SetPosition((self._splitx + bar_size, 0))
                 win1.SetSize((rightw, self._splity))
                 win1.Show()
 
@@ -7538,7 +7537,7 @@ class TwoWaySplitter(FourWaySplitter):
             if self._expanded < len(self._windows):
                 for ii, win in enumerate(self._windows):
                     if ii == self._expanded:
-                        win.SetSize((width - barSize - 2 * border, height - 2 * border))
+                        win.SetSize((int(width - bar_size - 2 * border), int(height - 2 * border)))
                         win.Show()
                     else:
                         win.Hide()
@@ -7686,7 +7685,7 @@ class TwoWaySplitter(FourWaySplitter):
         if flgs & FLAG_PRESSED:
 
             if not self.GetAGWWindowStyleFlag() & wx.SP_LIVE_UPDATE:
-                self.DrawTrackSplitter(self._splitx, self._splity)
+                self.DrawTrackSplitter(int(self._splitx), int(self._splity))
                 self.DrawSplitter(wx.ClientDC(self))
                 self.AdjustLayout()
 
@@ -7695,7 +7694,7 @@ class TwoWaySplitter(FourWaySplitter):
                     wx.wxEVT_COMMAND_SPLITTER_SASH_POS_CHANGED, self
                 )
                 event.SetSashIdx(self._mode)
-                event.SetSashPosition(wx.Point(self._splitx, self._splity))
+                event.SetSashPosition(wx.Point(int(self._splitx), int(self._splity)))
                 self.GetEventHandler().ProcessEvent(event)
             else:
                 self.OnLeftDClick(event)
@@ -7744,15 +7743,15 @@ class TwoWaySplitter(FourWaySplitter):
                 self.MoveSplit(self._splitx, pt.y - self._offy)
 
             # Send a changing event
-            if not self.DoSendChangingEvent(wx.Point(self._splitx, self._splity)):
+            if not self.DoSendChangingEvent(wx.Point(int(self._splitx), int(self._splity))):
                 self._splitx = oldsplitx
                 self._splity = oldsplity
                 return
 
-            if oldsplitx != self._splitx or oldsplity != self._splity:
+            if int(oldsplitx) != int(self._splitx) or int(oldsplity) != int(self._splity):
                 if not self.GetAGWWindowStyleFlag() & wx.SP_LIVE_UPDATE:
-                    self.DrawTrackSplitter(oldsplitx, oldsplity)
-                    self.DrawTrackSplitter(self._splitx, self._splity)
+                    self.DrawTrackSplitter(int(oldsplitx), int(oldsplity))
+                    self.DrawTrackSplitter(int(self._splitx), int(self._splity))
                 else:
                     self.AdjustLayout()
 

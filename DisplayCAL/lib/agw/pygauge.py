@@ -248,11 +248,11 @@ class PyGauge(wx.PyWindow):
         colour = self.GetBackgroundColour()
         dc.SetBrush(wx.Brush(colour))
         dc.SetPen(wx.Pen(colour))
-        dc.DrawRectangleRect(rect)
+        dc.DrawRectangle(rect)
 
         if self._border_colour:
             dc.SetPen(wx.Pen(self.GetBorderColour()))
-            dc.DrawRectangleRect(rect)
+            dc.DrawRectangle(rect)
             pad = 1 + self.GetBorderPadding()
             rect.Deflate(pad, pad)
 
@@ -270,7 +270,7 @@ class PyGauge(wx.PyWindow):
                 w = rect.width * (float(self._valueSorted[i]) / self._range)
                 r = copy.copy(rect)
                 r.width = int(w)
-                dc.DrawRectangleRect(r)
+                dc.DrawRectangle(r)
 
     def OnTimer(self, event):
         """Handles the ``wx.EVT_TIMER`` event for L{PyGauge}.
