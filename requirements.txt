@@ -6,5 +6,5 @@ numpy
 Pillow
 PyChromecast
 Send2Trash
-wxPython
+wxPython>=4.1.1
 zeroconf
