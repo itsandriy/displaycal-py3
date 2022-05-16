@@ -7571,7 +7571,7 @@ class TwoWaySplitter(FourWaySplitter):
             self._sashbitmap = getbitmap("theme/sash-left")
         sashwidth, sashheight = self._sashbitmap.GetSize()
 
-        dc.DrawRectangle(splitx, 0, sashwidth, height)
+        dc.DrawRectangle(int(splitx), 0, int(sashwidth), int(height))
         dc.DrawBitmap(
             self._sashbitmap, int(splitx), int(height / 2 - sashheight / 2), True
         )
