@@ -10526,14 +10526,14 @@ usage: spotread [-options] [logfile]
                         "theme",
                         "icons",
                         "256x256",
-                        appname.lower() + "-apply-profiles.png",
+                        f"{appname.lower()}-apply-profiles.png",
                     )
                     executable = pyw
             else:
                 # Regular install
-                executable = appname.lower() + "-apply-profiles"
-            desktopfile.write("Icon=%s\n" % icon.encode("UTF-8"))
-            desktopfile.write("Exec=%s\n" % executable.encode("UTF-8"))
+                executable = f"{appname.lower()}-apply-profiles"
+            desktopfile.write("Icon=%s\n" % icon)
+            desktopfile.write("Exec=%s\n" % executable)
             desktopfile.write("Terminal=false\n")
             desktopfile.close()
         except Exception as exception:
