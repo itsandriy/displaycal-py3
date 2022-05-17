@@ -10464,51 +10464,54 @@ usage: spotread [-options] [logfile]
         # Must return either True on success or an Exception object on error
         result = True
         # Remove wrong-cased entry potentially created by DisplayCAL < 3.1.6
-        name = "z-%s-apply-profiles" % appname
-        desktopfile_path = os.path.join(autostart_home, name + ".desktop")
-        if os.path.exists(desktopfile_path):
+        name = f"z-{appname}-apply-profiles"
+        desktop_file_path = os.path.join(autostart_home, f"{name}.desktop")
+        if os.path.exists(desktop_file_path):
             try:
-                os.remove(desktopfile_path)
+                os.remove(desktop_file_path)
             except Exception as exception:
                 result = Warning(
-                    lang.getstr("error.autostart_remove_old", desktopfile_path)
+                    lang.getstr("error.autostart_remove_old", desktop_file_path)
                 )
         # Create unified loader
         # Prepend 'z' so our loader hopefully loads after
         # possible nvidia-settings entry (which resets gamma table)
         name = "z-%s-apply-profiles" % appname.lower()
-        desktopfile_path = os.path.join(autostart_home, name + ".desktop")
-        system_desktopfile_path = os.path.join(autostart, name + ".desktop")
+        desktop_file_path = os.path.join(autostart_home, f"{name}.desktop")
+        system_desktop_file_path = os.path.join(autostart, f"{name}.desktop")
         try:
             # Create user loader, even if we later try to
-            # move it to the system-wide location so that atleast
+            # move it to the system-wide location so that at least
             # the user loader is present if the move to the system
             # dir fails
             if not os.path.exists(autostart_home):
                 os.makedirs(autostart_home)
-            desktopfile = open(desktopfile_path, "w")
-            desktopfile.write("[Desktop Entry]\n")
-            desktopfile.write("Version=1.0\n")
-            desktopfile.write("Encoding=UTF-8\n")
-            desktopfile.write("Type=Application\n")
-            desktopfile.write("Name=%s\n" % (appname + " ICC Profile Loader"))
-            desktopfile.write(
-                "Comment=%s\n"
-                % lang.getstr("calibrationloader.description", lcode="en")
+
+            desktop_file_buffer = []
+            desktop_file_buffer.append("[Desktop Entry]")
+            desktop_file_buffer.append("Version=1.0")
+            desktop_file_buffer.append("Encoding=UTF-8")
+            desktop_file_buffer.append("Type=Application")
+            desktop_file_buffer.append(f"Name={appname} ICC Profile Loader")
+            desktop_file_buffer.append(
+                "Comment={}".format(
+                    lang.getstr("calibrationloader.description", lcode="en")
+                )
             )
             if lang.getcode() != "en":
-                desktopfile.write(
+                desktop_file_buffer.append(
                     (
-                        "Comment[%s]=%s\n"
-                        % (lang.getcode(), lang.getstr("calibrationloader.description"))
+                        "Comment[%s]=%s".format(
+                            lang.getcode(), lang.getstr("calibrationloader.description")
+                        )
                     )
                 )
             pyw = os.path.normpath(
-                os.path.join(pydir, "..", appname + "-apply-profiles.pyw")
+                os.path.join(pydir, "..", f"{appname}-apply-profiles.pyw")
             )
-            icon = appname.lower() + "-apply-profiles"
+            icon = f"{appname.lower()}-apply-profiles"
             if os.path.exists(pyw):
-                # Running from source, or 0install/Listaller install
+                # Running from source, or 0install/installer install
                 # Check if this is a 0install implementation, in which
                 # case we want to call 0launch with the appropriate
                 # command
@@ -10532,14 +10535,15 @@ usage: spotread [-options] [logfile]
             else:
                 # Regular install
                 executable = f"{appname.lower()}-apply-profiles"
-            desktopfile.write("Icon=%s\n" % icon)
-            desktopfile.write("Exec=%s\n" % executable)
-            desktopfile.write("Terminal=false\n")
-            desktopfile.close()
+            desktop_file_buffer.append(f"Icon={icon}")
+            desktop_file_buffer.append(f"Exec={executable}")
+            desktop_file_buffer.append("Terminal=false")
+            with open(desktop_file_path, "w") as desktop_file:
+                desktop_file.write("\n".join(desktop_file_buffer))
         except Exception as exception:
             if not silent:
                 result = Warning(
-                    lang.getstr("error.autostart_creation", desktopfile_path)
+                    lang.getstr("error.autostart_creation", desktop_file_path)
                     + "\n"
                     + str(exception)
                 )
@@ -10559,7 +10563,7 @@ usage: spotread [-options] [logfile]
                     is not True
                     or self.exec_cmd(
                         "mv",
-                        ["-f", desktopfile_path, system_desktopfile_path],
+                        ["-f", desktop_file_path, system_desktop_file_path],
                         capture_output=True,
                         low_contrast=False,
                         skip_scripts=True,
@@ -10569,7 +10573,7 @@ usage: spotread [-options] [logfile]
                     is not True
                 ) and not silent:
                     result = Warning(
-                        lang.getstr("error.autostart_creation", system_desktopfile_path)
+                        lang.getstr("error.autostart_creation", system_desktop_file_path)
                     )
         return result
 
