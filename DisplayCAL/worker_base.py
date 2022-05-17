@@ -669,7 +669,8 @@ class Xicclu(WorkerBase):
         self.output_scale = 1.0
         if is_profile:
             if profile.profileClass not in (b"abst", b"link"):
-                args.append("-i" + intent)
+                if intent:
+                    args.append(f"-i{intent}")
                 if order != "n":
                     args.append("-o" + order)
             if profile.profileClass != b"link":
