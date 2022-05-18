@@ -42,8 +42,309 @@
 
     <div id="changelog">
         <h2>Changelog</h2>
-        <!-- 2019-12-14 12:14 (UTC) 3.8.9.3  -->
         <dl>
+            <dt id="changelog-3.9.x">2022-04-01 12:00 (UTC) 3.9.x </dt>
+            <dd>
+                <h3>DisplayCAL 3.9.x</h3>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li>
+                        <span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span>
+                        Added Python 3 support. DisplayCAL now works with Python 3.8+.
+                    </li>
+                    <li>
+                        <span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span>
+                        Dropped Python 2.x support. DisplayCAL will not work with Python 2.x anymore.
+                    </li>
+                    <li>
+                        <span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span>
+                        Dropped 32bit support. DisplayCAL is now working only in 64bit OSes.
+                    </li>
+                </ul>
+
+                <p id="changelog-3.8.9.2">2019-12-12 22:33 (UTC) 3.8.9.2 </p>
+                <h3>DisplayCAL 3.8.9.2 </h3>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> When previous instance was force quit, override leftover lockfile.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> When using a custom profiling testchart with very few or no dark RGB gray patches, try to better maintain slope of existing points during shaper curve generation.</li>
+                </ul>
+
+                <p id="changelog-3.8.9.1">2019-12-08 01:19 (UTC) 3.8.9.1 </p>
+                <h3>DisplayCAL 3.8.9.1 </h3>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label moderate"><span>[</span>Moderate<span>]</span></span> Fix SpyderX calibration issue when using 32-bit ArgyllCMS executables.</li>
+                </ul>
+
+                <p id="changelog-3.8.9">2019-12-07 16:21 (UTC) 3.8.9 </p>
+                <h3>DisplayCAL 3.8.9 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Show the instrument serial number (if available) when prompting to physically interact with the instrument.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Check SpyderX dark offset calibration and abort if it is too high (user error).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Adjust perceptual device to PCS table black point to match perceptual PCS to device table.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Warn during automatic output levels detection if the display device input range or graphics driver output range look to be misconfigured.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Profile loader (Windows): Use an alternate method to enforce single instance if local IPC is blocked.</li>
+                    <li>Tone response curve plot now uses the illuminant-relative profile whitepoint instead of D50 for input values if using absolute colorimetric intent.</li>
+                    <li>Rename “LG OLED” (.dcl) 3D LUT format to “DeviceControl” and unlock available resolutions.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Reload current calibration when cancelling profile installation (regression of a change to profile installation dialog handling in DisplayCAL 3.8.8, SVN revision r6252).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> When loading settings from a profile, restore unused CIECAM02 viewing conditions (if applicable).</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Trivial<span>]</span></span> Prevent potential double prompt for instrument calibration.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> Do not re-use logfiles for standalone tools as long as other instances are still running.</li>
+                    <li><span class="changelog-label moderate"><span>[</span>Moderate<span>]</span></span> Linux: Failure to launch with pre-release versions of wxPython 4.</li>
+                </ul>
+
+                <p id="changelog-3.8.8.1">2019-11-07 21:16 (UTC) 3.8.8.1 </p>
+                <h3>DisplayCAL 3.8.8.1 </h3>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label moderate"><span>[</span>Moderate<span>]</span></span> Linux: Work-around failure to launch if wxPython 3.0 / wxWidgets 3.0 release number do not match (using wxPython 3.0 is deprecated).</li>
+                </ul>
+
+                <p id="changelog-3.8.8">2019-11-06 23:12 (UTC) 3.8.8 </p>
+                <h3>DisplayCAL 3.8.8 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Detect and warn about malformed colorimeter corrections (e.g. from non-official sources). Move them to the trash automatically if they were previously (manually) installed.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Always enumerate instruments on application startup if more than one instrument was detected the last time the application was used (cross-platform consistency).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> When prompting for instrument calibration, display the just now detected instrument name instead of the previously enumerated name (the latter might be stale if you forgot to refresh after changing connected instruments).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Use a slightly improved smoothing method when creating high resolution PCS to device tables.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Increase automatic PCS to device table resolution for L*a*b* LUT profiles to 45x45x45 if using smoothing.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Only auto-close profile/3D LUT installation dialog after a successful installation.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Don't auto-close madTPG after 3D LUT installation.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> macOS: Warn if a black luminance calibration target is set.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Profile loader (Windows): Use a minimally faster method to check for other running applications.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> madVR 3D LUT generation: Always write D65 white to 3D LUT input primaries metadata so madVR does not attempt to correct whitepoint differences on its own when using a custom whitepoint (the 3D LUT itself will map the custom whitepoint correctly).</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> madVR 3D LUT installation: Don't attempt to install 3D LUTs with unsupported input primaries metadata (i.e. not Rec. 709, SMPTE C, EBU/PAL, Rec. 2020 or DCI P3) as madVR will overwrite the metadata depending on the 3D LUT install slot. Such 3D LUTs should only be assigned manually in madVR instead.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> When loading settings, always enable the 3D LUT tab if the display is virtual (consistent with display selection behavior).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Also apply black point correction when creating a matrix profile without black point compensation (consistency).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Do not create swapped matrix fallback tags for XYZ LUT profiles when using the alternate forward profiler and the used ArgyllCMS version is &gt;= 2.1 (be consistent with ArgyllCMS).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> madVR 3D LUT generation: Accept negative values for input primaries metadata.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> madVR 3D LUT installation (Linux, macOS): Send the 3D LUT in chunks and increase the timeout to prevent the installation failing over a slow network (e.g. WiFi).</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Profile loader (Windows): Prevent a stale tray icon remaining (until mouse over) in some rare cases after exiting the profile loader.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Profile loader (Windows 7): Skip incomplete display configuration registry entries.</li>
+                </ul>
+
+                <p id="changelog-3.8.7.1">2019-10-01 20:50 (UTC) 3.8.7.1 </p>
+                <h3>DisplayCAL 3.8.7.1 </h3>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Profile information (Linux): When using wxPython 3.0 instead of 4.0, clicking the sash would throw an error (using wxPython 3.0 is deprecated).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> macOS: Only automatically re-enable black point compensation if restoring defaults or loading a non-3D-LUT preset.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Profile loader (Windows): Work-around two instances of the profile loader being started after powering on the system if fast startup was enabled in Windows power settings.</li>
+                </ul>
+
+                <p id="changelog-3.8.7">2019-09-22 13:23 (UTC) 3.8.7 </p>
+                <h3>DisplayCAL 3.8.7 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> macOS: Automatically enable not using the video card gamma table to apply calibration during characterization measurements if using limited range (16..235). This should mitigate issues with older graphics chipsets and/or macOS versions that use the wrong output range internally when connected to some monitors that expect to receive limited range signals.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Profile loader (Windows): A scheduled task now restarts the profile loader after resume from standby/hibernation as well as daily at 04:00 AM (whichever comes first), to mitigate the Windows GDI SetDeviceGammaRamp API leaking memory since Windows 10 1903.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Don't automatically disable interactive display adjustment when setting calibration tone curve to “As measured” (unintended behavioral change introduced in DisplayCAL 3.8.6, SVN revision r6194).</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Linux (GNOME on Wayland): Latency incurred by a large measurement window size was not accounted for, introducing the possibility of measurements failing due to loss of synchronization.</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Linux (GNOME on Wayland): Limited range (16..235) support.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> macOS: Get rid of brief profile installation dialog flicker after installation.</li>
+                </ul>
+
+                <p id="changelog-3.8.6">2019-09-06 10:23 (UTC) 3.8.6 </p>
+                <h3>DisplayCAL 3.8.6 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> If the graphics drivers or hardware do not support loadable gamma ramps or calibration, show a more descriptive error message.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Increase the timeout for display &amp; instrument detection during application startup from 10 to 20 seconds, to allow for slow opening of legacy serial ports.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Windows 10 1903: Always do instrument detection during application startup if more than one instrument was connected the last time the application was used, as the list of instruments is not guaranteed to be consistent between sessions under 1903.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Profile loader (Windows): Apply smoothing to calibration if the quantization bitdepth is set to 8.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Profile loader (Windows): No longer require running elevated to be able to detect changes in the display configuration under Windows 10 1903.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Do not attempt to access properties of non-existent objects if a subprocess is not succesfully terminated after reaching a timeout during display &amp; instrument detection at application startup (unexpected failure).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Disable the profile installation button if no displays have been detected.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Disable the measurement report menu item if no instruments have been detected.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Profile loader (Windows): Work around Windows 10 1903 handle leaks in Windows Color System APIs.</li>
+                </ul>
+
+                <p id="changelog-3.8.5">2019-08-14 13:06 (UTC) 3.8.5 </p>
+                <h3>DisplayCAL 3.8.5 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> macOS: Use <code>caffeinate</code> to prevent display sleep and screensaver.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label moderate"><span>[</span>Moderate<span>]</span></span> DisplayCAL 3.8.4 broke video levels (16..235) output encoding/decoding for video card gamma table tags (profiles using calibration with video output levels created by 3.8.4 can be fixed by re-creating via menu “File”, “Create profile from measurement data...” and selecting the existing profile).</li>
+                </ul>
+
+                <p id="changelog-3.8.4">2019-08-10 21:17 (UTC) 3.8.4 </p>
+                <h3>DisplayCAL 3.8.4 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Do early detection of highly non-monotonic luminance responses when doing on-the-fly generation of the preconditioning profile for auto-optimized testcharts with 425 or more patches.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Always create a single shaper curve for the fallback matrix tags of cLUT profiles with nonlinear calibration.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Profile loader (Windows): Only try to restore profile associations on exit if they had to be fixed on launch to begin with.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Work-around Argyll applycal bug with gamma value TRC curve tags in profiles (fixes generating HDR 3D LUTs from display profiles with such tags).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Windows with display scaling above 100% (HiDPI): Prevent occasional text cutoff/wrapping issues on dialog messages by adding one pixel to the minimum width of the message text area (wxWidgets bug).</li>
+                </ul>
+
+
+                <p id="changelog-3.8.3">2019-07-02 21:00 (UTC) 3.8.3 </p>
+                <h3>DisplayCAL 3.8.3 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li>Profile loader (Windows): Work around Windows 10 1903 (May 2019 update) severe banding bug and automatically disable Microsoft Windows Color System Calibration Loader task. Logging out and back in is required, and may be required each time a display's default associated profile is changed.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Verification: Prevent unintended mixing of unicode and binary strings when a device link profile is used.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux (KDE): Centering the measurement window would increase its size slightly and resetting its size would move the window down and right (regression of SVN revision r6137).</li>
+                </ul>
+
+                <p id="changelog-3.8.2">2019-06-09 15:18 (UTC) 3.8.2 </p>
+                <h3>DisplayCAL 3.8.2 </h3>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Always try to skip initial colorimeter calibration for uniformity measurements (e.g. SpyderX).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Linux: Use GObject Introspection for DBus access (if available).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Linux: Use a default timeout of 500 ms for DBus calls.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Profile loader (Windows): If registry access to the display configuration fails (e.g. due to running non-elevated), log a warning only once.</li>
+                    <li>Windows: Only log Windows exceptions that are actually errors.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> If invoked from the main application's “Tools” menu, the synthetic ICC profile creator HDR configuration could affect the main application's 3D LUT HDR configuration.</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Successive requested instrument calibration during uniformity measurements did not wait for the calibration to complete before continuing (e.g. SpyderX).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Prevent potential blocking of socket binding if a previous instance exited unexpectedly.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Change parent inheritance for pathdialog wrappers so interacting with the parent is appropriately prevented when the wrapper dialog is shown via a scripting request.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: Always prefer the global DPI value (Xft.dpi) for HiDPI scaling with wxGTK2.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Windows: Work-around wxPython Phoenix bug: Destroying a frame loaded from XRC affects subsequently loaded XRC resources (leading to instantiated controls being of the wrong type and failing initialization due to not having the expected interfaces).</li>
+                </ul>
+
+                <p id="changelog-3.8.1.1">2019-05-24 01:13 (UTC) 3.8.1.1 </p>
+                <h3>DisplayCAL 3.8.1.1 </h3>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: Some custom widgets could have a size of zero with wxGTK2 under non-KDE desktop environments when <code>org.gnome.desktop.interface scaling-factor</code> was set to 0 (regression of a change in DisplayCAL 3.8.1, SVN revision r5979).</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: No scaling for some custom widgets with wxGTK2 and HiDPI unless <code>org.gnome.desktop.interface scaling-factor</code> was set to a value of 2 or higher (regression of a change in DisplayCAL 3.8.1, SVN revision r6005). HiDPI scaling with wxGTK2 under X11 is now handled entirely by the global DPI value (Xft.dpi).</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: Too small size for the contents of some custom widgets with wxGTK2 and HiDPI.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: Too much padding inside some custom widgets with wxGTK2 and HiDPI.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: Occasional glitchy window sizing under Wayland.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: Added workaround for double window decorations when the environment variable GTK_CSD is set to a nonzero value under X11 (e.g. elementary OS Juno with Phanteon desktop).</li>
+                </ul>
+
+                <p id="changelog-3.8.1">2019-05-18 15:11 (UTC) 3.8.1 </p>
+                <h3>DisplayCAL 3.8.1 </h3>
+
+                <h4>Added in this release:</h4>
+                <ul>
+                    <li>
+                        <span class="changelog-label feature"><span>[</span>Feature<span>]</span></span> Linux: <strong>Preliminary experimental Wayland support under GNOME 3 using colord</strong> (requires ArgyllCMS 2.1 or newer as well). Caveats do apply:
+                        <ul>
+                            <li>Window placement and ordering is completely up to the compositor under Wayland. There is generally no way for an application to place its own windows at specific relative locations or z-orders. As a result of this, the measurement window cannot stay always on top or be automatically centered. Extra care needs to be taken that other windows are not placed on top.</li>
+                            <li>Video card gamma table (videoLUT) access is handled by colord. Some functions like viewing current videoLUT contents may not be available.</li>
+                            <li>The measurement window color depth is limited to 8 bits per channel per pixel (but dithering is used to achieve a higher effective color depth).</li>
+                            <li>The measurement window may be subject to desktop-wide color management in upcoming versions of Wayland (although the display device is inhibited during measurements via the <a href="https://www.freedesktop.org/software/colord/gtk-doc/Device.html">org.freedesktop.ColorManager.Device</a> D-Bus API which should prevent this, and as a fallback a linear calibration sRGB profile is temporarily installed during measurements if the D-BUs API is unavailable, which should result in an identity transform, i.e. effectively no color management, as well as linear video card gamma tables).</li>
+                            <li>Application support for color management under Wayland via colord <a href="https://www.freedesktop.org/software/colord/faq.html#application-support">still seems to lacking</a> (although the list may well be out-of-date).</li>
+                            <li>Only tested under GNOME 3 (Fedora 30, Ubuntu 19.04). Support for other desktop environments will need to be implemented separately until Wayland gains a color management and calibration/profiling protocol.</li>
+                        </ul>
+                    </li>
+                    <li><span class="changelog-label feature"><span>[</span>Feature<span>]</span></span> LG OLED 3D LUT format.</li>
+                </ul>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> If the currently used ArgyllCMS version is not a standard version, but also not a beta, do not offer to switch to an installed official stable version if it's otherwise the same version number.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Include Quantum Dot LED (Samsung QLED Q9F) spectral sample colorimeter correction when importing for i1 Display Pro and ColorMunki Display (sourced from community colorimeter corrections database).</li>
+                    <li><span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux (Debian, Fedora, Ubuntu): Use wxPython Phoenix if installed.</li>
+                    <li>Prisma, Resolve: Set pattern generator background color to pattern color if using fullscreen patterns.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label moderate"><span>[</span>Moderate<span>]</span></span> UnicodeDecodeError when a CCSS file contains unicode characters in the display device description (regression of a change in DisplayCAL 3.8 to use localized technology descriptions, SVN revision r5810).</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> APL calculation for Prisma and Resolve pattern generators was off by a few percent depending on pattern area and current pattern color.</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Quick reporting on calibrated or uncalibrated display did not try to detect output levels if set to “Auto”.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> More gracefully deal with faulty tags in ICC profiles (fixes ICC profile information unhandled exception for colord-created profiles with malformed <code>targ</code> tags).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Correctly update the audio button state on progress dialogs when changed on a previous window.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Various minor potential rendering glitches.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> macOS (standalone application bundle): Splash screen did not animate.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> <span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Linux: Add work-arounds for various Wayland-related wxPython rendering quirks and bugs (e.g. spacing around windows, popup menu placement).</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Linux: Try to work around sporadic colord profile installation quirks (“The profile was not added in time”).</li>
+                </ul>
+
+                <p><strong>Phasing out 0install support.</strong> While the 0install version of DisplayCAL (which was originally introduced as a replacement for the long-defunct Autopackage system under Linux) has had its uses, the low distribution (around 6%) of 0install versus the standalone version does no longer warrant the additional time and work needed to maintain this separate deployment path.<br />
+                    0install support is thus being phased out starting with DisplayCAL 3.7.2 and following releases, which are only available as “standalone” installations. Windows and macOS users will be updated automatically to the standalone version. Linux users should switch to a standalone package at their earliest convenience.<br />
+                    There will be a transition period of a few months during which old 0install-based DisplayCAL versions will continue to run, but afterwards the respective online infrastructure will be decommissioned.</p>
+
+                <p id="changelog-3.8">2019-04-26 01:17 (UTC) 3.8 </p>
+                <h3>DisplayCAL 3.8 </h3>
+
+                <h4>Added in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label feature"><span>[</span>Feature<span>]</span></span> <strong>SpyderX support</strong> (requires ArgyllCMS 2.1.0 or newer, use ArgyllCMS 2.1.1 or newer to be able to skip instrument self-calibration).</li>
+                    <li><span class="changelog-label feature"><span>[</span>Feature<span>]</span></span> <strong>Colorimeter correction information with graph.</strong></li>
+                    <li><span class="changelog-label feature"><span>[</span>Feature<span>]</span></span> Synthetic ICC profile creator: Drag &amp; drop support for TI3 measurement files.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Rudimentary support for hypothetical future instruments and their measurement modes (any new instrument support added to ArgyllCMS in the future should be fully usable in DisplayCAL right away without needing an update for instrument-specific measurement modes).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Display technology information to aid in the choice of a suitable measurement mode or correction.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Include some additional spectral sample colorimeter corrections when importing for i1 Display Pro and ColorMunki Display (e.g. MacBook Pro 2016 Retina with PFS Phosphor WLED “P3” display, <a href="https://colorimetercorrections.displaycal.net/hash/a2d2e72e1effab53d7054cee1dfb4bd6/LG%20OLED%206-Series%20%28i1%20Pro%202%2C%20ColorMunki%20Photo%29.ccss">LG OLED 6-series WOLED</a> based on samples from LG C6 and E6 OLED TVs, sourced and combined from community colorimeter corrections database contributions).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> macOS: Automatically warn about incompatibilities of Apple software with calibration black point hue correction and profile types other than single curve + matrix with black point compensation.</li>
+                </ul>
+
+                <h4>Changed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Updated simplified chinese localization (thanks to Mars).</li>
+                    <li><span class="changelog-label ui"><span>[</span>UI<span>]</span></span> Updated french localization (thanks to Jean-Luc Coulon).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Prefer colorimeter corrections from “ArgyllCMS” folder and ignore duplicate (spectral) colorimeter corrections from “color” folder (e.g. installed by HCFR under Windows).</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Default to high-resolution spectrum mode (if available) for spectrometers that support it.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Implicitly try to skip repeat instrument self-calibration for colorimeters that want it if already done at least once per measurement run.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Converted translation file format from JSON to YAML for better readability.</li>
+                    <li><span class="changelog-label enhancement"><span>[</span>Enhancement<span>]</span></span> Use a localized description for known quality spectral sample colorimeter corrections.</li>
+                    <li>Use an <a href="#appdownload">application-specific download directory</a> for updates and supporting files.</li>
+                </ul>
+
+                <h4>Fixed in this release:</h4>
+                <ul>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> Not all programmed measurement modes were enumerated for the K10-A colorimeter (regression of a change in DisplayCAL 3.7, SVN revision r5557).</li>
+                    <li><span class="changelog-label minor"><span>[</span>Minor<span>]</span></span> ColorHug/ColorHug2 “auto” measurement mode was not working anymore.</li>
+                    <li><span class="changelog-label trivial"><span>[</span>Trivial<span>]</span></span> Curve viewer: Re-introduced being able to view the current contents of the video card gamma table if no display profile is set or the profile used does not contain calibration.</li>
+                    <li><span class="changelog-label cosmetic"><span>[</span>Cosmetic<span>]</span></span> Curve viewer, profile information: Curve graphing identical channel detection was not working properly in some cases (only affected synthetic curves).</li>
+                </ul>
+            </dd>
+
             <dt id="changelog-3.8.9.3">2019-12-14 12:14 (UTC) 3.8.9.3 </dt>
             <dd>
                 <h3>DisplayCAL 3.8.9.3 </h3>
