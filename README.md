@@ -11,9 +11,9 @@ This project intended to modernize the DisplayCAL code including Python 3 suppor
 Florian Höch, the original developer, did an incredible job of creating and maintaining
 DisplayCAL for all these years. But, it seems that, during the pandemic, very
 understandably, he lost his passion to the project. Now, it is time for us, the
-DisplayCAL users, to contribute back to this great tool.
+DisplayCAL community, to contribute back to this great tool.
 
-This project is based on the ``HEAD`` of the Sourceforge version, which has 5 extra
+This project is based on the ``HEAD`` of the Sourceforge version, which had 5 extra
 commits that Florian has created after the ``3.8.9.3`` release on 14 Jan 2020.
 
 Status Update (30 April 2022)
@@ -23,23 +23,24 @@ DisplayCAL is in PyPI now (yay!).
 
 Here is a screenshots showing the tool working with Python 3.9:
 
-![image](https://user-images.githubusercontent.com/1786804/161440351-9d25ce84-d51b-4efc-90b8-7d8b2d031ad6.png)
+![image](https://user-images.githubusercontent.com/1786804/169152229-e06ff549-55fe-4149-8742-405446e6b01f.png)
 
-Currently, DisplayCAL is working with Python 3.9.7 + wxPython 4.1.1.
+Currently, DisplayCAL is working with Python 3.8, 3.9 and 3.10 and wxPython 4.1.1.
 
 Here is a list of things that is working:
 
 - The UI and general functionality.
 - Calibration + Characterization (Profiling).
-- Installing the created ICC profile.
-- Installing the created ICC profiles as root.
-- Profile info window is now fully working (on some systems we still have an issue
+- Installing the created ICC profile both locally and system-wide (requires root
+  permissions).
+- Profile Info window is now fully working (on some systems we still have an issue
   related to default values #67).
 - Measurement report creation.
 - Creating, displaying and uploading Colorimeter Corrections.
 - Measuring and reporting display uniformity.
 - Creating charts with Test Chart Editor and creating diagnostic 3d data.
 - Creating 3D LUTs.
+- Creating synthetic ICC profiles.
 - and a lot of other stuff is working properly.
 
 What is not working (yet)
@@ -54,7 +55,8 @@ How to install
 Currently, there is no ``RPM``, ``DEB``, ``APP`` or ``MSI`` packages. 
 To test the code you can either run it directly from the source or install it as a ``sdist`` package.  To do this: 
 
-Prequisties:
+Prerequisites:
+
 * Assorted C/C++ builder tools
 * dbus-1
 * glib 2.0
@@ -70,6 +72,9 @@ brew install pkg-config dbus glib gtk+3
 
 # Debian installs
 apt-get install build-essential dbus libglib2.0-dev pkg-config libgtk-3-dev libxxf86vm-dev
+
+# Fedora core installs
+dnf install gcc glibc-devel dbus pkgconf gtk3-devel libXxf86vm-devel
 ```
 
 Then pull the source and create a virtual environment:
