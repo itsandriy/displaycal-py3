@@ -34,7 +34,7 @@ Here is a list of things that is working:
 - Installing the created ICC profile both locally and system-wide (requires root
   permissions).
 - Profile Info window is now fully working (on some systems we still have an issue
-  related to default values #67).
+  related to default values [#67](https://github.com/eoyilmaz/displaycal-py3/issues/67)).
 - Measurement report creation.
 - Creating, displaying and uploading Colorimeter Corrections.
 - Measuring and reporting display uniformity.
