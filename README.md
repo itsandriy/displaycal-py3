@@ -81,7 +81,7 @@ source ./displaycal_venv/bin/activate  # Windows: .\displaycal_venv\Scripts\acti
 cd ./displaycal-py3/
 pip install -r requirements.txt
 python -m build
-pip install dist/DisplayCAL-3.9.0-*.whl
+pip install dist/DisplayCAL-3.9.*.whl
 ```
 
 This should install DisplayCAL. To run the UI:
