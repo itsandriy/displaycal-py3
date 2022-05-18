@@ -208,7 +208,7 @@ class AboutDialog(wx.Dialog):
         self.Hide()
 
     def Layout(self):
-        self.Sizer.SetMinSize(440, 560)
+        self.Sizer.SetMinSize(480, 560)
         self.Sizer.SetSizeHints(self)
         self.panel.SetScrollRate(2, 2)
         self.Sizer.Layout()
