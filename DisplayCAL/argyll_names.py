@@ -60,8 +60,8 @@ altnames = {
 
 def add_prefixes_suffixes(name, altname):
     for prefix_suffix in prefixes_suffixes:
-        altnames[name].append("%s-%s" % (altname, prefix_suffix))
-        altnames[name].append("%s-%s" % (prefix_suffix, altname))
+        altnames[name].append(f"{altname}-{prefix_suffix}")
+        altnames[name].append(f"{prefix_suffix}-{altname}")
 
 
 # Automatically populate the alternative tool names with prefixed/suffixed

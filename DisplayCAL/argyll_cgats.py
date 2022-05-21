@@ -108,25 +108,24 @@ def cal_to_vcgt(cal, return_cgats=False):
             CGATS.CGATSTypeError,
             CGATS.CGATSValueError,
         ) as exception:
-            print("Warning - couldn't process CGATS file '%s': %s" % (
-                cal, exception))
+            print(f"Warning - couldn't process CGATS file '{cal}': {exception}")
             return None
     required_fields = ("RGB_I", "RGB_R", "RGB_G", "RGB_B")
     if data_format := cal.queryv1("DATA_FORMAT"):
         for field in required_fields:
             if field.encode("utf-8") not in list(data_format.values()):
                 if debug:
-                    print("[D] Missing required field:", field)
+                    print(f"[D] Missing required field: {field}")
                 return None
         for field in list(data_format.values()):
             if field.decode("utf-8") not in required_fields:
                 if debug:
-                    print("[D] Unknown field:", field)
+                    print(f"[D] Unknown field: {field}")
                 return None
     entries = cal.queryv(required_fields)
     if len(entries) < 1:
         if debug:
-            print("[D] No entries found in calibration", cal.filename)
+            print(f"[D] No entries found in calibration {cal.filename}")
         return None
     vcgt = ICCP.VideoCardGammaTableType(b"", "vcgt")
     vcgt.update(
@@ -150,7 +149,7 @@ def can_update_cal(path):
     try:
         calstat = os.stat(path)
     except Exception as exception:
-        print("Warning - os.stat('%s') failed: %s" % (path, exception))
+        print(f"Warning - os.stat('{path}') failed: {exception}")
         return False
     if path not in cals or cals[path].mtime != calstat.st_mtime:
         try:
@@ -165,8 +164,7 @@ def can_update_cal(path):
         ) as exception:
             if path in cals:
                 del cals[path]
-            print("Warning - couldn't process CGATS file '%s': %s" % (
-                path, exception))
+            print(f"Warning - couldn't process CGATS file '{path}': {exception}")
         else:
             if cal.queryv1("DEVICE_CLASS") == "DISPLAY" and None not in (
                 cal.queryv1("TARGET_WHITE_XYZ"),
@@ -254,15 +252,14 @@ def extract_cal_from_profile(
                             # Can't be right. Metadata says it's video encoded,
                             # but clearly exceeds the encoding range.
                             print(
-                                "Warning: Metadata claims video levels (%s..%s) but "
-                                "vcgt value %s exceeds encoding range. Using values "
-                                "as-is." % (
-                                    round(black, 2), round(white, 2), lvl)
+                                f"Warning: Metadata claims video levels ("
+                                f"{round(black, 2)}..{round(white, 2)}) but "
+                                f"vcgt value {lvl} exceeds encoding range. "
+                                f"Using values as-is."
                             )
                             encoding_mismatch = True
                             break
-                        v_new = colormath.convert_range(v_old, oldmin, oldmax,
-                                                        0, 1)
+                        v_new = colormath.convert_range(v_old, oldmin, oldmax, 0, 1)
                         entry[f"RGB_{column}"] = min(max(v_new, 0), 1)
                     if encoding_mismatch:
                         break
@@ -274,8 +271,7 @@ def extract_cal_from_profile(
                 else:
                     cgats[0].add_keyword(
                         "OUTPUT_ENCODING",
-                        b" ".join(
-                            bytes(str(v), "utf-8") for v in (black, white)),
+                        b" ".join(bytes(str(v), "utf-8") for v in (black, white)),
                     )
             else:
                 print("Warning - no un-scaling applied - no calibration data!")
@@ -330,8 +326,7 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
     if "CIED" not in profile.tags and "targ" not in profile.tags:
         return None
     cal_lines = []
-    ti3 = BytesIO(
-        profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
+    ti3 = BytesIO(profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
     ti3_lines = [line.strip() for line in ti3]
     ti3.close()
     cal_found = False
@@ -375,16 +370,14 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
                                     except decimal.InvalidOperation:
                                         continue
                             cal_lines.extend(
-                                (b'KEYWORD "TARGET_GAMMA"',
-                                 b'TARGET_GAMMA "%s"' % trc)
+                                (b'KEYWORD "TARGET_GAMMA"', b'TARGET_GAMMA "%s"' % trc)
                             )
                             continue
                         if o[0] == b"f":
                             cal_lines.extend(
                                 (
                                     b'KEYWORD "DEGREE_OF_BLACK_OUTPUT_OFFSET"',
-                                    b'DEGREE_OF_BLACK_OUTPUT_OFFSET "%s"' % o[
-                                                                            1:],
+                                    b'DEGREE_OF_BLACK_OUTPUT_OFFSET "%s"' % o[1:],
                                 )
                             )
 
@@ -435,8 +428,7 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
 
 
 def extract_device_gray_primaries(
-    ti3, gray=True, logfn=None, include_neutrals=False,
-    neutrals_ab_threshold=0.1
+    ti3, gray=True, logfn=None, include_neutrals=False, neutrals_ab_threshold=0.1
 ):
     """Extract gray or primaries into new TI3
 
@@ -476,7 +468,7 @@ END_DATA"""
     if include_neutrals:
         white = ti3.get_white_cie("XYZ")
         str_thresh = str(neutrals_ab_threshold)
-        round_digits = len(str_thresh[str_thresh.find(".") + 1:])
+        round_digits = len(str_thresh[str_thresh.find(".") + 1 :])
     for i in ti3.DATA:
         item = ti3.DATA[i]
         if not i:
@@ -487,8 +479,7 @@ END_DATA"""
                     if key not in item:
                         raise Error(
                             lang.getstr(
-                                "error.testchart.missing_fields",
-                                (ti3.filename, key)
+                                "error.testchart.missing_fields", (ti3.filename, key)
                             )
                         )
         RGB = (item["RGB_R"], item["RGB_G"], item["RGB_B"])
@@ -516,14 +507,14 @@ END_DATA"""
                 or (
                     include_neutrals
                     and all(
-                    round(abs(v), round_digits) <= neutrals_ab_threshold
-                    for v in colormath.XYZ2Lab(
-                        item["XYZ_X"],
-                        item["XYZ_Y"],
-                        item["XYZ_Z"],
-                        whitepoint=white,
-                    )[1:]
-                )
+                        round(abs(v), round_digits) <= neutrals_ab_threshold
+                        for v in colormath.XYZ2Lab(
+                            item["XYZ_X"],
+                            item["XYZ_Y"],
+                            item["XYZ_Z"],
+                            whitepoint=white,
+                        )[1:]
+                    )
                 )
             )
             and RGB not in [(100.0, 100.0, 100.0), (0.0, 0.0, 0.0)]
@@ -598,8 +589,7 @@ def vcgt_to_cal(profile):
     context[key].type = key.encode("utf-8")
     values = profile.tags.vcgt.getNormalizedValues()
     for i, triplet in enumerate(values):
-        context[key].add_data(
-            (b"%.7f" % (i / float(len(values) - 1)),) + triplet)
+        context[key].add_data((b"%.7f" % (i / float(len(values) - 1)),) + triplet)
     return cgats
 
 
@@ -614,31 +604,24 @@ def verify_cgats(cgats, required, ignore_unknown=True):
     no less.
     """
     cgats_1 = cgats.queryi1(required)
-    if cgats_1 and cgats_1.parent and cgats_1.parent.parent:
-        cgats_1 = cgats_1.parent.parent
-        if cgats_1.queryv1("NUMBER_OF_SETS"):
-            if cgats_1.queryv1("DATA_FORMAT"):
-                for field in required:
-                    if field.encode("utf-8") not in list(
-                        cgats_1.queryv1("DATA_FORMAT").values()
-                    ):
-                        raise CGATS.CGATSKeyError(
-                            "Missing required field: %s" % field)
-                if not ignore_unknown:
-                    for field in list(cgats_1.queryv1("DATA_FORMAT").values()):
-                        if field not in required:
-                            raise CGATS.CGATSError("Unknown field: %s" % field)
-            else:
-                raise CGATS.CGATSInvalidError("Missing DATA_FORMAT")
-        else:
-            raise CGATS.CGATSInvalidError("Missing NUMBER_OF_SETS")
-        modified = cgats_1.modified
-        cgats_1.filename = cgats.filename
-        cgats_1.modified = modified
-        return cgats_1
-    else:
-        raise CGATS.CGATSKeyError(
-            "Missing required fields: %s" % ", ".join(required))
+    if not cgats_1 or not cgats_1.parent or not cgats_1.parent.parent:
+        raise CGATS.CGATSKeyError(f'Missing required fields: {", ".join(required)}')
+    cgats_1 = cgats_1.parent.parent
+    if not cgats_1.queryv1("NUMBER_OF_SETS"):
+        raise CGATS.CGATSInvalidError("Missing NUMBER_OF_SETS")
+    if not cgats_1.queryv1("DATA_FORMAT"):
+        raise CGATS.CGATSInvalidError("Missing DATA_FORMAT")
+    for field in required:
+        if field.encode("utf-8") not in list(cgats_1.queryv1("DATA_FORMAT").values()):
+            raise CGATS.CGATSKeyError(f"Missing required field: {field}")
+    if not ignore_unknown:
+        for field in list(cgats_1.queryv1("DATA_FORMAT").values()):
+            if field not in required:
+                raise CGATS.CGATSError(f"Unknown field: {field}")
+    modified = cgats_1.modified
+    cgats_1.filename = cgats.filename
+    cgats_1.modified = modified
+    return cgats_1
 
 
 def verify_ti1_rgb_xyz(cgats):
@@ -649,5 +632,4 @@ def verify_ti1_rgb_xyz(cgats):
     None on failure.
 
     """
-    return verify_cgats(cgats,
-                        ("RGB_R", "RGB_B", "RGB_G", "XYZ_X", "XYZ_Y", "XYZ_Z"))
+    return verify_cgats(cgats, ("RGB_R", "RGB_B", "RGB_G", "XYZ_X", "XYZ_Y", "XYZ_Z"))
