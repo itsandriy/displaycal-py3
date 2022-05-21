@@ -448,12 +448,12 @@ def extract_device_gray_primaries(
     ti3.filename = filename
     ti3_extracted = CGATS.CGATS(
         b"""CTI3
-        DEVICE_CLASS "DISPLAY"
-        COLOR_REP "RGB_XYZ"
-        BEGIN_DATA_FORMAT
-        END_DATA_FORMAT
-        BEGIN_DATA
-        END_DATA"""
+DEVICE_CLASS "DISPLAY"
+COLOR_REP "RGB_XYZ"
+BEGIN_DATA_FORMAT
+END_DATA_FORMAT
+BEGIN_DATA
+END_DATA"""
     )[0]
     ti3_extracted.DATA_FORMAT.update(ti3.DATA_FORMAT)
     subset = [(100.0, 100.0, 100.0), (0.0, 0.0, 0.0)]
