@@ -108,7 +108,8 @@ def cal_to_vcgt(cal, return_cgats=False):
             CGATS.CGATSTypeError,
             CGATS.CGATSValueError,
         ) as exception:
-            print("Warning - couldn't process CGATS file '%s': %s" % (cal, exception))
+            print("Warning - couldn't process CGATS file '%s': %s" % (
+                cal, exception))
             return None
     required_fields = ("RGB_I", "RGB_R", "RGB_G", "RGB_B")
     if data_format := cal.queryv1("DATA_FORMAT"):
@@ -164,7 +165,8 @@ def can_update_cal(path):
         ) as exception:
             if path in cals:
                 del cals[path]
-            print("Warning - couldn't process CGATS file '%s': %s" % (path, exception))
+            print("Warning - couldn't process CGATS file '%s': %s" % (
+                path, exception))
         else:
             if cal.queryv1("DEVICE_CLASS") == "DISPLAY" and None not in (
                 cal.queryv1("TARGET_WHITE_XYZ"),
@@ -254,11 +256,13 @@ def extract_cal_from_profile(
                             print(
                                 "Warning: Metadata claims video levels (%s..%s) but "
                                 "vcgt value %s exceeds encoding range. Using values "
-                                "as-is." % (round(black, 2), round(white, 2), lvl)
+                                "as-is." % (
+                                    round(black, 2), round(white, 2), lvl)
                             )
                             encoding_mismatch = True
                             break
-                        v_new = colormath.convert_range(v_old, oldmin, oldmax, 0, 1)
+                        v_new = colormath.convert_range(v_old, oldmin, oldmax,
+                                                        0, 1)
                         entry[f"RGB_{column}"] = min(max(v_new, 0), 1)
                     if encoding_mismatch:
                         break
@@ -270,7 +274,8 @@ def extract_cal_from_profile(
                 else:
                     cgats[0].add_keyword(
                         "OUTPUT_ENCODING",
-                        b" ".join(bytes(str(v), "utf-8") for v in (black, white)),
+                        b" ".join(
+                            bytes(str(v), "utf-8") for v in (black, white)),
                     )
             else:
                 print("Warning - no un-scaling applied - no calibration data!")
@@ -325,7 +330,8 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
     if "CIED" not in profile.tags and "targ" not in profile.tags:
         return None
     cal_lines = []
-    ti3 = BytesIO(profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
+    ti3 = BytesIO(
+        profile.tags.get("CIED", b"") or profile.tags.get("targ", b""))
     ti3_lines = [line.strip() for line in ti3]
     ti3.close()
     cal_found = False
@@ -339,7 +345,7 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
             if line == b'DEVICE_CLASS "DISPLAY"':
                 if options_dispcal := get_options_from_profile(profile)[0]:
                     whitepoint = False
-                        # b = profile.tags.lumi.Y
+                    # b = profile.tags.lumi.Y
                     for o in options_dispcal:
                         if o[0] == b"y":
                             cal_lines.append(b'KEYWORD "DEVICE_TYPE"')
@@ -368,18 +374,37 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
                                         trc = 0 - Decimal(trc)
                                     except decimal.InvalidOperation:
                                         continue
-                            cal_lines.extend((b'KEYWORD "TARGET_GAMMA"', b'TARGET_GAMMA "%s"' % trc))
+                            cal_lines.extend(
+                                (b'KEYWORD "TARGET_GAMMA"',
+                                 b'TARGET_GAMMA "%s"' % trc)
+                            )
                             continue
                         if o[0] == b"f":
-                            cal_lines.extend((b'KEYWORD "DEGREE_OF_BLACK_OUTPUT_OFFSET"', b'DEGREE_OF_BLACK_OUTPUT_OFFSET "%s"' % o[1:]))
+                            cal_lines.extend(
+                                (
+                                    b'KEYWORD "DEGREE_OF_BLACK_OUTPUT_OFFSET"',
+                                    b'DEGREE_OF_BLACK_OUTPUT_OFFSET "%s"' % o[
+                                                                            1:],
+                                )
+                            )
 
                             continue
                         if o[0] == b"k":
-                            cal_lines.extend((b'KEYWORD "BLACK_POINT_CORRECTION"', b'BLACK_POINT_CORRECTION "%s"' % o[1:]))
+                            cal_lines.extend(
+                                (
+                                    b'KEYWORD "BLACK_POINT_CORRECTION"',
+                                    b'BLACK_POINT_CORRECTION "%s"' % o[1:],
+                                )
+                            )
 
                             continue
                         if o[0] == b"B":
-                            cal_lines.extend((b'KEYWORD "TARGET_BLACK_BRIGHTNESS"', b'TARGET_BLACK_BRIGHTNESS "%s"' % o[1:]))
+                            cal_lines.extend(
+                                (
+                                    b'KEYWORD "TARGET_BLACK_BRIGHTNESS"',
+                                    b'TARGET_BLACK_BRIGHTNESS "%s"' % o[1:],
+                                )
+                            )
 
                             continue
                         if o[0] == b"q":
@@ -389,9 +414,16 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
                                 q = b"medium"
                             else:
                                 q = b"high"
-                            cal_lines.extend((b'KEYWORD "QUALITY"', b'QUALITY "%s"' % q))
+                            cal_lines.extend(
+                                (b'KEYWORD "QUALITY"', b'QUALITY "%s"' % q)
+                            )
                     if not whitepoint:
-                        cal_lines.extend((b'KEYWORD "NATIVE_TARGET_WHITE"', b'NATIVE_TARGET_WHITE ""'))
+                        cal_lines.extend(
+                            (
+                                b'KEYWORD "NATIVE_TARGET_WHITE"',
+                                b'NATIVE_TARGET_WHITE ""',
+                            )
+                        )
     if cal_lines:
         if target_filename:
             try:
@@ -403,7 +435,8 @@ def extract_fix_copy_cal(source_filename, target_filename=None):
 
 
 def extract_device_gray_primaries(
-    ti3, gray=True, logfn=None, include_neutrals=False, neutrals_ab_threshold=0.1
+    ti3, gray=True, logfn=None, include_neutrals=False,
+    neutrals_ab_threshold=0.1
 ):
     """Extract gray or primaries into new TI3
 
@@ -415,12 +448,12 @@ def extract_device_gray_primaries(
     ti3.filename = filename
     ti3_extracted = CGATS.CGATS(
         b"""CTI3
-DEVICE_CLASS "DISPLAY"
-COLOR_REP "RGB_XYZ"
-BEGIN_DATA_FORMAT
-END_DATA_FORMAT
-BEGIN_DATA
-END_DATA"""
+        DEVICE_CLASS "DISPLAY"
+        COLOR_REP "RGB_XYZ"
+        BEGIN_DATA_FORMAT
+        END_DATA_FORMAT
+        BEGIN_DATA
+        END_DATA"""
     )[0]
     ti3_extracted.DATA_FORMAT.update(ti3.DATA_FORMAT)
     subset = [(100.0, 100.0, 100.0), (0.0, 0.0, 0.0)]
@@ -454,7 +487,8 @@ END_DATA"""
                     if key not in item:
                         raise Error(
                             lang.getstr(
-                                "error.testchart.missing_fields", (ti3.filename, key)
+                                "error.testchart.missing_fields",
+                                (ti3.filename, key)
                             )
                         )
         RGB = (item["RGB_R"], item["RGB_G"], item["RGB_B"])
@@ -482,14 +516,14 @@ END_DATA"""
                 or (
                     include_neutrals
                     and all(
-                        round(abs(v), round_digits) <= neutrals_ab_threshold
-                        for v in colormath.XYZ2Lab(
-                            item["XYZ_X"],
-                            item["XYZ_Y"],
-                            item["XYZ_Z"],
-                            whitepoint=white,
-                        )[1:]
-                    )
+                    round(abs(v), round_digits) <= neutrals_ab_threshold
+                    for v in colormath.XYZ2Lab(
+                        item["XYZ_X"],
+                        item["XYZ_Y"],
+                        item["XYZ_Z"],
+                        whitepoint=white,
+                    )[1:]
+                )
                 )
             )
             and RGB not in [(100.0, 100.0, 100.0), (0.0, 0.0, 0.0)]
@@ -564,7 +598,8 @@ def vcgt_to_cal(profile):
     context[key].type = key.encode("utf-8")
     values = profile.tags.vcgt.getNormalizedValues()
     for i, triplet in enumerate(values):
-        context[key].add_data((b"%.7f" % (i / float(len(values) - 1)),) + triplet)
+        context[key].add_data(
+            (b"%.7f" % (i / float(len(values) - 1)),) + triplet)
     return cgats
 
 
@@ -587,7 +622,8 @@ def verify_cgats(cgats, required, ignore_unknown=True):
                     if field.encode("utf-8") not in list(
                         cgats_1.queryv1("DATA_FORMAT").values()
                     ):
-                        raise CGATS.CGATSKeyError("Missing required field: %s" % field)
+                        raise CGATS.CGATSKeyError(
+                            "Missing required field: %s" % field)
                 if not ignore_unknown:
                     for field in list(cgats_1.queryv1("DATA_FORMAT").values()):
                         if field not in required:
@@ -601,7 +637,8 @@ def verify_cgats(cgats, required, ignore_unknown=True):
         cgats_1.modified = modified
         return cgats_1
     else:
-        raise CGATS.CGATSKeyError("Missing required fields: %s" % ", ".join(required))
+        raise CGATS.CGATSKeyError(
+            "Missing required fields: %s" % ", ".join(required))
 
 
 def verify_ti1_rgb_xyz(cgats):
@@ -612,4 +649,5 @@ def verify_ti1_rgb_xyz(cgats):
     None on failure.
 
     """
-    return verify_cgats(cgats, ("RGB_R", "RGB_B", "RGB_G", "XYZ_X", "XYZ_Y", "XYZ_Z"))
+    return verify_cgats(cgats,
+                        ("RGB_R", "RGB_B", "RGB_G", "XYZ_X", "XYZ_Y", "XYZ_Z"))
