@@ -142,7 +142,9 @@ Here are some ideas on where to focus the future development effort:
   project.
 - Replace ``os.path`` related code with ``pathlib.Path`` class.
 - Organize the module structure, move UI related stuff in to ``ui`` module etc., move
-  non-source files into their own folders.
+  data files into their own folders.
+- Use [importlib_resources](https://importlib-resources.readthedocs.io/en/latest/using.html)
+  module for reading data files.
 - Update the ``Remaining time`` calculation during profiling to estimate the time by
   also considering the luminance of the remaining patches to have a better estimation.
   Because, patches with higher luminance values are measured quickly than patches with
