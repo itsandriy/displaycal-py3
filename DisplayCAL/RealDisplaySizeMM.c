@@ -91,8 +91,8 @@ typedef struct {
     int uscreen;			/* Underlying Xinerma/XRandr screen */
     int rscreen;			/* Underlying RAMDAC screen (user override) */
     Atom icc_atom;			/* ICC profile root/output atom for this display */
-    unsigned char *edid;	/* 128 or 256 bytes of monitor EDID, NULL if none */
-    int edid_len;			/* 128 or 256 */
+    unsigned char *edid;	/* 128, 256, or 384 bytes of monitor EDID, NULL if none */
+    int edid_len;			/* 128, 256, or 384 */
 
 #if RANDR_MAJOR == 1 && RANDR_MINOR >= 2
     /* Xrandr stuff - output is connected 1:1 to a display */
@@ -869,7 +869,7 @@ disppath **get_displays() {
                                 if (XRRGetOutputProperty(mydisplay, crtci->outputs[xk], edid_atom,
                                             0, 0x7ffffff, False, False, XA_INTEGER,
                                     &ret_type, &ret_format, &ret_len, &ret_togo, &atomv) == Success
-                                        && (ret_len == 128 || ret_len == 256)) {
+                                        && (ret_len == 128 || ret_len == 256 || ret_len == 384)) {
                                     if ((disps[ndisps]->edid = malloc(sizeof(unsigned char) * ret_len)) == NULL) {
                                         debugrr("get_displays failed on malloc\n");
                                         XRRFreeCrtcInfo(crtci);
@@ -1034,7 +1034,7 @@ disppath **get_displays() {
                 if (XGetWindowProperty(mydisplay, RootWindow(mydisplay, disps[i]->uscreen), edid_atom,
                             0, 0x7ffffff, False, XA_INTEGER,
                             &ret_type, &ret_format, &ret_len, &ret_togo, &atomv) == Success
-                            && (ret_len == 128 || ret_len == 256)) {
+                            && (ret_len == 128 || ret_len == 256 || ret_len == 384)) {
                     if ((disps[i]->edid = malloc(sizeof(unsigned char) * ret_len)) == NULL) {
                         debugrr("get_displays failed on malloc\n");
                         free_disppaths(disps);
