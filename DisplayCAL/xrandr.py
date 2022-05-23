@@ -99,7 +99,7 @@ class XDisplay(object):
         self.close()
 
     def open(self):
-        self.display = libx11.XOpenDisplay(self.name)
+        self.display = libx11.XOpenDisplay(self.name.encode())
         if not self.display:
             raise ValueError("Invalid X display %r" % self.name)
 

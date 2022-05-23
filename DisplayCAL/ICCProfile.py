@@ -1978,7 +1978,7 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
             xrandr_name = display.get("xrandr_name")
             if xrandr_name:
                 edid = {"monitor_name": xrandr_name}
-                device_ids = ["xrandr-" + xrandr_name]
+                device_ids = [f"xrandr-{xrandr_name.decode()}"]
             elif os.getenv("XDG_SESSION_TYPE") == "wayland":
                 # Preliminary Wayland support under non-GNOME desktops.
                 # This still needs a lot of work.
@@ -1998,9 +1998,9 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
                     # Device ID was not found, try next one
                     continue
                 except colord.CDError as exception:
-                    warnings.warn(str(exception, enc), Warning)
+                    warnings.warn(exception, Warning)
                 except colord.DBusException as exception:
-                    warnings.warn(str(exception, enc), Warning)
+                    warnings.warn(exception, Warning)
                 else:
                     if profile_path:
                         if "hash" in edid:
