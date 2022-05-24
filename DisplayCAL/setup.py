@@ -601,8 +601,7 @@ def setup():
     # (package_data will be ignored when using py2exe)
     package_data = {
         name: config["package_data"][name]
-        if sys.platform in ("darwin", "win32") and not do_py2app and not do_py2exe
-        else []
+        if not do_py2app and not do_py2exe else []
     }
     if sdist and sys.platform in ("darwin", "win32"):
         package_data[name].extend(
@@ -1021,7 +1020,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
         }
         attrs["exclude_package_data"] = {name: ["RealDisplaySizeMM.c"]}
         attrs["include_package_data"] = (
-            sys.platform in ("darwin", "win32") and not do_py2app
+            not do_py2app
         )
         install_requires = [req.replace("(", "").replace(")", "") for req in requires]
         attrs["install_requires"] = install_requires
