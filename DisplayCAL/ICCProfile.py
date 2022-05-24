@@ -1971,7 +1971,7 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
         try:
             from DisplayCAL import RealDisplaySizeMM as RDSMM
         except ImportError as exception:
-            warnings.warn(str(exception, enc), Warning)
+            warnings.warn(str(exception), Warning)
             return
         display = RDSMM.get_display(display_no)
         if display:
@@ -1998,9 +1998,9 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
                     # Device ID was not found, try next one
                     continue
                 except colord.CDError as exception:
-                    warnings.warn(exception, Warning)
+                    warnings.warn(str(exception), Warning)
                 except colord.DBusException as exception:
-                    warnings.warn(exception, Warning)
+                    warnings.warn(str(exception), Warning)
                 else:
                     if profile_path:
                         if "hash" in edid:
@@ -2304,7 +2304,7 @@ def get_display_profile(
             try:
                 from DisplayCAL import RealDisplaySizeMM as RDSMM
             except ImportError as exception:
-                warnings.warn(str(exception, enc), Warning)
+                warnings.warn(str(exception), Warning)
                 display = get_display()
             else:
                 display = RDSMM.get_x_display(display_no)
@@ -2380,7 +2380,7 @@ def get_display_profile(
                                 try:
                                     property = meth(what, atom_id)
                                 except ValueError as exception:
-                                    warnings.warn(str(exception, enc), Warning)
+                                    warnings.warn(str(exception), Warning)
                                 else:
                                     if property:
                                         profile = ICCProfile(

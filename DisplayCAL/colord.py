@@ -250,7 +250,7 @@ def get_devices_by_kind(kind):
     if not isinstance(Colord, DBusObject):
         return []
     return [
-        Device(object_path)
+        Device(str(object_path))
         for object_path in Colord.get_devices_by_kind(kind)
     ]
 
