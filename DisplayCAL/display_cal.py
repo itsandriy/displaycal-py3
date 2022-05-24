@@ -142,6 +142,7 @@ from DisplayCAL.meta import (
     VERSION,
     VERSION_BASE,
     author,
+    development_home_page,
     name as appname,
     DOMAIN,
     version,
@@ -18800,7 +18801,9 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     URL=f"https://{DOMAIN}/",
                 ),
                 wx.StaticText(
-                    self.aboutdialog.panel, -1, " %s © %s" % (version_title, author)
+                    self.aboutdialog.panel,
+                    -1,
+                    " %s © %s" % (version_title, wrap(author, 55)),
                 ),
             ]
         )
@@ -18944,10 +18947,10 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             launch_file(license)
 
     def help_support_handler(self, event):
-        launch_file(f"https://{DOMAIN}/#help")
+        launch_file(f"{development_home_page}/issues")
 
     def bug_report_handler(self, event):
-        launch_file(f"https://{DOMAIN}/#reportbug")
+        launch_file(f"{development_home_page}/issues")
 
     def app_update_check_handler(self, event, silent=False, argyll=False):
         if (

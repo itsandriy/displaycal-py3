@@ -40,16 +40,16 @@ description = (
     "Display calibration and profiling with a focus on accuracy and versatility"
 )
 longdesc = (
-    "Calibrate and characterize your display devices using "
-    "one of many supported measurement instruments, with "
-    "support for multi-display setups and a variety of "
-    "available options for advanced users, such as "
-    "verification and reporting functionality to evaluate "
-    "ICC profiles and display devices, creating video 3D "
-    "LUTs, as well as optional CIECAM02 gamut mapping to "
-    "take into account varying viewing conditions."
+    "Calibrate and characterize your display devices using one of many supported "
+    "measurement instruments, with support for multi-display setups and a variety of "
+    "available options for advanced users, such as  verification and reporting "
+    "functionality to evaluate ICC profiles and display devices, creating video 3D "
+    "LUTs, as well as optional CIECAM02 gamut mapping to take into account varying "
+    "viewing conditions."
 )
 DOMAIN = "displaycal.net"
+development_home_page = "https://github.com/eoyilmaz/displaycal-py3"
+
 author_email = ", ".join(
     [
         f"florian{chr(0o100)}{DOMAIN}",
@@ -70,8 +70,7 @@ version_mac = VERSION_STRING  # Mac OS X
 version_win = VERSION_STRING  # Windows
 version_src = VERSION_STRING
 version_short = re.sub(r"(?:\.0){1,2}$", "", version)
-
-version_tuple = VERSION  # only ints allowed and must be exactly 4 values
+version_tuple = VERSION  # only ints allowed and must be exactly 3 values
 
 wx_minversion = (2, 8, 11)
 wx_recversion = (4, 1, 1)
