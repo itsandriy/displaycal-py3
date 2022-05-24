@@ -951,14 +951,17 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
     elif sys.platform == "darwin":
         # On Mac OS X we only want the universal binaries
         packages.append(f"{name}.lib{bits}")
-    else:
-        # On Linux/Windows we want separate libraries
+    elif sys.platform == "win32":
+        # On Windows we want separate libraries
         packages.extend(
             [
                 f"{name}.lib{bits}",
                 f"{name}.lib{bits}.python{sys.version_info[0]}{sys.version_info[1]}",
             ]
         )
+    else:
+        # On Linux the libraries will be built on build step
+        pass
 
     attrs = {
         "author": author_ascii,
