@@ -9,7 +9,7 @@ def get_display(display_name=None):
     if not display_name:
         display_name = (os.getenv("DISPLAY", ":0.0")).encode("utf-8")
     display_parts = display_name.split(b":")
-    hostname = display_parts[0]
+    hostname = display_parts[0].decode()
     display, screen = 0, 0
     if len(display_parts) > 1:
         try:
