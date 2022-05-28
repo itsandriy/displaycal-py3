@@ -280,21 +280,20 @@ def get_object_path(search, object_type):
 def install_profile(
     device_id, profile, timeout=CD_CLIENT_IMPORT_DAEMON_TIMEOUT / 1000.0, logfn=None
 ):
-    """Install profile for device
+    """Install profile for device.
 
-    timeout				  Time to allow for colord to pick up new profiles
-                          (recommended not below 2 secs)
+    timeout: Time to allow for colord to pick up new profiles (recommended not below 2
+        secs).
 
     """
-
-    profile_installname = os.path.join(
+    profile_install_name = os.path.join(
         xdg_data_home, "icc", os.path.basename(profile.fileName)
     )
 
-    profile_exists = os.path.isfile(profile_installname)
-    if profile.fileName != profile_installname and profile_exists:
+    profile_exists = os.path.isfile(profile_install_name)
+    if profile.fileName != profile_install_name and profile_exists:
         if logfn:
-            logfn("About to overwrite existing", profile_installname)
+            logfn("About to overwrite existing", profile_install_name)
         profile.fileName = None
 
     if profile.ID == "\0" * 16:
@@ -303,7 +302,7 @@ def install_profile(
     profile_id = "icc-" + hexlify(profile.ID).decode()
 
     # Write profile to destination
-    profile_installdir = os.path.dirname(profile_installname)
+    profile_installdir = os.path.dirname(profile_install_name)
     if not os.path.isdir(profile_installdir):
         os.makedirs(profile_installdir)
     # colormgr seems to have a bug where the first attempt at importing a
@@ -311,8 +310,8 @@ def install_profile(
     # writing the profile ourself first, and then importing.
     if not profile.fileName or not profile_exists:
         if logfn:
-            logfn("Writing", profile_installname)
-        profile.fileName = profile_installname
+            logfn("Writing", profile_install_name)
+        profile.fileName = profile_install_name
         profile.write()
 
     cdprofile = None
@@ -361,14 +360,14 @@ def install_profile(
                     raise CDError(safe_str(exception))
                 if logfn and stdout.strip():
                     logfn(stdout.strip())
-                if p.returncode == 0 or os.path.isfile(profile_installname):
+                if p.returncode == 0 or os.path.isfile(profile_install_name):
                     if logfn:
                         logfn("...ok")
                     break
                 elif logfn:
                     logfn("...failed!")
 
-            if p.returncode != 0 and not os.path.isfile(profile_installname):
+            if p.returncode != 0 and not os.path.isfile(profile_install_name):
                 raise CDTimeout(
                     "Trying to import profile '%s' failed after "
                     "%i tries." % (profile.fileName, n)

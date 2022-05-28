@@ -21,6 +21,7 @@ uninstall (setup.py uninstall --record=INSTALLED_FILES), otherwise use
 the wrapper script in the root directory of the source tar.gz/zip
 
 """
+import functools
 from configparser import ConfigParser
 from distutils.command.install import install
 from distutils.util import change_root, get_platform
@@ -38,23 +39,32 @@ from time import strftime
 
 
 # # Borrowed from setuptools
-# def findall(dir=os.curdir):
-#     """Find all files under 'dir' and return the list of full filenames
-#     (relative to 'dir').
-#     """
-#     all_files = []
-#     for base, _dirs, files in os.walk(dir, followlinks=True):
-#         if base == os.curdir or base.startswith(os.curdir + os.sep):
-#             base = base[2:]
-#         if base:
-#             files = [os.path.join(base, f) for f in files]
-#         all_files.extend(list(filter(os.path.isfile, files)))
-#     return all_files
+def _find_all_simple(path):
+    """
+    Find all files under 'path'
+    """
+    results = (
+        os.path.join(base, file)
+        for base, dirs, files in os.walk(path, followlinks=True)
+        for file in files
+    )
+    return filter(os.path.isfile, results)
+
+
+def findall(dir=os.curdir):
+    """
+    Find all files under 'dir' and return the list of full filenames.
+    Unless dir is '.', return full filenames with dir prepended.
+    """
+    files = _find_all_simple(dir)
+    if dir == os.curdir:
+        make_rel = functools.partial(os.path.relpath, start=dir)
+        files = map(make_rel, files)
+    return list(files)
 
 
 import distutils.filelist
-
-# distutils.filelist.findall = findall  # Fix findall bug in distutils
+distutils.filelist.findall = findall  # Fix findall bug in distutils
 
 
 from DisplayCAL.defaultpaths import autostart, autostart_home
@@ -444,7 +454,6 @@ def setup():
     recordfile_name = None  # record installed files to this file
     sdist = "sdist" in sys.argv[1:]
     setuptools = None
-    skip_instrument_conf_files = "--skip-instrument-configuration-files" in sys.argv[1:]
     skip_postinstall = "--skip-postinstall" in sys.argv[1:]
     use_distutils = not bdist_bbfreeze and not do_py2app
     use_setuptools = (
@@ -468,11 +477,12 @@ def setup():
         except ImportError:
             pass
         try:
+            import setuptools
             from setuptools import setup, Extension
 
             setuptools = True
             print("using setuptools")
-            current_findall = distutils.filelist.findall
+            current_findall = setuptools.findall
         except ImportError:
             pass
     else:
@@ -512,9 +522,12 @@ def setup():
         sys.argv = sys.argv[:i] + ["install"] + sys.argv[i + 1:]
         install.create_home_path = lambda self: None
 
-    if skip_instrument_conf_files:
+    if skip_instrument_conf_files := "--skip-instrument-configuration-files" in sys.argv[1:]:
         i = sys.argv.index("--skip-instrument-configuration-files")
         sys.argv = sys.argv[:i] + sys.argv[i + 1:]
+
+    if not is_rpm_build:
+        skip_instrument_conf_files = True
 
     if skip_postinstall:
         i = sys.argv.index("--skip-postinstall")
