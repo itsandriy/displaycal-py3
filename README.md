@@ -87,6 +87,18 @@ git clone https://github.com/eoyilmaz/displaycal-py3
 python -m venv ./displaycal_venv
 source ./displaycal_venv/bin/activate  # Windows: .\displaycal_venv\Scripts\activate.bat
 cd ./displaycal-py3/
+```
+
+At this stage you may want to switch to the ``develop`` branch to test some new features
+or possibly fixed issues over the ``main`` branch.
+
+```shell
+git checkout develop
+```
+
+And the rest of the instructions are as followed:
+
+```shell
 pip install -r requirements.txt
 python -m build
 pip install dist/DisplayCAL-3.9.*.whl
