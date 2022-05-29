@@ -614,7 +614,8 @@ def setup():
     # (package_data will be ignored when using py2exe)
     package_data = {
         name: config["package_data"][name]
-        if not do_py2app and not do_py2exe else []
+        if sys.platform in ("darwin", "win32") and not do_py2app and not do_py2exe
+        else []
     }
     if sdist and sys.platform in ("darwin", "win32"):
         package_data[name].extend(
