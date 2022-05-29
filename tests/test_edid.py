@@ -160,17 +160,17 @@ def test_parse_edid_2():
         "checksum": 41,
         "checksum_valid": True,
         "edid": b"\x00\xff\xff\xff\xff\xff\xff\x00\x04rX\x05Cn`r\x1a\x1b\x01\x03"
-        b"\x80^5x*\xa1\x91\xa9TM\x9c&\x0fPT\xbf\xef\x80qO\x81@\x81\x80"
-        b"\x81\xc0\x81\x00\x95\x00\xb3\x00\xd1\xc0M\xd0\x00\xa0\xf0p>\x800 "
-        b"5\x00\xad\x112\x00\x00\x1aV^\x00\xa0\xa0\xa0)P/ 5\x00\xad\x112\x00"
-        b"\x00\x1a\x00\x00\x00\xfd\x002<\x1e\x8c<\x00\n      \x00\x00\x00\xfc"
-        b"\x00Acer ET430K\n \x01)\x02\x03A\xf1Pa\x01`\x03\x04\x12\x13"
-        b"\x05\x14\x1f\x10\x07\x06\x02k_#\t\x07\x07\x83\x01\x00\x00k\x03\x0c"
-        b"\x00 \x008< \x00 \x01g\xd8]\xc4\x01x\x80\x00\xe3\x05\xe0"
-        b"\x01\xe4\x0f\x05\x00\x00\xe6\x06\x07\x01``E\x02:\x80\x18q8-@X,E"
-        b"\x00\xad\x112\x00\x00\x1e\x01\x1d\x00rQ\xd0\x1e n(U\x00\xad"
-        b"\x112\x00\x00\x1e\x8c\n\xd0\x8a \xe0-\x10\x10>\x96\x00\xad\x112"
-        b"\x00\x00\x18\x00\x00\x00\x00\x00\x00\x00\x00\x88",
+            b"\x80^5x*\xa1\x91\xa9TM\x9c&\x0fPT\xbf\xef\x80qO\x81@\x81\x80"
+            b"\x81\xc0\x81\x00\x95\x00\xb3\x00\xd1\xc0M\xd0\x00\xa0\xf0p>\x800 "
+            b"5\x00\xad\x112\x00\x00\x1aV^\x00\xa0\xa0\xa0)P/ 5\x00\xad\x112\x00"
+            b"\x00\x1a\x00\x00\x00\xfd\x002<\x1e\x8c<\x00\n      \x00\x00\x00\xfc"
+            b"\x00Acer ET430K\n \x01)\x02\x03A\xf1Pa\x01`\x03\x04\x12\x13"
+            b"\x05\x14\x1f\x10\x07\x06\x02k_#\t\x07\x07\x83\x01\x00\x00k\x03\x0c"
+            b"\x00 \x008< \x00 \x01g\xd8]\xc4\x01x\x80\x00\xe3\x05\xe0"
+            b"\x01\xe4\x0f\x05\x00\x00\xe6\x06\x07\x01``E\x02:\x80\x18q8-@X,E"
+            b"\x00\xad\x112\x00\x00\x1e\x01\x1d\x00rQ\xd0\x1e n(U\x00\xad"
+            b"\x112\x00\x00\x1e\x8c\n\xd0\x8a \xe0-\x10\x10>\x96\x00\xad\x112"
+            b"\x00\x00\x18\x00\x00\x00\x00\x00\x00\x00\x00\x88",
         "edid_revision": 3,
         "edid_version": 1,
         "ext_flag": 1,
@@ -193,5 +193,58 @@ def test_parse_edid_2():
         "white_x": 0.3125,
         "white_y": 0.3291015625,
         "year_of_manufacture": 2017,
+    }
+    assert result == expected_result
+
+
+def test_parse_edid_3():
+    """Testing DisplayCAL.edid.parse_edid() function. for #119."""
+    xrandr_edid_data = """
+        00ffffffffffff0009e5120800000000
+        1f1c0104a5221378030980955c5a9129
+        21505400000001010101010101010101
+        010101010101033a803671381e403020
+        360058c21000001a0000000000000000
+        00000000000000000000000000fe0042
+        4f452043510a202020202020000000fe
+        004e5431353646484d2d4e36310a00ed
+    """
+    xrandr_edid_data = "".join(xrandr_edid_data.split("\n")).replace(" ", "").strip()
+    raw_edid = codecs.decode(xrandr_edid_data, "hex")
+    result = parse_edid(raw_edid)
+    expected_result = {
+        "ascii": "NT156FHM-N61",
+        "blue_x": 0.162109375,
+        "blue_y": 0.12890625,
+        "checksum": 237,
+        "checksum_valid": True,
+        "edid": b"\x00\xff\xff\xff\xff\xff\xff\x00\t\xe5\x12\x08\x00\x00\x00\x00"
+            b'\x1f\x1c\x01\x04\xa5"\x13x\x03\t\x80\x95\\Z\x91)!PT\x00'
+            b"\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
+            b"\x01\x01\x03:\x806q8\x1e@0 6\x00X\xc2\x10\x00\x00\x1a"
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+            b"\x00\x00\x00\x00\x00\xfe\x00BOE CQ\n      \x00\x00\x00\xfe\x00NT1"
+            b"56FHM-N61\n\x00\xed",
+        "edid_revision": 4,
+        "edid_version": 1,
+        "ext_flag": 0,
+        "features": 3,
+        "gamma": 2.2,
+        "green_x": 0.353515625,
+        "green_y": 0.5673828125,
+        "hash": "db067630cf478ff8638db83f2724a40b",
+        "header": b"\x00\xff\xff\xff\xff\xff\xff\x00",
+        "manufacturer": "BOE",
+        "manufacturer_id": "BOE",
+        "max_h_size_cm": 34,
+        "max_v_size_cm": 19,
+        "product_id": 2066,
+        "red_x": 0.58203125,
+        "red_y": 0.359375,
+        "serial_32": 0,
+        "week_of_manufacture": 31,
+        "white_x": 0.3125,
+        "white_y": 0.328125,
+        "year_of_manufacture": 2018,
     }
     assert result == expected_result
