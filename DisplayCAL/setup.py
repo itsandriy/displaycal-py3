@@ -1036,7 +1036,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
         }
         attrs["exclude_package_data"] = {name: ["RealDisplaySizeMM.c"]}
         attrs["include_package_data"] = (
-            not do_py2app
+            sys.platform in ("darwin", "win32") and not do_py2app
         )
         install_requires = [req.replace("(", "").replace(")", "") for req in requires]
         attrs["install_requires"] = install_requires
