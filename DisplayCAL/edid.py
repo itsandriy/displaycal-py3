@@ -335,6 +335,26 @@ def edid_parse_string(desc):
 
 def parse_edid(edid):
     """Parse raw EDID data (binary string) and return dict."""
+    if isinstance(edid, str):
+        edid = edid.encode("utf-8")
+
+    invalid_chars_lut = {
+        b"\xc3\x80": b"\xc0",
+        b"\xc3\x85": b"\xc5",
+        b"\xc3\x90": b"\xd0",
+        b"\xc3\x91": b"\xd1",
+        b"\xc3\xa0": b"\xe0",
+        b"\xc3\xb1": b"\xf1",
+        b"\xc3\xbc": b"\xfc",
+        b"\xc3\xbd": b"\xfd",
+        b"\xc3\xbf": b"\xff",
+    }
+    for char in invalid_chars_lut:
+        edid = edid.replace(char, invalid_chars_lut[char])
+
+    if len(edid) > 128:
+        edid = edid.replace(b"\xc2", b"")
+
     result = {
         "edid": edid,
         "hash": md5(edid).hexdigest(),
@@ -399,7 +419,7 @@ def parse_edid(edid):
         if block[:BLOCK_TYPE] != b"\x00\x00\x00":
             # Ignore pixel clock data
             continue
-        text_type = text_types.get(block[BLOCK_TYPE:BLOCK_TYPE + 1])
+        text_type = text_types.get(block[BLOCK_TYPE : BLOCK_TYPE + 1])
         if text_type:
             desc = edid_parse_string(block[BLOCK_CONTENTS[0] : BLOCK_CONTENTS[1]])
             if desc is not None:

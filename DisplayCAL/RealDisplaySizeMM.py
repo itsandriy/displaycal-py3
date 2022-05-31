@@ -130,8 +130,11 @@ def get_display(display_no=0):
 
 
 def get_wayland_display(x, y, w, h):
-    # Given x, y, width and height of display geometry, find matching
-    # Wayland display. Note that we apparently CANNNOT use width and height
+    """Find matching Wayland display.
+
+    Given x, y, width and height of display geometry, find matching Wayland display.
+    """
+    # Note that we apparently CANNNOT use width and height
     # because the reported values from Argyll code and Mutter can be slightly
     # different, e.g. 3660x1941 from Mutter vs 3656x1941 from Argyll when
     # HiDPI is enabled. The xrandr output is also interesting in that case:
@@ -141,7 +144,7 @@ def get_wayland_display(x, y, w, h):
     #   3656x1941     59.96*+
     # Note the apparent mismatch between first and 2nd/3rd line.
     # Look for active display at x, y instead.
-    # Currently only support for GNOME3/Mutter
+    # Currently, only support for GNOME3/Mutter
     try:
         iface = DBusObject(
             BUSTYPE_SESSION,

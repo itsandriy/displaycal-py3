@@ -331,7 +331,7 @@ disppath **get_displays() {
 
 #ifdef __APPLE__
     /* Note :- some recent releases of OS X have a feature which */
-    /* automatically adjusts the screen brigtness with ambient level. */
+    /* automatically adjusts the screen brightness with ambient level. */
     /* We may have to find a way of disabling this during calibration and profiling. */
     /* See the "pset -g" command. */
 
