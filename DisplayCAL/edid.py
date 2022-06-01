@@ -338,19 +338,20 @@ def parse_edid(edid):
     if isinstance(edid, str):
         edid = edid.encode("utf-8")
 
-    invalid_chars_lut = {
-        b"\xc3\x80": b"\xc0",
-        b"\xc3\x85": b"\xc5",
-        b"\xc3\x90": b"\xd0",
-        b"\xc3\x91": b"\xd1",
-        b"\xc3\xa0": b"\xe0",
-        b"\xc3\xb1": b"\xf1",
-        b"\xc3\xbc": b"\xfc",
-        b"\xc3\xbd": b"\xfd",
-        b"\xc3\xbf": b"\xff",
-    }
-    for char in invalid_chars_lut:
-        edid = edid.replace(char, invalid_chars_lut[char])
+    # filter \xc3 values
+    # it appears under Wayland, there are \xc3 bytes which actually is pushing the next
+    # byte by 64.
+    edid_as_list = [char for char in edid]
+    edid_buffer = []
+    while edid_as_list:
+        char = edid_as_list.pop(0)
+        if char == b"\xc3"[0]:
+            next_char = edid_as_list.pop(0)
+            # push the next character by 64
+            edid_buffer.append((next_char + 64).to_bytes(1, "big"))
+        else:
+            edid_buffer.append(char.to_bytes(1, "big"))
+    edid = b"".join(edid_buffer)
 
     if len(edid) > 128:
         edid = edid.replace(b"\xc2", b"")
