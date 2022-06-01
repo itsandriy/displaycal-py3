@@ -157,6 +157,7 @@ def get_wayland_display(x, y, w, h):
     else:
         # See
         # https://github.com/GNOME/mutter/blob/master/src/org.gnome.Mutter.DisplayConfig.xml
+        output_storage = None
         try:
             found = False
             crtcs = res[1]
@@ -171,13 +172,15 @@ def get_wayland_display(x, y, w, h):
                         if output[2] == crtc_id:
                             # Found our output
                             found = True
+                            output_storage = output
                             break
                     if found:
                         break
-            if found:
-                properties = output[7]
-                wayland_display = {"xrandr_name": output[4]}
-                edid = "".join(chr(v) for v in properties.get("edid", ()))
+            if found and output_storage is not None:
+                properties = output_storage[7]
+                wayland_display = {"xrandr_name": output_storage[4]}
+                raw_edid = properties.get("edid", ())
+                edid = b"".join(v.to_bytes(1, "big") for v in raw_edid)
                 if edid:
                     wayland_display["edid"] = edid
                 w_mm = properties.get("width-mm")
