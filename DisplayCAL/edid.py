@@ -338,19 +338,17 @@ def parse_edid(edid):
     if isinstance(edid, str):
         edid = edid.encode("utf-8")
 
-    # filter \xc3 values
     # it appears under Wayland, there are \xc3 bytes which actually is pushing the next
-    # byte by 64.
+    # byte by 64, these are valid byte sequences but can not be interpreted by our EDID
+    # parser.
     edid_as_list = [char for char in edid]
     edid_buffer = []
     while edid_as_list:
         char = edid_as_list.pop(0)
         if char == b"\xc3"[0]:
-            next_char = edid_as_list.pop(0)
-            # push the next character by 64
-            edid_buffer.append((next_char + 64).to_bytes(1, "big"))
-        else:
-            edid_buffer.append(char.to_bytes(1, "big"))
+            # use the next character and push it by 64
+            char = edid_as_list.pop(0) + 64
+        edid_buffer.append(char.to_bytes(1, "big"))
     edid = b"".join(edid_buffer)
 
     if len(edid) > 128:
