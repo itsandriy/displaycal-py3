@@ -9557,18 +9557,14 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                 else:
                     filename, ext = os.path.splitext(ccmx)
                     desc = cgats.get_descriptor()
-                    desc = lang.getstr(ext[1:] + "." + filename, default=desc)
+                    desc = lang.getstr(ext[1:] + "." + filename, default=desc.decode("utf-8"))
                     # If the description is not the same as the 'sane'
                     # filename, add the filename after the description
                     # (max 31 chars)
                     # See also colorimeter_correction_check_overwite, the
                     # way the filename is processed must be the same
-                    if (
-                        re.sub(
-                            r"[\\/:;*?\"<>|]+", "_", make_argyll_compatible_path(desc)
-                        )
-                        != filename
-                    ):
+                    argyll_compatible_path = make_argyll_compatible_path(desc)
+                    if re.sub(r"[\\/:;*?\"<>|]+", "_", argyll_compatible_path) != filename:
                         ccmx = "%s &amp;lt;%s&amp;gt;" % (
                             desc,
                             ellipsis_(ccmx, 31, "m"),
