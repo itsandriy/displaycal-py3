@@ -1935,36 +1935,26 @@ def create_synthetic_hlg_clut_profile(
 
 
 def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
-    edid = get_edid(display_no)
-    if edid:
+    """Use a brute force way of getting display profile."""
+    edid_ = get_edid(display_no)
+    device_ids = []
+    if edid_:
         # Try a range of possible device IDs
+        dife = colord.device_id_from_edid
         device_ids = [
-            colord.device_id_from_edid(edid, quirk=False, query=True),
-            colord.device_id_from_edid(edid, quirk=True, truncate_edid_strings=True),
-            colord.device_id_from_edid(edid, quirk=True, use_serial_32=False),
-            colord.device_id_from_edid(
-                edid, quirk=True, use_serial_32=False, truncate_edid_strings=True
-            ),
-            colord.device_id_from_edid(edid, quirk=True),
-            colord.device_id_from_edid(edid, quirk=False, truncate_edid_strings=True),
-            colord.device_id_from_edid(edid, quirk=False, use_serial_32=False),
-            colord.device_id_from_edid(
-                edid, quirk=False, use_serial_32=False, truncate_edid_strings=True
-            ),
+            dife(edid_, quirk=False, query=True),
+            dife(edid_, quirk=True, truncate_edid_strings=True),
+            dife(edid_, quirk=True, use_serial_32=False),
+            dife(edid_, quirk=True, use_serial_32=False, truncate_edid_strings=True),
+            dife(edid_, quirk=True),
+            dife(edid_, quirk=False, truncate_edid_strings=True),
+            dife(edid_, quirk=False, use_serial_32=False),
+            dife(edid_, quirk=False, use_serial_32=False, truncate_edid_strings=True),
             # Try with manufacturer omitted
-            colord.device_id_from_edid(edid, omit_manufacturer=True),
-            colord.device_id_from_edid(
-                edid, truncate_edid_strings=True, omit_manufacturer=True
-            ),
-            colord.device_id_from_edid(
-                edid, use_serial_32=False, omit_manufacturer=True
-            ),
-            colord.device_id_from_edid(
-                edid,
-                use_serial_32=False,
-                truncate_edid_strings=True,
-                omit_manufacturer=True,
-            ),
+            dife(edid_, omit_manufacturer=True),
+            dife(edid_, truncate_edid_strings=True, omit_manufacturer=True),
+            dife(edid_, use_serial_32=False, omit_manufacturer=True),
+            dife(edid_, use_serial_32=False, truncate_edid_strings=True, omit_manufacturer=True,),
         ]
     else:
         # Fall back to XrandR name
@@ -1977,18 +1967,18 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
         if display:
             xrandr_name = display.get("xrandr_name")
             if xrandr_name:
-                edid = {"monitor_name": xrandr_name}
+                edid_ = {"monitor_name": xrandr_name}
                 device_ids = [f"xrandr-{xrandr_name.decode()}"]
             elif os.getenv("XDG_SESSION_TYPE") == "wayland":
                 # Preliminary Wayland support under non-GNOME desktops.
                 # This still needs a lot of work.
                 device_ids = colord.get_display_device_ids()
                 if device_ids and display_no < len(device_ids):
-                    edid = {
+                    edid_ = {
                         "monitor_name": device_ids[display_no].split("xrandr-", 1).pop()
                     }
                     device_ids = [device_ids[display_no]]
-    if edid:
+    if edid_:
         for device_id in dict.fromkeys(device_ids).keys():
             if device_id:
                 try:
@@ -2003,8 +1993,8 @@ def _colord_get_display_profile(display_no=0, path_only=False, use_cache=True):
                     warnings.warn(str(exception), Warning)
                 else:
                     if profile_path:
-                        if "hash" in edid:
-                            colord.device_ids[edid["hash"]] = device_id
+                        if "hash" in edid_:
+                            colord.device_ids[edid_["hash"]] = device_id
                         if path_only:
                             print(
                                 "Got profile from colord for display %i (%s):"

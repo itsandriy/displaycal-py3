@@ -4,6 +4,7 @@ from hashlib import md5
 import codecs
 import math
 import os
+import re
 import string
 import struct
 import sys
@@ -28,7 +29,6 @@ if sys.platform == "win32":
     import win32api
 elif sys.platform == "darwin":
     import binascii
-    import re
     import subprocess as sp
 
 from DisplayCAL import config
@@ -352,9 +352,9 @@ def parse_edid(edid):
             edid_buffer.append(char.to_bytes(1, "big"))
         edid = b"".join(edid_buffer)
 
-    # Under Wayland there are extra "\xc2" characters if the EDID is longer than
-    # 128 bytes
-    if len(edid) > 128:
+    # only one instance of \xc2 is weirdly required,
+    # but more than 1 needs to be replaced
+    if len(re.findall(b"\xc2", edid)) > 1:
         edid = edid.replace(b"\xc2", b"")
 
     result = {
@@ -452,8 +452,8 @@ def parse_edid(edid):
         elif block[BLOCK_TYPE] == BLOCK_TYPE_COLOR_MANAGEMENT_DATA:
             # TODO: Implement? How could it be used?
             result["color_management_data"] = block[
-                BLOCK_CONTENTS[0] : BLOCK_CONTENTS[1]
-            ]
+                                              BLOCK_CONTENTS[0] : BLOCK_CONTENTS[1]
+                                              ]
 
     result["ext_flag"] = edid[EXTENSION_FLAG]
     result["checksum"] = edid[CHECKSUM]

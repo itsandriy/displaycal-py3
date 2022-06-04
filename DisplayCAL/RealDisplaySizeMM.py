@@ -181,6 +181,12 @@ def get_wayland_display(x, y, w, h):
                 wayland_display = {"xrandr_name": output_storage[4]}
                 raw_edid = properties.get("edid", ())
                 edid = b"".join(v.to_bytes(1, "big") for v in raw_edid)
+
+                # only one instance of \xc2 is weirdly required,
+                # but more than 1 needs to be replaced
+                if len(re.findall(b"\xc2", edid)) > 1:
+                    edid = edid.replace(b"\xc2", b"")
+
                 if edid:
                     wayland_display["edid"] = edid
                 w_mm = properties.get("width-mm")
