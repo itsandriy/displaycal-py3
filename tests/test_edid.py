@@ -363,6 +363,87 @@ def test_parse_edid_4():
     assert result == expected_result
 
 
+def test_parse_edid_5():
+    """Testing DisplayCAL.edid.parse_edid() function with a 384 byte EDID."""
+    xrandr_edid_data = """
+                00ffffffffffff004c2d5c10564a5843
+                0c1f0104b53c22783a2eb5ae4f46a626
+                115054bfef8081c0810081809500a9c0
+                b300714f0101565e00a0a0a029503020
+                350055502100001a000000fd0832f01e
+                6762000a202020202020000000fc004c
+                433237473778540a20202020000000ff
+                0048345a523330323437300a20200231
+                02031cf147903f1f0413120323090707
+                83010000e305c000e30605015a8780a0
+                70384d403020350055502100001a23e8
+                8078703887401c20980c55502100001a
+                6fc200a0a0a055503020350055502100
+                001a98e200a0a0a02950084035005550
+                2100001a023a801871382d40582c4500
+                56502100001e00000000000000000088
+                7012170000030114e17b0188ff099f00
+                2f801f009f053100020004008a000000
+                00000000000000000000000000000000
+                00000000000000000000000000000000
+                00000000000000000000000000000000
+                00000000000000000000000000000000
+                00000000000000000000000000000000
+                00000000000000000000000000000090"""
+    xrandr_edid_data = "".join(xrandr_edid_data.split("\n")).replace(" ", "").strip()
+    raw_edid = codecs.decode(xrandr_edid_data, "hex")
+    result = parse_edid(raw_edid)
+    expected_result = {
+        "blue_x": 0.150390625,
+        "blue_y": 0.0693359375,
+        "checksum": 49,
+        "checksum_valid": True,
+        "edid": b"\x00\xff\xff\xff\xff\xff\xff\x00L-\\\x10VJXC\x0c\x1f\x01\x04\xb5<\"x"
+        b":.\xb5\xaeOF\xa6&\x11PT\xbf\xef\x80\x81\xc0\x81\x00\x81\x80"
+        b"\x95\x00\xa9\xc0\xb3\x00qO\x01\x01V^\x00\xa0\xa0\xa0)P0 5\x00UP"
+        b"!\x00\x00\x1a\x00\x00\x00\xfd\x082\xf0\x1egb\x00\n      \x00\x00"
+        b"\x00\xfc\x00LC27G7xT\n    \x00\x00\x00\xff\x00H4ZR302470\n  \x021"
+        b"\x02\x03\x1c\xf1G\x90?\x1f\x04\x13\x12\x03#\t\x07\x07"
+        b"\x83\x01\x00\x00\xe3\x05\xc0\x00\xe3\x06\x05\x01Z\x87\x80\xa0p8M@"
+        b"0 5\x00UP!\x00\x00\x1a#\xe8\x80xp8\x87@\x1c \x98\x0cUP!\x00\x00\x1a"
+        b"o\xc2\x00\xa0\xa0\xa0UP0 5\x00UP!\x00\x00\x1a\x98\xe2"
+        b"\x00\xa0\xa0\xa0)P\x08@5\x00UP!\x00\x00\x1a\x02:\x80\x18q8-@X,E\x00"
+        b"VP!\x00\x00\x1e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x88p\x12\x17\x00"
+        b"\x00\x03\x01\x14\xe1{\x01\x88\xff\t\x9f\x00/\x80\x1f\x00"
+        b"\x9f\x051\x00\x02\x00\x04\x00\x8a\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x90",
+        "edid_revision": 4,
+        "edid_version": 1,
+        "ext_flag": 2,
+        "features": 58,
+        "gamma": 2.2,
+        "green_x": 0.2763671875,
+        "green_y": 0.650390625,
+        "hash": "c0c868ec1d10057c60a6f0cd40282568",
+        "header": b"\x00\xff\xff\xff\xff\xff\xff\x00",
+        "manufacturer": "Samsung Electric Company",
+        "manufacturer_id": "SAM",
+        "max_h_size_cm": 60,
+        "max_v_size_cm": 34,
+        "monitor_name": "LC27G7xT",
+        "product_id": 4188,
+        "red_x": 0.6796875,
+        "red_y": 0.310546875,
+        "serial_32": 1129859670,
+        "serial_ascii": "H4ZR302470",
+        "week_of_manufacture": 12,
+        "white_x": 0.3134765625,
+        "white_y": 0.3291015625,
+        "year_of_manufacture": 2021,
+    }
+    assert result == expected_result
+
+
 def test_parse_manufacturer_id_1():
     """Test parse_manufacturer_id."""
     manufacturer_id_raw = b'\x10\xac'
