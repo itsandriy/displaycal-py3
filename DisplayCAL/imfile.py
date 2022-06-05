@@ -124,7 +124,7 @@ class Image(object):
         if self.bitdepth == 16:
             data = struct.pack(">H", n)
         elif self.bitdepth == 8:
-            data = chr(n).encode()
+            data = n.to_bytes(1, "big")
         else:
             raise ValueError("Unsupported bitdepth: %r" % self.bitdepth)
         return data
@@ -341,7 +341,7 @@ class Image(object):
             w, h = len(self.data[0]), len(self.data)
         ihdr.extend([struct.pack(">I", w), struct.pack(">I", h)])
         # IHDR: Bit depth
-        ihdr.append(bytes(str(chr(self.bitdepth)), "utf-8"))
+        ihdr.append(self.bitdepth.to_bytes(1, "big"))
         # IHDR: Color type 2 (truecolor)
         ihdr.append(b"\2")
         # IHDR: Compression method 0 (deflate)

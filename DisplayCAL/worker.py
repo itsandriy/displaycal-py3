@@ -4257,9 +4257,8 @@ END_DATA
                     # Make sure the profile has the expected Rec. 709 TRC
                     # for BT.1886
                     self.log(
-                        appname
-                        + ": Applying Rec. 709 TRC to "
-                        + os.path.basename(profile_in.fileName)
+                        f"{appname}: Applying Rec. 709 TRC to "
+                        f"{os.path.basename(profile_in.fileName)}"
                     )
                     for i, channel in enumerate(("r", "g", "b")):
                         if channel + "TRC" in profile_in.tags:
@@ -4941,8 +4940,8 @@ END_DATA
                     ]
                 )
                 profile_link.calculateID()
-                profile_link.write(filename + profile_ext)
-                profile_link.tags.A2B0.clut_writepng(filename + ".A2B0.CLUT.png")
+                profile_link.write(f"{filename}{profile_ext}")
+                profile_link.tags.A2B0.clut_writepng(f"{filename}.A2B0.CLUT.png")
                 del profile_link
 
                 if use_xicclu and format == "madVR":
