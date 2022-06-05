@@ -335,7 +335,10 @@ def edid_parse_string(desc):
 
 def parse_edid(edid):
     """Parse raw EDID data (binary string) and return dict."""
-    if b"\xc3" in edid:
+    if len(edid) not in [128, 256, 384]:
+        # this is probably encoded/decoded in a wrong way and contains 2-bytes
+        # characters
+        #
         # b"\xc2" and b"\xc3" are codepoints
         # they can only appear if the byte data is decoded with latin-1 and encoded back
         # with utf-8.
