@@ -521,7 +521,7 @@ def get_argyll_data_dir():
 
 
 def get_display_name(disp_index=None, include_geometry=False):
-    """Return name of currently configured display"""
+    """Return name of currently configured display."""
     if disp_index is None:
         disp_index = getcfg("display.number") - 1
     displays = getcfg("displays")

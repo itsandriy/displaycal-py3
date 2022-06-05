@@ -336,7 +336,7 @@ def check_create_dir(path):
             os.makedirs(path)
         except Exception as exception:
             return Error(
-                lang.getstr("error.dir_creation", path) + "\n\n" + str(exception)
+                f"{lang.getstr('error.dir_creation', path)}\n\n{exception}"
             )
     if not os.path.isdir(path):
         return Error(lang.getstr("error.dir_notdir", path))
@@ -2074,9 +2074,7 @@ class Sudo(object):
             if p.after == "Password:":
                 # Password was not accepted
                 self._terminate()
-                return StringWithLengthOverride(
-                    p.before.strip(), 0
-                )
+                return StringWithLengthOverride(p.before.strip(), 0)
         if p.after is wexpect.TIMEOUT:
             print("Error: sudo timed out")
             if not p.terminate(force=True):
@@ -5469,12 +5467,12 @@ END_DATA
                         if argyll_version_string != self.argyll_version_string:
                             self.set_argyll_version_from_string(argyll_version_string)
                         print(f"ArgyllCMS {self.argyll_version_string}")
-                        defaults["copyright"] = (
-                            "No copyright. Created with %s %s and Argyll CMS %s" % (
-                                appname,
-                                version,
-                                argyll_version_string,
-                            )
+                        defaults[
+                            "copyright"
+                        ] = "No copyright. Created with %s %s and Argyll CMS %s" % (
+                            appname,
+                            version,
+                            argyll_version_string,
                         )
 
                         if self.argyll_version > [1, 0, 4]:
@@ -10572,7 +10570,9 @@ usage: spotread [-options] [logfile]
                     is not True
                 ) and not silent:
                     result = Warning(
-                        lang.getstr("error.autostart_creation", system_desktop_file_path)
+                        lang.getstr(
+                            "error.autostart_creation", system_desktop_file_path
+                        )
                     )
         return result
 
@@ -13586,7 +13586,7 @@ usage: spotread [-options] [logfile]
         inoutfile = self.setup_inout()
         if not inoutfile or isinstance(inoutfile, Exception):
             return inoutfile, None
-        if not os.path.exists(inoutfile + ".ti1"):
+        if not os.path.exists(f"{inoutfile}.ti1"):
             filename, ext = os.path.splitext(getcfg("testchart.file"))
             result = check_file_isfile(filename + ext)
             if isinstance(result, Exception):
@@ -13604,11 +13604,11 @@ usage: spotread [-options] [logfile]
                             ),
                             None,
                         )
-                    ti3 = StringIO(
-                        profile.tags.get("CIED", "") or profile.tags.get("targ", "")
+                    ti3 = BytesIO(
+                        profile.tags.get("CIED", b"") or profile.tags.get("targ", b"")
                     )
                 elif ext.lower() == ".ti1":
-                    shutil.copyfile(filename + ext, inoutfile + ".ti1")
+                    shutil.copyfile(filename + ext, f"{inoutfile}.ti1")
                 else:  # ti3
                     try:
                         ti3 = open(filename + ext, "r", newline="")
@@ -13633,18 +13633,15 @@ usage: spotread [-options] [logfile]
                             ),
                             None,
                         )
-                    ti1 = open(inoutfile + ".ti1", "w")
-                    ti1.write(ti3_to_ti1(ti3_lines))
-                    ti1.close()
+
+                    with open(f"{inoutfile}.ti1", "w") as ti1:
+                        ti1.write(ti3_to_ti1(ti3_lines))
             except Exception as exception:
+                localized_error_message = lang.getstr(
+                    "error.testchart.creation_failed", f"{inoutfile}.ti1"
+                )
                 return (
-                    Error(
-                        lang.getstr(
-                            "error.testchart.creation_failed", inoutfile + ".ti1"
-                        )
-                        + "\n\n"
-                        + str(exception)
-                    ),
+                    Error(f"{localized_error_message}\n\n{exception}"),
                     None,
                 )
         if apply_calibration is not False:
@@ -16062,7 +16059,6 @@ BEGIN_DATA
         colorimetrically through profile using Argyll's xicclu
         utility and return TI1 and compatible TI3 (CGATS instances)
         """
-
         # ti3
         copy = True
         if isinstance(ti3, (str, bytes)):
@@ -16180,19 +16176,19 @@ BEGIN_DATA
         include_sample_name = False
         for i, device in enumerate(odata):
             if i == 0:
-                if color_rep == b"LAB":
+                if color_rep == "LAB":
                     ilabel = b"LAB_L LAB_A LAB_B"
-                elif color_rep == b"XYZ":
+                elif color_rep == "XYZ":
                     ilabel = b"XYZ_X XYZ_Y XYZ_Z"
                 else:
-                    raise ValueError("Unknown CIE color representation " + color_rep)
+                    raise ValueError(f"Unknown CIE color representation {color_rep}")
                 ocolor = profile.colorSpace.upper()
                 if ocolor == b"RGB":
                     olabel = b"RGB_R RGB_G RGB_B"
                 elif ocolor == b"CMYK":
                     olabel = b"CMYK_C CMYK_M CMYK_Y CMYK_K"
                 else:
-                    raise ValueError("Unknown color representation " + ocolor)
+                    raise ValueError(f"Unknown color representation {ocolor}")
                 olabels = olabel.split()
                 # add device fields to DATA_FORMAT if not yet present
                 if (
@@ -16210,9 +16206,9 @@ BEGIN_DATA
                     ti3v.DATA_FORMAT.add_data(olabels)
                 # add required fields to DATA_FORMAT if not yet present
                 if (
-                    not required[0] in list(ti3v.DATA_FORMAT.values())
-                    and not required[1] in list(ti3v.DATA_FORMAT.values())
-                    and not required[2] in list(ti3v.DATA_FORMAT.values())
+                    not bytes(required[0], "utf-8") in list(ti3v.DATA_FORMAT.values())
+                    and not bytes(required[1], "utf-8") in list(ti3v.DATA_FORMAT.values())
+                    and not bytes(required[2], "utf-8") in list(ti3v.DATA_FORMAT.values())
                 ):
                     ti3v.DATA_FORMAT.add_data(required)
                 ti1out.write(b'KEYWORD "COLOR_REP"\n')
@@ -16255,15 +16251,15 @@ BEGIN_DATA
                 )
                 ti1out.write(cie_.encode("utf-8"))
             else:
-                cie_ = "%s %s %s\n" % (str(i + 1), " ".join(device), " ".join(cie))
-                ti1out.write(cie_.encode("utf-8"))
+                cie_ = b"%s %s %s\n" % (bytes(str(i + 1), "utf-8"), b" ".join(device), b" ".join(cie))
+                ti1out.write(cie_)
             if i > len(wp) - 1:  # don't include whitepoint patches in ti3
                 # set device values in ti3
                 for n, v in enumerate(olabels):
                     # Assuming 0..100, 4 decimal digits is
                     # enough for roughly 19 bits integer
                     # device values
-                    ti3v.DATA[i - len(wp)][v] = round(float(device[n]), 4)
+                    ti3v.DATA[i - len(wp)][v.decode("utf-8")] = round(float(device[n]), 4)
                 # set PCS values in ti3
                 for n, v in enumerate(cie):
                     ti3v.DATA[i - len(wp)][required[n]] = float(v)
@@ -17233,8 +17229,8 @@ BEGIN_DATA
         return (
             not config.is_virtual_display()
             and (
-                os.getenv("XDG_SESSION_TYPE") == "wayland"
-                or getcfg("patterngenerator.use_pattern_window")
+                # os.getenv("XDG_SESSION_TYPE") == "wayland"
+                getcfg("patterngenerator.use_pattern_window")
             )
             and self.argyll_virtual_display
         )

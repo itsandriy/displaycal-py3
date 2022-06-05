@@ -100,13 +100,45 @@ def test_extract_cal_from_profile_1(data_files, icc_name: str, exception: bool) 
         ("BenQ PD2700U-AC19BB79-F553-4582-B898-4247D669C2F1.icc", None),
     ),
 )
-def test_ti3_to_ti1(data_files, profile: str, result: bytes | None) -> None:
+def test_ti3_to_ti1_1(data_files, profile: str, result: bytes | None) -> None:
     """Testing the ti3_to_ti1() function."""
     path = data_files[profile]
     if not result:
         assert not argyll_cgats.ti3_to_ti1(path)
     else:
         assert result in argyll_cgats.ti3_to_ti1(path)
+
+
+def test_ti3_to_ti1_2(data_files):
+    """Testing the argyll_cgats.ti3_to_ti1() function."""
+    ti3_path = data_files["0_16_from_issue_129.ti3"].absolute()
+    result = argyll_cgats.ti3_to_ti1(ti3_path)
+    assert result == (
+        b'CTI1   \n'
+        b'\n'
+        b'DESCRIPTOR "Argyll Calibration Target chart information 1"\n'
+        b'ORIGINATOR "Argyll targen"\n'
+        b'CREATED "Sun Jun  5 13:08:54 2022"\n'
+        b'COLOR_REP "RGB"\n'
+        b'TARGET_INSTRUMENT "Datacolor Spyder3"\n'
+        b'DISPLAY_TYPE_REFRESH "NO"\n'
+        b'DISPLAY_TYPE_BASE_ID "1"\n'
+        b'INSTRUMENT_TYPE_SPECTRAL "NO"\n'
+        b'NORMALIZED_TO_Y_100 "YES"\n'
+        b'VIDEO_LUT_CALIBRATION_POSSIBLE "YES"\n'
+        b'\n'
+        b'NUMBER_OF_FIELDS 7\n'
+        b'BEGIN_DATA_FORMAT\n'
+        b'SAMPLE_ID RGB_R RGB_G RGB_B XYZ_X XYZ_Y XYZ_Z\n'
+        b'END_DATA_FORMAT\n'
+        b'\n'
+        b'NUMBER_OF_SETS 3\n'
+        b'BEGIN_DATA\n'
+        b'1 100.0000 100.0000 100.0000 95.01040 100.0000 92.72020\n'
+        b'2 0.000000 0.000000 0.000000 0.277593 0.255279 0.423145\n'
+        b'3 6.250000 6.250000 6.250000 0.512380 0.536117 0.705578\n'
+        b'END_DATA\n'
+    )
 
 
 @pytest.mark.parametrize("gray", (True, False), ids=("with gray", "without gray"))

@@ -240,8 +240,19 @@ class MeasureFrame(InvincibleFrame):
         )
         self.zoomoutbutton.SetToolTipString(lang.getstr("measureframe.zoomout"))
 
-        if os.getenv("XDG_SESSION_TYPE") != "wayland":
+        if os.getenv("XDG_SESSION_TYPE") == "wayland":
             # No manual centering under Wayland...
+            self.centermsg = wx.StaticText(
+                self.panel,
+                -1,
+                lang.getstr("measureframe.center.manual"),
+                style=wx.ALIGN_CENTER_HORIZONTAL,
+            )
+            self.centermsg.Wrap(self.hsizer.MinSize[0] - 20)
+            self.sizer.Add(
+                self.centermsg, flag=wx.ALIGN_CENTER | wx.LEFT | wx.RIGHT, border=10
+            )
+        else:
             self.centerbutton = BitmapButton(
                 self.panel,
                 -1,
@@ -255,17 +266,6 @@ class MeasureFrame(InvincibleFrame):
                 self.centerbutton, flag=wx.ALIGN_CENTER | wx.LEFT | wx.RIGHT, border=10
             )
             self.centerbutton.SetToolTipString(lang.getstr("measureframe.center"))
-        else:
-            self.centermsg = wx.StaticText(
-                self.panel,
-                -1,
-                lang.getstr("measureframe.center.manual"),
-                style=wx.ALIGN_CENTER_HORIZONTAL,
-            )
-            self.centermsg.Wrap(self.hsizer.MinSize[0] - 20)
-            self.sizer.Add(
-                self.centermsg, flag=wx.ALIGN_CENTER | wx.LEFT | wx.RIGHT, border=10
-            )
 
         self.vsizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.vsizer, flag=wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
@@ -424,9 +424,9 @@ class MeasureFrame(InvincibleFrame):
                 scale = cur_scale
         scale = min(scale, 50.0)  # Argyll max
         if debug:
-            print(" x:", x)
-            print(" y:", y)
-            print(" scale:", scale)
+            print("[D]  x:", x)
+            print("[D]  y:", y)
+            print("[D]  scale:", scale)
             print("[D]  scale_adjustment_factor:", scale_adjustment_factor)
         scale /= float(scale_adjustment_factor)
         if debug:

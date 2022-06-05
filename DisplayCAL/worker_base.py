@@ -469,14 +469,13 @@ class WorkerBase(object):
                     msg = "there is none"
                 else:
                     msg = "the previous (%s) no longer exists" % self.tempdir
-                print(appname + ": Creating a new temporary directory because", msg)
+                print(f"{appname}: Creating a new temporary directory because", msg)
             try:
-                self.tempdir = tempfile.mkdtemp(prefix=appname + "-")
+                self.tempdir = tempfile.mkdtemp(prefix=f"{appname}-")
             except Exception as exception:
                 self.tempdir = None
                 return Error(
-                    "Error - couldn't create temporary directory: "
-                    + safe_str(exception)
+                    f"Error - couldn't create temporary directory: {safe_str(exception)}"
                 )
         return self.tempdir
 
