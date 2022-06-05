@@ -335,27 +335,12 @@ def edid_parse_string(desc):
 
 def parse_edid(edid):
     """Parse raw EDID data (binary string) and return dict."""
-    if isinstance(edid, str):
-        edid = edid.encode("utf-8")
-
     if b"\xc3" in edid:
-        # it appears under Wayland, there are \xc3 bytes which actually is pushing the
-        # next byte by 64, these are valid byte sequences but can not be interpreted by
-        # our EDID parser.
-        edid_as_list = [char for char in edid]
-        edid_buffer = []
-        while edid_as_list:
-            char = edid_as_list.pop(0)
-            if char == b"\xc3"[0]:
-                # use the next character and push it by 64
-                char = edid_as_list.pop(0) + 64
-            edid_buffer.append(char.to_bytes(1, "big"))
-        edid = b"".join(edid_buffer)
-
-    # only one instance of \xc2 is weirdly required,
-    # but more than 1 needs to be replaced
-    if len(re.findall(b"\xc2", edid)) > 1:
-        edid = edid.replace(b"\xc2", b"")
+        # b"\xc2" and b"\xc3" are codepoints
+        # they can only appear if the byte data is decoded with latin-1 and encoded back
+        # with utf-8.
+        # This apparently is a wrong conversion.
+        edid = edid.decode("utf-8").encode("latin-1")
 
     result = {
         "edid": edid,
