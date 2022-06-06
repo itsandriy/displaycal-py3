@@ -2381,7 +2381,12 @@ class Worker(WorkerBase):
                     # very small
                     dimensions_measureframe = "1,1,0.01"
                 else:
-                    dimensions_measureframe = getcfg("dimensions.measureframe")
+                    if os.getenv("XDG_SESSION_TYPE") == "wayland":
+                        # The following is a workaround for Wayland not exposing the
+                        # absolute screen positions of a window.
+                        dimensions_measureframe = "0.5,0.5,1.5"
+                    else:
+                        dimensions_measureframe = getcfg("dimensions.measureframe")
                     if get_arg("-dcc", args):
                         # Rescale for Chromecast default patch size of 10%
                         dimensions_measureframe = config.get_measureframe_dimensions(
@@ -8767,7 +8772,7 @@ while 1:
         if display_name == "Resolve":
             if (
                 self.argyll_virtual_display
-                and os.getenv("XDG_SESSION_TYPE") == "wayland"
+                # and os.getenv("XDG_SESSION_TYPE") == "wayland"
             ):
                 return self.argyll_virtual_display
             else:
