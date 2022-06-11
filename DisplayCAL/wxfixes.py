@@ -281,9 +281,7 @@ if "gtk3" in wx.PlatformInfo:
         def OnEraseBackground(self, event):
             dc = event.GetDC()
             rect = self.GetClientRect()
-            dc.SetClippingRegion(
-                rect.x, rect.y, rect.width, rect.height
-            )
+            dc.SetClippingRegion(rect.x, rect.y, rect.width, rect.height)
             bgcolor = self.BackgroundColour
             dc.SetBrush(wx.Brush(bgcolor, wx.SOLID))
             dc.SetPen(wx.Pen(bgcolor, wx.SOLID))
@@ -667,6 +665,9 @@ def _adjust_sizer_args_scaling_for_appdpi(*args, **kwargs):
     from DisplayCAL.config import get_default_dpi, getcfg
 
     scale = getcfg("app.dpi") / get_default_dpi()
+    if "border" in kwargs:
+        kwargs["border"] = int(kwargs["border"])
+
     if scale > 1:
         args = list(args)
         if kwargs.get("border"):

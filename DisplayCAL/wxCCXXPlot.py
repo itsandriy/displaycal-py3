@@ -81,8 +81,7 @@ class CCXXPlot(wx.Frame):
         worker   Worker instance
 
         """
-
-        self.is_ccss = cgats[0].type == "CCSS"
+        self.is_ccss = cgats[0].type == b"CCSS"
 
         desc = cgats.get_descriptor()
 
@@ -102,7 +101,10 @@ class CCXXPlot(wx.Frame):
         else:
             ccxx_type = "matrix"
 
-        title = "%s: %s" % (lang.getstr(ccxx_type), desc.decode("utf-8"))
+        title = "%s: %s" % (
+            lang.getstr(ccxx_type),
+            desc if isinstance(desc, str) else desc.decode("utf-8"),
+        )
 
         if self.is_ccss:
             # Convert to TI3 so we can get XYZ from spectra for coloring
@@ -112,6 +114,8 @@ class CCXXPlot(wx.Frame):
                 show_result_dialog(temp, parent)
             else:
                 basename = make_filename_safe(desc)
+                if isinstance(basename, bytes):
+                    basename = basename.decode("utf-8")
                 temp_path = os.path.join(temp, basename + ".ti3")
 
                 cgats[0].type = b"CTI3"
@@ -167,8 +171,8 @@ class CCXXPlot(wx.Frame):
                 values = []
                 x = x_min
                 for k in data_format.values():
-                    if k.startswith("SPEC_"):
-                        y = sample[k]
+                    if k.startswith(b"SPEC_"):
+                        y = sample[k.decode("utf-8")]
                         y_min = min(y, y_min)
                         y_max = max(y, y_max)
                         if lores:
@@ -204,13 +208,14 @@ class CCXXPlot(wx.Frame):
         else:
             # CCMX
             cube_size = 2
-
             x_min = 0
-
             y_min = 0
 
             mtx = colormath.Matrix3x3(
-                [[sample[k.decode("utf-8")] for k in data_format.values()] for sample in data.values()]
+                [
+                    [sample[k.decode("utf-8")] for k in data_format.values()]
+                    for sample in data.values()
+                ]
             )
             imtx = mtx.inverted()
 
@@ -296,7 +301,7 @@ class CCXXPlot(wx.Frame):
         for XYZ, values, attrs in self.samples:
             if len(XYZ) == 3:
                 # Got XYZ
-                if attrs.get("size") > 11.25:
+                if attrs.get("size", 0) > 11.25:
                     # Colorimeter XYZ
                     if Y_max > 1:
                         # Colorimeter brighter than ref
@@ -393,7 +398,7 @@ class CCXXPlot(wx.Frame):
         bg.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.canvas = canvas = LUTCanvas(bg)
         if self.is_ccss:
-            bg.MinSize = (513 * scale, 557 * scale)
+            bg.MinSize = (int(513 * scale), int(557 * scale))
             btnsizer = wx.BoxSizer(wx.HORIZONTAL)
             bg.Sizer.Add(
                 btnsizer,
@@ -406,8 +411,8 @@ class CCXXPlot(wx.Frame):
             bg.Sizer.Add(canvas, 1, flag=wx.EXPAND)
         else:
             self.Sizer.Add(bg, flag=wx.ALIGN_CENTER)
-            canvas_w = 240 * scale
-            canvas.MinSize = (canvas_w, canvas_w * (74.6 / 67.4))
+            canvas_w = int(240 * scale)
+            canvas.MinSize = (int(canvas_w), int(canvas_w * (74.6 / 67.4)))
             bg.Sizer.Add(canvas, flag=wx.ALIGN_CENTER)
         label = wx.StaticText(
             bg, -1, x_label.replace("&", "&&"), style=wx.ALIGN_CENTRE_HORIZONTAL
@@ -420,7 +425,7 @@ class CCXXPlot(wx.Frame):
         canvas.SetEnableDiagonals(False)
         canvas.SetEnableGrid(True)
         canvas.enableTicks = (True, True)
-        canvas.tickPen = wx.Pen(GRIDCOLOUR, canvas._pointSize[0])
+        canvas.tickPen = wx.Pen(GRIDCOLOUR, int(canvas._pointSize[0]))
         canvas.SetEnablePointLabel(False)
         canvas.SetEnableTitle(True)
         canvas.SetForegroundColour(FGCOLOUR)

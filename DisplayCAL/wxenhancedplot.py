@@ -2123,10 +2123,10 @@ class PlotCanvas(wx.Panel):
         dc.SetBrush(wx.Brush(c))
         spacing = 0.0455 * legendBoxWH[0]
         dc.DrawRectangle(
-            trhc[0] - spacing,
-            trhc[1],
-            legendBoxWH[0] + spacing,
-            legendBoxWH[1] + self._pointSize[1] * 2,
+            int(trhc[0] - spacing),
+            int(trhc[1]),
+            int(legendBoxWH[0] + spacing),
+            int(legendBoxWH[1] + self._pointSize[1] * 2),
         )
         legend_inside = True
         if legend_inside:
@@ -2416,13 +2416,17 @@ class PlotCanvas(wx.Panel):
                 lines = []
                 for x, _label in xticks:
                     pt = scale_and_shift_point(x, p1[1], scale, shift)
-                    lines.append((int(pt[0]), int(pt[1]), int(pt[0]), int(pt[1] - xTickLength)))
+                    lines.append(
+                        (int(pt[0]), int(pt[1]), int(pt[0]), int(pt[1] - xTickLength))
+                    )
                 dc.DrawLineList(lines)
             if ticks.top:
                 lines = []
                 for x, _label in xticks:
                     pt = scale_and_shift_point(x, p2[1], scale, shift)
-                    lines.append((int(pt[0]), int(pt[1]), int(pt[0]), int(pt[1] + xTickLength)))
+                    lines.append(
+                        (int(pt[0]), int(pt[1]), int(pt[0]), int(pt[1] + xTickLength))
+                    )
                 dc.DrawLineList(lines)
 
         if self.ySpec != "none":
@@ -2430,13 +2434,17 @@ class PlotCanvas(wx.Panel):
                 lines = []
                 for y, _label in yticks:
                     pt = scale_and_shift_point(p1[0], y, scale, shift)
-                    lines.append((pt[0], pt[1], pt[0] + yTickLength, pt[1]))
+                    lines.append(
+                        (int(pt[0]), int(pt[1]), int(pt[0] + yTickLength), int(pt[1]))
+                    )
                 dc.DrawLineList(lines)
             if ticks.right:
                 lines = []
                 for y, _label in yticks:
                     pt = scale_and_shift_point(p2[0], y, scale, shift)
-                    lines.append((int(pt[0]), int(pt[1]), int(pt[0] - yTickLength), int(pt[1])))
+                    lines.append(
+                        (int(pt[0]), int(pt[1]), int(pt[0] - yTickLength), int(pt[1]))
+                    )
                 dc.DrawLineList(lines)
 
     def _drawExtras(self, dc, p1, p2, scale, shift):
@@ -2448,11 +2456,17 @@ class PlotCanvas(wx.Panel):
             x, y = x * self._pointSize[0], y * self._pointSize[1]
             if self._centerLinesEnabled in ("Horizontal", True):
                 dc.DrawLine(
-                    int(scale[0] * p1[0] + shift[0]), int(y), int(scale[0] * p2[0] + shift[0]), int(y)
+                    int(scale[0] * p1[0] + shift[0]),
+                    int(y),
+                    int(scale[0] * p2[0] + shift[0]),
+                    int(y),
                 )
             if self._centerLinesEnabled in ("Vertical", True):
                 dc.DrawLine(
-                    int(x), int(scale[1] * p1[1] + shift[1]), int(x), int(scale[1] * p2[1] + shift[1])
+                    int(x),
+                    int(scale[1] * p1[1] + shift[1]),
+                    int(x),
+                    int(scale[1] * p2[1] + shift[1]),
                 )
 
         if self._diagonalsEnabled:
