@@ -13616,7 +13616,7 @@ usage: spotread [-options] [logfile]
                     shutil.copyfile(filename + ext, f"{inoutfile}.ti1")
                 else:  # ti3
                     try:
-                        ti3 = open(filename + ext, "r", newline="")
+                        ti3 = open(filename + ext, "rb")
                     except Exception:
                         return (
                             Error(
@@ -13639,7 +13639,7 @@ usage: spotread [-options] [logfile]
                             None,
                         )
 
-                    with open(f"{inoutfile}.ti1", "w") as ti1:
+                    with open(f"{inoutfile}.ti1", "wb") as ti1:
                         ti1.write(ti3_to_ti1(ti3_lines))
             except Exception as exception:
                 localized_error_message = lang.getstr(

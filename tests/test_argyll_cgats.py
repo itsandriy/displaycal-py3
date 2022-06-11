@@ -114,8 +114,8 @@ def test_ti3_to_ti1_2(data_files):
     ti3_path = data_files["0_16_from_issue_129.ti3"].absolute()
     result = argyll_cgats.ti3_to_ti1(ti3_path)
     assert result == (
-        b'CTI1   \n'
-        b'\n'
+        b"CTI1   \n"
+        b"\n"
         b'DESCRIPTOR "Argyll Calibration Target chart information 1"\n'
         b'ORIGINATOR "Argyll targen"\n'
         b'CREATED "Sun Jun  5 13:08:54 2022"\n'
@@ -126,18 +126,18 @@ def test_ti3_to_ti1_2(data_files):
         b'INSTRUMENT_TYPE_SPECTRAL "NO"\n'
         b'NORMALIZED_TO_Y_100 "YES"\n'
         b'VIDEO_LUT_CALIBRATION_POSSIBLE "YES"\n'
-        b'\n'
-        b'NUMBER_OF_FIELDS 7\n'
-        b'BEGIN_DATA_FORMAT\n'
-        b'SAMPLE_ID RGB_R RGB_G RGB_B XYZ_X XYZ_Y XYZ_Z\n'
-        b'END_DATA_FORMAT\n'
-        b'\n'
-        b'NUMBER_OF_SETS 3\n'
-        b'BEGIN_DATA\n'
-        b'1 100.0000 100.0000 100.0000 95.01040 100.0000 92.72020\n'
-        b'2 0.000000 0.000000 0.000000 0.277593 0.255279 0.423145\n'
-        b'3 6.250000 6.250000 6.250000 0.512380 0.536117 0.705578\n'
-        b'END_DATA\n'
+        b"\n"
+        b"NUMBER_OF_FIELDS 7\n"
+        b"BEGIN_DATA_FORMAT\n"
+        b"SAMPLE_ID RGB_R RGB_G RGB_B XYZ_X XYZ_Y XYZ_Z\n"
+        b"END_DATA_FORMAT\n"
+        b"\n"
+        b"NUMBER_OF_SETS 3\n"
+        b"BEGIN_DATA\n"
+        b"1 100.0000 100.0000 100.0000 95.01040 100.0000 92.72020\n"
+        b"2 0.000000 0.000000 0.000000 0.277593 0.255279 0.423145\n"
+        b"3 6.250000 6.250000 6.250000 0.512380 0.536117 0.705578\n"
+        b"END_DATA\n"
     )
 
 
@@ -174,3 +174,174 @@ def test_extract_device_gray_primaries(
     assert len(ti3_extracted) == 4
     assert len(RGB_XYZ_extracted) == sets[0] if gray else sets[1]
     assert len(RGB_XYZ_remaining) == sets[2] if gray else sets[3]
+
+
+def test_verify_cgats_1(data_files):
+    """Testing verify_cgats() for #129."""
+    ti1 = CGATS(data_files["issue129_0_16.ti1"])
+    result = argyll_cgats.verify_cgats(ti1, ("RGB_R", "RGB_B", "RGB_G"))
+    expected_result = {
+        "APPROX_WHITE_POINT": b"95.045781 100.000003 108.905751",
+        "COLOR_REP": b"RGB",
+        "CREATED": b"Thu Apr 20 12:22:05 2017",
+        "DATA": {
+            0: {
+                "RGB_B": 100.0,
+                "RGB_G": 100.0,
+                "RGB_R": 100.0,
+                "SAMPLE_ID": 1,
+                "XYZ_X": 95.046,
+                "XYZ_Y": 100.0,
+                "XYZ_Z": 108.91,
+            },
+            1: {
+                "RGB_B": 0.0,
+                "RGB_G": 0.0,
+                "RGB_R": 0.0,
+                "SAMPLE_ID": 2,
+                "XYZ_X": 0.0,
+                "XYZ_Y": 0.0,
+                "XYZ_Z": 0.0,
+            },
+            2: {
+                "RGB_B": 6.25,
+                "RGB_G": 6.25,
+                "RGB_R": 6.25,
+                "SAMPLE_ID": 3,
+                "XYZ_X": 0.2132,
+                "XYZ_Y": 0.2241,
+                "XYZ_Z": 0.2443,
+            },
+        },
+        "DATA_FORMAT": {
+            0: b"SAMPLE_ID",
+            1: b"RGB_R",
+            2: b"RGB_G",
+            3: b"RGB_B",
+            4: b"XYZ_X",
+            5: b"XYZ_Y",
+            6: b"XYZ_Z",
+        },
+        "DESCRIPTOR": b"Argyll Calibration Target chart information 1",
+        "NUMBER_OF_FIELDS": None,
+        "NUMBER_OF_SETS": None,
+        "ORIGINATOR": b"Argyll targen",
+    }
+    assert result == expected_result
+
+
+def test_verify_cgats_2(data_files):
+    """Testing verify_cgats() for #129."""
+    cgats = CGATS(
+        argyll_cgats.ti3_to_ti1(
+            open(data_files["issue129_0_16.ti3"], "rb"),
+        )
+    )
+    result = argyll_cgats.verify_cgats(cgats, ("RGB_R", "RGB_B", "RGB_G"))
+    expected_result = {
+        "COLOR_REP": b"RGB",
+        "CREATED": b"Tue Jun  7 19:06:44 2022",
+        "DATA": {
+            0: {
+                "RGB_B": 100.0,
+                "RGB_G": 100.0,
+                "RGB_R": 100.0,
+                "SAMPLE_ID": 1,
+                "XYZ_X": 95.7972,
+                "XYZ_Y": 100.0,
+                "XYZ_Z": 94.14447,
+            },
+            1: {
+                "RGB_B": 0.0,
+                "RGB_G": 0.0,
+                "RGB_R": 0.0,
+                "SAMPLE_ID": 2,
+                "XYZ_X": 0.224507,
+                "XYZ_Y": 0.227491,
+                "XYZ_Z": 0.371222,
+            },
+            2: {
+                "RGB_B": 6.25,
+                "RGB_G": 6.25,
+                "RGB_R": 6.25,
+                "SAMPLE_ID": 3,
+                "XYZ_X": 0.50435,
+                "XYZ_Y": 0.524262,
+                "XYZ_Z": 0.660054,
+            },
+        },
+        "DATA_FORMAT": {
+            0: b"SAMPLE_ID",
+            1: b"RGB_R",
+            2: b"RGB_G",
+            3: b"RGB_B",
+            4: b"XYZ_X",
+            5: b"XYZ_Y",
+            6: b"XYZ_Z",
+        },
+        "DESCRIPTOR": b"Argyll Calibration Target chart information 1",
+        "DISPLAY_TYPE_BASE_ID": 1,
+        "DISPLAY_TYPE_REFRESH": b"NO",
+        "INSTRUMENT_TYPE_SPECTRAL": b"NO",
+        "NORMALIZED_TO_Y_100": b"YES",
+        "NUMBER_OF_FIELDS": None,
+        "NUMBER_OF_SETS": None,
+        "ORIGINATOR": b"Argyll targen",
+        "TARGET_INSTRUMENT": b"Datacolor Spyder3",
+        "VIDEO_LUT_CALIBRATION_POSSIBLE": b"YES",
+    }
+    assert result == expected_result
+
+
+def test_verify_ti1_rgb_xyz_1(data_files):
+    """Testing verify_ti1_rgb_xyz() for #129."""
+    ti1 = CGATS(data_files["issue129_0_16.ti1"])
+    result = argyll_cgats.verify_ti1_rgb_xyz(ti1)
+    expected_result = {
+        "APPROX_WHITE_POINT": b"95.045781 100.000003 108.905751",
+        "COLOR_REP": b"RGB",
+        "CREATED": b"Thu Apr 20 12:22:05 2017",
+        "DATA": {
+            0: {
+                "RGB_B": 100.0,
+                "RGB_G": 100.0,
+                "RGB_R": 100.0,
+                "SAMPLE_ID": 1,
+                "XYZ_X": 95.046,
+                "XYZ_Y": 100.0,
+                "XYZ_Z": 108.91,
+            },
+            1: {
+                "RGB_B": 0.0,
+                "RGB_G": 0.0,
+                "RGB_R": 0.0,
+                "SAMPLE_ID": 2,
+                "XYZ_X": 0.0,
+                "XYZ_Y": 0.0,
+                "XYZ_Z": 0.0,
+            },
+            2: {
+                "RGB_B": 6.25,
+                "RGB_G": 6.25,
+                "RGB_R": 6.25,
+                "SAMPLE_ID": 3,
+                "XYZ_X": 0.2132,
+                "XYZ_Y": 0.2241,
+                "XYZ_Z": 0.2443,
+            },
+        },
+        "DATA_FORMAT": {
+            0: b"SAMPLE_ID",
+            1: b"RGB_R",
+            2: b"RGB_G",
+            3: b"RGB_B",
+            4: b"XYZ_X",
+            5: b"XYZ_Y",
+            6: b"XYZ_Z",
+        },
+        "DESCRIPTOR": b"Argyll Calibration Target chart information 1",
+        "NUMBER_OF_FIELDS": None,
+        "NUMBER_OF_SETS": None,
+        "ORIGINATOR": b"Argyll targen",
+    }
+    assert result == expected_result

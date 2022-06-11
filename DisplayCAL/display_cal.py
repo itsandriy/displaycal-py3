@@ -15533,7 +15533,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             else:
                 profile = None
                 try:
-                    ti3 = open(path, "r", newline="")
+                    ti3 = open(path, "rb")
                 except Exception:
                     show_result_dialog(
                         Error(lang.getstr("error.file.open", path)), self
@@ -17208,7 +17208,9 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         try:
             if ext.lower() in (".ti1", ".ti3"):
                 if ext.lower() == ".ti3":
-                    ti1 = CGATS.CGATS(ti3_to_ti1(open(path, "r", newline="")))
+                    with open(path, "rb") as f:
+                        ti3_data = f.read()
+                    ti1 = CGATS.CGATS(ti3_to_ti1(ti3_data))
                 else:
                     ti1 = CGATS.CGATS(path)
             else:  # icc or icm profile

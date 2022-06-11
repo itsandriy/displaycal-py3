@@ -3382,7 +3382,9 @@ END_DATA"""
             filename, ext = os.path.splitext(path)
             if ext.lower() not in (".icc", ".icm"):
                 if ext.lower() == ".ti3":
-                    ti1 = CGATS.CGATS(ti3_to_ti1(open(path, "r", newline="")))
+                    with open(path, "rb") as f:
+                        ti3_data = f.read()
+                    ti1 = CGATS.CGATS(ti3_to_ti1(ti3_data))
                     ti1.filename = filename + ".ti1"
                 else:
                     ti1 = CGATS.CGATS(path)
