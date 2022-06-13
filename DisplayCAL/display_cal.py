@@ -4778,7 +4778,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     "%s: %s"
                     % (
                         types.get(os.path.splitext(ccmx[1])[1].lower()[1:]),
-                        desc.decode("utf-8"),
+                        desc if isinstance(desc, str) else desc.decode("utf-8"),
                     ),
                 )
                 self.ccmx_item_paths.insert(0, ccmx[1])
@@ -4821,9 +4821,10 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         elif ccmx[0] == "AUTO":
             index = 1
             if ccmx[1]:
+                ccmx_desc = self.ccmx_cached_descriptors[ccmx[1]]
                 items[1] += " (%s: %s)" % (
                     types.get(os.path.splitext(ccmx[1])[1].lower()[1:]),
-                    self.ccmx_cached_descriptors[ccmx[1]],
+                    ccmx_desc if isinstance(ccmx_desc, str) else ccmx_desc.decode("utf-8"),
                 )
             else:
                 items[1] += " (%s)" % lang.getstr("colorimeter_correction.file.none")
