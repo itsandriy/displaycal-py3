@@ -782,8 +782,8 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
         lang.getstr("colorimeter_correction.info"),
         geticon(16, "info"),
     )
-    hovercolor = dlg.info._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
-    dlg.info.SetBitmapHover(geticon(16, "info" + hovercolor))
+    hover_color = dlg.info._color["htxt"].GetAsString(wx.C2S_HTML_SYNTAX)
+    dlg.info.SetBitmapHover(geticon(16, "info" + hover_color))
     dlg.info.SetBitmapDisabled(get_bitmap_disabled(geticon(16, "info")))
     dlg.sizer2.Insert(0, dlg.info, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border=12)
     dlg.sizer2.Insert(0, (32 + 7, 1))
@@ -793,7 +793,7 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
     dlg_list_ctrl = wx.ListCtrl(
         dlg,
         -1,
-        size=(640 * scale, 150 * scale),
+        size=(int(640 * scale), int(150 * scale)),
         style=wx.LC_REPORT | wx.LC_SINGLE_SEL,
         name="colorimeter_corrections",
     )
@@ -814,17 +814,17 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
     )
     dlg_list_ctrl.InsertColumn(int(col), lang.getstr("created"))
     col.i = 0
-    dlg_list_ctrl.SetColumnWidth(int(col), 75 * scale)  # Type
-    dlg_list_ctrl.SetColumnWidth(int(col), 415 * scale)  # Desc
-    dlg_list_ctrl.SetColumnWidth(int(col), 150 * scale)  # Display manufactuer & model
-    # dlg_list_ctrl.SetColumnWidth(int(col), 225 * scale)  # Instrument
-    dlg_list_ctrl.SetColumnWidth(int(col), 90 * scale)  # Ref. instrument
-    dlg_list_ctrl.SetColumnWidth(int(col), 150 * scale)  # Spectral res
-    dlg_list_ctrl.SetColumnWidth(int(col), 135 * scale)  # Observer
-    dlg_list_ctrl.SetColumnWidth(int(col), 135 * scale)  # CCMX fit method
-    dlg_list_ctrl.SetColumnWidth(int(col), 135 * scale)  # CCMX self check avg
-    dlg_list_ctrl.SetColumnWidth(int(col), 135 * scale)  # CCMX self check max
-    dlg_list_ctrl.SetColumnWidth(int(col), 150 * scale)  # Date
+    dlg_list_ctrl.SetColumnWidth(int(col), int(75 * scale))  # Type
+    dlg_list_ctrl.SetColumnWidth(int(col), int(415 * scale))  # Desc
+    dlg_list_ctrl.SetColumnWidth(int(col), int(150 * scale))  # Display manufactuer & model
+    # dlg_list_ctrl.SetColumnWidth(int(col), int(225 * scale))  # Instrument
+    dlg_list_ctrl.SetColumnWidth(int(col), int(90 * scale))  # Ref. instrument
+    dlg_list_ctrl.SetColumnWidth(int(col), int(150 * scale))  # Spectral res
+    dlg_list_ctrl.SetColumnWidth(int(col), int(135 * scale))  # Observer
+    dlg_list_ctrl.SetColumnWidth(int(col), int(135 * scale))  # CCMX fit method
+    dlg_list_ctrl.SetColumnWidth(int(col), int(135 * scale))  # CCMX self check avg
+    dlg_list_ctrl.SetColumnWidth(int(col), int(135 * scale))  # CCMX self check max
+    dlg_list_ctrl.SetColumnWidth(int(col), int(150 * scale))  # Date
     types = {
         "CCSS": lang.getstr("spectral").replace(":", ""),
         "CCMX": lang.getstr("matrix").replace(":", ""),

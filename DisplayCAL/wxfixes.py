@@ -333,7 +333,7 @@ if "gtk3" in wx.PlatformInfo:
             self._columns[pos] = col
 
         def SetColumnWidth(self, pos, width):
-            self.AppendTextColumn(self._columns[pos], width=width)
+            self.AppendTextColumn(self._columns[pos], width=int(width))
 
         def InsertStringItem(self, row, label):
             self._items[row] = []
@@ -456,7 +456,7 @@ if "gtk3" in wx.PlatformInfo:
                 self.MaxSize = self.Size[0], -1
 
         def Wrap(self, width):
-            wx._StaticText.Wrap(self, width)
+            wx._StaticText.Wrap(self, int(width))
             self.SetLabel(self.Label)
 
         Label = property(lambda self: self.GetLabel(), SetLabel)
@@ -1546,18 +1546,18 @@ class PlateButton(platebtn.PlateButton):
         ):
             gc.SetTextForeground(self._color["htxt"])
             gc.SetPen(wx.TRANSPARENT_PEN)
-            self.__DrawHighlight(gc, width, height)
+            self.__DrawHighlight(gc, int(width), int(height))
 
         elif self._state["cur"] == platebtn.PLATE_PRESSED and self.IsEnabled():
             gc.SetTextForeground(self._color["htxt"])
             pen = wx.Pen(platebtn.AdjustColour(self._color["press"], -80, 220), 1)
             gc.SetPen(pen)
 
-            self.__DrawHighlight(gc, width, height)
+            self.__DrawHighlight(gc, int(width), int(height))
             txt_x = self.__DrawBitmap(gc, interactable)
             t_x = max((width - tw - (txt_x + space)) // 2, txt_x + space)
-            gc.DrawText(self.Label, t_x, txt_y)
-            self.__DrawDropArrow(gc, width - 10, (height // 2) - 2)
+            gc.DrawText(self.Label, int(t_x), int(txt_y))
+            self.__DrawDropArrow(gc, int(width - 10), int((height // 2) - 2))
 
         else:
             if self.IsEnabled():

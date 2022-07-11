@@ -81,7 +81,7 @@ def _excepthook(etype, value, tb):
 sys.excepthook = _excepthook
 
 
-def _main(module, name, applockfilename, probe_ports=True):
+def _main(module, name, app_lock_file_name, probe_ports=True):
     # Allow multiple instances only for curve viewer, profile info,
     # scripting client, synthetic profile creator and testchart editor
     multi_instance = (
@@ -91,7 +91,7 @@ def _main(module, name, applockfilename, probe_ports=True):
         "synthprofile",
         "testchart-editor",
     )
-    lock = AppLock(applockfilename, "a+", False, module in multi_instance)
+    lock = AppLock(app_lock_file_name, "a+", False, module in multi_instance)
     if not lock:
         # If a race condition occurs, do not start another instance
         print("Not starting another instance.")
@@ -172,7 +172,7 @@ def _main(module, name, applockfilename, probe_ports=True):
         lockfilenames = glob.glob(os.path.join(confighome, "*.lock"))
         for lockfilename in lockfilenames:
             try:
-                if lock and lockfilename == applockfilename:
+                if lock and lockfilename == app_lock_file_name:
                     lockfile = lock
                     lock.seek(0)
                 else:
@@ -214,14 +214,14 @@ def _main(module, name, applockfilename, probe_ports=True):
                                 print("Existing client using port", port)
                         if pid or port:
                             lock2pids_ports[lockfilename].append((pid, port))
-                if not lock or lockfilename != applockfilename:
+                if not lock or lockfilename != app_lock_file_name:
                     lockfile.unlock()
             except EnvironmentError as exception:
                 # This shouldn't happen
                 print("Warning - could not read lockfile %s:" % lockfilename, exception)
         if module not in multi_instance:
             # Check lockfile(s) and probe port(s)
-            for lockfilename in [applockfilename]:
+            for lockfilename in [app_lock_file_name]:
                 incoming = None
                 pids_ports = lock2pids_ports.get(lockfilename)
                 if pids_ports:
@@ -465,7 +465,7 @@ def _main(module, name, applockfilename, probe_ports=True):
         atexit.register(lambda: print("Ran application exit handlers"))
         from DisplayCAL.wxwindows import BaseApp
 
-        BaseApp.register_exitfunc(_exit, applockfilename, port)
+        BaseApp.register_exitfunc(_exit, app_lock_file_name, port)
         # Check for required resource files
         mod2res = {
             "3DLUT-maker": ["xrc/3dlut.xrc"],
@@ -544,16 +544,16 @@ def main(module=None):
         name = "%s-%s" % (appbasename, module)
     else:
         name = appbasename
-    applockfilename = os.path.join(confighome, "%s.lock" % name)
+    app_lock_file_name = os.path.join(confighome, "%s.lock" % name)
     try:
-        _main(module, name, applockfilename)
+        _main(module, name, app_lock_file_name)
     except Exception as exception:
         if isinstance(exception, ResourceError):
             error = exception
         else:
             error = Error("Fatal error: %s" % exception)
         handle_error(error)
-        _exit(applockfilename, getattr(sys, "_appsocket_port", ""))
+        _exit(app_lock_file_name, getattr(sys, "_appsocket_port", ""))
 
 
 def _exit(lockfilename, oport):
