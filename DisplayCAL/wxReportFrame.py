@@ -768,6 +768,8 @@ class ReportFrame(BaseFrame):
             getattr(self, "simulation_profile", None)
             and self.simulation_profile.colorSpace
         )
+        if isinstance(sim_profile_color, bytes):
+            sim_profile_color = sim_profile_color.decode("utf-8")
         if getcfg("measurement_report.use_simulation_profile"):
             setcfg(
                 "measurement_report.use_simulation_profile",
