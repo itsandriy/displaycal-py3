@@ -57,7 +57,7 @@ def argyll():
     home = pathlib.Path().home()
     argyll_search_paths = [
         home / ".local" / "bin" / "Argyll" / "bin",
-        home / ".local" / "bin" / "Argyll_V2.3.0" / "bin",
+        home / ".local" / "bin" / "Argyll_V2.3.1" / "bin",
     ]
 
     argyll_path = None
