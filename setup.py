@@ -496,7 +496,7 @@ def setup():
                 build_time = time.time()
                 versionpy.write(
                     f"BUILD_DATE = "
-                    f"{strftime('%Y-%m-%dT%H:%M:%S', gmtime(build_time))}Z\n"
+                    f"\"{strftime('%Y-%m-%dT%H:%M:%S', gmtime(build_time))}Z\"\n"
                 )
 
                 if lastmod:
