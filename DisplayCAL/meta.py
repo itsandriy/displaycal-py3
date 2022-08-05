@@ -16,7 +16,7 @@ try:
         VERSION_STRING,
     )
 except ImportError:
-    build = lastmod = "0000-00-00T00:00:00.0Z"
+    build = lastmod = "0000-00-00T00:00:00Z"
     VERSION = None
     VERSION_STRING = None
 
