@@ -8,7 +8,7 @@ from wx import AppConsole, Button
 
 from DisplayCAL import display_cal, CGATS, config
 from DisplayCAL.config import geticon
-from DisplayCAL.dev.mocks import check_call
+from DisplayCAL.dev.mocks import check_call, check_call_str
 from DisplayCAL.display_cal import (
     IncrementingInt,
     webbrowser_open,
@@ -16,10 +16,15 @@ from DisplayCAL.display_cal import (
     MainFrame,
     get_cgats_path,
     get_cgats_measurement_mode,
+    colorimeter_correction_check_overwrite,
+    donation_message,
+    app_uptodate,
+    check_donation,
+    app_update_check, show_ccxx_error_dialog, get_profile_load_on_login_label,
 )
 from DisplayCAL.util_str import universal_newlines
 from DisplayCAL.worker import Worker
-from DisplayCAL.wxwindows import ConfirmDialog
+from DisplayCAL.wxwindows import ConfirmDialog, BaseInteractiveDialog
 
 
 @pytest.fixture(scope="class", name="app", autouse=True)
@@ -49,6 +54,63 @@ def test_update_colorimeter_correction_matrix_ctrl_items_1(
     assert before_length == after_length
     assert before_items == after_items  # Really don't know anything about the method
     # but it was raising errors before, now it is fixed.
+
+
+def test_show_ccxx_error_dialog(mainframe: MainFrame) -> None:
+    """Test if error message is shown."""
+    with check_call_str("DisplayCAL.display_cal.show_result_dialog"):
+        show_ccxx_error_dialog(Exception("Malformed demo"), "path", mainframe)
+
+
+@pytest.mark.parametrize("argyll", (True, False), ids=("With argyll", "without argyll"))
+@pytest.mark.parametrize("snapshot", (True, False), ids=("Snapshot", "No snapshot"))
+@pytest.mark.parametrize("silent", (True, False), ids=("Silent", "Not silent"))
+def test_app_update_check(
+    mainframe: MainFrame, silent: bool, snapshot: bool, argyll: bool
+) -> None:
+    """Test the application update check."""
+    with check_call(wx, "CallAfter", call_count=1):
+        app_update_check(mainframe, silent, snapshot, argyll)
+
+
+def test_check_donation(mainframe: MainFrame) -> None:
+    """Test check for user disabled donation."""
+    with check_call(wx, "CallAfter", call_count=1):
+        check_donation(mainframe, False)
+
+
+def test_app_uptodate(mainframe: MainFrame) -> None:
+    """Test if 'up to date' messagebox is shown."""
+    with check_call(BaseInteractiveDialog, "ShowModalThenDestroy", call_count=1):
+        app_uptodate(mainframe)
+
+
+@pytest.mark.parametrize("response", (wx.ID_OK, wx.ID_NO), ids=("Ok", "Cancel"))
+def test_donation_message(mainframe: MainFrame, response: int) -> None:
+    """Test if donation messagebox is shown as expected."""
+    with check_call(BaseInteractiveDialog, "ShowModal", response, call_count=1):
+        donation_message(mainframe)
+
+
+@pytest.mark.parametrize(
+    "update", (True, False), ids=("update comports", "dont update comports")
+)
+@pytest.mark.parametrize(
+    "response,value", ((wx.ID_OK, True), (wx.ID_NO, False)), ids=("Ok", "Cancel")
+)
+def test_colorimeter_correction_check_overwrite(
+    data_files,
+    mainframe: MainFrame,
+    update: bool,
+    response: int,
+    value: bool,
+) -> None:
+    """Test if function reacts as expected to user input."""
+    path = data_files["0_16.ti3"].absolute()
+    with open(path, "rb") as cgatsfile:
+        cgats = universal_newlines(cgatsfile.read())
+    with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", response):
+        assert colorimeter_correction_check_overwrite(mainframe, cgats, update) == value
 
 
 @pytest.mark.parametrize("file", ("0_16.ti3", "0_16_with_refresh.ti3", "default.ti3"))
@@ -88,6 +150,11 @@ def test_get_cgats_path(data_files) -> None:
     ) / "Argyll Calibration Target chart information 3.cti3" == Path(
         get_cgats_path(cgats)
     )
+
+
+def test_get_profile_load_on_login_label() -> None:
+    """Test if load on login label is returned."""
+    assert get_profile_load_on_login_label(True) == "profile.load_on_login"
 
 
 def test_install_scope_handler(mainframe: MainFrame) -> None:
