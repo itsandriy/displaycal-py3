@@ -6,7 +6,7 @@ import pytest
 import wx
 from wx import AppConsole, Button
 
-from DisplayCAL import display_cal, CGATS, config
+from DisplayCAL import display_cal, CGATS, config, util_os
 from DisplayCAL.config import geticon
 from DisplayCAL.dev.mocks import check_call, check_call_str
 from DisplayCAL.display_cal import (
@@ -20,7 +20,9 @@ from DisplayCAL.display_cal import (
     donation_message,
     app_uptodate,
     check_donation,
-    app_update_check, show_ccxx_error_dialog, get_profile_load_on_login_label,
+    app_update_check,
+    show_ccxx_error_dialog,
+    get_profile_load_on_login_label,
 )
 from DisplayCAL.util_str import universal_newlines
 from DisplayCAL.worker import Worker
@@ -89,7 +91,11 @@ def test_app_uptodate(mainframe: MainFrame) -> None:
 def test_donation_message(mainframe: MainFrame, response: int) -> None:
     """Test if donation messagebox is shown as expected."""
     with check_call(BaseInteractiveDialog, "ShowModal", response, call_count=1):
-        donation_message(mainframe)
+        with check_call_str(
+            "DisplayCAL.display_cal.launch_file",
+            call_count=1 if response == wx.ID_OK else 0,
+        ):
+            donation_message(mainframe)
 
 
 @pytest.mark.parametrize(
