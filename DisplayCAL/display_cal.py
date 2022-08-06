@@ -1075,9 +1075,9 @@ def get_cgats_measurement_mode(cgats, instrument):
             mode = {1: "F"}.get(base_id)
         else:
             mode = {1: "l", 2: "c", 3: "g"}.get(base_id)
-    elif refresh == "NO":
+    elif refresh == b"NO":
         mode = "l"
-    elif refresh == "YES":
+    elif refresh == b"YES":
         mode = "c"
     return mode
 
