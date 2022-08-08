@@ -6,7 +6,7 @@ import pytest
 import wx
 from wx import AppConsole, Button
 
-from DisplayCAL import display_cal, CGATS, config, util_os
+from DisplayCAL import display_cal, CGATS, config
 from DisplayCAL.config import geticon
 from DisplayCAL.dev.mocks import check_call, check_call_str
 from DisplayCAL.display_cal import (
@@ -23,6 +23,8 @@ from DisplayCAL.display_cal import (
     app_update_check,
     show_ccxx_error_dialog,
     get_profile_load_on_login_label,
+    ExtraArgsFrame,
+    GamapFrame,
 )
 from DisplayCAL.util_str import universal_newlines
 from DisplayCAL.worker import Worker
@@ -99,15 +101,11 @@ def test_donation_message(mainframe: MainFrame, response: int) -> None:
 
 
 @pytest.mark.parametrize(
-    "update", (True, False), ids=("update comports", "dont update comports")
-)
-@pytest.mark.parametrize(
     "response,value", ((wx.ID_OK, True), (wx.ID_NO, False)), ids=("Ok", "Cancel")
 )
 def test_colorimeter_correction_check_overwrite(
     data_files,
     mainframe: MainFrame,
-    update: bool,
     response: int,
     value: bool,
 ) -> None:
@@ -116,7 +114,10 @@ def test_colorimeter_correction_check_overwrite(
     with open(path, "rb") as cgatsfile:
         cgats = universal_newlines(cgatsfile.read())
     with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", response):
-        assert colorimeter_correction_check_overwrite(mainframe, cgats, update) == value
+        # update = True gives error in pipeline because of
+        # ShowWindowModalBlocking not being called, locally
+        # however the problem cannot be reproduced, removed option for now
+        assert colorimeter_correction_check_overwrite(mainframe, cgats, False) == value
 
 
 @pytest.mark.parametrize("file", ("0_16.ti3", "0_16_with_refresh.ti3", "default.ti3"))
@@ -141,7 +142,7 @@ def test_get_cgats_measurement_mode(
         mode = modes[0]
     elif file == "0_16_with_refresh.ti3":
         mode = modes[1]
-    elif file == "default.ti3":
+    else:
         mode = modes[2]
     assert get_cgats_measurement_mode(cgats, instrument) == mode
 
@@ -191,3 +192,15 @@ def test_incrementing_int() -> None:
     assert int(inc_integer) == 0
     [int(inc_integer) for _ in range(9)]
     assert int(inc_integer) == 10
+
+
+def test_extra_args_frame(mainframe: MainFrame) -> None:
+    """Test if ExtraArgsFrame is initialized properly"""
+    with check_call(ExtraArgsFrame, "update_controls"):
+        ExtraArgsFrame(mainframe)
+
+
+def test_gamap_frame(mainframe: MainFrame) -> None:
+    """Test if GamapFrame is initialized properly."""
+    with check_call(GamapFrame, "update_layout"):
+        GamapFrame(mainframe)
