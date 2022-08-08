@@ -25,9 +25,11 @@ from DisplayCAL.display_cal import (
     get_profile_load_on_login_label,
     ExtraArgsFrame,
     GamapFrame,
+    StartupFrame,
+    MeasurementFileCheckSanityDialog,
 )
 from DisplayCAL.util_str import universal_newlines
-from DisplayCAL.worker import Worker
+from DisplayCAL.worker import Worker, check_ti3
 from DisplayCAL.wxwindows import ConfirmDialog, BaseInteractiveDialog
 
 
@@ -193,13 +195,29 @@ def test_incrementing_int() -> None:
     assert int(inc_integer) == 10
 
 
-def test_extra_args_frame(mainframe: MainFrame) -> None:
+def test_init_extra_args_frame(mainframe: MainFrame) -> None:
     """Test if ExtraArgsFrame is initialized properly"""
     with check_call(ExtraArgsFrame, "update_controls"):
         ExtraArgsFrame(mainframe)
 
 
-def test_gamap_frame(mainframe: MainFrame) -> None:
+def test_init_gamap_frame(mainframe: MainFrame) -> None:
     """Test if GamapFrame is initialized properly."""
     with check_call(GamapFrame, "update_layout"):
         GamapFrame(mainframe)
+
+
+def test_init_startup_frame() -> None:
+    """Test if StartupFrame is initialized properly."""
+    with check_call(StartupFrame, "Show"):
+        StartupFrame()
+
+
+def test_init_measurement_file_check_sanity_dialog_frame(
+    data_files, mainframe: MainFrame
+) -> None:
+    """Test if MeasurementFileCheckSanityDialog is initialized properly."""
+    path = data_files["0_16.ti3"].absolute()
+    cgats = CGATS.CGATS(cgats=path)
+    with check_call(MeasurementFileCheckSanityDialog, "Center"):
+        MeasurementFileCheckSanityDialog(mainframe, cgats[0], check_ti3(cgats), False)
