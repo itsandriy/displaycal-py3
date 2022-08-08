@@ -4781,9 +4781,6 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict):  # ICC v4
             records = records[recordSize:]
 
     def __str__(self):
-        return str(self).encode(sys.getdefaultencoding())
-
-    def __unicode__(self):
         """Return tag as string."""
         # TODO: Needs some work re locales
         # (currently if en-UK or en-US is not found, simply the first entry

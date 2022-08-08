@@ -1904,9 +1904,6 @@ class Sudo(object):
     def __str__(self):
         return str(self.sudo or "")
 
-    def __unicode__(self):
-        return str(self.sudo or "")
-
     def _expect_timeout(self, patterns, timeout=-1, child_timeout=1):
         """wexpect.spawn.expect with better timeout handling.
 
