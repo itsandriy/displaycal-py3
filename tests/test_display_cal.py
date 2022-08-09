@@ -105,7 +105,7 @@ def test_donation_message(mainframe: MainFrame, response: int) -> None:
 # Seems like the first call of ShowWindowModalBlocking always fail on remote,
 # locally however the problem cannot be reproduced, removed test for now
 # @pytest.mark.parametrize(
-#     "update", (True, False), ids=("update comports", "donts update comports")
+#     "update", (True, False), ids=("update comports", "dont update comports")
 # )
 # @pytest.mark.parametrize(
 #     "response,value", ((wx.ID_OK, True), (wx.ID_NO, False)), ids=("Ok", "Cancel")
