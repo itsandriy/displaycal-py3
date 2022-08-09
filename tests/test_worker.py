@@ -16,7 +16,7 @@ from DisplayCAL.worker import (
     check_cal_isfile,
     check_profile_isfile,
     check_file_isfile,
-    check_ti3_criteria1
+    check_ti3_criteria1,
 )
 
 from tests.data.display_data import DisplayData
@@ -373,19 +373,9 @@ def test_add_keywords_to_cgats(data_files) -> None:
     assert "keyword" in alternated_cgats[0]
 
 
-@pytest.mark.parametrize(
-    "path,result",
-    (
-        ("test_dir", "True"),
-        (
-            "/test_dir",
-            "error.dir_creation\n\n[Errno 13] Permission denied: '/test_dir'",
-        ),
-    ),
-)
-def test_check_create_dir(path: str, result: str) -> None:
+def test_check_create_dir() -> None:
     """Test function 'check_create_dir'."""
-    assert str(check_create_dir(path)) == result
+    assert check_create_dir("test_dir") == True
 
 
 @pytest.mark.parametrize("file", (True, False))
@@ -406,16 +396,20 @@ def test_check_profile_isfile(data_files, file: bool) -> None:
 @pytest.mark.parametrize(
     "path,result",
     (
-        ("data/cgats0.txt", (True, True)),
-        ("no_file", (False, "file.missing")),
-        (".", (False, "file.notfile")),
+        ("data/cgats0.txt", ("True", "True")),
+        ("no_file", ("False", "file.missing")),
+        (".", ("False", "file.notfile")),
     ),
 )
 def test_check_file_isfile(
-    data_files, silent: bool, path: str, result: Tuple[str | bool, bool]
+    data_files, silent: bool, path: str, result: Tuple[str, str]
 ) -> None:
     """Test if file gets detected."""
-    assert check_file_isfile(path, silent=silent) == result[0] if silent else result[1]
+    assert (
+        str(check_file_isfile(path, silent=silent)) == result[0]
+        if silent
+        else result[1]
+    )
 
 
 @pytest.mark.parametrize(
