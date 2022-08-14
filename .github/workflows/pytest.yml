@@ -21,7 +21,15 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set Environment Variables
-      run: echo "py_version=$(echo ${{ matrix.python-version }} | tr -d .)" >> $GITHUB_ENV
+      run: |
+        echo "py_version=$(echo ${{ matrix.python-version }} | tr -d .)" >> $GITHUB_ENV
+        if [ "${{ matrix.python-version }}" == "3.8" ]; then
+          echo "add_dir_str=${{ matrix.python-version }}" >> $GITHUB_ENV
+        elif [ "${{ matrix.python-version }}" == "3.9" ]; then
+          echo "add_dir_str=${{ matrix.python-version }}" >> $GITHUB_ENV
+        elif [ "${{ matrix.python-version }}" == "3.10" ]; then
+          echo "add_dir_str=cpython-310" >> $GITHUB_ENV
+        fi
 
     - name: Setup timezone
       uses: zcong1993/setup-timezone@master
@@ -62,7 +70,7 @@ jobs:
       run: |
         sudo chmod a+rw /etc/udev/rules.d
         python3 setup.py install
-        cp ./build/lib.linux-x86_64-${{ matrix.python-version }}/DisplayCAL/lib64/python${{ env.py_version }}/RealDisplaySizeMM.cpython-${{ env.py_version }}-x86_64-linux-gnu.so ./DisplayCAL/lib64/python${{ env.py_version }}/
+        cp ./build/lib.linux-x86_64-${{ env.add_dir_str }}/DisplayCAL/lib64/python${{ env.py_version }}/RealDisplaySizeMM.cpython-${{ env.py_version }}-x86_64-linux-gnu.so ./DisplayCAL/lib64/python${{ env.py_version }}/
 
     - name: Test with pytest
       run: |
