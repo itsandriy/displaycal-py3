@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    name: Performing tests for Python ${{ matrix.python-version }} with wxPython ${{ matrix.wx-version }}
+    name: Test with Python ${{ matrix.python-version }} and wxPython ${{ matrix.wx-version }}
     env:
       DISPLAY: :0
     runs-on: ubuntu-20.04
