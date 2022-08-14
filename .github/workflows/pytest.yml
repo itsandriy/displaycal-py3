@@ -56,17 +56,21 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Python dependencies
+    - name: Update pip
       run: |
         sudo apt-get install -y $(grep -o ^[^#][[:alnum:]-]*.* "packages.list")
         python3 -m pip install --upgrade pip
+        pip install attrdict3
         pip install wheel
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
 
     - name: Install wxPython wheels ${{ matrix.wx-version }}
       run: |
         pip install https://{{ env.wx_url }}-cp${{ env.py_version }}-cp${{ env.py_version }}-linux_x86_64.whl
+
+    - name: Install Python dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
 
     - name: Compile C-Extensions
       run: |
