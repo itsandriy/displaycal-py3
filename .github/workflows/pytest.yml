@@ -27,7 +27,7 @@ jobs:
       run: |
         echo "py_version=$(echo ${{ matrix.python-version }} | tr -d .)" >> $GITHUB_ENV
         if [[ ${{ matrix.wx-version }} == "4.1.1" ]]; then   echo "wx_url=wxpython.p5k.org/wxPython-4.1.1"; fi >> $GITHUB_ENV
-        if [[ ${{ matrix.wx-version }} == "4.2.0" ]]; then   echo "extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.0"; fi >> $GITHUB_ENV
+        if [[ ${{ matrix.wx-version }} == "4.2.0" ]]; then   echo "wx_url=extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.0"; fi >> $GITHUB_ENV
 
 
     - name: Setup timezone
