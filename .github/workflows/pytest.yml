@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    name: Performing tests for Python ${{ matrix.python-version }}
+    name: Performing tests for Python ${{ matrix.python-version }} with wxPython ${{ matrix.wx-version }}
     env:
       DISPLAY: :0
     runs-on: ubuntu-20.04
@@ -65,7 +65,7 @@ jobs:
 
     - name: Install wxPython wheels ${{ matrix.wx-version }}
       run: |
-        pip install https://{{ env.wx_url }}-cp${{ env.py_version }}-cp${{ env.py_version }}-linux_x86_64.whl
+        pip install https://${{ env.wx_url }}-cp${{ env.py_version }}-cp${{ env.py_version }}-linux_x86_64.whl
 
     - name: Install Python dependencies
       run: |
