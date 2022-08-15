@@ -1,3 +1,4 @@
+attrdict3
 build
 certifi
 dbus-python
