@@ -102,23 +102,26 @@ def test_donation_message(mainframe: MainFrame, response: int) -> None:
             donation_message(mainframe)
 
 
-# Seems like the first call of ShowWindowModalBlocking always fail on remote,
-# locally however the problem cannot be reproduced, removed test for now
-# @pytest.mark.parametrize(
-#     "update", (True, False), ids=("update comports", "dont update comports")
-# )
-# @pytest.mark.parametrize(
-#     "response,value", ((wx.ID_OK, True), (wx.ID_NO, False)), ids=("Ok", "Cancel")
-# )
-# def test_colorimeter_correction_check_overwrite(
-#     data_files, mainframe: MainFrame, response: int, value: bool, update: bool
-# ) -> None:
-#     """Test if function reacts as expected to user input."""
-#     path = data_files["0_16.ti3"].absolute()
-#     with open(path, "rb") as cgatsfile:
-#         cgats = universal_newlines(cgatsfile.read())
-#     with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", response):
-#         assert colorimeter_correction_check_overwrite(mainframe, cgats, update) == value
+# todo: test is working locally but not on CI
+@pytest.mark.skip(
+    reason="Seems like the first call of ShowWindowModalBlocking always fails on remote."
+           "Locally however the problem cannot be reproduced, skipping test for now."
+)
+@pytest.mark.parametrize(
+    "update", (True, False), ids=("update comports", "dont update comports")
+)
+@pytest.mark.parametrize(
+    "response,value", ((wx.ID_OK, True), (wx.ID_NO, False)), ids=("Ok", "Cancel")
+)
+def test_colorimeter_correction_check_overwrite(
+    data_files, mainframe: MainFrame, response: int, value: bool, update: bool
+) -> None:
+    """Test if function reacts as expected to user input."""
+    path = data_files["0_16.ti3"].absolute()
+    with open(path, "rb") as cgatsfile:
+        cgats = universal_newlines(cgatsfile.read())
+    with check_call(BaseInteractiveDialog, "ShowWindowModalBlocking", response):
+        assert colorimeter_correction_check_overwrite(mainframe, cgats, update) == value
 
 
 @pytest.mark.parametrize("file", ("0_16.ti3", "0_16_with_refresh.ti3", "default.ti3"))
