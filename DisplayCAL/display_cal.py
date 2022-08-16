@@ -19734,9 +19734,6 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
                 size = self.grid.GetDefaultRowSize()
             else:
                 size = w
-            # SetColSize only accepts parameters as integer, because of previous
-            # operations 'size' could also be float, see:
-            # https://docs.wxpython.org/wx.grid.Grid.html#wx.grid.Grid.SetColSize
             grid.SetColSize(i, int(size))
         for i, label in enumerate(
             [
@@ -19894,7 +19891,7 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
                     if not dlg.mods.get(event.Row):
                         dlg.mods[event.Row] = {}
                     dlg.mods[event.Row][label] = value
-                parse_argument_string
+
                 dlg.ok.Enable(not dlg.force or bool(dlg.mods))
 
                 # This workaround is needed to update cell colours
