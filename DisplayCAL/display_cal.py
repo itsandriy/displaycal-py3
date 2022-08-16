@@ -19703,7 +19703,7 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
             style = wx.BORDER_SIMPLE
         else:
             style = wx.BORDER_THEME
-        dlg.grid = CustomGrid(dlg, -1, size=(940 * scale, 200 * scale), style=style)
+        dlg.grid = CustomGrid(dlg, -1, size=(int(940 * scale), int(200 * scale)), style=style)
         grid = dlg.grid
         grid.DisableDragRowSize()
         grid.SetCellHighlightPenWidth(0)
