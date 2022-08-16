@@ -48,16 +48,16 @@ def argyll():
     can not find it, it will download from the source.
     """
     argyll_download_url = {
-        "win32": "https://www.argyllcms.com/Argyll_V2.3.0_win64_exe.zip",
-        "darwin": "https://www.argyllcms.com/Argyll_V2.3.0_osx10.6_x86_64_bin.tgz",
-        "linux": "https://www.argyllcms.com/Argyll_V2.3.0_linux_x86_64_bin.tgz",
+        "win32": "https://www.argyllcms.com/Argyll_V2.3.1_win64_exe.zip",
+        "darwin": "https://www.argyllcms.com/Argyll_V2.3.1_osx10.6_x86_64_bin.tgz",
+        "linux": "https://www.argyllcms.com/Argyll_V2.3.1_linux_x86_64_bin.tgz",
     }
 
     # first look in to ~/local/bin/ArgyllCMS
     home = pathlib.Path().home()
     argyll_search_paths = [
         home / ".local" / "bin" / "Argyll" / "bin",
-        home / ".local" / "bin" / "Argyll_V2.3.0" / "bin",
+        home / ".local" / "bin" / "Argyll_V2.3.1" / "bin",
     ]
 
     argyll_path = None

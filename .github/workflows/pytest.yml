@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    name: Performing tests for Python ${{ matrix.python-version }}
+    name: Test with Python ${{ matrix.python-version }} and wxPython ${{ matrix.wx-version }}
     env:
       DISPLAY: :0
     runs-on: ubuntu-20.04
@@ -15,13 +15,26 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+        wx-version:
+          - "4.1.1"
+          - "4.2.0"
 
     steps:
 
     - uses: actions/checkout@v2
 
     - name: Set Environment Variables
-      run: echo "py_version=$(echo ${{ matrix.python-version }} | tr -d .)" >> $GITHUB_ENV
+      run: |
+        echo "py_version=$(echo ${{ matrix.python-version }} | tr -d .)" >> $GITHUB_ENV
+        if [[ ${{ matrix.wx-version }} == "4.1.1" ]]; then   echo "wx_url=wxpython.p5k.org/wxPython-4.1.1"; fi >> $GITHUB_ENV
+        if [[ ${{ matrix.wx-version }} == "4.2.0" ]]; then   echo "wx_url=extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.0"; fi >> $GITHUB_ENV
+        if [ "${{ matrix.python-version }}" == "3.8" ]; then
+          echo "add_dir_str=${{ matrix.python-version }}" >> $GITHUB_ENV
+        elif [ "${{ matrix.python-version }}" == "3.9" ]; then
+          echo "add_dir_str=${{ matrix.python-version }}" >> $GITHUB_ENV
+        elif [ "${{ matrix.python-version }}" == "3.10" ]; then
+          echo "add_dir_str=cpython-310" >> $GITHUB_ENV
+        fi
 
     - name: Setup timezone
       uses: zcong1993/setup-timezone@master
@@ -49,12 +62,19 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Python dependencies
+    - name: Update pip
       run: |
         sudo apt-get install -y $(grep -o ^[^#][[:alnum:]-]*.* "packages.list")
         python3 -m pip install --upgrade pip
+        pip install attrdict3
         pip install wheel
-        pip install https://wxpython.p5k.org/wxPython-4.1.1-cp${{ env.py_version }}-cp${{ env.py_version }}-linux_x86_64.whl
+
+    - name: Install wxPython wheels ${{ matrix.wx-version }}
+      run: |
+        pip install https://${{ env.wx_url }}-cp${{ env.py_version }}-cp${{ env.py_version }}-linux_x86_64.whl
+
+    - name: Install Python dependencies
+      run: |
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
 
@@ -62,7 +82,7 @@ jobs:
       run: |
         sudo chmod a+rw /etc/udev/rules.d
         python3 setup.py install
-        cp ./build/lib.linux-x86_64-${{ matrix.python-version }}/DisplayCAL/lib64/python${{ env.py_version }}/RealDisplaySizeMM.cpython-${{ env.py_version }}-x86_64-linux-gnu.so ./DisplayCAL/lib64/python${{ env.py_version }}/
+        cp ./build/lib.linux-x86_64-${{ env.add_dir_str }}/DisplayCAL/lib64/python${{ env.py_version }}/RealDisplaySizeMM.cpython-${{ env.py_version }}-x86_64-linux-gnu.so ./DisplayCAL/lib64/python${{ env.py_version }}/
 
     - name: Test with pytest
       run: |

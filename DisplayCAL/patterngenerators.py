@@ -533,7 +533,7 @@ class ResolveCMPatternGeneratorServer(GenTCPSockPatternGeneratorServer):
             '<geometry x="%.4f" y="%.4f" cx="%.4f" cy="%.4f"/>'
             "</calibration>" % tuple(rgb + [bits] + bgrgb + [bits, x, y, w, h])
         )
-        self.conn.sendall("%s%s" % (struct.pack(">I", len(xml)), xml))
+        self.conn.sendall(struct.pack(">I", len(xml)) + xml.encode("utf-8"))
 
 
 class WebWinHTTPPatternGeneratorServer(TCPServer, object):

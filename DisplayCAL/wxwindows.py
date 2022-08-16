@@ -2525,7 +2525,7 @@ class BaseInteractiveDialog(wx.Dialog):
                 title = lang.getstr(appid2title.get(appid, "window.title"))
         scale = getcfg("app.dpi") / get_default_dpi()
         if scale > 1 and size == (400, -1):
-            size = size[0] * scale, size[1]
+            size = int(size[0] * scale, size[1])
         wx.Dialog.__init__(self, parent, id, title, pos, size, style, name)
         self.taskbar = None
         if sys.platform == "win32":

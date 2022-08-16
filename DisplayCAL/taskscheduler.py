@@ -69,7 +69,7 @@ class _Dict2XML(dict):
         if "cls_attr" not in self:
             self["cls_attr"] = ""
 
-    def __unicode__(self):
+    def __str__(self):
         items = []
         for name in self:
             value = self[name]

@@ -16,6 +16,7 @@ from DisplayCAL.ICCProfile import (
     dateTimeNumber,
     ICCProfileTag,
     Text,
+    MultiLocalizedUnicodeType,
 )
 
 
@@ -806,3 +807,9 @@ def test_set_gamut_metadata_1(data_files):
     assert iccp.tags.meta["GAMUT_coverage(srgb)"] == gamut_coverage['srgb']
     assert iccp.tags.meta["GAMUT_coverage(dci-p3)"] == gamut_coverage['dci-p3']
     assert iccp.tags.meta["GAMUT_coverage(adobe-rgb)"] == gamut_coverage['adobe-rgb']
+
+
+def test_MultiLocalizedUnicodeType_str_method(data_files):
+    """Test for #151."""
+    mlut = MultiLocalizedUnicodeType()
+    assert str(mlut) == ""

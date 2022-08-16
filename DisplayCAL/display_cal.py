@@ -13919,7 +13919,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         size = grid.GetDefaultRowSize()
                     else:
                         size = 80 * scale
-                    grid.SetColSize(i, size)
+                    grid.SetColSize(i, int(size))
                     grid.SetColLabelValue(i, label)
                 grid.BeginBatch()
                 ref_data = reference_ti3.queryv1("DATA")

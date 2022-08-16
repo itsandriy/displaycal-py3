@@ -1904,9 +1904,6 @@ class Sudo(object):
     def __str__(self):
         return str(self.sudo or "")
 
-    def __unicode__(self):
-        return str(self.sudo or "")
-
     def _expect_timeout(self, patterns, timeout=-1, child_timeout=1):
         """wexpect.spawn.expect with better timeout handling.
 
@@ -12072,26 +12069,26 @@ usage: spotread [-options] [logfile]
                         profile.tags["bTRC"][:] = profile.tags["gTRC"][:]
 
                     break
-            ti3.write(outname + ".0.ti3")
+            ti3.write(f"{outname}.0.ti3")
             if ti1name:
-                ti1 = get_data_path("ti1/%s.ti1" % ti1name)
+                ti1 = get_data_path(f"ti1/{ti1name}.ti1")
                 if not ti1:
-                    return Error(lang.getstr("file.missing", "ti1/%s.ti1" % ti1name))
-                fakeout = outname + "." + ti1name
+                    return Error(lang.getstr("file.missing", f"ti1/{ti1name}.ti1"))
+                fakeout = f"{outname }.{ti1name}"
                 try:
-                    shutil.copyfile(ti1, fakeout + ".ti1")
+                    shutil.copyfile(ti1, f"{fakeout}.ti1")
                 except EnvironmentError as exception:
                     return exception
                 # Lookup ti1 through ti3
                 result = self.exec_cmd(
                     fakeread,
-                    [outname + ".0.ti3", fakeout],
+                    [f"{outname}.0.ti3", fakeout],
                     capture_output=True,
                     skip_scripts=True,
                     sessionlogfile=self.sessionlogfile,
                 )
                 try:
-                    os.remove(fakeout + ".ti1")
+                    os.remove(f"{fakeout}.ti1")
                 except EnvironmentError as exception:
                     self.log(exception)
                 if not result:
@@ -12099,19 +12096,19 @@ usage: spotread [-options] [logfile]
                 elif isinstance(result, Exception):
                     return result
                 try:
-                    os.remove(outname + ".0.ti3")
+                    os.remove(f"{outname}.0.ti3")
                 except EnvironmentError as exception:
                     self.log(exception)
             else:
                 # Use gray+primaries from existing ti3
-                fakeout = outname + ".0"
+                fakeout = f"{outname}.0"
             result = self.exec_cmd(
                 colprof,
                 ["-v", "-q" + getcfg("profile.quality"), "-a" + ptype, fakeout],
                 sessionlogfile=self.sessionlogfile,
             )
             try:
-                os.remove(fakeout + ".ti3")
+                os.remove(f"{fakeout}.ti3")
             except EnvironmentError as exception:
                 self.log(exception)
             if isinstance(result, Exception) or not result:
@@ -12176,7 +12173,7 @@ usage: spotread [-options] [logfile]
         if ti3:
             # Embed original TI3
             profile.tags.targ = profile.tags.DevD = profile.tags.CIED = ICCP.TextType(
-                b"text\0\0\0\0" + ti3 + b"\0", b"targ"
+                b"text\0\0\0\0" + bytes(ti3) + b"\0", b"targ"
             )
         if chrm:
             # Add ChromaticityType tag

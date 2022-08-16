@@ -263,7 +263,7 @@
                       </object>
                       <object class="sizeritem">
                         <object class="wxSpinCtrl" name="mr_black_output_offset_intctrl">
-                          <size>65,-1</size>
+                          <size>100,-1</size>
                           <min>0</min>
                           <max>100</max>
                           <enabled>0</enabled>
