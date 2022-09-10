@@ -2090,7 +2090,7 @@ Transform {
         """
         fixed = 0
         for labels in get_device_value_labels(color_rep):
-            for dataset in self.query("DATA").values():
+            for dataset in self.query(b"DATA").values():
                 for item in dataset.queryi(labels).values():
                     for label in labels:
                         if item[label] > 100:
