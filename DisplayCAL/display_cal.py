@@ -1075,9 +1075,9 @@ def get_cgats_measurement_mode(cgats, instrument):
             mode = {1: "F"}.get(base_id)
         else:
             mode = {1: "l", 2: "c", 3: "g"}.get(base_id)
-    elif refresh == "NO":
+    elif refresh == b"NO":
         mode = "l"
-    elif refresh == "YES":
+    elif refresh == b"YES":
         mode = "c"
     return mode
 
@@ -19703,7 +19703,7 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
             style = wx.BORDER_SIMPLE
         else:
             style = wx.BORDER_THEME
-        dlg.grid = CustomGrid(dlg, -1, size=(940 * scale, 200 * scale), style=style)
+        dlg.grid = CustomGrid(dlg, -1, size=(int(940 * scale), int(200 * scale)), style=style)
         grid = dlg.grid
         grid.DisableDragRowSize()
         grid.SetCellHighlightPenWidth(0)
@@ -19734,7 +19734,7 @@ class MeasurementFileCheckSanityDialog(ConfirmDialog):
                 size = self.grid.GetDefaultRowSize()
             else:
                 size = w
-            grid.SetColSize(i, size)
+            grid.SetColSize(i, int(size))
         for i, label in enumerate(
             [
                 "",
