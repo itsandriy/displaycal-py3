@@ -98,9 +98,9 @@ def deg2rad(x):
     return x * pi / 180.0
 
 
-def s(i):
+def s(i) -> int:
     """Scale for HiDPI if necessary"""
-    return i * max(getcfg("app.dpi") / get_default_dpi(), 1)
+    return int(i * max(getcfg("app.dpi") / get_default_dpi(), 1))
 
 
 def update_patterngenerator(self):
@@ -261,11 +261,11 @@ class AuiDarkDockArt(aui.dockart.AuiDefaultDockArt):
 
         if isVertical:
             old_x = rect.x
-            rect.x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
+            rect.x = int(rect.x + (rect.width / 2) - (bmp.GetWidth() / 2))
             rect.width = old_x + rect.width - rect.x - 1
         else:
             old_y = rect.y
-            rect.y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2)
+            rect.y = int(rect.y + (rect.height / 2) - (bmp.GetHeight() / 2))
             rect.height = old_y + rect.height - rect.y - 1
 
         if button_state == aui.dockart.AUI_BUTTON_STATE_PRESSED:
@@ -1303,7 +1303,7 @@ class HSlider(BaseLineCtrl):
 
     def BuildRect(self):
         brightRect = self.GetClientRect()
-        brightRect.y += (brightRect.height - 8) / 2.0
+        brightRect.y += int((brightRect.height - 8) / 2.0)
         brightRect.height = s(8)
 
         return brightRect
@@ -1445,7 +1445,7 @@ class NumSpin(wx_Panel):
         self.spinup.BackgroundColour = self.BackgroundColour
         self.spinup.Bind(wx.EVT_LEFT_DOWN, self.left_down_handler)
         self.spinup.Bind(wx.EVT_LEFT_UP, self.left_up_handler)
-        vsizer.Add(self.spinup, 0, wx.ALIGN_BOTTOM | wx.BOTTOM, s(1))
+        vsizer.Add(self.spinup, 0, wx.BOTTOM, s(1))
         self.spindn = BasePyButton(self, geticon(10, "spin_down"))
         self.spindn.BackgroundColour = self.BackgroundColour
         self.spindn.Bind(wx.EVT_LEFT_DOWN, self.left_down_handler)
@@ -2162,7 +2162,7 @@ class VisualWhitepointEditor(wx.Frame):
 
         hsvRect = self.hsvBitmap.GetClientRect()
         self._centre = wx.Point(
-            hsvRect.x + hsvRect.width / 2, hsvRect.y + hsvRect.height / 2
+            int(hsvRect.x + hsvRect.width / 2), int(hsvRect.y + hsvRect.height / 2)
         )
 
         self.CalcRects()
@@ -2443,7 +2443,7 @@ class VisualWhitepointEditor(wx.Frame):
         self.newColourPanel.Size = w, h
         self.bgPanel.MinSize = w + s(24), h + s(24)
         bg_w, bg_h = (float(v) for v in self.bgPanel.Size)
-        self.newColourPanel.Position = ((bg_w - (w)) * x), ((bg_h - (h)) * y)
+        self.newColourPanel.Position = (int((bg_w - (w)) * x)), int(((bg_h - (h)) * y))
         if event:
             event.Skip()
         if event and event.GetEventType() == wx.EVT_SIZE.evtType[0]:

@@ -6597,7 +6597,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         if not self.setup_patterngenerator(self):
             return
         display_name = config.get_display_name(None, True)
-        if display_name == b"madVR":
+        if display_name == "madVR":
             # Disable gamma ramp
             self.worker.madtpg.set_device_gamma_ramp(None)
             # Disable 3D LUT
@@ -6605,7 +6605,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             if self.worker.madtpg.is_fullscreen():
                 # Leave fullscreen
                 self.worker.madtpg.leave_fullscreen()
-        elif display_name == b"Prisma":
+        elif display_name == "Prisma":
             # Disable 3D LUT
             try:
                 self.worker.patterngenerator.disable_processing()
@@ -6617,11 +6617,11 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
         profile = None
         print(" *************** display_name: ", display_name)
         if display_name in (
-            b"madVR",
-            b"Prisma",
-            b"Resolve",
-            b"Web @ localhost",
-        ) or display_name.startswith(b"Chromecast "):
+            "madVR",
+            "Prisma",
+            "Resolve",
+            "Web @ localhost",
+        ) or display_name.startswith("Chromecast "):
             patterngenerator = self.worker.patterngenerator
         else:
             patterngenerator = None
