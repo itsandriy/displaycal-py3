@@ -17901,7 +17901,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     self.worker.options_dispcal = ["-" + arg for arg in options_dispcal]
                     for o in options_dispcal:
                         # TODO: Use a dictionary to map all the values to settings names
-                        if o[0:1] == b"d" and o[1:] in (b"web", b"madvr"):
+                        if o[0:1] == "d" and o[1:] in ("web", "madvr"):
                             # Special case web and madvr so it can be used in
                             # preset templates which are TI3 files
                             for i, display_name in enumerate(self.worker.display_names):
@@ -17914,7 +17914,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                         display_changed = True
                                     break
                             continue
-                        if o[0:1] == b"m":
+                        if o[0:1] == "m":
                             setcfg("calibration.interactive_display_adjustment", 0)
                             continue
                         # if o[0:1] == b"o":
@@ -17923,38 +17923,38 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         # if o[0:1] == b"u":
                         #     setcfg("calibration.update", 1)
                         #     continue
-                        if o[0:1] == b"q":
+                        if o[0:1] == "q":
                             setcfg("calibration.quality", o[1])
                             continue
-                        if o[0:1] == b"y" and getcfg("measurement_mode") != b"auto":
+                        if o[0:1] == "y" and getcfg("measurement_mode") != "auto":
                             setcfg("measurement_mode", o[1])
                             continue
-                        if o[0:1] in (b"t", b"T"):
+                        if o[0:1] in ("t", "T"):
                             setcfg("whitepoint.colortemp.locus", o[0:1])
                             if o[1:]:
                                 setcfg("whitepoint.colortemp", int(float(o[1:])))
                             setcfg("whitepoint.x", None)
                             setcfg("whitepoint.y", None)
                             continue
-                        if o[0:1] == b"w":
-                            o = o[1:].split(b",")
+                        if o[0:1] == "w":
+                            o = o[1:].split(",")
                             setcfg("whitepoint.colortemp", None)
-                            setcfg("whitepoint.x", o[0:1])
+                            setcfg("whitepoint.x", o[0])
                             setcfg("whitepoint.y", o[1])
-                            setcfg("3dlut.whitepoint.x", o[0:1])
+                            setcfg("3dlut.whitepoint.x", o[0])
                             setcfg("3dlut.whitepoint.y", o[1])
                             continue
-                        if o[0:1] == b"b":
+                        if o[0:1] == "b":
                             setcfg("calibration.luminance", o[1:])
                             continue
-                        if o[0:1] in (b"g", b"G"):
+                        if o[0:1] in ("g", "G"):
                             setcfg("trc.type", o[0:1])
                             setcfg("trc", o[1:])
                             continue
-                        if o[0:1] == b"f":
+                        if o[0:1] =="f":
                             setcfg("calibration.black_output_offset", o[1:])
                             continue
-                        if o[0:1] == b"a":
+                        if o[0:1] == "a":
                             try:
                                 ambient = float(o[1:])
                             except ValueError:
@@ -17971,37 +17971,37 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                     ambient / 5.0,
                                 )
                             continue
-                        if o[0:1] == b"k":
+                        if o[0:1] == "k":
                             if stripzeros(o[1:]) >= 0:
                                 black_point_correction = True
                                 setcfg("calibration.black_point_correction", o[1:])
                             continue
-                        if o[0:1] == b"A":
+                        if o[0:1] == "A":
                             setcfg("calibration.black_point_rate", o[1:])
                             continue
-                        if o[0:1] == b"B":
+                        if o[0:1] == "B":
                             setcfg("calibration.black_luminance", o[1:])
                             continue
-                        if o[0:1] in (b"p", b"P") and len(o[1:]) >= 5:
+                        if o[0:1] in ("p", "P") and len(o[1:]) >= 5:
                             setcfg("dimensions.measureframe", o[1:])
                             setcfg("dimensions.measureframe.unzoomed", o[1:])
                             continue
-                        if o[0:1] == b"V":
+                        if o[0:1] == "V":
                             setcfg("measurement_mode.adaptive", 1)
                             continue
-                        if o[0:2] == b"YA":
+                        if o[0:2] == "YA":
                             setcfg("measurement_mode.adaptive", 0)
                             continue
-                        if o[0:1] == b"H":
+                        if o[0:1] == "H":
                             setcfg("measurement_mode.highres", 1)
                             continue
-                        if o[0:1] == b"p" and len(o[1:]) == 0:
+                        if o[0:1] == "p" and len(o[1:]) == 0:
                             setcfg("measurement_mode.projector", 1)
                             continue
-                        if o[0:1] == b"F":
+                        if o[0:1] == "F":
                             setcfg("measure.darken_background", 1)
                             continue
-                        if o[0:1] == b"X":
+                        if o[0:1] == "X":
                             o = o.split(None, 1)
                             ccmx = o[-1][1:-1]
                             if not os.path.isabs(ccmx):
@@ -18010,20 +18010,20 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                             # comport_ctrl_handler already did
                             update_ccmx_items = True
                             continue
-                        if o[0:1] == b"I":
-                            if b"b" in o[1:]:
+                        if o[0:1] == "I":
+                            if "b" in o[1:]:
                                 setcfg("drift_compensation.blacklevel", 1)
-                            if b"w" in o[1:]:
+                            if "w" in o[1:]:
                                 setcfg("drift_compensation.whitelevel", 1)
                             continue
-                        if o[0:1] == b"Q":
+                        if o[0:1] == "Q":
                             setcfg("observer", o[1:])
                             # Need to update ccmx items again even if
                             # comport_ctrl_handler already did because CCMX
                             # observer may override calibration observer
                             update_ccmx_items = True
                             continue
-                        if o[0:1] == b"E":
+                        if o[0:1] == "E":
                             setcfg("patterngenerator.use_video_levels", 1)
                             self.update_output_levels_ctrl()
                             continue
@@ -18031,7 +18031,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         setcfg("calibration.black_point_correction.auto", 1)
                 if getcfg("whitepoint.colortemp", False):
                     # Color temperature
-                    if getcfg("whitepoint.colortemp.locus") == b"T":
+                    if getcfg("whitepoint.colortemp.locus") == "T":
                         # Planckian locus
                         xyY = planckianCT2xyY(getcfg("whitepoint.colortemp"))
                     else:
@@ -18076,13 +18076,13 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                         ),
                     )
                     for o in options_colprof:
-                        if o[0:1] == b"q":
+                        if o[0:1] == "q":
                             setcfg("profile.quality", o[1])
                             continue
-                        if o[0:1] == b"b":
+                        if o[0:1] == "b":
                             setcfg("profile.quality.b2a", o[1] or "l")
                             continue
-                        if o[0:1] == b"a":
+                        if o[0:1] == "a":
                             if (
                                 is_preset
                                 and not is_3dlut_preset
@@ -18091,29 +18091,29 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                 # Force profile type to single shaper + matrix
                                 # due to OS X bugs with cLUT profiles and
                                 # matrix profiles with individual shaper curves
-                                o = b"aS"
+                                o = "aS"
                                 # Force black point compensation due to OS X
                                 # bugs with non BPC profiles
                                 setcfg("profile.black_point_compensation", 1)
                             setcfg("profile.type", o[1])
                             continue
-                        if o[0:1] in (b"s", b"S"):
+                        if o[0:1] in ("s", "S"):
                             o = o.split(None, 1)
                             setcfg("gamap_profile", o[-1][1:-1])
                             setcfg("gamap_perceptual", 1)
-                            if o[0:1] == b"S":
+                            if o[0:1] == "S":
                                 setcfg("gamap_saturation", 1)
                             continue
-                        if o[0:1] == b"c":
+                        if o[0:1] == "c":
                             setcfg("gamap_src_viewcond", o[1:])
                             continue
-                        if o[0:1] == b"d":
+                        if o[0:1] == "d":
                             setcfg("gamap_out_viewcond", o[1:])
                             continue
-                        if o[0:1] == b"t":
+                        if o[0:1] == "t":
                             setcfg("gamap_perceptual_intent", o[1:])
                             continue
-                        if o[0:1] == b"T":
+                        if o[0:1] == "T":
                             setcfg("gamap_saturation_intent", o[1:])
                             continue
                 setcfg("calibration.file", path)
@@ -18244,10 +18244,10 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                     pass
                                 else:
                                     if cfgvalue < 0:
-                                        gamma_type = b"B"
+                                        gamma_type = "B"
                                         cfgvalue = abs(cfgvalue)
                                     else:
-                                        gamma_type = b"b"
+                                        gamma_type = "b"
                                     setcfg("3dlut.trc_gamma_type", gamma_type)
                                     # Sync measurement report settings
                                     setcfg(
@@ -18256,7 +18256,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                     setcfg("measurement_report.apply_black_offset", 0)
                                     setcfg("measurement_report.apply_trc", 1)
                             elif keyword == "3DLUT_GAMUT_MAPPING_MODE":
-                                if cfgvalue == b"G":
+                                if cfgvalue == "G":
                                     cfgvalue = 0
                                 else:
                                     cfgvalue = 1
@@ -18313,17 +18313,17 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                                 cfgname = cfgname.replace("3dlut", "measurement_report")
                                 setcfg(cfgname, cfgvalue)
                             elif cfgname == "3dlut.format":
-                                if cfgvalue == b"madVR" and not simset:
+                                if cfgvalue == "madVR" and not simset:
                                     setcfg("3dlut.enable", 1)
                                 if (
-                                    cfgvalue == b"madVR" and not simset
-                                ) or cfgvalue == b"eeColor":
+                                    cfgvalue == "madVR" and not simset
+                                ) or cfgvalue == "eeColor":
                                     setcfg("measurement_report.use_devlink_profile", 0)
                             elif cfgname == "3dlut.trc":
                                 lut3d_trc_set = True
                     # Content color space (currently only used for HDR)
-                    for color in (b"white", b"red", b"green", b"blue"):
-                        for coord in b"xy":
+                    for color in ("white", "red", "green", "blue"):
+                        for coord in "xy":
                             keyword = "3DLUT_CONTENT_COLORSPACE_%s_%s" % (
                                 color.upper(),
                                 coord.upper(),
@@ -18344,31 +18344,31 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     # older profiles not containing 3DLUT_TRC
                     if not lut3d_trc_set:
                         if (
-                            getcfg("3dlut.trc_gamma_type") == b"B"
+                            getcfg("3dlut.trc_gamma_type") == "B"
                             and getcfg("3dlut.trc_output_offset") == 0
                             and getcfg("3dlut.trc_gamma") == 2.4
                         ):
-                            setcfg("3dlut.trc", b"bt1886")  # BT.1886
+                            setcfg("3dlut.trc", "bt1886")  # BT.1886
                         elif (
-                            getcfg("3dlut.trc_gamma_type") == b"b"
+                            getcfg("3dlut.trc_gamma_type") == "b"
                             and getcfg("3dlut.trc_output_offset") == 1
                             and getcfg("3dlut.trc_gamma") == 2.2
                         ):
-                            setcfg("3dlut.trc", b"gamma2.2")  # Pure power gamma 2.2
+                            setcfg("3dlut.trc", "gamma2.2")  # Pure power gamma 2.2
                         else:
-                            setcfg("3dlut.trc", b"customgamma")  # Custom
+                            setcfg("3dlut.trc", "customgamma")  # Custom
                 if not display_changed:
                     self.update_menus()
                     if not update_ccmx_items:
                         self.update_estimated_measurement_time("cal")
                 self.lut3d_set_path()
-                if config.get_display_name() == b"Resolve":
+                if config.get_display_name() == "Resolve":
                     setcfg("3dlut.enable", 0)
                     setcfg("measurement_report.use_devlink_profile", 1)
-                elif config.get_display_name(None, True) == b"Prisma":
+                elif config.get_display_name(None, True) == "Prisma":
                     setcfg("3dlut.enable", 1)
                     setcfg("measurement_report.use_devlink_profile", 0)
-                if getcfg("3dlut.format") == b"madVR" and simset:
+                if getcfg("3dlut.format") == "madVR" and simset:
                     # Currently, it is not possible to verify HDR 3D LUTs
                     # through madVR in another way
                     setcfg("3dlut.enable", 0)
