@@ -47,6 +47,7 @@ import wx.grid
 from wx.lib.buttons import GenBitmapButton as _GenBitmapButton
 from wx.lib.buttons import ThemedGenButton as _ThemedGenButton
 from wx.lib.buttons import GenBitmapTextButton as _GenBitmapTextButton
+from wx.lib.scrolledpanel import ScrolledPanel
 from wx.lib import platebtn
 from wx import xrc
 
@@ -1150,6 +1151,7 @@ class ScrolledWindow(wx._ScrolledWindow):
 
 
 wx.ScrolledWindow = ScrolledWindow
+ScrolledPanel.ScrollChildIntoView = ScrolledWindow.ScrollChildIntoView
 
 
 class GenButton(object):

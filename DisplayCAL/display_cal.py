@@ -18654,20 +18654,20 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
                     sizer.Add(chk, flag=wx.ALIGN_LEFT)
                 scrolled.SetupScrolling()
                 scrolled.MinSize = (
-                    min(
+                    int(min(
                         scrolled.GetVirtualSize()[0]
                         + 4 * scale
                         + wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
                         self.GetDisplay().ClientArea[2] - (12 * 3 + 32) * scale,
-                    ),
-                    min(
+                    )),
+                    int(min(
                         ((chk.Size[1] + 4) * min(len(self.related_files), 20) - 4)
                         * scale,
                         max(
                             self.GetDisplay().ClientArea[3] - dlg.Size[1] - 40 * scale,
                             chk.Size[1],
                         ),
-                    ),
+                    )),
                 )
                 dlg.sizer0.SetSizeHints(dlg)
                 dlg.sizer0.Layout()
