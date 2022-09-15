@@ -17,3 +17,6 @@ __pycache__/
 *.blend1
 /.coverage
 /DisplayCAL/ref/*.log
+/DisplayCAL/lib64/python38/*.so
+/DisplayCAL/lib64/python39/*.so
+/DisplayCAL/lib64/python310/*.so
