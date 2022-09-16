@@ -436,8 +436,8 @@ class SynthICCFrame(BaseFrame, LUT3DMixin):
                 )
                 return
             if profile.colorSpace not in (
-                "RGB",
-                "GRAY",
+                b"RGB",
+                b"GRAY",
             ) or profile.connectionColorSpace not in (b"Lab", b"XYZ"):
                 show_result_dialog(
                     Error(
