@@ -4793,7 +4793,7 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict):  # ICC v4
                 return list(self["en"].values())[0]
             return ""
         elif len(self):
-            return list(self.values())[0].values()[0]
+            return list(list(self.values())[0].values())[0]
         else:
             return ""
 
