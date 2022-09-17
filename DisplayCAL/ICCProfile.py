@@ -4427,7 +4427,7 @@ class ParametricCurveType(ICCProfileTag):
         for i, param in enumerate("gabcdef"[:numparams]):
             self.params[param] = s15Fixed16Number(tagData[12 + i * 4 : 12 + i * 4 + 4])
 
-    def apply(self, v):
+    def __apply(self, v):
         if len(self.params) == 1:
             return v ** self.params["g"]
         elif len(self.params) == 3:
@@ -4461,6 +4461,10 @@ class ParametricCurveType(ICCProfileTag):
             raise NotImplementedError(
                 "Invalid number of parameters: %i" % len(self.params)
             )
+
+    def apply(self, v):
+        # clip result to [0, 1]
+        return max(0, min(self.__apply(v), 1))
 
     def get_trc(self, size=1024):
         curv = CurveType(profile=self.profile)
