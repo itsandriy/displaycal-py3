@@ -2523,9 +2523,9 @@ class BaseInteractiveDialog(wx.Dialog):
                     base_appid + "-vrml-to-x3d-converter": "vrml_to_x3d_converter",
                 }
                 title = lang.getstr(appid2title.get(appid, "window.title"))
-        scale = getcfg("app.dpi") / get_default_dpi()
+        scale = int(getcfg("app.dpi") / get_default_dpi())
         if scale > 1 and size == (400, -1):
-            size = int(size[0] * scale, size[1])
+            size = size[0] * scale, size[1]
         wx.Dialog.__init__(self, parent, id, title, pos, size, style, name)
         self.taskbar = None
         if sys.platform == "win32":
