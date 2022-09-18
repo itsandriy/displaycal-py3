@@ -4785,12 +4785,12 @@ class MultiLocalizedUnicodeType(ICCProfileTag, AODict):  # ICC v4
         # TODO: Needs some work re locales
         # (currently if en-UK or en-US is not found, simply the first entry
         # is returned)
-        if "en" in self:
-            for countryCode in ("UK", "US"):
-                if countryCode in self["en"]:
-                    return self["en"][countryCode]
-            if self["en"]:
-                return list(self["en"].values())[0]
+        if b"en" in self:
+            for countryCode in (b"UK", b"US"):
+                if countryCode in self[b"en"]:
+                    return self[b"en"][countryCode]
+            if self[b"en"]:
+                return list(self[b"en"].values())[0]
             return ""
         elif len(self):
             return list(list(self.values())[0].values())[0]
@@ -7455,6 +7455,7 @@ class ICCProfile(object):
                                 "%6.4f" % v for v in colormath.XYZ2xyY(*values)[:2]
                             )
                         )
+                    colorant_name = colorant_name.decode()
                     info[
                         "    %s %s" % (colorant_name, "".join(list(colorant.keys())))
                     ] = " ".join(XYZxy)
@@ -7630,10 +7631,10 @@ class ICCProfile(object):
                     countries = tag[language]
                     for country in countries:
                         value = countries[country]
-                        if isinstance(country, bytes):
-                            country = country.decode("utf-8")
+                        country = country.decode()
                         if country.strip("\0 "):
                             country = "/" + country
+                        language = language.decode()
                         info["    %s%s" % (language, country)] = value
             elif isinstance(tag, NamedColor2Type):
                 info[name] = ""
