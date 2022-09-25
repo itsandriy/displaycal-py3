@@ -4025,7 +4025,7 @@ END_DATA
         filename, ext = os.path.splitext(path)
         name = os.path.basename(filename)
 
-        if profile_in.profileClass == "link":
+        if profile_in.profileClass == b"link":
             link_basename = os.path.basename(profile_in.fileName)
             link_filename = os.path.join(cwd, link_basename)
             profile_in.write(link_filename)
@@ -4718,8 +4718,8 @@ END_DATA
                 logfiles.write("\n")
                 logfiles.write("Filling cLUT...\n")
                 profile_link = ICCP.ICCProfile()
-                profile_link.profileClass = "link"
-                profile_link.connectionColorSpace = "RGB"
+                profile_link.profileClass = b"link"
+                profile_link.connectionColorSpace = b"RGB"
                 profile_link.setDescription(name)
                 profile_link.setCopyright(getcfg("copyright"))
                 profile_link.tags.pseq = ICCP.ProfileSequenceDescType(

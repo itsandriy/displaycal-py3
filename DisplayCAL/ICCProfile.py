@@ -4899,7 +4899,7 @@ class ProfileSequenceDescType(ICCProfileTag, list):
         """Add description structure of profile"""
         desc = {}
         desc.update(profile.device)
-        desc["tech"] = profile.tags.get("tech", "").ljust(4, "\0")[:4]
+        desc["tech"] = profile.tags.get("tech", b"").ljust(4, b"\0")[:4]
         for desc_type in ("dmnd", "dmdd"):
             if self.profile.version >= 4:
                 cls = MultiLocalizedUnicodeType
