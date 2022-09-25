@@ -1840,7 +1840,13 @@ class Producer(object):
         self.continue_next = continue_next
 
     def __call__(self, *args, **kwargs):
-        result = self.producer(*args, **kwargs)
+        try:
+            result = self.producer(*args, **kwargs)
+        except Exception as exception:
+            if debug:
+                messages = traceback.format_exception(exception)
+                print("[D] Worker raised an unhandled exception: \n" + "\n".join(messages))
+            raise
         if not self.continue_next and self.worker._progress_wnd:
             if hasattr(
                 self.worker.progress_wnd, "animbmp"
