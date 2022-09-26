@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import sys
+import traceback
 
 from DisplayCAL.wxaddons import CustomEvent
 
@@ -928,6 +929,9 @@ class LUT3DMixin(object):
         except Exception as exception:
             # if exception.__class__.__name__ in dir(exceptions):
             #     raise
+            if debug:
+                messages = traceback.format_exception(exception)
+                print("[D] Worker raised exception: \n" + "\n".join(messages))
             return exception
         return True
 
