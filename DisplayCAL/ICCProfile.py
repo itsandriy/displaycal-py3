@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
-import functools
-from copy import copy
-from hashlib import md5
-import atexit
 import binascii
 import ctypes
 import datetime
-import locale
+import json
 import math
 import os
 import pathlib
@@ -14,10 +10,10 @@ import re
 import struct
 import sys
 import warnings
-import zlib
-
-from time import localtime, mktime, strftime
 from collections import UserString
+from copy import copy
+from hashlib import md5
+from time import strftime
 from weakref import WeakValueDictionary
 
 from DisplayCAL.util_dict import dict_sort
@@ -58,9 +54,7 @@ from DisplayCAL.colormath import NumberTuple
 from DisplayCAL.defaultpaths import iccprofiles, iccprofiles_home
 from DisplayCAL.encoding import get_encodings
 from DisplayCAL.options import test_input_curve_clipping
-from DisplayCAL.util_decimal import float2dec
 from DisplayCAL.util_list import intlist
-from DisplayCAL.util_str import hexunescape
 
 if sys.platform not in ("darwin", "win32"):
     from DisplayCAL.defaultpaths import xdg_config_dirs, xdg_config_home
@@ -4706,27 +4700,28 @@ class DictType(ICCProfileTag, AODict):
         Display names/values are used if present.
 
         """
-        json = []
-        for name in self:
-            value = self.getvalue(name, None, locale)
-            name = self.getname(name, None, locale)
-            # try:
-            # value = str(int(value))
-            # except ValueError:
-            # try:
-            # value = str(float(value))
-            # except ValueError:
+        return DictTypeJSONEncoder(locale=locale).encode(self)
+
+
+class DictTypeJSONEncoder(json.JSONEncoder):
+    """JSON Encoder for the DictType class."""
+
+    def __init__(self, *args, **kwargs):
+        self.locale = kwargs.pop("locale") or "en_US"
+        super().__init__(*args, **kwargs)
+
+    def default(self, obj):
+        return_data = {}
+        regex = re.compile(r"\\x([0-9a-f]{2})")
+        repl_str = r"\\u00\1"
+        for name in obj:
+            value = obj.getvalue(name, None, self.locale)
+            name = obj.getname(name, None, self.locale)
             value = '"%s"' % repr(str(value))[2:-1].replace('"', '\\"')
-            json.append(
-                '"%s": %s'
-                % tuple(
-                    [
-                        re.sub(r"\\x([0-9a-f]{2})", "\\u00\\1", item)
-                        for item in [repr(str(name))[2:-1], value]
-                    ]
-                )
-            )
-        return "{%s}" % ",\n".join(json)
+            name = regex.sub(repl_str, name)
+            value = regex.sub(repl_str, value)
+            return_data[name] = value
+        return return_data
 
 
 class MakeAndModelType(ICCProfileTag, ADict):

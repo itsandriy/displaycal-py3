@@ -813,3 +813,16 @@ def test_MultiLocalizedUnicodeType_str_method(data_files):
     """Test for #151."""
     mlut = MultiLocalizedUnicodeType()
     assert str(mlut) == ""
+
+
+def test_dict_type_to_json():
+    """Test DictType.to_json() method."""
+    d = DictType()
+    d.update(
+        {
+            "\xab": "\x00",
+            "\xaf": "\x12",
+        }
+    )
+    expected_result = '{"\\u00ab": "\\u0000", "\\u00af": "\\u0012"}'
+    assert d.to_json() == expected_result
