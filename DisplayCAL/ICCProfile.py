@@ -3818,9 +3818,9 @@ BEGIN_DATA
 
 
 class Observer(ADict):
-    def __init__(self, binaryString):
-        super(ADict, self).__init__(binaryString)
-        self.type = uInt32Number(binaryString)
+    def __init__(self, bytes_data):
+        super(ADict, self).__init__()
+        self.type = uInt32Number(bytes_data)
         self.description = observers[self.type]
 
 
@@ -4733,6 +4733,9 @@ class MakeAndModelType(ICCProfileTag, ADict):
 class MeasurementType(ICCProfileTag, ADict):
     def __init__(self, tagData, tagSignature):
         ICCProfileTag.__init__(self, tagData, tagSignature)
+
+        print(f"tagData[8:12]: {tagData[8:12]}")
+
         self.update(
             {
                 "observer": Observer(tagData[8:12]),

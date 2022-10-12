@@ -16,7 +16,7 @@ from DisplayCAL.ICCProfile import (
     dateTimeNumber,
     ICCProfileTag,
     Text,
-    MultiLocalizedUnicodeType,
+    MultiLocalizedUnicodeType, Observer,
 )
 
 
@@ -826,3 +826,11 @@ def test_dict_type_to_json():
     )
     expected_result = '{"\\u00ab": "\\u0000", "\\u00af": "\\u0012"}'
     assert d.to_json() == expected_result
+
+
+def test_issue_185_parsing_of_ref_srgb_profile_from_argyllcms(argyll):
+    """Testing for issue #185, opening sRGB.icm from ArgyllCMS raises TypeError."""
+    srgb_profile_path = argyll / ".." / "ref" / "sRGB.icm"
+    icc_profile = ICCProfile.ICCProfile(srgb_profile_path)
+    # the following should not raise an error
+    info = icc_profile.get_info()
