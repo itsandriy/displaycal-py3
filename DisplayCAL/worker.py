@@ -1831,8 +1831,7 @@ class FilteredStream:
 
 
 class Producer(object):
-
-    """Generic producer"""
+    """Generic producer."""
 
     def __init__(self, worker, producer, continue_next=False):
         self.worker = worker

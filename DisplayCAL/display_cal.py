@@ -7603,6 +7603,17 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
 
     def profile_share_handler(self, event):
         """Share ICC profile via http://icc.opensuse.org"""
+        # as mentioned in #194 the icc.opensuse.org is not working,
+        # disabling this functionality temporarily
+        InfoDialog(
+            getattr(self, "modaldlg", self),
+            msg="icc.opensuse.org is not working anymore\n"
+                "This functionality is temporarily disabled.",
+            ok=lang.getstr("ok"),
+            bitmap=geticon(32, "dialog-error"),
+        )
+        return
+
         # Select profile
         profile = get_current_profile(include_display_profile=True)
         ignore = not profile or self.profile_share_get_meta_error(profile)
@@ -7987,7 +7998,7 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             http_request,
             ckwargs={},
             wkwargs={
-                "DOMAIN": DOMAIN if test else "icc.opensuse.org",
+                "domain": DOMAIN if test else "icc.opensuse.org",
                 "request_type": "POST",
                 "path": "/print_r_post.php" if test else "/upload",
                 "params": params,
@@ -8003,7 +8014,6 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
     def profile_share_consumer(self, result, parent=None):
         """This function receives the response from the profile upload"""
         if result is not False:
-            print(str(result.read().strip()))
             parent = parent or getattr(self, "modaldlg", self)
             dlg = InfoDialog(
                 parent,

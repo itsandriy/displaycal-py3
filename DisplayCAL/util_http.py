@@ -29,29 +29,46 @@ def encode_multipart_formdata(fields, files, charset="UTF-8"):
     files is a sequence of (name, filename, value) elements for data to be uploaded as files
     Return (content_type, body) ready for httplib.HTTP instance
     """
-    BOUNDARY = "----=_NextPart_%s" % uuid.uuid1()
-    CRLF = "\r\n"
+    BOUNDARY = b"----=_NextPart_" + uuid.uuid1().bytes
+    CRLF = b"\r\n"
     L = []
     for (key, value) in fields:
-        L.append("--" + BOUNDARY)
-        L.append('Content-Disposition: form-data; name="%s"' % key)
-        L.append("Content-Type: text/plain; charset=%s" % charset)
-        L.append("")
-        L.append(value.encode(charset))
-    for (key, filename, value) in files:
-        L.append("--" + BOUNDARY)
-        L.append(
-            'Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename)
-        )
-        L.append("Content-Type: %s" % get_content_type(filename))
-        L.append("")
+        if isinstance(key, str):
+            key = key.encode(charset)
+        if isinstance(value, str):
+            value = value.encode(charset)
+
+        L.append(b"--" + BOUNDARY)
+        L.append(b'Content-Disposition: form-data; name="' + key + b'"')
+        L.append(b"Content-Type: text/plain; charset=" + charset.encode(charset))
+        L.append(b"")
         L.append(value)
-    L.append("--" + BOUNDARY + "--")
-    L.append("")
+
+    for (key, filename, value) in files:
+        if isinstance(key, str):
+            key = key.encode(charset)
+        if isinstance(filename, str):
+            filename = filename.encode(charset)
+        if isinstance(value, str):
+            value = value.encode(charset)
+
+        L.append(b"--" + BOUNDARY)
+        L.append(
+            b'Content-Disposition: form-data; name="' + key + b'"; filename="' + filename + b'"'
+        )
+        L.append(b"Content-Type: " + get_content_type(filename).encode(charset))
+        L.append(b"")
+        L.append(value)
+
+    L.append(b"--" + BOUNDARY + b"--")
+    L.append(b"")
     body = CRLF.join(L)
-    content_type = "multipart/form-data; boundary=%s" % BOUNDARY
+    content_type = b"multipart/form-data; boundary=" + BOUNDARY
+
     return content_type, body
 
 
 def get_content_type(filename):
+    if isinstance(filename, bytes):
+        filename = filename.decode("utf-8")
     return mimetypes.guess_type(filename)[0] or "application/octet-stream"
