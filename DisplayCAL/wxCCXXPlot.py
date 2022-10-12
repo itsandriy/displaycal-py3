@@ -94,7 +94,10 @@ class CCXXPlot(wx.Frame):
             else:
                 ext = ".ccmx"
 
-        desc = lang.getstr(ext[1:] + "." + fn, default=desc)
+        if isinstance(fn, bytes):
+            fn = fn.decode("utf-8")
+
+        desc = lang.getstr(f"{ext[1:]}.{fn}", default=desc)
 
         if self.is_ccss:
             ccxx_type = "spectral"
