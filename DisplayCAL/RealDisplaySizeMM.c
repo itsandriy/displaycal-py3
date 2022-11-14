@@ -835,13 +835,13 @@ disppath **get_displays() {
                         sprintf(desc1, "_ICC_PROFILE_%d",disps[ndisps]->uscreen);
 
                     if ((disps[ndisps]->icc_atom = XInternAtom(mydisplay, desc1, False)) == None)
-                        error("Unable to intern atom '%s'",desc1);
+                        fprintf(stderr, "Unable to intern atom '%s'",desc1);
 
                     debugrr2((errout,"Root atom '%s'\n",desc1));
 
                     /* Create the atom of the output that may contain the associated ICC profile */
                     if ((disps[ndisps]->icc_out_atom = XInternAtom(mydisplay, "_ICC_PROFILE", False)) == None)
-                        error("Unable to intern atom '%s'","_ICC_PROFILE");
+                        fprintf(stderr, "Unable to intern atom '%s'","_ICC_PROFILE");
 
                     /* Grab the EDID from the output */
                     {
@@ -1007,7 +1007,7 @@ disppath **get_displays() {
                 sprintf(desc1, "_ICC_PROFILE_%d",disps[i]->uscreen);
 
             if ((disps[i]->icc_atom = XInternAtom(mydisplay, desc1, False)) == None)
-                error("Unable to intern atom '%s'",desc1);
+                fprintf(stderr, "Unable to intern atom '%s'",desc1);
 
             /* See if we can locate the EDID of the monitor for this screen */
             for (j = 0; j < 2; j++) {
