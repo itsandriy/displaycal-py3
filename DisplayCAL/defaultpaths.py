@@ -229,9 +229,14 @@ else:
                         locale_dir = path
                         break
 
+            # codeset is deprecated with python 3.11
             try:
                 obj.translation = gettext.translation(
                     obj.GETTEXT_PACKAGE, locale_dir, codeset="UTF-8"
+                )
+            except TypeError:
+                obj.translation = gettext.translation(
+                    obj.GETTEXT_PACKAGE, locale_dir
                 )
             except IOError as exception:
                 print("XDG:", exception)
