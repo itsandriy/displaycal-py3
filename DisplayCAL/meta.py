@@ -6,17 +6,21 @@ Meta information
 import re
 import sys
 
+# considered optional for systems building from release tarballs
+try:
+    from DisplayCAL.__version__ import LASTMOD as lastmod
+except ImportError:
+    lastmod = "1970-01-01T00:00:00Z"
 
 try:
     from DisplayCAL.__version__ import (
         BUILD_DATE as build,
-        LASTMOD as lastmod,
         VERSION,
         VERSION_BASE,
         VERSION_STRING,
     )
 except ImportError:
-    build = lastmod = "1970-01-01T00:00:00Z"
+    build = "1970-01-01T00:00:00Z"
     VERSION = None
     VERSION_STRING = None
 
