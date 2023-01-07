@@ -453,6 +453,7 @@ def setup():
     prefix = ""
     recordfile_name = None  # record installed files to this file
     sdist = "sdist" in sys.argv[1:]
+    setuptools = None
     skip_postinstall = "--skip-postinstall" in sys.argv[1:]
     use_distutils = not bdist_bbfreeze and not do_py2app
     use_setuptools = (
@@ -479,10 +480,10 @@ def setup():
             import setuptools
             from setuptools import setup, Extension
 
+            setuptools = True
             print("using setuptools")
             current_findall = setuptools.findall
         except ImportError:
-            use_setuptools = False
             pass
     else:
         if os.path.exists("use-setuptools"):
@@ -508,7 +509,7 @@ def setup():
 
         distutils.filelist.findall = findall
 
-    if not use_setuptools:
+    if not setuptools:
         from distutils.core import setup, Extension
 
         print("using distutils")
@@ -944,7 +945,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
     ext_modules = [RealDisplaySizeMM]
 
     requires = []
-    if not use_setuptools or sys.platform != "win32":
+    if not setuptools or sys.platform != "win32":
         # wxPython windows installer doesn't add egg-info entry, so
         # a dependency check from pkg_resources would always fail
         requires.append("wxPython (>= %s)" % ".".join(str(n) for n in wx_minversion))
@@ -1020,7 +1021,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
         "version": msiversion if "bdist_msi" in sys.argv[1:] else version,
     }
 
-    if use_setuptools:
+    if setuptools:
         attrs["entry_points"] = {
             "gui_scripts": [
                 "%s = %s.main:main%s"
@@ -1277,7 +1278,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
             attrs["options"]["py2exe"].update(
                 {"bundle_files": 3, "compressed": 0, "optimize": 0, "skip_archive": 1}
             )
-        if use_setuptools:
+        if setuptools:
             attrs["setup_requires"] = ["py2exe"]
         attrs["zipfile"] = os.path.join("lib", "library.zip")
 
@@ -1327,10 +1328,10 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
         # site-packages (on Mac and Windows) and when we want to make them
         # absolute (Linux)
         linux = sys.platform not in ("darwin", "win32") and (
-            not cmd.root and use_setuptools
+            not cmd.root and setuptools
         )
         dar_win = (
-            sys.platform in ("darwin", "win32") and (cmd.root or not use_setuptools)
+            sys.platform in ("darwin", "win32") and (cmd.root or not setuptools)
         ) or bdist_win
         if (
             not do_uninstall
@@ -1379,7 +1380,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
             # logic to find them
             paths = safe_glob(os.path.join(cmd.install_scripts, name))
             if sys.platform == "win32":
-                if use_setuptools:
+                if setuptools:
                     paths += safe_glob(os.path.join(cmd.install_scripts, f"{name}.exe"))
                     paths += safe_glob(
                         os.path.join(cmd.install_scripts, f"{name}-script.py")
@@ -1586,7 +1587,7 @@ setup(ext_modules=[Extension("{name}.lib{bits}.RealDisplaySizeMM", sources={sour
         manifest_in.append("include " + os.path.join("tests", "*"))
         manifest_in.append("recursive-include theme *")
         manifest_in.append("recursive-include util *.cmd *.py *.sh")
-        if sys.platform == "win32" and not use_setuptools:
+        if sys.platform == "win32" and not setuptools:
             # Only needed under Windows
             manifest_in.append("global-exclude .svn/*")
         manifest_in.append("global-exclude *~")
