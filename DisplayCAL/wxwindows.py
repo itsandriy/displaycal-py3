@@ -3084,6 +3084,21 @@ class BitmapBackgroundPanelText(BitmapBackgroundPanel):
             dc.SetTextForeground(color)
             dc.DrawText(line, int(x), int(y))
 
+class BitmapBackgroundPanelTextGamut(BitmapBackgroundPanelText):
+
+    """A panel with a background bitmap and text label to display gamut"""
+
+    def __init__(self, *args, **kwargs):
+        BitmapBackgroundPanel.__init__(self, *args, **kwargs)
+        self.title = lang.getstr("gamut.coverage")
+        self.caption = lang.getstr("gamut.coverage")
+        self.label_x = None
+        self.label_y = None
+        self.textalpha = 1.0
+        self.textshadow = True
+        self.textshadowcolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT)
+        self.use_gcdc = False
+        self._label = ""
 
 class ConfirmDialog(BaseInteractiveDialog):
 
