@@ -5,6 +5,8 @@ import re
 import os
 import sys
 
+import traceback
+
 from DisplayCAL.config import (
     defaults,
     fs_enc,
@@ -42,6 +44,7 @@ from DisplayCAL.wxwindows import (
     BaseApp,
     BaseFrame,
     BitmapBackgroundPanelText,
+    BitmapBackgroundPanelTextGamut,
     CustomCheckBox,
     CustomGrid,
     CustomRowLabelRenderer,
@@ -1220,6 +1223,17 @@ class ProfileInfoFrame(LUTFrame):
         self.status.SetMinSize((0, h * 2 + 10))
         p1.sizer.Add(self.status, flag=wx.EXPAND)
 
+        self.gamut_status = BitmapBackgroundPanelTextGamut(p1)
+        self.gamut_status.SetMaxFontSize(11)
+        self.gamut_status.label_y = 0
+        self.gamut_status.textshadow = False
+        self.gamut_status.SetBackgroundColour(BGCOLOUR)
+        self.gamut_status.SetForegroundColour(FGCOLOUR)
+        h = self.gamut_status.GetTextExtent("Ig")[1]
+        self.gamut_status.SetMinSize((0, h * 2 + 10))
+        p1.sizer.Add(self.gamut_status, flag=wx.EXPAND)
+
+
         # Gamut view options
         self.gamut_view_options = GamutViewOptions(p1)
         self.options_panel.AddPage(self.gamut_view_options, "")
@@ -1433,6 +1447,56 @@ class ProfileInfoFrame(LUTFrame):
         ):
             reset = True
         self.profile = profile
+        cinfo = []
+        vinfo = []
+        if "meta" in profile.tags:
+            for key in ("avg", "max", "rms"):
+                try:
+                    dE = float(
+                        profile.tags.meta.getvalue("ACCURACY_dE76_%s" % key)
+                    )
+                except (TypeError, ValueError):
+                    pass
+
+            gamuts = (
+                ("srgb", "sRGB", ICCP.GAMUT_VOLUME_SRGB),
+                ("adobe-rgb", "Adobe RGB", ICCP.GAMUT_VOLUME_ADOBERGB),
+                ("dci-p3", "DCI P3", ICCP.GAMUT_VOLUME_SMPTE431_P3),
+            )
+            for key, name, _volume in gamuts:
+                try:
+                    gamut_coverage = float(
+                        profile.tags.meta.getvalue("GAMUT_coverage(%s)" % key)
+                    )
+                except (TypeError, ValueError):
+                    traceback.print_exc()
+                    gamut_coverage = None
+                if gamut_coverage:
+                    cinfo.append("%.1f%% %s" % (gamut_coverage * 100, name))
+            try:
+                gamut_volume = float(profile.tags.meta.getvalue("GAMUT_volume"))
+            except (TypeError, ValueError):
+                traceback.print_exc()
+                gamut_volume = None
+            if gamut_volume:
+                for _key, name, volume in gamuts:
+                    vinfo.append(
+                        "%.1f%% %s"
+                        % (
+                            gamut_volume
+                            * ICCP.GAMUT_VOLUME_SRGB
+                            / volume
+                            * 100,
+                            name,
+                        )
+                    )
+                    if len(vinfo) == len(cinfo):
+                        break
+
+            if gamut_coverage and gamut_volume:
+                gamut_cov_text = f'{cinfo[0]}    {cinfo[1]}    {cinfo[2]}'
+                self.SetGamutStatusText(gamut_cov_text)
+
         for channel in "rgb":
             trc = profile.tags.get(f"{channel}TRC", profile.tags.get("kTRC"))
             if isinstance(trc, ICCP.ParametricCurveType):
