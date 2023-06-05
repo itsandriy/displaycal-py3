@@ -51,10 +51,10 @@ new-release:
 	git tag $(VERSION)
 	git push origin main --tags
 	python -m build
-# 	twine check dist/DisplayCAL-*.whl
-	twine check dist/DisplayCAL-*.tar.gz
-# 	twine upload dist/DisplayCAL-*.whl
-	twine upload dist/DisplayCAL-*.tar.gz
+# 	twine check dist/DisplayCAL-$(VERSION).whl
+	twine check dist/DisplayCAL-$(VERSION).tar.gz
+# 	twine upload dist/DisplayCAL-$(VERSION).whl
+	twine upload dist/DisplayCAL-$(VERSION).tar.gz
 
 # https://www.gnu.org/software/make/manual/html_node/Force-Targets.html
 FORCE:
