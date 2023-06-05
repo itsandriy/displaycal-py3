@@ -48,7 +48,7 @@ new-release:
 	git checkout main
 	git merge develop
 	git tag $(VERSION)
-	git push origin master --tags
+	git push origin main --tags
 	python -m build
 # 	twine check dist/DisplayCAL-*.whl
 	twine check dist/DisplayCAL-*.tar.gz
