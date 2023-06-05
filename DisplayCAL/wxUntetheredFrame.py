@@ -48,7 +48,7 @@ class UntetheredFrame(BaseFrame):
         #                    lang.getstr("measurement.untethered"),
         #                    style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
         #                    name="untetheredframe")
-        super(UntetheredFrame, self).__init__(
+        BaseFrame.__init__(
             self,
             parent,
             wx.ID_ANY,
@@ -108,7 +108,8 @@ class UntetheredFrame(BaseFrame):
         )
         self.measure_auto_cb.SetForegroundColour(FGCOLOUR)
         self.measure_auto_cb.Bind(wx.EVT_CHECKBOX, self.measure_auto_ctrl_handler)
-        sizer.Add(self.measure_auto_cb, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
+        # only vertical alignment flags can be used with a horizontal sizer
+        sizer.Add(self.measure_auto_cb, 0, wx.ALIGN_CENTER_VERTICAL)
         panelsizer.Add(sizer, 0, wx.BOTTOM | wx.EXPAND, border=8)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.measure_btn = FlatShadedButton(

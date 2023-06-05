@@ -40,6 +40,7 @@ from DisplayCAL.wxwindows import (
     BaseApp,
     BaseFrame,
     BitmapBackgroundPanelText,
+    BitmapBackgroundPanelTextGamut,
     CustomCheckBox,
     FileDrop,
     InfoDialog,
@@ -828,6 +829,7 @@ class LUTFrame(BaseFrame):
         self.sizer.Add(self.box_panel, flag=wx.EXPAND)
 
         self.status = BitmapBackgroundPanelText(self, name="statuspanel")
+        self.gamut_status = BitmapBackgroundPanelTextGamut(self, name="statuspanel")
         self.status.SetMaxFontSize(11)
         self.status.label_y = 8
         self.status.textshadow = False
@@ -2316,6 +2318,10 @@ class LUTFrame(BaseFrame):
 
     def SetStatusText(self, text):
         self.status.Label = text
+        self.status.Refresh()
+
+    def SetGamutStatusText(self, text):
+        self.gamut_status.Label = text
         self.status.Refresh()
 
     def UpdatePointLabel(self, xy):

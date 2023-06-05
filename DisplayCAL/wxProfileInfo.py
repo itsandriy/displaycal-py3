@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
-
 import re
 import os
 import sys
+
+import traceback
 
 from DisplayCAL.config import (
     defaults,
@@ -42,6 +42,7 @@ from DisplayCAL.wxwindows import (
     BaseApp,
     BaseFrame,
     BitmapBackgroundPanelText,
+    BitmapBackgroundPanelTextGamut,
     CustomCheckBox,
     CustomGrid,
     CustomRowLabelRenderer,
@@ -685,7 +686,9 @@ class GamutViewOptions(wx_Panel):
         self.comparison_whitepoint_legend = wx.StaticText(
             self,
             -1,
-            "%s (%s)" % (lang.getstr("whitepoint"), lang.getstr("comparison_profile")),
+            "{} ({})".format(
+                lang.getstr("whitepoint"), lang.getstr("comparison_profile")
+            ),
         )
         self.comparison_whitepoint_legend.SetMaxFontSize(11)
         self.comparison_whitepoint_legend.SetForegroundColour(FGCOLOUR)
@@ -802,9 +805,7 @@ class GamutViewOptions(wx_Panel):
         self.options_sizer.Add(
             self.comparison_profile_label, flag=wx.ALIGN_CENTER_VERTICAL
         )
-        self.comparison_profiles = dict(
-            [(lang.getstr("calibration.file.none"), None)]
-        )
+        self.comparison_profiles = dict([(lang.getstr("calibration.file.none"), None)])
         srgb = None
         try:
             srgb = ICCP.ICCProfile(get_data_path("ref/sRGB.icm"))
@@ -957,7 +958,6 @@ class GamutViewOptions(wx_Panel):
             self.comparison_profile_bmp.Show(index > 0)
             self.DrawCanvas(0, reset=False)
         except Exception:
-            import traceback
             traceback.print_exc()
 
     def comparison_profiles_sort(self):
@@ -979,7 +979,7 @@ class GamutViewOptions(wx_Panel):
         parent = self.TopLevelParent
         parent.client.proportional = True
         parent.client.DrawCanvas(
-            "%s %s" % (colorspace, lang.getstr("colorspace")),
+            f"{colorspace} {lang.getstr('colorspace')}",
             colorspace,
             whitepoint=self.whitepoint_select.GetSelection(),
             center=center,
@@ -1220,6 +1220,16 @@ class ProfileInfoFrame(LUTFrame):
         self.status.SetMinSize((0, h * 2 + 10))
         p1.sizer.Add(self.status, flag=wx.EXPAND)
 
+        self.gamut_status = BitmapBackgroundPanelTextGamut(p1)
+        self.gamut_status.SetMaxFontSize(11)
+        self.gamut_status.label_y = 0
+        self.gamut_status.textshadow = False
+        self.gamut_status.SetBackgroundColour(BGCOLOUR)
+        self.gamut_status.SetForegroundColour(FGCOLOUR)
+        h = self.gamut_status.GetTextExtent("Ig")[1]
+        self.gamut_status.SetMinSize((0, h * 2 + 10))
+        p1.sizer.Add(self.gamut_status, flag=wx.EXPAND)
+
         # Gamut view options
         self.gamut_view_options = GamutViewOptions(p1)
         self.options_panel.AddPage(self.gamut_view_options, "")
@@ -1433,6 +1443,47 @@ class ProfileInfoFrame(LUTFrame):
         ):
             reset = True
         self.profile = profile
+        cinfo = []
+        vinfo = []
+        if "meta" in profile.tags:
+            for key in ("avg", "max", "rms"):
+                try:
+                    dE = float(profile.tags.meta.getvalue(f"ACCURACY_dE76_{key}"))
+                except (TypeError, ValueError):
+                    pass
+
+            gamuts = (
+                ("srgb", "sRGB", ICCP.GAMUT_VOLUME_SRGB),
+                ("adobe-rgb", "Adobe RGB", ICCP.GAMUT_VOLUME_ADOBERGB),
+                ("dci-p3", "DCI P3", ICCP.GAMUT_VOLUME_SMPTE431_P3),
+            )
+            for key, name, _volume in gamuts:
+                try:
+                    gamut_coverage = float(
+                        profile.tags.meta.getvalue(f"GAMUT_coverage({key})")
+                    )
+                except (TypeError, ValueError):
+                    traceback.print_exc()
+                    gamut_coverage = None
+                if gamut_coverage:
+                    cinfo.append(f"{gamut_coverage * 100:.1f}% {name}")
+            try:
+                gamut_volume = float(profile.tags.meta.getvalue("GAMUT_volume"))
+            except (TypeError, ValueError):
+                traceback.print_exc()
+                gamut_volume = None
+            if gamut_volume:
+                for _key, name, volume in gamuts:
+                    vinfo.append(
+                        f"{gamut_volume * ICCP.GAMUT_VOLUME_SRGB / volume * 100:.1f}% {name}"
+                    )
+                    if len(vinfo) == len(cinfo):
+                        break
+
+            if gamut_coverage and gamut_volume:
+                gamut_cov_text = f"{cinfo[0]}    {cinfo[1]}    {cinfo[2]}"
+                self.SetGamutStatusText(gamut_cov_text)
+
         for channel in "rgb":
             trc = profile.tags.get(f"{channel}TRC", profile.tags.get("kTRC"))
             if isinstance(trc, ICCP.ParametricCurveType):
@@ -1568,13 +1619,13 @@ class ProfileInfoFrame(LUTFrame):
                 if color.groups()[0] == "Lab":
                     color = colormath.Lab2RGB(
                         *[float(v) for v in color.groups()[1].strip().split()],
-                        **dict(scale=255)
+                        **dict(scale=255),
                     )
                 else:
                     # XYZ
                     color = colormath.XYZ2RGB(
                         *[float(v) for v in color.groups()[1].strip().split()],
-                        **dict(scale=255)
+                        **dict(scale=255),
                     )
                 labelbgcolor = wx.Colour(*[int(round(v)) for v in color])
                 rowlabelrenderer = CustomRowLabelRenderer(labelbgcolor)
@@ -1629,9 +1680,9 @@ class ProfileInfoFrame(LUTFrame):
             if page.colorspace in ("a*b*", "u*v*") or page.colorspace.startswith(
                 "DIN99"
             ):
-                format = "%.2f %.2f"
+                format_ = "%.2f %.2f"
             else:
-                format = "%.4f %.4f"
+                format_ = "%.4f %.4f"
             whitepoint_no = page.whitepoint_select.GetSelection()
             if whitepoint_no > 0:
                 if page.colorspace == "a*b*":
@@ -1670,7 +1721,7 @@ class ProfileInfoFrame(LUTFrame):
                     # xy
                     x, y = xy
                 cct, delta = colormath.xy_CCT_delta(x, y, daylight=whitepoint_no == 1)
-                status = format % xy
+                status = format_ % xy
                 if cct:
                     if delta:
                         locus = {"Blackbody": "blackbody", "Daylight": "daylight"}.get(
@@ -1678,16 +1729,16 @@ class ProfileInfoFrame(LUTFrame):
                             page.whitepoint_select.GetStringSelection(),
                         )
                         status = "%s, CCT %i (%s %.2f)" % (
-                            format % xy,
+                            format_ % xy,
                             cct,
                             lang.getstr("delta_e_to_locus", locus),
                             delta["E"],
                         )
                     else:
-                        status = "%s, CCT %i" % (format % xy, cct)
+                        status = "%s, CCT %i" % (format_ % xy, cct)
                 self.SetStatusText(status)
             else:
-                self.SetStatusText(format % xy)
+                self.SetStatusText(format_ % xy)
         if isinstance(event, wx.MouseEvent):
             event.Skip()  # Go to next handler
 
@@ -1770,11 +1821,11 @@ class ProfileInfoFrame(LUTFrame):
         else:
             name = ""
         if not defaultwidth:
-            defaultwidth = defaults["size.profile_info%s.w" % name]
+            defaultwidth = defaults[f"size.profile_info{name}.w"]
         if not defaultheight:
             defaultheight = defaults["size.profile_info.h"]
         border, titlebar = get_platform_window_decoration_size()
-        # return (max(max(getcfg("size.profile_info%s.w" % name),
+        # return (max(max(getcfg("size.profile_info{name}.w"),
         # defaultwidth), self.GetMinSize()[0] - border * 2),
         # max(getcfg("size.profile_info.h"),
         # defaultheight))
@@ -1953,7 +2004,8 @@ class ProfileInfoFrame(LUTFrame):
                     return
                 desc = profile.getDescription()
                 profile_path = os.path.join(
-                    self.worker.tempdir, f"{make_argyll_compatible_path(desc) }{profile_ext}"
+                    self.worker.tempdir,
+                    f"{make_argyll_compatible_path(desc) }{profile_ext}",
                 )
                 profile.write(profile_path)
             profile_mtime = os.stat(profile_path).st_mtime
@@ -1990,10 +2042,7 @@ class ProfileInfoFrame(LUTFrame):
                 mods.append(order)
             if mods:
                 filename = "{} {}".format(
-                    filename,
-                    "".join(
-                        ["[{}]".format(mod.upper() for mod in mods)]
-                    )
+                    filename, "".join(["[{}]".format(mod.upper() for mod in mods)])
                 )
             if comparison_profile_path:
                 filename += (
@@ -2002,8 +2051,7 @@ class ProfileInfoFrame(LUTFrame):
                 )
                 if mods:
                     filename = "{} {}".format(
-                        filename,
-                        "".join(["[%s]" % mod.upper() for mod in mods])
+                        filename, "".join([f"[{mod.upper()}]" for mod in mods])
                     )
             for vrmlext in (".vrml", ".vrml.gz", ".wrl", ".wrl.gz", ".wrz"):
                 vrmlpath = filename + vrmlext

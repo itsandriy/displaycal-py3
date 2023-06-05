@@ -141,7 +141,6 @@ from DisplayCAL.debughelpers import (
 )
 from DisplayCAL.defaultpaths import (
     cache,
-    get_known_folder_path,
     iccprofiles_home,
     iccprofiles_display_home,
     appdata,
@@ -6584,7 +6583,7 @@ while 1:
     if os.path.isfile(okfilename):
         try:
             os.remove(okfilename)
-        except OSError, e:
+        except OSError:
             pass
         else:
             break
@@ -6625,7 +6624,7 @@ while 1:
                     waitfile.write("#!/usr/bin/env python3\n")
                     waitfile.write(pythonscript)
                 os.chmod(waitfilename, 0o755)
-                args[index] += '"%s" ./%s' % (
+                args[index] += '%s ./%s' % (
                     strtr(safe_str(python), {'"': r"\"", "$": r"\$"}),
                     os.path.basename(waitfilename),
                 )
@@ -13631,7 +13630,7 @@ usage: spotread [-options] [logfile]
                 if ext.lower() != ".ti1":
                     ti3_lines = [line.strip() for line in ti3]
                     ti3.close()
-                    if "CTI3" not in ti3_lines:
+                    if b"CTI3" not in ti3_lines:
                         return (
                             Error(
                                 lang.getstr(

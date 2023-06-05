@@ -983,7 +983,7 @@ def colorimeter_correction_web_check_choose(resp, parent=None):
     lstr_en = lang.getstr("colorimeter_correction.web_check.info", lcode="en")
     if lstr != lstr_en or lang.getcode() == "en":
         info_txt = wx.StaticText(dlg, -1, lstr)
-        info_txt.Wrap(640 * scale)
+        info_txt.Wrap(int(640 * scale))
         dlg.sizer3.Add(info_txt, 1, flag=wx.TOP | wx.ALIGN_LEFT, border=12)
     if len(cgats) > 1:
         # We got several matches
