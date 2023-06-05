@@ -46,6 +46,7 @@ new-release:
 	git commit -m "Version $(VERSION)"
 	git push
 	git checkout main
+	git pull
 	git merge develop
 	git tag $(VERSION)
 	git push origin main --tags
