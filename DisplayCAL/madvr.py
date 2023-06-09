@@ -332,7 +332,7 @@ class H3DLUT(object):
             data = stream_or_filename.read()
         self.signature = data[:4]
         self.fileVersion = struct.unpack("<l", data[4:8])[0]
-        self.programName = data[8:40].rstrip("\0")
+        self.programName = data[8:40].rstrip(b"\0")
         self.programVersion = struct.unpack("<q", data[40:48])[0]
         self.inputBitDepth = struct.unpack("<3l", data[48:60])
         self.inputColorEncoding = struct.unpack("<l", data[60:64])[0]
@@ -354,7 +354,7 @@ class H3DLUT(object):
             .rstrip(b"\0")
             .splitlines()
         ):
-            item = str(line).split(None, 1)
+            item = line.decode().split(maxsplit=1)
             if len(item) == 2:
                 key, values = item
                 values = values.split()
@@ -387,7 +387,7 @@ class H3DLUT(object):
 
     @property
     def data(self):
-        parametersData = []
+        parameters_data = []
         for key in self.parametersData:
             values = self.parametersData[key]
             if isinstance(values, str):
@@ -400,29 +400,29 @@ class H3DLUT(object):
                     else:
                         values[i] = "%s" % value
                 value = " ".join(values)
-            parametersData.append("%s %s" % (key, value))
-        parametersData = b"\r\n".join(parametersData) + b"\0"
-        parametersSize = len(parametersData)
-        return "".join(
+            parameters_data.append(("%s %s" % (key, value)).encode())
+        parameters_data = b"\r\n".join(parameters_data) + b"\0"
+        parameters_size = len(parameters_data)
+        return b"".join(
             (
                 self.signature,
                 struct.pack("<l", self.fileVersion),
-                self.programName.ljust(32, "\0"),
+                self.programName.ljust(32, b"\0"),
                 struct.pack("<q", self.programVersion),
-                struct.pack(*("<3l",) + self.inputBitDepth),
+                struct.pack("<3l", *self.inputBitDepth),
                 struct.pack("<l", self.inputColorEncoding),
                 struct.pack("<l", self.outputBitDepth),
                 struct.pack("<l", self.outputColorEncoding),
                 struct.pack("<l", self.parametersFileOffset),
-                struct.pack("<l", parametersSize),
+                struct.pack("<l", parameters_size),
                 struct.pack("<l", self.lutFileOffset),
                 struct.pack("<l", self.lutCompressionMethod),
                 struct.pack("<l", self.lutCompressedSize),
                 struct.pack("<l", self.lutUncompressedSize),
-                "\0" * (self.parametersFileOffset - 96),
-                parametersData,
-                "\0"
-                * (self.lutFileOffset - self.parametersFileOffset - parametersSize),
+                b"\0" * (self.parametersFileOffset - 96),
+                parameters_data,
+                b"\0"
+                * (self.lutFileOffset - self.parametersFileOffset - parameters_size),
                 self.LUTDATA,
             )
         )
@@ -456,7 +456,7 @@ class H3DLUT(object):
     def write(self, stream_or_filename=None):
         """Write 3D LUT to stream or filename."""
         stream = self._get_stream(stream_or_filename)
-        stream.write(self.data.encode())
+        stream.write(self.data)
         if isinstance(stream_or_filename, str):
             if not self.fileName:
                 self.fileName = stream_or_filename
