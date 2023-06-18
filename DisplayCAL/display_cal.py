@@ -10173,11 +10173,14 @@ class MainFrame(ReportFrame, BaseFrame, LUT3DMixin):
             cancel_event = threading.Event()
 
             def connect(self):
+                exception = None
+                action = None
                 try:
                     if not self.worker.madtpg_connect():
                         raise Error(lang.getstr("madtpg.launch.failure"))
-                except Exception:
+                except Exception as e:
                     action = wx.ID_CLOSE
+                    exception = e
                 else:
                     action = wx.ID_OK
                 finally:
