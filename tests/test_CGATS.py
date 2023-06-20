@@ -940,17 +940,14 @@ def test_cgats_checkerboard(
         assert calls[0][0][1] == result
 
 
-@pytest.mark.parametrize("name", ['bug', 'no_bug'])
-def test_cgats_maximise_lightness_produces_total_ordering(data_files, name):
+@pytest.mark.parametrize("name", ['fails_when_unstable', 'ok_when_unstable', 'large_set'])
+def test_cgats_maximise_lightness_sort_is_invariant_to_input(data_files, name):
     path = data_files[f"{name}.ti1"].absolute()
     cgats = CGATS.CGATS(cgats=path)
     results = []
-    import colormath
-    labs = []
 
     for i in range(3):
-        labs.append([colormath.XYZ2Lab(*a[3:]) for a in cgats.get_RGB_XYZ_values()[1]])
-        cgats.checkerboard()
+        cgats.checkerboard(sort1=CGATS.stable_sort_by_L)
         results.append(cgats.get_RGB_XYZ_values()[1])
     assert results
     for i in range(len(results[0])):
