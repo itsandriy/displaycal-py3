@@ -33,7 +33,6 @@ from DisplayCAL.imfile import tiff_get_header
 from DisplayCAL.meta import name as appname, version
 from DisplayCAL.network import get_network_addr, get_valid_host
 
-
 CALLBACK = ctypes.CFUNCTYPE(
     None,
     ctypes.c_void_p,
@@ -55,9 +54,7 @@ H3D_HEADER = (
     b"\x06\x00\x00\x00\x06"
 )
 
-
 min_version = (0, 88, 20, 0)
-
 
 # Search for madTPG on the local PC, connect to the first found instance
 CM_ConnectToLocalInstance = 0
@@ -71,7 +68,6 @@ CM_ShowListDialog = 3
 CM_ShowIpAddrDialog = 4
 # fail immediately
 CM_Fail = 5
-
 
 _methodnames = (
     "ConnectEx",
@@ -109,7 +105,6 @@ _methodnames = (
 )
 
 _autonet_methodnames = ("AddConnectionCallback", "Listen", "Announce")
-
 
 _lock = threading.RLock()
 
@@ -308,14 +303,13 @@ def trunc(value, length):
     if isinstance(value, str):
         if len(repr(value)) > length:
             value = value[
-                : length - 3 - len(str(length)) - len(repr(value)) + len(value)
-            ]
+                    : length - 3 - len(str(length)) - len(repr(value)) + len(value)
+                    ]
             return "%r[:%i]" % (value, length)
     return repr(value)
 
 
 class H3DLUT(object):
-
     """3D LUT file format used by madVR"""
 
     # https://sourceforge.net/projects/thr3dlut
@@ -351,8 +345,8 @@ class H3DLUT(object):
         self.parametersData = dict()
         for line in (
             data[self.parametersFileOffset: self.parametersFileOffset + parametersSize]
-            .rstrip(b"\0")
-            .splitlines()
+                .rstrip(b"\0")
+                .splitlines()
         ):
             item = line.decode().split(maxsplit=1)
             if len(item) == 2:
@@ -369,8 +363,8 @@ class H3DLUT(object):
                     value = tuple(values)
                 self.parametersData[key] = value
         self.LUTDATA = data[
-            self.lutFileOffset: self.lutFileOffset + self.lutCompressedSize
-        ]
+                       self.lutFileOffset: self.lutFileOffset + self.lutCompressedSize
+                       ]
         if check_lut_size and len(self.LUTDATA) != self.lutCompressedSize:
             raise ValueError(
                 "3DLUT size %i does not match expected size %i"
@@ -379,11 +373,11 @@ class H3DLUT(object):
         if len(data) == self.lutFileOffset + self.lutCompressedSize + 1552:
             # Calibration appendended
             self.LUTDATA += data[
-                self.lutFileOffset
-                + self.lutCompressedSize: self.lutFileOffset
-                + self.lutCompressedSize
-                + 1552
-            ]
+                            self.lutFileOffset
+                            + self.lutCompressedSize: self.lutFileOffset
+                                                      + self.lutCompressedSize
+                                                      + 1552
+                            ]
 
     @property
     def data(self):
@@ -570,7 +564,6 @@ class H3DLUT(object):
 
 
 class MadTPGBase(object):
-
     """Generic pattern generator compatibility layer"""
 
     def wait(self):
@@ -602,7 +595,6 @@ class MadTPGBase(object):
 
 
 class MadTPG(MadTPGBase):
-
     """Minimal madTPG controller class"""
 
     def __init__(self):
@@ -783,7 +775,6 @@ class MadTPG(MadTPGBase):
 
 
 class MadTPG_Net(MadTPGBase):
-
     """Implementation of madVR network protocol in pure python"""
 
     # Wireshark filter to help ananlyze traffic:
@@ -1120,7 +1111,7 @@ class MadTPG_Net(MadTPGBase):
                                 threading.Thread(
                                     target=self._connect,
                                     name="madVR.ConnectToInstance[%s:%s]"
-                                    % (addr[0], c_port),
+                                         % (addr[0], c_port),
                                     args=(conn, addr[0], c_port),
                                 ).start()
                     else:
@@ -1405,8 +1396,8 @@ class MadTPG_Net(MadTPGBase):
             return (
                 self._client_socket
                 and self.clients.get(self._client_socket.getpeername(), {}).get(
-                    "mvrVersion"
-                )
+                "mvrVersion"
+            )
                 or False
             )
         except socket.error as exception:
@@ -1487,23 +1478,24 @@ class MadTPG_Net(MadTPGBase):
                 for c_addr in c_addrs:
                     client = clients.get(c_addr)
                     conn = self._client_sockets.get(c_addr)
-                    if client:
-                        component_ = client['component']
-                        if component_ == b'madTPG':
-                            if client.get('confirmed'):
-                                if conn:
-                                    if self._send(conn, "StartTestPattern"):
-                                        self._client_socket = conn
-                                        safe_print('Sent StartTestPattern to madTPG')
-                                        return True
-                                    else:
-                                        safe_print('Failed to send StartTestPattern to madTPG')
-                                else:
-                                    safe_print('No conn to madTPG')
-                            else:
-                                safe_print('madTPG is unconfirmed')
-                        else:
-                            safe_print(f'Ignoring client component : {component_}')
+                    if not client and not conn:
+                        continue
+                    component_ = client['component']
+                    if not component_:
+                        # not a madvr component so ignore completely
+                        continue
+                    pid_host = f'{client.get("processId", "?")}:{client.get("computerName", "")}'
+                    formatted_client = f'[{component_} {pid_host}]'
+                    if component_ != b'madTPG':
+                        continue
+                    if not client.get('confirmed'):
+                        safe_print(f"Ignoring unconfirmed madTPG client : {formatted_client}")
+                        continue
+                    safe_print(f'Found madTPG, attempting StartTestPattern : {pid_host}')
+                    if self._send(conn, "StartTestPattern"):
+                        self._client_socket = conn
+                        safe_print(f'Sent StartTestPattern to MadTPG client : {pid_host}')
+                        return True
             sleep(0.001)
             end = time()
         return False
@@ -1676,7 +1668,7 @@ class MadTPG_Net(MadTPGBase):
         magic = b"mad."
         data = struct.pack("<i", os.getpid())  # processId : 4
         data += struct.pack("<q", id(sys.modules[__name__]))  # module/DLL handle : 8
-        data += struct.pack("<i", commandno) # 4
+        data += struct.pack("<i", commandno)  # 4
         data += struct.pack("<i", len(component))  # sizeOfComponent : 4
         data += component
         if component == b"madTPG":
@@ -1689,8 +1681,8 @@ class MadTPG_Net(MadTPGBase):
         data += struct.pack("<i", len(params))  # sizeOfParams : 4
         data += params if isinstance(params, bytes) else params.encode('UTF-16-LE')
         datalen = len(data)
-        packet = magic + struct.pack("<i", datalen) # 4 + 4
-        packet += struct.pack("<I", crc32(packet) & 0xFFFFFFFF) # 4
+        packet = magic + struct.pack("<i", datalen)  # 4 + 4
+        packet += struct.pack("<I", crc32(packet) & 0xFFFFFFFF)  # 4
         packet += data
         if self.debug > 1:
             with _lock:
@@ -1861,10 +1853,10 @@ if __name__ == "__main__":
     else:
         madtpg = MadTPG_Net()
     try:
-        if madtpg.connect(method3=CM_StartLocalInstance, timeout3=5000):
+        if madtpg.connect(method3=CM_StartLocalInstance, timeout3=10000):
             res = madtpg.set_osd_text('Hello there')
             print(f'RESULT set_osd_text : {res}')
-            sleep(15)
+            # sleep(5)
             res = madtpg.show_rgb(1, 0, 0)
             print(f'RESULT show_rgb : {res}')
             res = madtpg.get_black_and_white_level()
