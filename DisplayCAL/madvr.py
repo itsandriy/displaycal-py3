@@ -303,8 +303,8 @@ def trunc(value, length):
     if isinstance(value, str):
         if len(repr(value)) > length:
             value = value[
-                    : length - 3 - len(str(length)) - len(repr(value)) + len(value)
-                    ]
+                : length - 3 - len(str(length)) - len(repr(value)) + len(value)
+            ]
             return "%r[:%i]" % (value, length)
     return repr(value)
 
@@ -344,9 +344,9 @@ class H3DLUT(object):
         self.lutUncompressedSize = struct.unpack("<l", data[92:96])[0]
         self.parametersData = dict()
         for line in (
-            data[self.parametersFileOffset: self.parametersFileOffset + parametersSize]
-                .rstrip(b"\0")
-                .splitlines()
+            data[self.parametersFileOffset : self.parametersFileOffset + parametersSize]
+            .rstrip(b"\0")
+            .splitlines()
         ):
             item = line.decode().split(maxsplit=1)
             if len(item) == 2:
@@ -363,8 +363,8 @@ class H3DLUT(object):
                     value = tuple(values)
                 self.parametersData[key] = value
         self.LUTDATA = data[
-                       self.lutFileOffset: self.lutFileOffset + self.lutCompressedSize
-                       ]
+            self.lutFileOffset : self.lutFileOffset + self.lutCompressedSize
+        ]
         if check_lut_size and len(self.LUTDATA) != self.lutCompressedSize:
             raise ValueError(
                 "3DLUT size %i does not match expected size %i"
@@ -373,11 +373,11 @@ class H3DLUT(object):
         if len(data) == self.lutFileOffset + self.lutCompressedSize + 1552:
             # Calibration appendended
             self.LUTDATA += data[
-                            self.lutFileOffset
-                            + self.lutCompressedSize: self.lutFileOffset
-                                                      + self.lutCompressedSize
-                                                      + 1552
-                            ]
+                self.lutFileOffset
+                + self.lutCompressedSize : self.lutFileOffset
+                + self.lutCompressedSize
+                + 1552
+            ]
 
     @property
     def data(self):
@@ -527,7 +527,7 @@ class H3DLUT(object):
                         i += 1
                         continue
                     index = i * samples_per_pixel * bytes_per_sample
-                    BGR = self.LUTDATA[index: index + bytes_per_pixel]
+                    BGR = self.LUTDATA[index : index + bytes_per_pixel]
                     RGB = BGR[::-1]  # BGR little-endian to RGB big-endian byte order
                     io.write(RGB)
                     i += 1
@@ -555,7 +555,7 @@ class H3DLUT(object):
         entries = self.lutUncompressedSize / samples_per_pixel / bytes_per_sample
         for i in range(entries):
             index = i * samples_per_pixel * bytes_per_sample
-            BGR = self.LUTDATA[index: index + bytes_per_pixel]
+            BGR = self.LUTDATA[index : index + bytes_per_pixel]
             RGB = BGR[::-1]  # BGR little-endian to RGB big-endian byte order
             stream.write(RGB)
 
@@ -1111,7 +1111,7 @@ class MadTPG_Net(MadTPGBase):
                                 threading.Thread(
                                     target=self._connect,
                                     name="madVR.ConnectToInstance[%s:%s]"
-                                         % (addr[0], c_port),
+                                    % (addr[0], c_port),
                                     args=(conn, addr[0], c_port),
                                 ).start()
                     else:
@@ -1396,8 +1396,8 @@ class MadTPG_Net(MadTPGBase):
             return (
                 self._client_socket
                 and self.clients.get(self._client_socket.getpeername(), {}).get(
-                "mvrVersion"
-            )
+                    "mvrVersion"
+                )
                 or False
             )
         except socket.error as exception:
@@ -1418,7 +1418,7 @@ class MadTPG_Net(MadTPGBase):
         ]
         params = ""
         for key, value in info:
-            params += ("%s=%s\t" % (key, value))
+            params += "%s=%s\t" % (key, value)
         return params
 
     def _hello(self, conn):
@@ -1480,21 +1480,27 @@ class MadTPG_Net(MadTPGBase):
                     conn = self._client_sockets.get(c_addr)
                     if not client and not conn:
                         continue
-                    component_ = client['component']
+                    component_ = client["component"]
                     if not component_:
                         # not a madvr component so ignore completely
                         continue
                     pid_host = f'{client.get("processId", "?")}:{client.get("computerName", "")}'
-                    formatted_client = f'[{component_} {pid_host}]'
-                    if component_ != b'madTPG':
+                    formatted_client = f"[{component_} {pid_host}]"
+                    if component_ != b"madTPG":
                         continue
-                    if not client.get('confirmed'):
-                        safe_print(f"Ignoring unconfirmed madTPG client : {formatted_client}")
+                    if not client.get("confirmed"):
+                        safe_print(
+                            f"Ignoring unconfirmed madTPG client : {formatted_client}"
+                        )
                         continue
-                    safe_print(f'Found madTPG, attempting StartTestPattern : {pid_host}')
+                    safe_print(
+                        f"Found madTPG, attempting StartTestPattern : {pid_host}"
+                    )
                     if self._send(conn, "StartTestPattern"):
                         self._client_socket = conn
-                        safe_print(f'Sent StartTestPattern to MadTPG client : {pid_host}')
+                        safe_print(
+                            f"Sent StartTestPattern to MadTPG client : {pid_host}"
+                        )
                         return True
             sleep(0.001)
             end = time()
@@ -1574,7 +1580,7 @@ class MadTPG_Net(MadTPGBase):
         if command == "hello":
             io = StringIO(
                 "[Default]\n"
-                + "\n".join(params.decode('UTF-16-LE').strip().split("\t"))
+                + "\n".join(params.decode("UTF-16-LE").strip().split("\t"))
             )
             cfg = RawConfigParser()
             cfg.optionxform = str
@@ -1679,7 +1685,7 @@ class MadTPG_Net(MadTPGBase):
         data += struct.pack("<i", len(command))  # sizeOfCommand : 4
         data += command.encode()
         data += struct.pack("<i", len(params))  # sizeOfParams : 4
-        data += params if isinstance(params, bytes) else params.encode('UTF-16-LE')
+        data += params if isinstance(params, bytes) else params.encode("UTF-16-LE")
         datalen = len(data)
         packet = magic + struct.pack("<i", datalen)  # 4 + 4
         packet += struct.pack("<I", crc32(packet) & 0xFFFFFFFF)  # 4
@@ -1840,7 +1846,11 @@ class MadTPG_Net_Sender(object):
             params = "|".join(str(v) for v in rgb)
         else:
             params = str(*args)
-        return self.madtpg._send(self._conn, self.command, params if isinstance(params, bytes) else params.encode())
+        return self.madtpg._send(
+            self._conn,
+            self.command,
+            params if isinstance(params, bytes) else params.encode(),
+        )
 
 
 if __name__ == "__main__":
@@ -1854,52 +1864,52 @@ if __name__ == "__main__":
         madtpg = MadTPG_Net()
     try:
         if madtpg.connect(method3=CM_StartLocalInstance, timeout3=10000):
-            res = madtpg.set_osd_text('Hello there')
-            print(f'RESULT set_osd_text : {res}')
+            res = madtpg.set_osd_text("Hello there")
+            print(f"RESULT set_osd_text : {res}")
             # sleep(5)
             res = madtpg.show_rgb(1, 0, 0)
-            print(f'RESULT show_rgb : {res}')
+            print(f"RESULT show_rgb : {res}")
             res = madtpg.get_black_and_white_level()
-            print(f'RESULT bw level : {res}')
+            print(f"RESULT bw level : {res}")
             res = madtpg.get_pattern_config()
-            print(f'RESULT pattern_config : {res}')
+            print(f"RESULT pattern_config : {res}")
             res = madtpg.get_version()
-            print(f'RESULT version : {res}')
+            print(f"RESULT version : {res}")
             res = madtpg.get_device_gamma_ramp()
-            print(f'RESULT gamma_ramp : {res}')
+            print(f"RESULT gamma_ramp : {res}")
             res = madtpg.enable_3dlut()
-            print(f'RESULT enable_3dlut : {res}')
+            print(f"RESULT enable_3dlut : {res}")
             res = madtpg.get_selected_3dlut()
-            print(f'RESULT selected 3dlut : {res}')
+            print(f"RESULT selected 3dlut : {res}")
             res = madtpg.disable_3dlut()
-            print(f'RESULT disable_3dlut : {res}')
+            print(f"RESULT disable_3dlut : {res}")
             res = madtpg.is_stay_on_top_button_pressed()
-            print(f'RESULT is_stay_on_top_button_pressed : {res}')
+            print(f"RESULT is_stay_on_top_button_pressed : {res}")
             res = madtpg.is_use_fullscreen_button_pressed()
-            print(f'RESULT is_use_fullscreen_button_pressed : {res}')
+            print(f"RESULT is_use_fullscreen_button_pressed : {res}")
             res = madtpg.is_disable_osd_button_pressed()
-            print(f'RESULT is_disable_osd_button_pressed : {res}')
+            print(f"RESULT is_disable_osd_button_pressed : {res}")
             res = madtpg.set_stay_on_top_button(False)
-            print(f'RESULT set_stay_on_top_button : {res}')
+            print(f"RESULT set_stay_on_top_button : {res}")
             res = madtpg.set_use_fullscreen_button(False)
-            print(f'RESULT set_use_fullscreen_button : {res}')
+            print(f"RESULT set_use_fullscreen_button : {res}")
             res = madtpg.set_disable_osd_button(False)
-            print(f'RESULT set_disable_osd_button : {res}')
+            print(f"RESULT set_disable_osd_button : {res}")
             res = madtpg.show_progress_bar(10)
-            print(f'RESULT show_progress_bar : {res}')
+            print(f"RESULT show_progress_bar : {res}")
             res = madtpg.set_progress_bar_pos(5, 15)
-            print(f'RESULT set_progress_bar_pos : {res}')
+            print(f"RESULT set_progress_bar_pos : {res}")
             res = madtpg.enter_fullscreen()
-            print(f'RESULT enter_fullscreen : {res}')
+            print(f"RESULT enter_fullscreen : {res}")
             res = madtpg.is_fullscreen()
-            print(f'RESULT is_fullscreen : {res}')
+            print(f"RESULT is_fullscreen : {res}")
             res = madtpg.leave_fullscreen()
-            print(f'RESULT leave_fullscreen : {res}')
+            print(f"RESULT leave_fullscreen : {res}")
             res = madtpg.set_device_gamma_ramp(None)
-            print(f'RESULT set_device_gamma_ramp : {res}')
+            print(f"RESULT set_device_gamma_ramp : {res}")
             res = madtpg.disconnect()
-            print(f'RESULT disconnect : {res}')
+            print(f"RESULT disconnect : {res}")
             res = madtpg.quit()
-            print(f'RESULT quit : {res}')
+            print(f"RESULT quit : {res}")
     finally:
         madtpg.shutdown()
