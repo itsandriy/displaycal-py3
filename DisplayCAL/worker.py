@@ -2178,6 +2178,8 @@ class Worker(WorkerBase):
         self.displays = []
         self.instruments = []
         self.lut_access = []
+        self.paused = False
+        self._patterngenerator_wait = False
 
         self.send_buffer = None
         self.owner = owner  # owner should be a wxFrame or similar
@@ -13057,10 +13059,10 @@ usage: spotread [-options] [logfile]
             if bgrgb_apl > needed_bgrgb_apl:
                 f = needed_bgrgb_apl / bgrgb_apl
                 bgrgb = [v * f for v in bgrgb]
-        self.log(
-            "%s: Sending RGB %.3f %.3f %.3f, background RGB %.3f %.3f %.3f, "
-            "x %.4f, y %.4f, w %.4f, h %.4f"
-            % ((appname,) + tuple(rgb) + tuple(bgrgb) + (x, y, w, h))
+        self.lop(
+            f"{appname}: Sending RGB {rgb[0]:.3f} {rgb[1]:.3f} {rgb[2]:.3f}, "
+            f"background RGB {bgrgb[0]:.3f} {bgrgb[1]:.3f} {bgrgb[2]:.3f}, "
+            f"x {x:.4f}, y {y:.4f}, w {w:.4f}, h {h:.4f}"
         )
         if self._use_patternwindow:
             # Preliminary Wayland support. This still needs a lot
@@ -13123,30 +13125,25 @@ usage: spotread [-options] [logfile]
         """Prepare a colprof commandline.
 
         All options are read from the user configuration.
-        Profile name and display name can be ovverridden by passing the
-        corresponding arguments.
-
+        Profile name and display name can be overridden by passing thecorresponding arguments.
         """
         if profile_name is None:
             profile_name = getcfg("profile.name.expanded")
-        inoutfile = self.setup_inout(profile_name)
-        if not inoutfile or isinstance(inoutfile, Exception):
-            return inoutfile, None
-        if not os.path.exists(inoutfile + ".ti3"):
+        in_out_file = self.setup_inout(profile_name)
+        if not in_out_file or isinstance(in_out_file, Exception):
+            return in_out_file, None
+        if not os.path.exists(f"{in_out_file}.ti3"):
             return (
                 Error(
-                    lang.getstr("error.measurement.file_missing", inoutfile + ".ti3")
+                    lang.getstr("error.measurement.file_missing",  f"{in_out_file}.ti3")
                 ),
                 None,
             )
-        if not os.path.isfile(inoutfile + ".ti3"):
-            return Error(lang.getstr("file_notfile", inoutfile + ".ti3")), None
-        #
+        if not os.path.isfile(f"{in_out_file}.ti3"):
+            return Error(lang.getstr("file_notfile",  f"{in_out_file}.ti3")), None
+
         cmd = get_argyll_util("colprof")
-        args = []
-        args.append("-v")  # verbose
-        args.append("-q" + getcfg("profile.quality"))
-        args.append("-a" + getcfg("profile.type"))
+        args = ["-v", f"-q{getcfg('profile.quality')}", f"-a{getcfg('profile.type')}"]
         gamap_args = args
         if getcfg("profile.type") in ["l", "x", "X"]:
             if getcfg("gamap_saturation"):
@@ -13181,19 +13178,19 @@ usage: spotread [-options] [logfile]
                     and "bTRC" in gamap_profile.tags
                 ):
                     self.log("Delegating CIECAM02 gamut mapping to collink")
-                    # Make a copy so we can store options without adding them
+                    # Make a copy, so we can store options without adding them
                     # to actual colprof arguments
                     gamap_args = []
                     gamap_profile = None
-                gamap_args.append("-" + gamap)
+                gamap_args.append(f"-{gamap}")
                 gamap_args.append(getcfg("gamap_profile"))
-                gamap_args.append("-t" + getcfg("gamap_perceptual_intent"))
+                gamap_args.append(f"-t{getcfg('gamap_perceptual_intent')}")
                 if gamap == "S":
-                    gamap_args.append("-T" + getcfg("gamap_saturation_intent"))
+                    gamap_args.append(f"-T{getcfg('gamap_saturation_intent')}")
                 if getcfg("gamap_src_viewcond"):
-                    gamap_args.append("-c" + getcfg("gamap_src_viewcond"))
+                    gamap_args.append(f"-c{getcfg('gamap_src_viewcond')}")
                 if getcfg("gamap_out_viewcond"):
-                    gamap_args.append("-d" + getcfg("gamap_out_viewcond"))
+                    gamap_args.append(f"-d{getcfg('gamap_out_viewcond')}")
             b2a_q = getcfg("profile.quality.b2a")
             if (
                 getcfg("profile.b2a.hires")
@@ -13203,10 +13200,10 @@ usage: spotread [-options] [logfile]
                 rgb = False
                 is_lab_clut_ptype = getcfg("profile.type") == "l"
                 if is_lab_clut_ptype:
-                    with open(inoutfile + ".ti3", "rb") as ti3_file:
+                    with open(f"{in_out_file}.ti3", "rb") as ti3_file:
                         for line in ti3_file:
-                            if line.startswith("COLOR_REP"):
-                                if "RGB_XYZ" in line:
+                            if line.startswith(b"COLOR_REP"):
+                                if b"RGB_XYZ" in line:
                                     rgb = True
                                 break
                 if rgb or not is_lab_clut_ptype:
@@ -13214,9 +13211,9 @@ usage: spotread [-options] [logfile]
                     # by A2B inversion code (only for cLUT profiles)
                     b2a_q = "n"
             if b2a_q and b2a_q != getcfg("profile.quality"):
-                args.append("-b" + b2a_q)
+                args.append(f"-b{b2a_q}")
         args.append("-C")
-        args.append(getcfg("copyright").encode("ASCII", "asciize"))
+        args.append(getcfg("copyright").encode("ASCII", "asciize").decode("utf-8"))
         if getcfg("extra_args.colprof").strip():
             args += parse_argument_string(getcfg("extra_args.colprof"))
         options_dispcal = []
@@ -13226,7 +13223,7 @@ usage: spotread [-options] [logfile]
             if len(self.displays):
                 args.extend(
                     self.update_display_name_manufacturer(
-                        inoutfile + ".ti3",
+                        f"{in_out_file}.ti3",
                         display_name,
                         display_manufacturer,
                         write=False,
@@ -13237,10 +13234,10 @@ usage: spotread [-options] [logfile]
             self.options_colprof.extend(gamap_args)
         args.append("-D")
         args.append(profile_name)
-        args.append(inoutfile)
+        args.append(in_out_file)
         # Add dispcal and colprof arguments to ti3
         ti3 = add_options_to_ti3(
-            inoutfile + ".ti3", options_dispcal, self.options_colprof
+            f"{in_out_file}.ti3", options_dispcal, self.options_colprof
         )
         if ti3:
             color_rep = (ti3.queryv1("COLOR_REP").decode("utf-8") or "").split("_")
@@ -13258,7 +13255,7 @@ usage: spotread [-options] [logfile]
                     else:
                         XYZ = (colorant["XYZ_X"], colorant["XYZ_Y"], colorant["XYZ_Z"])
                     chrm.channels.append(colormath.XYZ2xyY(*XYZ)[:-1])
-                with open(inoutfile + ".chrm", "wb") as blob:
+                with open(in_out_file + ".chrm", "wb") as blob:
                     blob.write(chrm.tagData)
             self.log("Storing settings in TI3")
             # Black point compensation
@@ -13373,13 +13370,13 @@ usage: spotread [-options] [logfile]
             # 3D LUT content color space (currently only used for HDR)
             for color in ("white", "red", "green", "blue"):
                 for coord in "xy":
-                    keyword = "3DLUT_CONTENT_COLORSPACE_%s_%s" % (
+                    keyword = "3DLUT_CONTENT_COLORSPACE_{}_{}".format(
                         color.upper(),
                         coord.upper(),
                     )
                     if getcfg("3dlut.create"):
                         value = getcfg(
-                            "3dlut.content.colorspace.%s.%s" % (color, coord)
+                            "3dlut.content.colorspace.{}.{}".format(color, coord)
                         )
                         ti3[0].add_keyword(keyword, safe_str(value, "UTF-7"))
                     elif keyword in ti3[0]:
@@ -13397,8 +13394,7 @@ usage: spotread [-options] [logfile]
 
         """
         cmd = get_argyll_util("dispcal")
-        args = []
-        args.append("-v2")  # verbose
+        args = ["-v2"]
         if getcfg("argyll.debug"):
             args.append("-D8")
         result = self.add_measurement_features(args, allow_nondefault_observer=True)
