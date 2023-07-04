@@ -42,6 +42,13 @@ def data_files():
 
 
 @pytest.fixture(scope="module")
+def data_path():
+    """Return the tests/data folder path."""
+    displaycal_parent_dir = pathlib.Path(DisplayCAL.__file__).parent
+    return displaycal_parent_dir.parent / "tests" / "data"
+
+
+@pytest.fixture(scope="module")
 def argyll():
     """Setup ArgyllCMS.
 

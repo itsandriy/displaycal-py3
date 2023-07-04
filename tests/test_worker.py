@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import io
+import pathlib
+import os
+import shutil
 from typing import Tuple, Dict
 
 import pytest
@@ -458,3 +461,54 @@ def test_check_ti3_criteria1(sample: Dict[str:float], result: bool) -> None:
         print_debuginfo=True,
     )
     assert criteria[3] == result
+
+
+def test_prepare_colprof_for_271(monkeypatch, data_path):
+    """Bug report 271."""
+    assert isinstance(data_path, pathlib.Path)
+
+    def patched_getcfg(key):
+        """patched getcfg()"""
+        cfg = {
+            "argyll.version": "2.3.1",
+            "profile.name.expanded": "test_profile",
+            "profile.quality": "m",
+            "profile.type": "l",
+            "gamap_saturation": False,
+            "gamap_perceptual": False,
+            "profile.quality.b2a": "h",
+            "profile.b2a.hires": True,
+            "copyright": "",
+            "extra_args.colprof": "",
+            "profile.black_point_compensation": False,
+            "profile.black_point_correction": False,
+            "profile.b2a.hires.size": 17,
+            "profile.b2a.hires.smooth": True,
+            "measure.override_min_display_update_delay_ms": False,
+            "measure.override_display_settle_time_mult": False,
+            "patterngenerator.ffp_insertion": False,
+            "testchart.patch_sequence": "",
+            "3dlut.create": False,
+        }
+        return cfg[key]
+    monkeypatch.setattr("DisplayCAL.worker.getcfg", patched_getcfg)
+
+    def patched_os_path_exists(filepath):
+        return True
+    monkeypatch.setattr("DisplayCAL.worker.os.path.exists", patched_os_path_exists)
+
+    def patched_os_path_isfile(filepath):
+        return True
+    monkeypatch.setattr("DisplayCAL.worker.os.path.isfile", patched_os_path_isfile)
+
+    worker = Worker()
+    in_out_file = pathlib.Path(worker.setup_inout("test_profile")).with_suffix(".ti3")
+
+    # copy the test file to the target path
+    test_file_path = data_path / "sample" / "issue271" / "test_profile.ti3"
+    os.makedirs(in_out_file.parent, exist_ok=True)
+    shutil.copy(test_file_path, in_out_file)
+
+    # This should not raise the:
+    # TypeError: startswith first arg must be bytes or a tuple of bytes, not str
+    worker.prepare_colprof()
