@@ -511,4 +511,4 @@ def test_prepare_colprof_for_271(monkeypatch, data_path):
 
     # This should not raise the:
     # TypeError: startswith first arg must be bytes or a tuple of bytes, not str
-    worker.prepare_colpßrof()
+    worker.prepare_colprof()

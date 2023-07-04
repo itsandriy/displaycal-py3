@@ -13059,7 +13059,7 @@ usage: spotread [-options] [logfile]
             if bgrgb_apl > needed_bgrgb_apl:
                 f = needed_bgrgb_apl / bgrgb_apl
                 bgrgb = [v * f for v in bgrgb]
-        self.lop(
+        self.log(
             f"{appname}: Sending RGB {rgb[0]:.3f} {rgb[1]:.3f} {rgb[2]:.3f}, "
             f"background RGB {bgrgb[0]:.3f} {bgrgb[1]:.3f} {bgrgb[2]:.3f}, "
             f"x {x:.4f}, y {y:.4f}, w {w:.4f}, h {h:.4f}"
