@@ -3,6 +3,7 @@
 import wx
 import wx.xrc as xrc
 import wx.lib.filebrowsebutton as filebrowse
+from DisplayCAL.log import safe_print
 
 try:
     from DisplayCAL.wxwindows import (
@@ -43,6 +44,9 @@ class FileBrowseButtonXmlHandler(xrc.XmlResourceHandler):
             name=self.GetName(),
         )
         self.SetupWindow(w)
+        if self.GetBool("hidden") and w.Shown:
+            safe_print(f"{self.Name} should have been hidden")
+            w.Hide()
         return w
 
 
