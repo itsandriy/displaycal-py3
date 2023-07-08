@@ -515,10 +515,12 @@ class UntetheredFrame(BaseFrame):
             )
             if not XYZ:
                 return
+            def is_white(r):
+                return r["RGB_R"] == 100 and r["RGB_G"] == 100 and r["RGB_B"] == 100
+
             XYZ = [float(v) for v in XYZ.groups()]
             row = self.cgats[0].DATA[self.index]
-            if row["RGB_R"] == 100 and row["RGB_G"] == 100 and row["RGB_B"] == 100:
-                # White
+            if is_white(row):
                 if XYZ[1] > 0:
                     self.cgats[0].add_keyword(
                         "LUMINANCE_XYZ_CDM2", "%.6f %.6f %.6f" % tuple(XYZ)
@@ -533,10 +535,12 @@ class UntetheredFrame(BaseFrame):
                 print("Delta E to last recorded Lab: %.4f" % delta["E"])
                 print("Abs. delta L to last recorded Lab: %.4f" % abs(delta["L"]))
                 print("Abs. delta C to last recorded Lab: %.4f" % abs(delta["C"]))
-            if delta["E"] > getcfg("untethered.min_delta") or (
+            consecutive_white_patch = self.index and is_white(row) and is_white(self.cgats[0].DATA[self.index - 1])
+            measurement_exceeds_delta = delta["E"] > getcfg("untethered.min_delta") or (
                 abs(delta["L"]) > getcfg("untethered.min_delta.lightness")
                 and abs(delta["C"]) < getcfg("untethered.max_delta.chroma")
-            ):
+            )
+            if consecutive_white_patch or measurement_exceeds_delta:
                 self.measure_count += 1
                 if self.measure_count == 2:
                     if getcfg("measurement.play_sound"):
@@ -545,34 +549,30 @@ class UntetheredFrame(BaseFrame):
                     # Reset row label
                     self.grid.SetRowLabelValue(self.index, "%i" % (self.index + 1))
                     # Update CGATS
-                    query = self.cgats[0].queryi(
+                    query = self.cgats[0].queryi1(
                         {
                             "RGB_R": row["RGB_R"],
                             "RGB_G": row["RGB_G"],
                             "RGB_B": row["RGB_B"],
+                            "SAMPLE_ID": row["SAMPLE_ID"]
                         }
                     )
-                    for i in query:
-                        index = query[i].SAMPLE_ID - 1
+                    if query:
+                        index = query.SAMPLE_ID - 1
                         if index not in self.measured:
                             self.measured.append(index)
-                        if index == self.index + 1:
-                            # Increment the index if we have consecutive patches
-                            self.index = index
-                        query[i]["XYZ_X"], query[i]["XYZ_Y"], query[i]["XYZ_Z"] = XYZ
+                        query["XYZ_X"], query["XYZ_Y"], query["XYZ_Z"] = XYZ
                     if getcfg("untethered.measure.auto"):
                         self.show_RGB(False, False)
                     self.show_XYZ()
                     Lab, color = self.get_Lab_RGB()
-                    for i in query:
-                        row = query[i]
-                        self.grid.SetCellBackgroundColour(
-                            query[i].SAMPLE_ID - 1, 4, wx.Colour(*color)
+                    self.grid.SetCellBackgroundColour(
+                        query.SAMPLE_ID - 1, 4, wx.Colour(*color)
+                    )
+                    for j in range(3):
+                        self.grid.SetCellValue(
+                            query.SAMPLE_ID - 1, 5 + j, "%.2f" % Lab[j]
                         )
-                        for j in range(3):
-                            self.grid.SetCellValue(
-                                query[i].SAMPLE_ID - 1, 5 + j, "%.2f" % Lab[j]
-                            )
                     self.grid.MakeCellVisible(self.index, 0)
                     self.grid.ForceRefresh()
                     if len(self.measured) == data_len:
